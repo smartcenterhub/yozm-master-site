@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440, initial-scale=1.0">
+<title>물량 데이터 업로드</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --glass-bg:rgba(255,255,255,0.74);
+  --glass-bg-strong:rgba(255,255,255,0.92);
+  --glass-border-s:rgba(0,0,0,0.07);
+  --tx:#0a0a0f;--t2:#4a4a5a;--t3:#9898a8;--t4:#c4c4d0;
+  --accent:#3a3af0;--green:#1a8a4a;--red:#d42020;--orange:#c45a10;--blue:#1a56c8;
+}
+html{
+  min-width:1188px;height:100%;
+  background:linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#eef0f8 100%) fixed;
+}
+body{
+  font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;
+  font-size:13px;line-height:1.5;color:var(--tx);
+  width:1188px;min-width:1188px;
+  padding:24px 28px 40px;
+}
+
+/* 탭 */
+.tabs{display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid var(--glass-border-s)}
+.tab{
+  padding:8px 18px;cursor:pointer;font-size:12.5px;color:var(--t3);
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+  transition:all .15s;user-select:none;
+}
+.tab:hover{color:var(--t2)}
+.tab.active{color:var(--accent);font-weight:500;border-bottom-color:var(--accent)}
+
+/* 탭 콘텐츠 */
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* 페이지 헤더 */
+.pg-header{margin-bottom:20px;display:flex;align-items:flex-start;justify-content:space-between}
+.pg-title{font-size:17px;font-weight:700;color:var(--tx)}
+.pg-desc{font-size:12px;color:var(--t3);margin-top:4px;line-height:1.6}
+.pg-badge{
+  display:inline-block;font-size:10.5px;padding:3px 9px;border-radius:10px;
+  font-weight:500;margin-top:6px;
+  background:rgba(58,58,240,0.08);color:var(--accent);
+}
+.pg-actions{display:flex;gap:7px;flex-shrink:0}
+.btn{
+  display:flex;align-items:center;gap:5px;padding:6px 13px;border-radius:7px;
+  font-size:12px;cursor:pointer;font-family:inherit;border:none;transition:all .12s;
+}
+.btn-primary{background:var(--accent);color:#fff;font-weight:500}
+.btn-primary:hover{background:#2a2ad8}
+.btn-ghost{background:var(--glass-bg-strong);border:1px solid var(--glass-border-s);color:var(--t2)}
+.btn-ghost:hover{color:var(--tx)}
+
+/* 카드 */
+.card{
+  background:var(--glass-bg);border:1px solid var(--glass-border-s);
+  border-radius:12px;padding:18px 20px;margin-bottom:14px;
+}
+.card-title{
+  font-size:12.5px;font-weight:600;color:var(--tx);
+  margin-bottom:12px;display:flex;align-items:center;gap:7px;
+}
+.card-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* 그리드 */
+.grid-2{display:grid;grid-template-columns:560px 560px;gap:14px;margin-bottom:14px}
+
+/* 업로드 존 */
+.upload-zone{
+  border:2px dashed rgba(58,58,240,0.2);border-radius:10px;
+  padding:32px 20px;text-align:center;cursor:pointer;transition:all .15s;
+  background:rgba(58,58,240,0.02);
+}
+.upload-zone:hover{border-color:rgba(58,58,240,0.4);background:rgba(58,58,240,0.04)}
+.upload-icon{font-size:26px;margin-bottom:8px;opacity:.5}
+.upload-title{font-size:13px;font-weight:500;color:var(--t2)}
+.upload-desc{font-size:11.5px;color:var(--t4);margin-top:4px}
+
+/* 안내 텍스트 */
+.info-row{
+  font-size:12px;color:var(--t2);line-height:2;
+}
+.info-row b{color:var(--tx);font-weight:500}
+.info-row code{
+  background:rgba(0,0,0,0.05);padding:1px 5px;border-radius:4px;
+  font-size:11.5px;font-family:'SF Mono','Consolas',monospace;color:var(--accent);
+}
+
+/* 테이블 */
+.tbl-wrap{overflow:auto}
+table{
+  width:1100px;min-width:1100px;border-collapse:collapse;
+  font-size:12px;table-layout:fixed;
+}
+thead th{
+  padding:8px 12px;text-align:left;font-size:11px;font-weight:500;color:var(--t2);
+  border-bottom:1px solid var(--glass-border-s);white-space:nowrap;
+  background:rgba(255,255,255,0.55);overflow:hidden;
+}
+tbody td{
+  padding:7px 12px;border-bottom:1px solid rgba(0,0,0,0.03);
+  font-size:12px;color:var(--t2);white-space:nowrap;overflow:hidden;
+}
+tbody tr:hover td{background:rgba(0,0,0,0.015)}
+tbody tr:last-child td{border-bottom:none}
+.badge-pill{font-size:10px;padding:2px 7px;border-radius:8px;font-weight:500;display:inline-block}
+.pill-on{background:rgba(26,138,74,0.1);color:var(--green)}
+.pill-fail{background:rgba(212,32,32,0.08);color:var(--red)}
+</style>
+</head>
+<body>
+
+<!-- 탭 -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('fc',this)">예측 (fc)</div>
+  <div class="tab" onclick="switchTab('pv',this)">전일 (pv)</div>
+  <div class="tab" onclick="switchTab('mx',this)">최대 (mx)</div>
+  <div class="tab" onclick="switchTab('ac',this)">실제 (ac)</div>
+</div>
+
+<!-- ── fc 예측 ── -->
+<div class="tab-content active" id="tab-fc">
+  <div class="pg-header">
+    <div>
+      <div class="pg-title">예측 데이터 업로드</div>
+      <div class="pg-desc">매주 화요일 — 다음 주 월~일 7일치 품목별 예측 수량(fc) 입력</div>
+      <span class="pg-badge">수정 가능 섹션</span>
+    </div>
+    <div class="pg-actions">
+      <button class="btn btn-ghost">📋 시트에서 수정</button>
+      <button class="btn btn-primary">⬆ 파일 업로드</button>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><div class="card-dot" style="background:var(--accent)"></div>파일로 업로드</div>
+      <div class="upload-zone">
+        <div class="upload-icon">📂</div>
+        <div class="upload-title">Excel 파일을 드래그하거나 클릭해서 선택</div>
+        <div class="upload-desc">물량관리_v8_최종.xlsx 또는 동일 형식 · 최대 10MB</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="card-dot" style="background:var(--accent)"></div>직접 입력 (구글 시트)</div>
+      <div class="info-row">
+        <b>입력 위치:</b> ◆summary_HTML용 탭 → <code>D열(fc)</code><br>
+        <b>날짜 형식:</b> <code>A열 = YYYY-MM-DD</code><br>
+        <b>품목코드:</b> <code>B열 = Y-P-00</code> 형식 유지<br>
+        <b>입력 시점:</b> 매주 화요일 — 다음 주 월~일 전체<br>
+        <b>주의:</b> 예측값 없으면 출고최대 자동추산 기준 없어짐
+      </div>
+      <button class="btn btn-ghost" style="margin-top:14px">📋 구글 시트 열기</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><div class="card-dot" style="background:var(--t4)"></div>최근 업로드 내역</div>
+    <div class="tbl-wrap">
+      <table>
+        <colgroup>
+          <col style="width:160px"><col style="width:220px"><col style="width:120px">
+          <col style="width:80px"><col style="width:80px"><col style="width:100px">
+        </colgroup>
+        <thead><tr><th>업로드 일시</th><th>파일명</th><th>대상 주차</th><th>품목 수</th><th>행 수</th><th>상태</th></tr></thead>
+        <tbody>
+          <tr><td>2026-03-25 09:14</td><td>물량관리_v8_최종.xlsx</td><td>3월 4주차</td><td>22</td><td>154</td><td><span class="badge-pill pill-on">성공</span></td></tr>
+          <tr><td>2026-03-18 09:02</td><td>물량관리_v8_최종.xlsx</td><td>3월 3주차</td><td>22</td><td>154</td><td><span class="badge-pill pill-on">성공</span></td></tr>
+          <tr><td>2026-03-11 09:31</td><td>물량관리_v7.xlsx</td><td>3월 2주차</td><td>20</td><td>140</td><td><span class="badge-pill pill-on">성공</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── pv 전일 ── -->
+<div class="tab-content" id="tab-pv">
+  <div class="pg-header">
+    <div>
+      <div class="pg-title">전일 데이터 업로드</div>
+      <div class="pg-desc">매일 오전 — 전날 결제 완료 수량(pv) 품목별 입력</div>
+      <span class="pg-badge">수정 가능 섹션</span>
+    </div>
+    <div class="pg-actions">
+      <button class="btn btn-ghost">📋 시트에서 수정</button>
+      <button class="btn btn-primary">⬆ 파일 업로드</button>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><div class="card-dot" style="background:#0ea5e9"></div>파일로 업로드</div>
+      <div class="upload-zone">
+        <div class="upload-icon">📂</div>
+        <div class="upload-title">Excel 파일을 드래그하거나 클릭해서 선택</div>
+        <div class="upload-desc">스마트스토어 상품성과 Excel · 최대 10MB</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="card-dot" style="background:#0ea5e9"></div>직접 입력 (구글 시트)</div>
+      <div class="info-row">
+        <b>데이터 출처:</b> 네이버 스마트스토어 판매 현황<br>
+        <b>입력 위치:</b> ◆summary_HTML용 탭 → <code>E열(pv)</code><br>
+        <b>입력 시점:</b> 매일 오전 — 전날 결제 수량 확인 직후<br>
+        <b>월요일 특수:</b> 금+토+일 pv 합산해서 입력<br>
+        <b>주의:</b> 취소·반품 건 포함될 수 있음
+      </div>
+      <button class="btn btn-ghost" style="margin-top:14px">📋 구글 시트 열기</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><div class="card-dot" style="background:var(--t4)"></div>최근 업로드 내역</div>
+    <div class="tbl-wrap">
+      <table>
+        <colgroup>
+          <col style="width:160px"><col style="width:220px"><col style="width:120px">
+          <col style="width:80px"><col style="width:80px"><col style="width:100px">
+        </colgroup>
+        <thead><tr><th>업로드 일시</th><th>파일명</th><th>대상 날짜</th><th>품목 수</th><th>행 수</th><th>상태</th></tr></thead>
+        <tbody>
+          <tr><td>2026-03-26 09:05</td><td>상품성과_20260326.xlsx</td><td>2026-03-25</td><td>22</td><td>22</td><td><span class="badge-pill pill-on">성공</span></td></tr>
+          <tr><td>2026-03-25 09:11</td><td>상품성과_20260325.xlsx</td><td>2026-03-24</td><td>22</td><td>22</td><td><span class="badge-pill pill-on">성공</span></td></tr>
+          <tr><td>2026-03-24 09:08</td><td>상품성과_20260324.xlsx</td><td>2026-03-21~23</td><td>22</td><td>22</td><td><span class="badge-pill pill-on">성공</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── mx 최대 ── -->
+<div class="tab-content" id="tab-mx">
+  <div class="pg-header">
+    <div>
+      <div class="pg-title">최대 데이터 업로드</div>
+      <div class="pg-desc">매일 오전 — 당일 출고 가능 최대 수량(mx) 물류팀 확인 후 입력</div>
+      <span class="pg-badge">수정 가능 섹션</span>
+    </div>
+    <div class="pg-actions">
+      <button class="btn btn-ghost">📋 시트에서 수정</button>
+      <button class="btn btn-primary">⬆ 파일 업로드</button>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><div class="card-dot" style="background:var(--orange)"></div>파일로 업로드</div>
+      <div class="upload-zone">
+        <div class="upload-icon">📂</div>
+        <div class="upload-title">Excel 파일을 드래그하거나 클릭해서 선택</div>
+        <div class="upload-desc">물류팀 출고 가능 수량 확정 파일 · 최대 10MB</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="card-dot" style="background:var(--orange)"></div>직접 입력 (구글 시트)</div>
+      <div class="info-row">
+        <b>확인 방법:</b> 창고 재고 + 당일 생산 예정 수량<br>
+        <b>입력 위치:</b> ◆summary_HTML용 탭 → <code>F열(mx)</code><br>
+        <b>입력 시점:</b> 매일 오전 — 출고 준비 전 확정 후<br>
+        <b>미입력 시:</b> <code>fc × 0.967</code> 자동 추산 (참고값)<br>
+        <b>주의:</b> 자동 추산값은 실제 재고와 다를 수 있음
+      </div>
+      <button class="btn btn-ghost" style="margin-top:14px">📋 구글 시트 열기</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><div class="card-dot" style="background:var(--t4)"></div>최근 업로드 내역</div>
+    <div class="tbl-wrap">
+      <table>
+        <colgroup>
+          <col style="width:160px"><col style="width:220px"><col style="width:120px">
+          <col style="width:80px"><col style="width:80px"><col style="width:100px">
+        </colgroup>
+        <thead><tr><th>업로드 일시</th><th>파일명</th><th>대상 날짜</th><th>품목 수</th><th>행 수</th><th>상태</th></tr></thead>
+        <tbody>
+          <tr><td>2026-03-26 08:50</td><td>mx_20260326.xlsx</td><td>2026-03-26</td><td>22</td><td>22</td><td><span class="badge-pill pill-on">성공</span></td></tr>
+          <tr><td>2026-03-25 09:00</td><td>mx_20260325.xlsx</td><td>2026-03-25</td><td>22</td><td>22</td><td><span class="badge-pill pill-on">성공</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── ac 실제 ── -->
+<div class="tab-content" id="tab-ac">
+  <div class="pg-header">
+    <div>
+      <div class="pg-title">실제 데이터 업로드</div>
+      <div class="pg-desc">매일 오후~저녁 — 당일 실제 출고 완료 수량(ac) 입력</div>
+      <span class="pg-badge">수정 가능 섹션</span>
+    </div>
+    <div class="pg-actions">
+      <button class="btn btn-ghost">📋 시트에서 수정</button>
+      <button class="btn btn-primary">⬆ 파일 업로드</button>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><div class="card-dot" style="background:var(--green)"></div>파일로 업로드</div>
+      <div class="upload-zone">
+        <div class="upload-icon">📂</div>
+        <div class="upload-title">Excel 파일을 드래그하거나 클릭해서 선택</div>
+        <div class="upload-desc">전체주문발주발송관리 Excel · 최대 10MB</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="card-dot" style="background:var(--green)"></div>직접 입력 (구글 시트)</div>
+      <div class="info-row">
+        <b>기준:</b> 택배사 수거 완료 건수<br>
+        <b>입력 위치:</b> ◆summary_HTML용 탭 → <code>G열(ac)</code><br>
+        <b>입력 시점:</b> 매일 오후~저녁 — 당일 출고 완료 후<br>
+        <b>미입력 시:</b> 미출(mis) 계산 불가 → <code>—</code> 표시<br>
+        <b>주의:</b> 피킹·패킹 완료여도 수거 전이면 미완료
+      </div>
+      <button class="btn btn-ghost" style="margin-top:14px">📋 구글 시트 열기</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><div class="card-dot" style="background:var(--t4)"></div>최근 업로드 내역</div>
+    <div class="tbl-wrap">
+      <table>
+        <colgroup>
+          <col style="width:160px"><col style="width:220px"><col style="width:120px">
+          <col style="width:80px"><col style="width:80px"><col style="width:100px">
+        </colgroup>
+        <thead><tr><th>업로드 일시</th><th>파일명</th><th>대상 날짜</th><th>품목 수</th><th>행 수</th><th>상태</th></tr></thead>
+        <tbody>
+          <tr><td>2026-03-25 19:42</td><td>전체주문발주발송_20260325.xlsx</td><td>2026-03-25</td><td>22</td><td>22</td><td><span class="badge-pill pill-on">성공</span></td></tr>
+          <tr><td>2026-03-24 20:01</td><td>전체주문발주발송_20260324.xlsx</td><td>2026-03-24</td><td>22</td><td>22</td><td><span class="badge-pill pill-on">성공</span></td></tr>
+          <tr><td>2026-03-21 19:55</td><td>전체주문발주발송_20260321.xlsx</td><td>2026-03-21</td><td>20</td><td>20</td><td><span class="badge-pill pill-fail">실패</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTab(id, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+}
+
+// URL 해시로 탭 자동 전환
+const hash = location.hash.replace('#','');
+if (hash && ['pv','mx','ac'].includes(hash)) {
+  const tabEl = document.querySelector(`.tab[onclick*="'${hash}'"]`);
+  if (tabEl) switchTab(hash, tabEl);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440, initial-scale=1.0">
+<title>요즘 대시보드</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sb-w:252px;
+  --tb-h:42px;
+  --glass-bg:rgba(255,255,255,0.74);
+  --glass-bg-strong:rgba(255,255,255,0.92);
+  --glass-border-s:rgba(0,0,0,0.07);
+  --tx:#0a0a0f;--t2:#4a4a5a;--t3:#9898a8;--t4:#c4c4d0;
+  --accent:#3a3af0;--green:#1a8a4a;--red:#d42020;--orange:#c45a10;--blue:#1a56c8;
+}
+html{
+  min-width:1440px;overflow-x:auto;height:100%;
+  background:linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#eef0f8 100%) fixed;
+}
+body{
+  font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;
+  font-size:13px;line-height:1.5;color:var(--tx);
+  width:1440px;min-width:1440px;height:100vh;
+  display:flex;overflow:hidden;
+}
+
+/* ══ SIDEBAR ══ */
+.sb{
+  width:var(--sb-w);min-width:var(--sb-w);height:100vh;
+  position:fixed;left:0;top:0;
+  background:var(--glass-bg);border-right:1px solid var(--glass-border-s);
+  display:flex;flex-direction:column;overflow-y:auto;z-index:10;
+}
+.sb::-webkit-scrollbar{width:3px}
+.sb::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.1);border-radius:2px}
+
+.sb-logo{
+  padding:12px 16px 10px;display:flex;align-items:center;gap:9px;
+  border-bottom:1px solid var(--glass-border-s);flex-shrink:0;
+}
+.sb-logo-icon{
+  width:28px;height:28px;border-radius:8px;background:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-weight:700;font-size:13px;flex-shrink:0;
+}
+.sb-logo-name{font-size:13.5px;font-weight:600;color:var(--tx)}
+.sb-logo-sub{font-size:9.5px;color:var(--t4)}
+
+/* L1 */
+.l1-hdr{
+  display:flex;align-items:center;gap:7px;
+  padding:8px 14px 4px;cursor:pointer;user-select:none;transition:background .12s;
+}
+.l1-hdr:hover{background:rgba(0,0,0,0.02)}
+.l1-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.l1-label{font-size:12px;font-weight:600}
+.l1-badge{font-size:9px;padding:1px 5px;border-radius:8px;background:rgba(0,0,0,0.05);color:var(--t4);font-weight:500;margin-left:2px}
+.l1-chev{margin-left:auto;font-size:8px;color:var(--t4);transition:transform .2s}
+.l1-block.open .l1-chev{transform:rotate(90deg)}
+.l1-body{display:none}
+.l1-block.open .l1-body{display:block}
+
+/* L2 */
+.l2-hdr{
+  display:flex;align-items:center;gap:6px;
+  padding:4px 14px 3px 24px;cursor:pointer;user-select:none;
+  color:var(--t2);font-size:12px;transition:all .12s;
+}
+.l2-hdr:hover{color:var(--tx);background:rgba(0,0,0,0.015)}
+.l2-hdr.open{color:var(--tx);font-weight:500}
+.l2-dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.3;flex-shrink:0;transition:opacity .12s}
+.l2-hdr.open .l2-dot{opacity:.7}
+.l2-chev{margin-left:auto;font-size:7px;color:var(--t4);transition:transform .18s}
+.l2-hdr.open .l2-chev{transform:rotate(90deg)}
+.l2-tag{font-size:9px;padding:1px 5px;border-radius:6px;font-weight:500;flex-shrink:0}
+.tag-plan{background:rgba(0,0,0,0.05);color:var(--t3)}
+.tag-ext{background:rgba(26,86,200,0.08);color:var(--blue)}
+.l2-body{display:none}
+.l2-hdr.open+.l2-body{display:block}
+
+/* L3 */
+.l3-item{
+  display:flex;align-items:center;gap:5px;
+  padding:3px 14px 3px 36px;cursor:pointer;user-select:none;
+  color:var(--t3);font-size:11.5px;transition:all .1s;position:relative;
+}
+.l3-item:hover{color:var(--t2)}
+.l3-item.active{color:var(--accent);font-weight:500}
+.l3-item.active::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  width:2.5px;background:var(--accent);border-radius:0 2px 2px 0;
+}
+.l3-dot{width:3px;height:3px;border-radius:50%;background:currentColor;opacity:.45;flex-shrink:0}
+.l3-item.active .l3-dot{opacity:1}
+.l3-tag{font-size:9px;padding:1px 5px;border-radius:5px;font-weight:500;margin-left:auto;flex-shrink:0}
+.t-plan{background:rgba(152,152,168,0.12);color:var(--t3)}
+.t-ext{background:rgba(26,86,200,0.08);color:var(--blue)}
+.t-copy{background:rgba(108,53,204,0.08);color:#6c35cc}
+
+.sb-divider{height:1px;background:var(--glass-border-s);margin:4px 0}
+.sb-spacer{flex:1;min-height:16px}
+.sb-bottom{padding:10px 14px 12px;border-top:1px solid var(--glass-border-s);flex-shrink:0}
+.sync-btn{
+  display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:6px;
+  background:var(--glass-bg-strong);border:1px solid var(--glass-border-s);
+  cursor:pointer;font-size:11.5px;color:var(--t2);width:100%;font-family:inherit;
+  transition:all .12s;
+}
+.sync-btn:hover{color:var(--accent)}
+.sync-live{width:6px;height:6px;border-radius:50%;background:#22c55e;flex-shrink:0}
+
+/* ══ TOPBAR ══ */
+.topbar{
+  position:fixed;top:0;left:var(--sb-w);
+  width:calc(1440px - var(--sb-w));min-width:calc(1440px - var(--sb-w));
+  height:var(--tb-h);
+  background:var(--glass-bg);border-bottom:1px solid var(--glass-border-s);
+  display:flex;align-items:center;padding:0 20px;gap:8px;z-index:9;
+}
+.bc{font-size:11.5px;color:var(--t3);display:flex;align-items:center;gap:5px}
+.bc-sep{font-size:10px;color:var(--t4)}
+.bc b{color:var(--accent);font-weight:500}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.tb-date{font-size:11px;color:var(--t4)}
+.tb-sync{
+  display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;
+  background:rgba(58,58,240,0.08);color:var(--accent);font-size:11.5px;
+  cursor:pointer;font-weight:500;font-family:inherit;border:none;
+}
+
+/* ══ IFRAME 영역 ══ */
+.main{
+  margin-left:var(--sb-w);
+  padding-top:var(--tb-h);
+  width:calc(1440px - var(--sb-w));
+  min-width:calc(1440px - var(--sb-w));
+  height:100vh;
+  flex-shrink:0;
+}
+#content-frame{
+  width:100%;
+  height:calc(100vh - var(--tb-h));
+  border:none;
+  display:block;
+}
+</style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<nav class="sb">
+  <div class="sb-logo">
+    <div class="sb-logo-icon">Y</div>
+    <div>
+      <div class="sb-logo-name">요즘 대시보드</div>
+      <div class="sb-logo-sub">Naver Brandstore Ops</div>
+    </div>
+  </div>
+
+  <!-- 1. 물량 관리 -->
+  <div class="l1-block open">
+    <div class="l1-hdr" onclick="tL1(this)">
+      <div class="l1-dot" style="background:var(--accent)"></div>
+      <span class="l1-label" style="color:var(--accent)">물량 관리</span>
+      <span class="l1-chev">▶</span>
+    </div>
+    <div class="l1-body">
+
+      <div class="l2-block">
+        <div class="l2-hdr open" onclick="tL2(this)">
+          <div class="l2-dot"></div>데이터 업로드<span class="l2-chev">▶</span>
+        </div>
+        <div class="l2-body">
+          <div class="l3-item active" onclick="go('vol_upload.html','물량 관리','데이터 업로드','예측 데이터 업로드',this)"><div class="l3-dot"></div>예측 데이터 업로드</div>
+          <div class="l3-item" onclick="go('vol_upload.html#pv','물량 관리','데이터 업로드','전일 데이터 업로드',this)"><div class="l3-dot"></div>전일 데이터 업로드</div>
+          <div class="l3-item" onclick="go('vol_upload.html#mx','물량 관리','데이터 업로드','최대 데이터 업로드',this)"><div class="l3-dot"></div>최대 데이터 업로드</div>
+          <div class="l3-item" onclick="go('vol_upload.html#ac','물량 관리','데이터 업로드','실제 데이터 업로드',this)"><div class="l3-dot"></div>실제 데이터 업로드</div>
+        </div>
+      </div>
+
+      <div class="l2-block">
+        <div class="l2-hdr" onclick="tL2(this)">
+          <div class="l2-dot"></div>데이터 조회<span class="l2-chev">▶</span>
+        </div>
+        <div class="l2-body">
+          <div class="l3-item" onclick="go('vol_view.html','물량 관리','데이터 조회','예측 데이터 조회',this)"><div class="l3-dot"></div>예측 데이터 조회</div>
+          <div class="l3-item" onclick="go('vol_view.html#pv','물량 관리','데이터 조회','전일 데이터 조회',this)"><div class="l3-dot"></div>전일 데이터 조회</div>
+          <div class="l3-item" onclick="go('vol_view.html#mx','물량 관리','데이터 조회','최대 데이터 조회',this)"><div class="l3-dot"></div>최대 데이터 조회</div>
+          <div class="l3-item" onclick="go('vol_view.html#ac','물량 관리','데이터 조회','실제 데이터 조회',this)"><div class="l3-dot"></div>실제 데이터 조회</div>
+          <div class="l3-item" onclick="go('vol_view.html#mis','물량 관리','데이터 조회','미출 데이터 조회',this)"><div class="l3-dot"></div>미출 데이터 조회</div>
+        </div>
+      </div>
+
+      <div class="l2-block">
+        <div class="l2-hdr" onclick="tL2(this)">
+          <div class="l2-dot"></div>물량 대시보드<span class="l2-chev">▶</span>
+        </div>
+        <div class="l2-body">
+          <div class="l3-item" onclick="go('vol_weekly.html','물량 관리','물량 대시보드','주간 대시보드',this)"><div class="l3-dot"></div>주간 대시보드</div>
+          <div class="l3-item" onclick="go('vol_monthly.html','물량 관리','물량 대시보드','월간 대시보드',this)"><div class="l3-dot"></div>월간 대시보드</div>
+        </div>
+      </div>
+
+      <div class="l2-block">
+        <div class="l2-hdr" onclick="tL2(this)">
+          <div class="l2-dot"></div>물량 데이터 관리<span class="l2-chev">▶</span>
+        </div>
+        <div class="l2-body">
+          <div class="l3-item" onclick="go('vol_analytics.html','물량 관리','물량 데이터 관리','오차 관리',this)"><div class="l3-dot"></div>오차 관리 <span class="l3-tag t-plan">예정</span></div>
+          <div class="l3-item" onclick="go('vol_analytics.html#pred','물량 관리','물량 데이터 관리','예측 관리',this)"><div class="l3-dot"></div>예측 관리 <span class="l3-tag t-plan">예정</span></div>
+          <div class="l3-item" onclick="go('vol_analytics.html#coef','물량 관리','물량 데이터 관리','계수 관리',this)"><div class="l3-dot"></div>계수 관리 <span class="l3-tag t-plan">예정</span></div>
+          <div class="l3-item" onclick="go('vol_analytics.html#cur','물량 관리','물량 데이터 관리','현재기준 물량예측',this)"><div class="l3-dot"></div>현재기준 물량예측 <span class="l3-tag t-plan">예정</span></div>
+          <div class="l3-item" onclick="go('vol_analytics.html#hist','물량 관리','물량 데이터 관리','과거기준 물량예측',this)"><div class="l3-dot"></div>과거기준 물량예측 <span class="l3-tag t-plan">예정</span></div>
+          <div class="l3-item" onclick="go('vol_analytics.html#fb','물량 관리','물량 데이터 관리','물량예측 피드백',this)"><div class="l3-dot"></div>물량예측 피드백 <span class="l3-tag t-plan">예정</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="sb-divider"></div>
+
+  <!-- 2. 상품 관리 -->
+  <div class="l1-block">
+    <div class="l1-hdr" onclick="tL1(this)">
+      <div class="l1-dot" style="background:var(--green)"></div>
+      <span class="l1-label" style="color:var(--green)">상품 관리</span>
+      <span class="l1-chev">▶</span>
+    </div>
+    <div class="l1-body" style="display:none">
+      <div class="l2-block">
+        <div class="l2-hdr" onclick="tL2(this)">
+          <div class="l2-dot"></div>상품 업로드<span class="l2-chev">▶</span>
+        </div>
+        <div class="l2-body">
+          <div class="l3-item" onclick="go('prod_manage.html','상품 관리','상품 업로드','품목 업로드',this)"><div class="l3-dot"></div>품목 업로드</div>
+          <div class="l3-item" onclick="go('prod_manage.html#sku','상품 관리','상품 업로드','SKU 업로드',this)"><div class="l3-dot"></div>SKU 업로드</div>
+        </div>
+      </div>
+      <div class="l2-block">
+        <div class="l2-hdr" onclick="tL2(this)">
+          <div class="l2-dot"></div>상품 조회<span class="l2-chev">▶</span>
+        </div>
+        <div class="l2-body">
+          <div class="l3-item" onclick="go('prod_manage.html#view-item','상품 관리','상품 조회','품목 조회',this)"><div class="l3-dot"></div>품목 조회</div>
+          <div class="l3-item" onclick="go('prod_manage.html#view-sku','상품 관리','상품 조회','SKU 조회',this)"><div class="l3-dot"></div>SKU 조회</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sb-divider"></div>
+
+  <!-- 3. 행사 관리 -->
+  <div class="l1-block">
+    <div class="l1-hdr" onclick="tL1(this)">
+      <div class="l1-dot" style="background:var(--orange)"></div>
+      <span class="l1-label" style="color:var(--orange)">행사 관리</span>
+      <span class="l1-badge" style="background:rgba(196,90,16,0.1);color:var(--orange)">예정</span>
+      <span class="l1-chev">▶</span>
+    </div>
+    <div class="l1-body" style="display:none">
+      <div class="l2-block">
+        <div class="l2-hdr" onclick="tL2(this)">
+          <div class="l2-dot"></div>행사 제안 <span class="l2-tag tag-plan">진행 전</span><span class="l2-chev">▶</span>
+        </div>
+        <div class="l2-body">
+          <div class="l3-item" onclick="go('evt_manage.html','행사 관리','행사 제안','행사 제안 데이터 업로드',this)"><div class="l3-dot"></div>행사 제안 데이터 업로드</div>
+          <div class="l3-item" onclick="go('evt_manage.html#prop-view','행사 관리','행사 제안','행사 제안 데이터 조회',this)"><div class="l3-dot"></div>행사 제안 데이터 조회</div>
+        </div>
+      </div>
+      <div class="l2-block">
+        <div class="l2-hdr" onclick="tL2(this)">
+          <div class="l2-dot"></div>행사 선정 <span class="l2-tag tag-plan">진행 중</span><span class="l2-chev">▶</span>
+        </div>
+        <div class="l2-body">
+          <div class="l3-item" onclick="go('evt_manage.html#sel-up','행사 관리','행사 선정','행사 선정 데이터 업로드',this)"><div class="l3-dot"></div>행사 선정 데이터 업로드 <span class="l3-tag t-copy">복제</span></div>
+          <div class="l3-item" onclick="go('evt_manage.html#sel-view','행사 관리','행사 선정','행사 선정 데이터 조회',this)"><div class="l3-dot"></div>행사 선정 데이터 조회</div>
+          <div class="l3-item" onclick="go('evt_manage.html#timeline','행사 관리','행사 선정','행사 운영 타임라인',this)"><div class="l3-dot"></div>행사 운영 타임라인 <span class="l3-tag t-ext">별도 HTML</span></div>
+        </div>
+      </div>
+      <div class="l2-block">
+        <div class="l2-hdr" onclick="tL2(this)">
+          <div class="l2-dot"></div>행사 종료 <span class="l2-tag tag-plan">진행 완료</span><span class="l2-chev">▶</span>
+        </div>
+        <div class="l2-body">
+          <div class="l3-item" onclick="go('evt_manage.html#end-up','행사 관리','행사 종료','행사 종료 데이터 조회',this)"><div class="l3-dot"></div>행사 종료 데이터 조회 <span class="l3-tag t-copy">복제</span></div>
+          <div class="l3-item" onclick="go('evt_manage.html#end-perf','행사 관리','행사 종료','행사 성과 데이터 조회',this)"><div class="l3-dot"></div>행사 성과 데이터 조회</div>
+        </div>
+      </div>
+      <div class="l2-block">
+        <div class="l2-hdr" onclick="tL2(this)">
+          <div class="l2-dot"></div>행사 관리<span class="l2-chev">▶</span>
+        </div>
+        <div class="l2-body">
+          <div class="l3-item" onclick="go('evt_manage.html#naver','행사 관리','행사 관리','네이버 행사 알아보기',this)"><div class="l3-dot"></div>네이버 행사 알아보기</div>
+          <div class="l3-item" onclick="go('evt_manage.html#own','행사 관리','행사 관리','자체 행사 알아보기',this)"><div class="l3-dot"></div>자체 행사 알아보기</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sb-divider"></div>
+
+  <!-- 4. 광고 리포트 관리 -->
+  <div class="l1-block">
+    <div class="l1-hdr" onclick="tL1(this)">
+      <div class="l1-dot" style="background:var(--blue)"></div>
+      <span class="l1-label" style="color:var(--blue)">광고 리포트 관리</span>
+      <span class="l1-chev">▶</span>
+    </div>
+    <div class="l1-body" style="display:none">
+      <div class="l2-block">
+        <div class="l2-hdr" onclick="tL2(this)">
+          <div class="l2-dot"></div>데일리 리포트 <span class="l2-tag tag-ext">별도 HTML</span><span class="l2-chev">▶</span>
+        </div>
+        <div class="l2-body">
+          <div class="l3-item" onclick="go('ads_report.html','광고 리포트 관리','데일리 리포트','데일리 리포트',this)"><div class="l3-dot"></div>데일리 리포트</div>
+        </div>
+      </div>
+      <div class="l2-block">
+        <div class="l2-hdr" onclick="tL2(this)">
+          <div class="l2-dot"></div>월간 리포트 <span class="l2-tag tag-ext">별도 HTML</span><span class="l2-chev">▶</span>
+        </div>
+        <div class="l2-body">
+          <div class="l3-item" onclick="go('ads_report.html#monthly','광고 리포트 관리','월간 리포트','월간 리포트',this)"><div class="l3-dot"></div>월간 리포트</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sb-spacer"></div>
+  <div class="sb-bottom">
+    <button class="sync-btn">
+      <div class="sync-live"></div>🔄 전체 연동
+      <span style="margin-left:auto;font-size:10px;color:var(--t4)" id="sync-time">--:--</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ══ TOPBAR ══ -->
+<div class="topbar">
+  <div class="bc" id="bc">
+    <span>물량 관리</span>
+    <span class="bc-sep">›</span>
+    <span>데이터 업로드</span>
+    <span class="bc-sep">›</span>
+    <b>예측 데이터 업로드</b>
+  </div>
+  <div class="topbar-right">
+    <span class="tb-date" id="today-date"></span>
+    <button class="tb-sync">🔄 전체 연동</button>
+  </div>
+</div>
+
+<!-- ══ IFRAME ══ -->
+<div class="main">
+  <iframe id="content-frame" src="vol_upload.html"></iframe>
+</div>
+
+<script>
+let curL3 = document.querySelector('.l3-item.active');
+
+function go(src, l1, l2, l3, el) {
+  document.getElementById('content-frame').src = src;
+  document.getElementById('bc').innerHTML =
+    `<span>${l1}</span><span class="bc-sep">›</span><span>${l2}</span><span class="bc-sep">›</span><b>${l3}</b>`;
+  if (curL3) curL3.classList.remove('active');
+  el.classList.add('active');
+  curL3 = el;
+}
+
+function tL1(hdr) {
+  const bl = hdr.parentElement;
+  const bd = bl.querySelector('.l1-body');
+  const op = bl.classList.toggle('open');
+  bd.style.display = op ? 'block' : 'none';
+}
+
+function tL2(hdr) {
+  const bl = hdr.parentElement;
+  const bd = bl.querySelector('.l2-body');
+  const op = hdr.classList.toggle('open');
+  bd.style.display = op ? 'block' : 'none';
+}
+
+// 오늘 날짜
+const d = new Date();
+const days = ['일','월','화','수','목','금','토'];
+document.getElementById('today-date').textContent =
+  `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} (${days[d.getDay()]})`;
+
+// 연동 시간
+const now = new Date();
+document.getElementById('sync-time').textContent =
+  `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')} ✅`;
+</script>
+</body>
+</html>

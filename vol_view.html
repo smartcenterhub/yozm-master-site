@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440, initial-scale=1.0">
+<title>물량 데이터 조회</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --glass-bg:rgba(255,255,255,0.74);
+  --glass-bg-strong:rgba(255,255,255,0.92);
+  --glass-border-s:rgba(0,0,0,0.07);
+  --tx:#0a0a0f;--t2:#4a4a5a;--t3:#9898a8;--t4:#c4c4d0;
+  --accent:#3a3af0;--green:#1a8a4a;--red:#d42020;--orange:#c45a10;--blue:#1a56c8;
+}
+html{
+  min-width:1188px;height:100%;
+  background:linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#eef0f8 100%) fixed;
+}
+body{
+  font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;
+  font-size:13px;line-height:1.5;color:var(--tx);
+  width:1188px;min-width:1188px;
+  padding:24px 28px 40px;
+}
+
+/* 탭 */
+.tabs{display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid var(--glass-border-s)}
+.tab{
+  padding:8px 18px;cursor:pointer;font-size:12.5px;color:var(--t3);
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+  transition:all .15s;user-select:none;
+}
+.tab:hover{color:var(--t2)}
+.tab.active{font-weight:500;border-bottom-color:currentColor}
+.tab.active.fc{color:var(--accent)}
+.tab.active.pv{color:#0ea5e9}
+.tab.active.mx{color:var(--orange)}
+.tab.active.ac{color:var(--green)}
+.tab.active.mis{color:var(--red)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* 헤더 */
+.pg-header{margin-bottom:16px;display:flex;align-items:flex-start;justify-content:space-between}
+.pg-title{font-size:17px;font-weight:700;color:var(--tx)}
+.pg-desc{font-size:12px;color:var(--t3);margin-top:4px;line-height:1.6}
+.pg-actions{display:flex;gap:7px;flex-shrink:0}
+.btn{
+  display:flex;align-items:center;gap:5px;padding:6px 13px;border-radius:7px;
+  font-size:12px;cursor:pointer;font-family:inherit;border:none;transition:all .12s;
+}
+.btn-ghost{background:var(--glass-bg-strong);border:1px solid var(--glass-border-s);color:var(--t2)}
+.btn-ghost:hover{color:var(--tx)}
+
+/* 필터 바 */
+.filter-bar{
+  display:flex;align-items:center;gap:8px;
+  background:var(--glass-bg);border:1px solid var(--glass-border-s);
+  border-radius:10px;padding:10px 14px;margin-bottom:14px;
+}
+.filter-label{font-size:11.5px;color:var(--t3);flex-shrink:0}
+.filter-select{
+  padding:4px 8px;border-radius:6px;border:1px solid var(--glass-border-s);
+  font-size:12px;color:var(--t2);background:var(--glass-bg-strong);
+  font-family:inherit;cursor:pointer;
+}
+.filter-sep{width:1px;height:16px;background:var(--glass-border-s);margin:0 4px}
+
+/* KPI */
+.kpi-row{display:grid;grid-template-columns:280px 280px 280px 280px;gap:10px;margin-bottom:14px}
+.kpi{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:12px;padding:12px 14px}
+.kpi-label{font-size:10.5px;font-weight:500;margin-bottom:3px}
+.kpi-val{font-size:20px;font-weight:700;line-height:1.2}
+.kpi-sub{font-size:10.5px;color:var(--t4);margin-top:2px}
+.kpi-bar{height:3px;border-radius:2px;margin-top:6px;background:rgba(0,0,0,0.06)}
+.kpi-fill{height:100%;border-radius:2px}
+
+/* 테이블 */
+.tbl-card{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:12px;overflow:auto}
+table{border-collapse:collapse;font-size:12px;table-layout:fixed}
+thead th{
+  padding:8px 12px;text-align:left;font-size:11px;font-weight:500;color:var(--t2);
+  border-bottom:1px solid var(--glass-border-s);white-space:nowrap;
+  background:rgba(255,255,255,0.55);position:sticky;top:0;overflow:hidden;
+}
+thead th.r{text-align:right}
+tbody td{
+  padding:7px 12px;border-bottom:1px solid rgba(0,0,0,0.03);
+  font-size:12px;color:var(--t2);white-space:nowrap;overflow:hidden;
+}
+tbody td.r{text-align:right}
+tbody tr:hover td{background:rgba(0,0,0,0.015)}
+tbody tr:last-child td{border-bottom:none}
+.badge-pill{font-size:10px;padding:2px 7px;border-radius:8px;font-weight:500;display:inline-block}
+.pill-on{background:rgba(26,138,74,0.1);color:var(--green)}
+.pill-off{background:rgba(0,0,0,0.05);color:var(--t3)}
+.pill-mis{background:rgba(212,32,32,0.08);color:var(--red)}
+</style>
+</head>
+<body>
+
+<!-- 탭 -->
+<div class="tabs">
+  <div class="tab active fc" onclick="switchTab('fc',this)">예측 (fc)</div>
+  <div class="tab pv" onclick="switchTab('pv',this)">전일 (pv)</div>
+  <div class="tab mx" onclick="switchTab('mx',this)">최대 (mx)</div>
+  <div class="tab ac" onclick="switchTab('ac',this)">실제 (ac)</div>
+  <div class="tab mis" onclick="switchTab('mis',this)">미출 (mis)</div>
+</div>
+
+<!-- ── fc 예측 조회 ── -->
+<div class="tab-content active" id="tab-fc">
+  <div class="pg-header">
+    <div>
+      <div class="pg-title">예측 데이터 조회</div>
+      <div class="pg-desc">입력된 fc(예측) 데이터를 날짜·품목별로 조회합니다</div>
+    </div>
+    <div class="pg-actions">
+      <button class="btn btn-ghost">⬇ 엑셀 다운로드</button>
+    </div>
+  </div>
+  <div class="filter-bar">
+    <span class="filter-label">기간</span>
+    <select class="filter-select"><option>2026년 3월</option><option>2026년 2월</option></select>
+    <div class="filter-sep"></div>
+    <span class="filter-label">품목</span>
+    <select class="filter-select"><option>전체</option><option>플레인 100g</option><option>말차 100g</option><option>소프트 100g</option></select>
+    <div class="filter-sep"></div>
+    <span class="filter-label">주차</span>
+    <select class="filter-select"><option>전체</option><option>3월 4주차</option><option>3월 3주차</option></select>
+  </div>
+  <div class="tbl-card">
+    <table style="width:1100px;min-width:1100px">
+      <colgroup>
+        <col style="width:110px"><col style="width:100px"><col style="width:200px">
+        <col style="width:80px"><col style="width:80px"><col style="width:100px">
+      </colgroup>
+      <thead><tr><th>날짜</th><th>품목코드</th><th>품목명</th><th>닉네임</th><th class="r">fc (예측)</th><th>입력자</th></tr></thead>
+      <tbody>
+        <tr><td>2026-03-24</td><td>Y-P-00</td><td>플레인 그릭요거트 100g</td><td>플</td><td class="r" style="color:var(--accent);font-weight:500">375</td><td>운영팀</td></tr>
+        <tr><td>2026-03-24</td><td>Y-S-00</td><td>소프트 그릭요거트 100g</td><td>소</td><td class="r" style="color:var(--accent);font-weight:500">210</td><td>운영팀</td></tr>
+        <tr><td>2026-03-24</td><td>Y-V-M0</td><td>말차 그릭요거트 100g</td><td>말</td><td class="r" style="color:var(--accent);font-weight:500">180</td><td>운영팀</td></tr>
+        <tr><td>2026-03-24</td><td>Y-V-L0</td><td>카페라떼 그릭요거트 100g</td><td>라</td><td class="r" style="color:var(--accent);font-weight:500">155</td><td>운영팀</td></tr>
+        <tr><td>2026-03-25</td><td>Y-P-00</td><td>플레인 그릭요거트 100g</td><td>플</td><td class="r" style="color:var(--accent);font-weight:500">250</td><td>운영팀</td></tr>
+        <tr><td>2026-03-25</td><td>Y-S-00</td><td>소프트 그릭요거트 100g</td><td>소</td><td class="r" style="color:var(--accent);font-weight:500">140</td><td>운영팀</td></tr>
+        <tr><td>2026-03-25</td><td>Y-V-M0</td><td>말차 그릭요거트 100g</td><td>말</td><td class="r" style="color:var(--accent);font-weight:500">150</td><td>운영팀</td></tr>
+        <tr><td>2026-03-26</td><td>Y-P-00</td><td>플레인 그릭요거트 100g</td><td>플</td><td class="r" style="color:var(--accent);font-weight:500">220</td><td>운영팀</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── pv 전일 조회 ── -->
+<div class="tab-content" id="tab-pv">
+  <div class="pg-header">
+    <div>
+      <div class="pg-title">전일 데이터 조회</div>
+      <div class="pg-desc">입력된 pv(전일 결제) 데이터를 조회합니다</div>
+    </div>
+    <div class="pg-actions"><button class="btn btn-ghost">⬇ 엑셀 다운로드</button></div>
+  </div>
+  <div class="filter-bar">
+    <span class="filter-label">기간</span>
+    <select class="filter-select"><option>2026년 3월</option><option>2026년 2월</option></select>
+    <div class="filter-sep"></div>
+    <span class="filter-label">품목</span>
+    <select class="filter-select"><option>전체</option><option>플레인 100g</option><option>말차 100g</option></select>
+  </div>
+  <div class="tbl-card">
+    <table style="width:1100px;min-width:1100px">
+      <colgroup>
+        <col style="width:110px"><col style="width:100px"><col style="width:200px">
+        <col style="width:80px"><col style="width:80px"><col style="width:120px">
+      </colgroup>
+      <thead><tr><th>날짜</th><th>품목코드</th><th>품목명</th><th>닉네임</th><th class="r">pv (전일)</th><th>비고</th></tr></thead>
+      <tbody>
+        <tr><td>2026-03-24</td><td>Y-P-00</td><td>플레인 그릭요거트 100g</td><td>플</td><td class="r" style="color:#0ea5e9;font-weight:500">310</td><td></td></tr>
+        <tr><td>2026-03-24</td><td>Y-S-00</td><td>소프트 그릭요거트 100g</td><td>소</td><td class="r" style="color:#0ea5e9;font-weight:500">188</td><td></td></tr>
+        <tr><td>2026-03-24</td><td>Y-V-M0</td><td>말차 그릭요거트 100g</td><td>말</td><td class="r" style="color:#0ea5e9;font-weight:500">143</td><td></td></tr>
+        <tr><td>2026-03-25</td><td>Y-P-00</td><td>플레인 그릭요거트 100g</td><td>플</td><td class="r" style="color:#0ea5e9;font-weight:500">228</td><td></td></tr>
+        <tr><td>2026-03-25</td><td>Y-S-00</td><td>소프트 그릭요거트 100g</td><td>소</td><td class="r" style="color:#0ea5e9;font-weight:500">143</td><td></td></tr>
+        <tr><td>2026-03-26</td><td>Y-P-00</td><td>플레인 그릭요거트 100g</td><td>플</td><td class="r" style="color:#0ea5e9;font-weight:500">195</td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── mx 최대 조회 ── -->
+<div class="tab-content" id="tab-mx">
+  <div class="pg-header">
+    <div>
+      <div class="pg-title">최대 데이터 조회</div>
+      <div class="pg-desc">입력된 mx(출고 최대) 데이터를 조회합니다</div>
+    </div>
+    <div class="pg-actions"><button class="btn btn-ghost">⬇ 엑셀 다운로드</button></div>
+  </div>
+  <div class="filter-bar">
+    <span class="filter-label">기간</span>
+    <select class="filter-select"><option>2026년 3월</option><option>2026년 2월</option></select>
+    <div class="filter-sep"></div>
+    <span class="filter-label">품목</span>
+    <select class="filter-select"><option>전체</option><option>플레인 100g</option><option>말차 100g</option></select>
+  </div>
+  <div class="tbl-card">
+    <table style="width:1100px;min-width:1100px">
+      <colgroup>
+        <col style="width:110px"><col style="width:100px"><col style="width:200px">
+        <col style="width:80px"><col style="width:80px"><col style="width:80px"><col style="width:120px">
+      </colgroup>
+      <thead><tr><th>날짜</th><th>품목코드</th><th>품목명</th><th>닉네임</th><th class="r">mx (최대)</th><th class="r">fc (예측)</th><th>구분</th></tr></thead>
+      <tbody>
+        <tr><td>2026-03-24</td><td>Y-P-00</td><td>플레인 그릭요거트 100g</td><td>플</td><td class="r" style="color:var(--orange);font-weight:500">362</td><td class="r" style="color:var(--t3)">375</td><td><span class="badge-pill pill-on">직접입력</span></td></tr>
+        <tr><td>2026-03-24</td><td>Y-S-00</td><td>소프트 그릭요거트 100g</td><td>소</td><td class="r" style="color:var(--orange);font-weight:500">203</td><td class="r" style="color:var(--t3)">210</td><td><span class="badge-pill pill-on">직접입력</span></td></tr>
+        <tr><td>2026-03-24</td><td>Y-V-M0</td><td>말차 그릭요거트 100g</td><td>말</td><td class="r" style="color:var(--orange);font-weight:500">174</td><td class="r" style="color:var(--t3)">180</td><td><span class="badge-pill pill-on">직접입력</span></td></tr>
+        <tr><td>2026-03-25</td><td>Y-P-00</td><td>플레인 그릭요거트 100g</td><td>플</td><td class="r" style="color:var(--orange);font-weight:500">242</td><td class="r" style="color:var(--t3)">250</td><td><span class="badge-pill pill-on">직접입력</span></td></tr>
+        <tr><td>2026-03-26</td><td>Y-P-00</td><td>플레인 그릭요거트 100g</td><td>플</td><td class="r" style="color:var(--orange);font-weight:500">213</td><td class="r" style="color:var(--t3)">220</td><td><span class="badge-pill pill-off">자동추산</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── ac 실제 조회 ── -->
+<div class="tab-content" id="tab-ac">
+  <div class="pg-header">
+    <div>
+      <div class="pg-title">실제 데이터 조회</div>
+      <div class="pg-desc">입력된 ac(실제 출고) 데이터를 조회합니다</div>
+    </div>
+    <div class="pg-actions"><button class="btn btn-ghost">⬇ 엑셀 다운로드</button></div>
+  </div>
+  <div class="filter-bar">
+    <span class="filter-label">기간</span>
+    <select class="filter-select"><option>2026년 3월</option><option>2026년 2월</option></select>
+    <div class="filter-sep"></div>
+    <span class="filter-label">품목</span>
+    <select class="filter-select"><option>전체</option><option>플레인 100g</option><option>말차 100g</option></select>
+  </div>
+  <div class="tbl-card">
+    <table style="width:1100px;min-width:1100px">
+      <colgroup>
+        <col style="width:110px"><col style="width:100px"><col style="width:200px">
+        <col style="width:80px"><col style="width:80px"><col style="width:80px">
+      </colgroup>
+      <thead><tr><th>날짜</th><th>품목코드</th><th>품목명</th><th>닉네임</th><th class="r">ac (출고)</th><th class="r">mx (최대)</th></tr></thead>
+      <tbody>
+        <tr><td>2026-03-24</td><td>Y-P-00</td><td>플레인 그릭요거트 100g</td><td>플</td><td class="r" style="color:var(--green);font-weight:500">362</td><td class="r" style="color:var(--t3)">362</td></tr>
+        <tr><td>2026-03-24</td><td>Y-S-00</td><td>소프트 그릭요거트 100g</td><td>소</td><td class="r" style="color:var(--green);font-weight:500">203</td><td class="r" style="color:var(--t3)">203</td></tr>
+        <tr><td>2026-03-25</td><td>Y-P-00</td><td>플레인 그릭요거트 100g</td><td>플</td><td class="r" style="color:var(--green);font-weight:500">242</td><td class="r" style="color:var(--t3)">242</td></tr>
+        <tr><td>2026-03-26</td><td>Y-P-00</td><td>플레인 그릭요거트 100g</td><td>플</td><td class="r" style="color:var(--green);font-weight:500">200</td><td class="r" style="color:var(--t3)">213</td></tr>
+        <tr><td>2026-03-26</td><td>Y-V-M0</td><td>말차 그릭요거트 100g</td><td>말</td><td class="r" style="color:var(--green);font-weight:500">90</td><td class="r" style="color:var(--t3)">135</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── mis 미출 조회 ── -->
+<div class="tab-content" id="tab-mis">
+  <div class="pg-header">
+    <div>
+      <div class="pg-title">미출 데이터 조회</div>
+      <div class="pg-desc">mx - ac 자동 계산된 미출(mis) 현황 · mx와 ac 둘 다 있어야 계산됩니다</div>
+    </div>
+    <div class="pg-actions"><button class="btn btn-ghost">⬇ 엑셀 다운로드</button></div>
+  </div>
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-label" style="color:var(--red)">이번 주 미출 합계</div><div class="kpi-val" style="color:var(--red)">208</div><div class="kpi-sub">3개 품목 발생</div><div class="kpi-bar"><div class="kpi-fill" style="width:12%;background:var(--red)"></div></div></div>
+    <div class="kpi"><div class="kpi-label" style="color:var(--orange)">미출 발생 품목</div><div class="kpi-val" style="color:var(--orange)">3</div><div class="kpi-sub">플레인·말차·푸룬</div><div class="kpi-bar"><div class="kpi-fill" style="width:30%;background:var(--orange)"></div></div></div>
+    <div class="kpi"><div class="kpi-label" style="color:var(--green)">정상 출고 품목</div><div class="kpi-val" style="color:var(--green)">19</div><div class="kpi-sub">미출 0 확인</div><div class="kpi-bar"><div class="kpi-fill" style="width:88%;background:var(--green)"></div></div></div>
+    <div class="kpi"><div class="kpi-label" style="color:var(--t3)">계산 불가</div><div class="kpi-val" style="color:var(--t3)">—</div><div class="kpi-sub">mx 또는 ac 미입력</div><div class="kpi-bar"><div class="kpi-fill" style="width:0%"></div></div></div>
+  </div>
+  <div class="filter-bar">
+    <span class="filter-label">기간</span>
+    <select class="filter-select"><option>2026년 3월</option><option>2026년 2월</option></select>
+    <div class="filter-sep"></div>
+    <span class="filter-label">상태</span>
+    <select class="filter-select"><option>전체</option><option>미출 발생</option><option>정상</option><option>계산불가</option></select>
+  </div>
+  <div class="tbl-card">
+    <table style="width:1100px;min-width:1100px">
+      <colgroup>
+        <col style="width:110px"><col style="width:200px"><col style="width:80px">
+        <col style="width:80px"><col style="width:80px"><col style="width:80px"><col style="width:100px">
+      </colgroup>
+      <thead><tr><th>날짜</th><th>품목명</th><th class="r">mx(최대)</th><th class="r">ac(출고)</th><th class="r">미출</th><th class="r">미출률</th><th>상태</th></tr></thead>
+      <tbody>
+        <tr><td>2026-03-24</td><td>플레인 그릭요거트 100g</td><td class="r">362</td><td class="r">362</td><td class="r" style="color:var(--green);font-weight:600">0</td><td class="r" style="color:var(--t3)">0%</td><td><span class="badge-pill pill-on">정상</span></td></tr>
+        <tr><td>2026-03-24</td><td>말차 그릭요거트 100g</td><td class="r">203</td><td class="r">203</td><td class="r" style="color:var(--green);font-weight:600">0</td><td class="r" style="color:var(--t3)">0%</td><td><span class="badge-pill pill-on">정상</span></td></tr>
+        <tr><td>2026-03-25</td><td>플레인 그릭요거트 100g</td><td class="r">242</td><td class="r">242</td><td class="r" style="color:var(--green);font-weight:600">0</td><td class="r" style="color:var(--t3)">0%</td><td><span class="badge-pill pill-on">정상</span></td></tr>
+        <tr><td>2026-03-26</td><td>플레인 그릭요거트 100g</td><td class="r">213</td><td class="r">200</td><td class="r" style="color:var(--red);font-weight:600">13</td><td class="r" style="color:var(--red)">6.1%</td><td><span class="badge-pill pill-mis">미출</span></td></tr>
+        <tr><td>2026-03-26</td><td>말차 그릭요거트 100g</td><td class="r">135</td><td class="r">90</td><td class="r" style="color:var(--red);font-weight:600">45</td><td class="r" style="color:var(--red)">33.3%</td><td><span class="badge-pill pill-mis">미출</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+function switchTab(id, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+}
+const hash = location.hash.replace('#','');
+if (hash && ['pv','mx','ac','mis'].includes(hash)) {
+  const tabEl = document.querySelector(`.tab[onclick*="'${hash}'"]`);
+  if (tabEl) switchTab(hash, tabEl);
+}
+</script>
+</body>
+</html>

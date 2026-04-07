@@ -12,300 +12,336 @@
   --glass-border-s:rgba(0,0,0,0.07);
   --tx:#0a0a0f;--t2:#4a4a5a;--t3:#9898a8;--t4:#c4c4d0;
   --accent:#3a3af0;--green:#1a8a4a;--red:#d42020;--orange:#c45a10;--blue:#1a56c8;
+  --c-fc:#3a3af0;--c-pv:#0ea5e9;--c-mx:#c45a10;--c-ac:#1a8a4a;--c-mis:#d42020;
 }
-html{
-  min-width:1188px;height:100%;
-  background:linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#eef0f8 100%) fixed;
-}
-body{
-  font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;
-  font-size:13px;line-height:1.5;color:var(--tx);
-  width:1188px;min-width:1188px;
-  padding:24px 28px 40px;
-}
+html{min-width:1188px;height:100%;background:linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#eef0f8 100%) fixed;}
+body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;line-height:1.5;color:var(--tx);width:1188px;min-width:1188px;padding:20px 24px 40px;}
 
 /* 탭 */
-.tabs{display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid var(--glass-border-s)}
-.tab{
-  padding:8px 18px;cursor:pointer;font-size:12.5px;color:var(--t3);
-  border-bottom:2px solid transparent;margin-bottom:-1px;
-  transition:all .15s;user-select:none;
-}
+.tabs{display:flex;gap:0;margin-bottom:18px;border-bottom:1px solid var(--glass-border-s)}
+.tab{padding:8px 18px;cursor:pointer;font-size:12.5px;color:var(--t3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;user-select:none;}
 .tab:hover{color:var(--t2)}
 .tab.active{font-weight:500;border-bottom-color:currentColor}
-.tab.active.fc{color:var(--accent)}
-.tab.active.pv{color:#0ea5e9}
-.tab.active.mx{color:var(--orange)}
-.tab.active.ac{color:var(--green)}
-.tab.active.mis{color:var(--red)}
-.tab-content{display:none}
-.tab-content.active{display:block}
+.tab[data-t=fc].active{color:var(--c-fc)}
+.tab[data-t=pv].active{color:var(--c-pv)}
+.tab[data-t=mx].active{color:var(--c-mx)}
+.tab[data-t=ac].active{color:var(--c-ac)}
+.tab[data-t=mis].active{color:var(--c-mis)}
 
-/* 헤더 */
-.pg-header{margin-bottom:16px;display:flex;align-items:flex-start;justify-content:space-between}
-.pg-title{font-size:17px;font-weight:700;color:var(--tx)}
-.pg-desc{font-size:12px;color:var(--t3);margin-top:4px;line-height:1.6}
-.pg-actions{display:flex;gap:7px;flex-shrink:0}
-.btn{
-  display:flex;align-items:center;gap:5px;padding:6px 13px;border-radius:7px;
-  font-size:12px;cursor:pointer;font-family:inherit;border:none;transition:all .12s;
-}
-.btn-ghost{background:var(--glass-bg-strong);border:1px solid var(--glass-border-s);color:var(--t2)}
-.btn-ghost:hover{color:var(--tx)}
+/* 주차 네비 */
+.week-nav{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.wn-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:13px;color:var(--t2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .12s;}
+.wn-btn:hover{color:var(--tx)}
+.wn-label{font-size:15px;font-weight:700;color:var(--tx)}
+.wn-range{font-size:12px;color:var(--t3);margin-left:4px}
+.wn-today{margin-left:auto;padding:4px 12px;border-radius:8px;background:rgba(58,58,240,0.08);color:var(--accent);font-size:11.5px;font-weight:500;cursor:pointer;border:none;font-family:inherit;}
 
-/* 필터 바 */
-.filter-bar{
-  display:flex;align-items:center;gap:8px;
-  background:var(--glass-bg);border:1px solid var(--glass-border-s);
-  border-radius:10px;padding:10px 14px;margin-bottom:14px;
-}
-.filter-label{font-size:11.5px;color:var(--t3);flex-shrink:0}
-.filter-select{
-  padding:4px 8px;border-radius:6px;border:1px solid var(--glass-border-s);
-  font-size:12px;color:var(--t2);background:var(--glass-bg-strong);
-  font-family:inherit;cursor:pointer;
-}
-.filter-sep{width:1px;height:16px;background:var(--glass-border-s);margin:0 4px}
-
-/* KPI */
-.kpi-row{display:grid;grid-template-columns:280px 280px 280px 280px;gap:10px;margin-bottom:14px}
-.kpi{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:12px;padding:12px 14px}
-.kpi-label{font-size:10.5px;font-weight:500;margin-bottom:3px}
-.kpi-val{font-size:20px;font-weight:700;line-height:1.2}
-.kpi-sub{font-size:10.5px;color:var(--t4);margin-top:2px}
-.kpi-bar{height:3px;border-radius:2px;margin-top:6px;background:rgba(0,0,0,0.06)}
-.kpi-fill{height:100%;border-radius:2px}
+/* 요약 바 */
+.sum-bar{display:flex;gap:0;align-items:stretch;background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:12px;padding:0;margin-bottom:14px;overflow:hidden;}
+.sum-item{padding:14px 22px;flex:1}
+.sum-item+.sum-item{border-left:1px solid var(--glass-border-s)}
+.sum-lbl{font-size:10.5px;color:var(--t3);margin-bottom:4px}
+.sum-val{font-size:22px;font-weight:700;color:var(--tx)}
+.sum-val.red{color:var(--red)}
+.sum-sub{font-size:10.5px;color:var(--t4);margin-top:2px}
 
 /* 테이블 */
-.tbl-card{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:12px;overflow:auto}
-table{border-collapse:collapse;font-size:12px;table-layout:fixed}
+.tbl-wrap{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:12px;overflow:auto;}
+table{border-collapse:collapse;table-layout:fixed;font-size:12px;}
 thead th{
-  padding:8px 12px;text-align:left;font-size:11px;font-weight:500;color:var(--t2);
-  border-bottom:1px solid var(--glass-border-s);white-space:nowrap;
-  background:rgba(255,255,255,0.55);position:sticky;top:0;overflow:hidden;
+  padding:8px 8px 7px;text-align:center;font-size:11px;font-weight:500;color:var(--t2);
+  border-bottom:1px solid var(--glass-border-s);background:rgba(255,255,255,0.6);
+  position:sticky;top:0;white-space:nowrap;overflow:hidden;
 }
-thead th.r{text-align:right}
-tbody td{
-  padding:7px 12px;border-bottom:1px solid rgba(0,0,0,0.03);
-  font-size:12px;color:var(--t2);white-space:nowrap;overflow:hidden;
-}
-tbody td.r{text-align:right}
-tbody tr:hover td{background:rgba(0,0,0,0.015)}
+th.th-no{width:38px}
+th.th-item{width:196px;text-align:left;padding-left:12px}
+th.th-day{width:74px}
+th.th-sum{width:76px;border-left:1px solid rgba(0,0,0,0.08)}
+.th-today{background:rgba(254,249,195,0.9) !important}
+.th-wknd{background:rgba(240,253,244,0.5)}
+
+tbody td{padding:7px 8px;text-align:center;border-bottom:1px solid rgba(0,0,0,0.03);color:var(--t2);white-space:nowrap;overflow:hidden;}
+tbody tr:hover td{background:rgba(0,0,0,0.012)}
 tbody tr:last-child td{border-bottom:none}
-.badge-pill{font-size:10px;padding:2px 7px;border-radius:8px;font-weight:500;display:inline-block}
-.pill-on{background:rgba(26,138,74,0.1);color:var(--green)}
-.pill-off{background:rgba(0,0,0,0.05);color:var(--t3)}
-.pill-mis{background:rgba(212,32,32,0.08);color:var(--red)}
+td.td-no{color:var(--t4);font-size:11px;text-align:center}
+td.td-item{text-align:left;padding-left:10px}
+td.td-num{text-align:right;padding-right:12px;font-weight:500}
+td.td-warn{background:rgba(255,200,0,0.1);text-align:center}
+td.td-dash{color:var(--t4);text-align:center}
+td.td-today{background:rgba(254,249,195,0.3)}
+td.td-sum{border-left:1px solid rgba(0,0,0,0.08);text-align:right;padding-right:12px;font-weight:600;color:var(--tx)}
+td.td-zero{color:var(--green);font-weight:600;text-align:right;padding-right:12px}
+td.td-mis{color:var(--red);font-weight:600;text-align:right;padding-right:12px}
+
+/* 닉네임 배지 */
+.nick{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:17px;border-radius:4px;font-size:9.5px;font-weight:700;padding:0 4px;margin-right:5px;vertical-align:middle;flex-shrink:0;}
+.item-name{font-size:12px;color:var(--tx);vertical-align:middle}
 </style>
 </head>
 <body>
 
 <!-- 탭 -->
 <div class="tabs">
-  <div class="tab active fc" onclick="switchTab('fc',this)">예측 (fc)</div>
-  <div class="tab pv" onclick="switchTab('pv',this)">전일 (pv)</div>
-  <div class="tab mx" onclick="switchTab('mx',this)">최대 (mx)</div>
-  <div class="tab ac" onclick="switchTab('ac',this)">실제 (ac)</div>
-  <div class="tab mis" onclick="switchTab('mis',this)">미출 (mis)</div>
+  <div class="tab active" data-t="fc" onclick="switchTab('fc',this)">예측 fc</div>
+  <div class="tab" data-t="pv" onclick="switchTab('pv',this)">전일 pv</div>
+  <div class="tab" data-t="mx" onclick="switchTab('mx',this)">최대 mx</div>
+  <div class="tab" data-t="ac" onclick="switchTab('ac',this)">실제 ac</div>
+  <div class="tab" data-t="mis" onclick="switchTab('mis',this)">미출 mis</div>
 </div>
 
-<!-- ── fc 예측 조회 ── -->
-<div class="tab-content active" id="tab-fc">
-  <div class="pg-header">
-    <div>
-      <div class="pg-title">예측 데이터 조회</div>
-      <div class="pg-desc">입력된 fc(예측) 데이터를 날짜·품목별로 조회합니다</div>
-    </div>
-    <div class="pg-actions">
-      <button class="btn btn-ghost">⬇ 엑셀 다운로드</button>
-    </div>
-  </div>
-  <div class="filter-bar">
-    <span class="filter-label">기간</span>
-    <select class="filter-select"><option>2026년 3월</option><option>2026년 2월</option></select>
-    <div class="filter-sep"></div>
-    <span class="filter-label">품목</span>
-    <select class="filter-select"><option>전체</option><option>플레인 100g</option><option>말차 100g</option><option>소프트 100g</option></select>
-    <div class="filter-sep"></div>
-    <span class="filter-label">주차</span>
-    <select class="filter-select"><option>전체</option><option>3월 4주차</option><option>3월 3주차</option></select>
-  </div>
-  <div class="tbl-card">
-    <table style="width:1100px;min-width:1100px">
-      <colgroup>
-        <col style="width:110px"><col style="width:100px"><col style="width:200px">
-        <col style="width:80px"><col style="width:80px"><col style="width:100px">
-      </colgroup>
-      <thead><tr><th>날짜</th><th>품목코드</th><th>품목명</th><th>닉네임</th><th class="r">fc (예측)</th><th>입력자</th></tr></thead>
-      <tbody>
-        <tr><td>2026-03-24</td><td>Y-P-00</td><td>플레인 그릭요거트 100g</td><td>플</td><td class="r" style="color:var(--accent);font-weight:500">375</td><td>운영팀</td></tr>
-        <tr><td>2026-03-24</td><td>Y-S-00</td><td>소프트 그릭요거트 100g</td><td>소</td><td class="r" style="color:var(--accent);font-weight:500">210</td><td>운영팀</td></tr>
-        <tr><td>2026-03-24</td><td>Y-V-M0</td><td>말차 그릭요거트 100g</td><td>말</td><td class="r" style="color:var(--accent);font-weight:500">180</td><td>운영팀</td></tr>
-        <tr><td>2026-03-24</td><td>Y-V-L0</td><td>카페라떼 그릭요거트 100g</td><td>라</td><td class="r" style="color:var(--accent);font-weight:500">155</td><td>운영팀</td></tr>
-        <tr><td>2026-03-25</td><td>Y-P-00</td><td>플레인 그릭요거트 100g</td><td>플</td><td class="r" style="color:var(--accent);font-weight:500">250</td><td>운영팀</td></tr>
-        <tr><td>2026-03-25</td><td>Y-S-00</td><td>소프트 그릭요거트 100g</td><td>소</td><td class="r" style="color:var(--accent);font-weight:500">140</td><td>운영팀</td></tr>
-        <tr><td>2026-03-25</td><td>Y-V-M0</td><td>말차 그릭요거트 100g</td><td>말</td><td class="r" style="color:var(--accent);font-weight:500">150</td><td>운영팀</td></tr>
-        <tr><td>2026-03-26</td><td>Y-P-00</td><td>플레인 그릭요거트 100g</td><td>플</td><td class="r" style="color:var(--accent);font-weight:500">220</td><td>운영팀</td></tr>
-      </tbody>
-    </table>
-  </div>
+<!-- 주차 네비 -->
+<div class="week-nav">
+  <button class="wn-btn" onclick="moveWeek(-1)">‹</button>
+  <span class="wn-label" id="wn-label">—</span>
+  <button class="wn-btn" onclick="moveWeek(1)">›</button>
+  <span class="wn-range" id="wn-range"></span>
+  <button class="wn-today" onclick="goToday()">이번 주</button>
 </div>
 
-<!-- ── pv 전일 조회 ── -->
-<div class="tab-content" id="tab-pv">
-  <div class="pg-header">
-    <div>
-      <div class="pg-title">전일 데이터 조회</div>
-      <div class="pg-desc">입력된 pv(전일 결제) 데이터를 조회합니다</div>
-    </div>
-    <div class="pg-actions"><button class="btn btn-ghost">⬇ 엑셀 다운로드</button></div>
-  </div>
-  <div class="filter-bar">
-    <span class="filter-label">기간</span>
-    <select class="filter-select"><option>2026년 3월</option><option>2026년 2월</option></select>
-    <div class="filter-sep"></div>
-    <span class="filter-label">품목</span>
-    <select class="filter-select"><option>전체</option><option>플레인 100g</option><option>말차 100g</option></select>
-  </div>
-  <div class="tbl-card">
-    <table style="width:1100px;min-width:1100px">
-      <colgroup>
-        <col style="width:110px"><col style="width:100px"><col style="width:200px">
-        <col style="width:80px"><col style="width:80px"><col style="width:120px">
-      </colgroup>
-      <thead><tr><th>날짜</th><th>품목코드</th><th>품목명</th><th>닉네임</th><th class="r">pv (전일)</th><th>비고</th></tr></thead>
-      <tbody>
-        <tr><td>2026-03-24</td><td>Y-P-00</td><td>플레인 그릭요거트 100g</td><td>플</td><td class="r" style="color:#0ea5e9;font-weight:500">310</td><td></td></tr>
-        <tr><td>2026-03-24</td><td>Y-S-00</td><td>소프트 그릭요거트 100g</td><td>소</td><td class="r" style="color:#0ea5e9;font-weight:500">188</td><td></td></tr>
-        <tr><td>2026-03-24</td><td>Y-V-M0</td><td>말차 그릭요거트 100g</td><td>말</td><td class="r" style="color:#0ea5e9;font-weight:500">143</td><td></td></tr>
-        <tr><td>2026-03-25</td><td>Y-P-00</td><td>플레인 그릭요거트 100g</td><td>플</td><td class="r" style="color:#0ea5e9;font-weight:500">228</td><td></td></tr>
-        <tr><td>2026-03-25</td><td>Y-S-00</td><td>소프트 그릭요거트 100g</td><td>소</td><td class="r" style="color:#0ea5e9;font-weight:500">143</td><td></td></tr>
-        <tr><td>2026-03-26</td><td>Y-P-00</td><td>플레인 그릭요거트 100g</td><td>플</td><td class="r" style="color:#0ea5e9;font-weight:500">195</td><td></td></tr>
-      </tbody>
-    </table>
-  </div>
+<!-- 요약 바 -->
+<div class="sum-bar">
+  <div class="sum-item"><div class="sum-lbl">주합계</div><div class="sum-val" id="s-total">—</div></div>
+  <div class="sum-item"><div class="sum-lbl">기입셀</div><div class="sum-val" id="s-filled">—</div></div>
+  <div class="sum-item"><div class="sum-lbl">미기입</div><div class="sum-val red" id="s-empty">—</div><div class="sum-sub">⚠️ 표시된 셀</div></div>
 </div>
 
-<!-- ── mx 최대 조회 ── -->
-<div class="tab-content" id="tab-mx">
-  <div class="pg-header">
-    <div>
-      <div class="pg-title">최대 데이터 조회</div>
-      <div class="pg-desc">입력된 mx(출고 최대) 데이터를 조회합니다</div>
-    </div>
-    <div class="pg-actions"><button class="btn btn-ghost">⬇ 엑셀 다운로드</button></div>
-  </div>
-  <div class="filter-bar">
-    <span class="filter-label">기간</span>
-    <select class="filter-select"><option>2026년 3월</option><option>2026년 2월</option></select>
-    <div class="filter-sep"></div>
-    <span class="filter-label">품목</span>
-    <select class="filter-select"><option>전체</option><option>플레인 100g</option><option>말차 100g</option></select>
-  </div>
-  <div class="tbl-card">
-    <table style="width:1100px;min-width:1100px">
-      <colgroup>
-        <col style="width:110px"><col style="width:100px"><col style="width:200px">
-        <col style="width:80px"><col style="width:80px"><col style="width:80px"><col style="width:120px">
-      </colgroup>
-      <thead><tr><th>날짜</th><th>품목코드</th><th>품목명</th><th>닉네임</th><th class="r">mx (최대)</th><th class="r">fc (예측)</th><th>구분</th></tr></thead>
-      <tbody>
-        <tr><td>2026-03-24</td><td>Y-P-00</td><td>플레인 그릭요거트 100g</td><td>플</td><td class="r" style="color:var(--orange);font-weight:500">362</td><td class="r" style="color:var(--t3)">375</td><td><span class="badge-pill pill-on">직접입력</span></td></tr>
-        <tr><td>2026-03-24</td><td>Y-S-00</td><td>소프트 그릭요거트 100g</td><td>소</td><td class="r" style="color:var(--orange);font-weight:500">203</td><td class="r" style="color:var(--t3)">210</td><td><span class="badge-pill pill-on">직접입력</span></td></tr>
-        <tr><td>2026-03-24</td><td>Y-V-M0</td><td>말차 그릭요거트 100g</td><td>말</td><td class="r" style="color:var(--orange);font-weight:500">174</td><td class="r" style="color:var(--t3)">180</td><td><span class="badge-pill pill-on">직접입력</span></td></tr>
-        <tr><td>2026-03-25</td><td>Y-P-00</td><td>플레인 그릭요거트 100g</td><td>플</td><td class="r" style="color:var(--orange);font-weight:500">242</td><td class="r" style="color:var(--t3)">250</td><td><span class="badge-pill pill-on">직접입력</span></td></tr>
-        <tr><td>2026-03-26</td><td>Y-P-00</td><td>플레인 그릭요거트 100g</td><td>플</td><td class="r" style="color:var(--orange);font-weight:500">213</td><td class="r" style="color:var(--t3)">220</td><td><span class="badge-pill pill-off">자동추산</span></td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<!-- ── ac 실제 조회 ── -->
-<div class="tab-content" id="tab-ac">
-  <div class="pg-header">
-    <div>
-      <div class="pg-title">실제 데이터 조회</div>
-      <div class="pg-desc">입력된 ac(실제 출고) 데이터를 조회합니다</div>
-    </div>
-    <div class="pg-actions"><button class="btn btn-ghost">⬇ 엑셀 다운로드</button></div>
-  </div>
-  <div class="filter-bar">
-    <span class="filter-label">기간</span>
-    <select class="filter-select"><option>2026년 3월</option><option>2026년 2월</option></select>
-    <div class="filter-sep"></div>
-    <span class="filter-label">품목</span>
-    <select class="filter-select"><option>전체</option><option>플레인 100g</option><option>말차 100g</option></select>
-  </div>
-  <div class="tbl-card">
-    <table style="width:1100px;min-width:1100px">
-      <colgroup>
-        <col style="width:110px"><col style="width:100px"><col style="width:200px">
-        <col style="width:80px"><col style="width:80px"><col style="width:80px">
-      </colgroup>
-      <thead><tr><th>날짜</th><th>품목코드</th><th>품목명</th><th>닉네임</th><th class="r">ac (출고)</th><th class="r">mx (최대)</th></tr></thead>
-      <tbody>
-        <tr><td>2026-03-24</td><td>Y-P-00</td><td>플레인 그릭요거트 100g</td><td>플</td><td class="r" style="color:var(--green);font-weight:500">362</td><td class="r" style="color:var(--t3)">362</td></tr>
-        <tr><td>2026-03-24</td><td>Y-S-00</td><td>소프트 그릭요거트 100g</td><td>소</td><td class="r" style="color:var(--green);font-weight:500">203</td><td class="r" style="color:var(--t3)">203</td></tr>
-        <tr><td>2026-03-25</td><td>Y-P-00</td><td>플레인 그릭요거트 100g</td><td>플</td><td class="r" style="color:var(--green);font-weight:500">242</td><td class="r" style="color:var(--t3)">242</td></tr>
-        <tr><td>2026-03-26</td><td>Y-P-00</td><td>플레인 그릭요거트 100g</td><td>플</td><td class="r" style="color:var(--green);font-weight:500">200</td><td class="r" style="color:var(--t3)">213</td></tr>
-        <tr><td>2026-03-26</td><td>Y-V-M0</td><td>말차 그릭요거트 100g</td><td>말</td><td class="r" style="color:var(--green);font-weight:500">90</td><td class="r" style="color:var(--t3)">135</td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<!-- ── mis 미출 조회 ── -->
-<div class="tab-content" id="tab-mis">
-  <div class="pg-header">
-    <div>
-      <div class="pg-title">미출 데이터 조회</div>
-      <div class="pg-desc">mx - ac 자동 계산된 미출(mis) 현황 · mx와 ac 둘 다 있어야 계산됩니다</div>
-    </div>
-    <div class="pg-actions"><button class="btn btn-ghost">⬇ 엑셀 다운로드</button></div>
-  </div>
-  <div class="kpi-row">
-    <div class="kpi"><div class="kpi-label" style="color:var(--red)">이번 주 미출 합계</div><div class="kpi-val" style="color:var(--red)">208</div><div class="kpi-sub">3개 품목 발생</div><div class="kpi-bar"><div class="kpi-fill" style="width:12%;background:var(--red)"></div></div></div>
-    <div class="kpi"><div class="kpi-label" style="color:var(--orange)">미출 발생 품목</div><div class="kpi-val" style="color:var(--orange)">3</div><div class="kpi-sub">플레인·말차·푸룬</div><div class="kpi-bar"><div class="kpi-fill" style="width:30%;background:var(--orange)"></div></div></div>
-    <div class="kpi"><div class="kpi-label" style="color:var(--green)">정상 출고 품목</div><div class="kpi-val" style="color:var(--green)">19</div><div class="kpi-sub">미출 0 확인</div><div class="kpi-bar"><div class="kpi-fill" style="width:88%;background:var(--green)"></div></div></div>
-    <div class="kpi"><div class="kpi-label" style="color:var(--t3)">계산 불가</div><div class="kpi-val" style="color:var(--t3)">—</div><div class="kpi-sub">mx 또는 ac 미입력</div><div class="kpi-bar"><div class="kpi-fill" style="width:0%"></div></div></div>
-  </div>
-  <div class="filter-bar">
-    <span class="filter-label">기간</span>
-    <select class="filter-select"><option>2026년 3월</option><option>2026년 2월</option></select>
-    <div class="filter-sep"></div>
-    <span class="filter-label">상태</span>
-    <select class="filter-select"><option>전체</option><option>미출 발생</option><option>정상</option><option>계산불가</option></select>
-  </div>
-  <div class="tbl-card">
-    <table style="width:1100px;min-width:1100px">
-      <colgroup>
-        <col style="width:110px"><col style="width:200px"><col style="width:80px">
-        <col style="width:80px"><col style="width:80px"><col style="width:80px"><col style="width:100px">
-      </colgroup>
-      <thead><tr><th>날짜</th><th>품목명</th><th class="r">mx(최대)</th><th class="r">ac(출고)</th><th class="r">미출</th><th class="r">미출률</th><th>상태</th></tr></thead>
-      <tbody>
-        <tr><td>2026-03-24</td><td>플레인 그릭요거트 100g</td><td class="r">362</td><td class="r">362</td><td class="r" style="color:var(--green);font-weight:600">0</td><td class="r" style="color:var(--t3)">0%</td><td><span class="badge-pill pill-on">정상</span></td></tr>
-        <tr><td>2026-03-24</td><td>말차 그릭요거트 100g</td><td class="r">203</td><td class="r">203</td><td class="r" style="color:var(--green);font-weight:600">0</td><td class="r" style="color:var(--t3)">0%</td><td><span class="badge-pill pill-on">정상</span></td></tr>
-        <tr><td>2026-03-25</td><td>플레인 그릭요거트 100g</td><td class="r">242</td><td class="r">242</td><td class="r" style="color:var(--green);font-weight:600">0</td><td class="r" style="color:var(--t3)">0%</td><td><span class="badge-pill pill-on">정상</span></td></tr>
-        <tr><td>2026-03-26</td><td>플레인 그릭요거트 100g</td><td class="r">213</td><td class="r">200</td><td class="r" style="color:var(--red);font-weight:600">13</td><td class="r" style="color:var(--red)">6.1%</td><td><span class="badge-pill pill-mis">미출</span></td></tr>
-        <tr><td>2026-03-26</td><td>말차 그릭요거트 100g</td><td class="r">135</td><td class="r">90</td><td class="r" style="color:var(--red);font-weight:600">45</td><td class="r" style="color:var(--red)">33.3%</td><td><span class="badge-pill pill-mis">미출</span></td></tr>
-      </tbody>
-    </table>
-  </div>
+<!-- 테이블 -->
+<div class="tbl-wrap">
+  <table id="tbl" style="width:1140px;min-width:1140px;">
+    <thead><tr id="t-head"></tr></thead>
+    <tbody id="t-body"></tbody>
+  </table>
 </div>
 
 <script>
-function switchTab(id, el) {
+// ══ 품목 고정 목록 ══
+const ITEMS = [
+  {no:1,  nick:'플',    nc:'#3a3af0', nb:'#eaeaff', name:'플레인 그릭요거트 100g'},
+  {no:2,  nick:'소',    nc:'#0ea5e9', nb:'#e0f2fe', name:'소프트 그릭요거트 100g'},
+  {no:3,  nick:'알',    nc:'#7c3aed', nb:'#ede9fe', name:'알룰로스 블렌드 100g'},
+  {no:4,  nick:'말',    nc:'#059669', nb:'#d1fae5', name:'말차 그릭요거트 100g'},
+  {no:5,  nick:'라',    nc:'#b45309', nb:'#fef3c7', name:'카페라떼 그릭요거트 100g'},
+  {no:6,  nick:'블',    nc:'#1d4ed8', nb:'#dbeafe', name:'플레인 블루베리 130g'},
+  {no:7,  nick:'애',    nc:'#b45309', nb:'#ffedd5', name:'플레인 애플시나몬 130g'},
+  {no:8,  nick:'오',    nc:'#15803d', nb:'#dcfce7', name:'오!그래놀라 저당 그릭요거트 115g'},
+  {no:9,  nick:'크',    nc:'#be185d', nb:'#fce7f3', name:'벨베티 크리스피 120g'},
+  {no:10, nick:'카',    nc:'#92400e', nb:'#fef3c7', name:'플레인 카카오 120g'},
+  {no:11, nick:'푸',    nc:'#7e22ce', nb:'#f3e8ff', name:'플레인 푸룬 130g'},
+  {no:12, nick:'초',    nc:'#6b21a8', nb:'#ede9fe', name:'벨베티 초코소보로 120g'},
+  {no:13, nick:'마S',   nc:'#0284c7', nb:'#e0f2fe', name:'마시는 그릭요거트 750ml'},
+  {no:14, nick:'마L',   nc:'#0369a1', nb:'#dbeafe', name:'마시는 그릭요거트 1.8L'},
+  {no:15, nick:'블토',  nc:'#1d4ed8', nb:'#dbeafe', name:'블루베리콩포트 토핑 (30g×3)'},
+  {no:16, nick:'크토',  nc:'#be185d', nb:'#fce7f3', name:'크리스피그래놀라 토핑 (30g×3)'},
+  {no:17, nick:'초토',  nc:'#6b21a8', nb:'#ede9fe', name:'초코소보로그래놀라 토핑 (30g×3)'},
+  {no:18, nick:'스토',  nc:'#be123c', nb:'#ffe4e6', name:'딸기콩포트 토핑 (30g×3)'},
+  {no:19, nick:'카토',  nc:'#92400e', nb:'#fef3c7', name:'카카오그래놀라 토핑 (30g×3)'},
+  {no:20, nick:'꿀',    nc:'#d97706', nb:'#fef9c3', name:'허니스틱 (10포)'},
+  {no:21, nick:'줄자',  nc:'#374151', nb:'#f3f4f6', name:'피팅줄자'},
+  {no:22, nick:'파우치',nc:'#0369a1', nb:'#e0f2fe', name:'아이스 파우치'},
+  {no:23, nick:'메이커',nc:'#1a8a4a', nb:'#d1fae5', name:'그릭요거트 메이커'},
+];
+
+// ══ 주차 계산 ══
+function week1Monday(year, month) {
+  const d = new Date(year, month - 1, 1);
+  const dow = d.getDay(); // 0=일
+  const diff = dow === 0 ? -6 : 1 - dow;
+  return new Date(year, month - 1, 1 + diff);
+}
+
+function getWeekDates(year, month, week) {
+  const mon = new Date(week1Monday(year, month));
+  if (week === 0) mon.setDate(mon.getDate() - 7);
+  else mon.setDate(mon.getDate() + (week - 1) * 7);
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(mon);
+    d.setDate(mon.getDate() + i);
+    days.push(d);
+  }
+  return days;
+}
+
+function dateToWeek(date) {
+  const y = date.getFullYear(), m = date.getMonth() + 1;
+  const mon = week1Monday(y, m);
+  const diff = Math.floor((date - mon) / 86400000);
+  if (diff < 0) return { y, m, w: 0 };
+  return { y, m, w: Math.floor(diff / 7) + 1 };
+}
+
+function maxWeek(year, month) {
+  const last = new Date(year, month, 0);
+  return dateToWeek(last).w;
+}
+
+function fmtMD(d) { return `${d.getMonth()+1}/${d.getDate()}`; }
+function fmtYMD(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+const DOW = ['일','월','화','수','목','금','토'];
+
+// ══ 샘플 데이터 (실제 연동 전 표시용) ══
+const today = new Date(); today.setHours(0,0,0,0);
+function sampleVal(type, itemIdx, date) {
+  const isWknd = date.getDay() === 0 || date.getDay() === 6;
+  if (isWknd) return null; // 주말 없음
+  if (date > today) return undefined; // 미래 = 미입력
+  const bases = [375,200,80,60,120,40,20,30,20,20,30,20,50,30,40,10,8,6,15,20,5,8,10];
+  const base = bases[itemIdx] || 10;
+  const jitter = Math.floor(Math.sin(itemIdx * 3 + date.getDate() * 7) * base * 0.3 + base);
+  if (type === 'fc') return jitter;
+  if (type === 'pv') return Math.round(jitter * 0.88);
+  if (type === 'mx') return Math.round(jitter * 0.97);
+  if (type === 'ac') return Math.round(jitter * 0.92);
+  if (type === 'mis') {
+    const mx = Math.round(jitter * 0.97);
+    const ac = Math.round(jitter * 0.92);
+    return mx - ac;
+  }
+  return jitter;
+}
+
+// ══ 상태 ══
+let curType = 'fc';
+let curY, curM, curW;
+(function(){
+  const t = dateToWeek(today);
+  curY = t.y; curM = t.m; curW = t.w;
+})();
+
+const TYPE_COLOR = {fc:'var(--c-fc)',pv:'var(--c-pv)',mx:'var(--c-mx)',ac:'var(--c-ac)',mis:'var(--c-mis)'};
+
+// ══ 렌더 ══
+function render() {
+  const days = getWeekDates(curY, curM, curW);
+  const todayStr = fmtYMD(today);
+
+  // 주차 라벨
+  document.getElementById('wn-label').textContent = `${curY}년 ${curM}월 ${curW}주차`;
+  document.getElementById('wn-range').textContent =
+    `${fmtMD(days[0])}(${DOW[days[0].getDay()]}) ~ ${fmtMD(days[6])}(${DOW[days[6].getDay()]})`;
+
+  // 헤더
+  const thead = document.getElementById('t-head');
+  thead.innerHTML = '';
+  const thNo = document.createElement('th'); thNo.className='th-no'; thNo.textContent='NO'; thead.appendChild(thNo);
+  const thItem = document.createElement('th'); thItem.className='th-item'; thItem.textContent='품목'; thead.appendChild(thItem);
+  days.forEach(d => {
+    const th = document.createElement('th');
+    th.className = 'th-day';
+    const isToday = fmtYMD(d) === todayStr;
+    const isWknd = d.getDay() === 0 || d.getDay() === 6;
+    if (isToday) th.classList.add('th-today');
+    else if (isWknd) th.classList.add('th-wknd');
+    th.innerHTML = `${fmtMD(d)}<br><span style="font-size:10px;color:${isToday?'#b45309':'inherit'}">${DOW[d.getDay()]}</span>`;
+    thead.appendChild(th);
+  });
+  const thSum = document.createElement('th'); thSum.className='th-sum'; thSum.textContent='합계'; thead.appendChild(thSum);
+
+  // 바디
+  const tbody = document.getElementById('t-body');
+  tbody.innerHTML = '';
+  let totalSum = 0, filledCount = 0, emptyCount = 0;
+
+  ITEMS.forEach((item, idx) => {
+    const tr = document.createElement('tr');
+
+    // NO
+    const tdNo = document.createElement('td'); tdNo.className='td-no'; tdNo.textContent=item.no; tr.appendChild(tdNo);
+
+    // 품목명
+    const tdItem = document.createElement('td'); tdItem.className='td-item';
+    tdItem.innerHTML = `<span class="nick" style="color:${item.nc};background:${item.nb}">${item.nick}</span><span class="item-name">${item.name}</span>`;
+    tr.appendChild(tdItem);
+
+    let rowSum = 0;
+    let rowHasVal = false;
+
+    days.forEach(d => {
+      const isToday = fmtYMD(d) === todayStr;
+      const isWknd = d.getDay() === 0 || d.getDay() === 6;
+      const td = document.createElement('td');
+      if (isToday) td.classList.add('td-today');
+
+      if (isWknd) {
+        td.className = (isToday ? 'td-today ' : '') + 'td-dash';
+        td.textContent = '—';
+      } else {
+        const val = sampleVal(curType, idx, d);
+        if (val === undefined) {
+          // 미래 or 미입력
+          if (d > today) {
+            td.className = (isToday ? 'td-today ' : '') + 'td-dash';
+            td.textContent = '—';
+          } else {
+            td.className = (isToday ? 'td-today ' : '') + 'td-warn';
+            td.innerHTML = '<span class="warn-icon">⚠️</span>';
+            emptyCount++;
+          }
+        } else if (val === null) {
+          td.className = (isToday ? 'td-today ' : '') + 'td-dash';
+          td.textContent = '—';
+        } else {
+          if (curType === 'mis') {
+            td.className = (isToday ? 'td-today ' : '') + (val === 0 ? 'td-zero' : 'td-mis');
+          } else {
+            td.className = (isToday ? 'td-today ' : '') + 'td-num';
+            td.style.color = TYPE_COLOR[curType];
+          }
+          td.textContent = val.toLocaleString();
+          rowSum += val;
+          rowHasVal = true;
+          filledCount++;
+          if (curType !== 'mis') totalSum += val;
+        }
+      }
+      tr.appendChild(td);
+    });
+
+    // 합계
+    const tdSum = document.createElement('td');
+    tdSum.className = 'td-sum';
+    tdSum.textContent = rowHasVal ? rowSum.toLocaleString() : '—';
+    tr.appendChild(tdSum);
+    tbody.appendChild(tr);
+  });
+
+  // 요약
+  document.getElementById('s-total').textContent = totalSum.toLocaleString();
+  document.getElementById('s-filled').textContent = filledCount + '셀';
+  document.getElementById('s-empty').textContent = emptyCount + '셀';
+}
+
+// ══ 이벤트 ══
+function switchTab(type, el) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
-  document.getElementById('tab-' + id).classList.add('active');
+  curType = type;
+  render();
 }
-const hash = location.hash.replace('#','');
-if (hash && ['pv','mx','ac','mis'].includes(hash)) {
-  const tabEl = document.querySelector(`.tab[onclick*="'${hash}'"]`);
-  if (tabEl) switchTab(hash, tabEl);
+
+function moveWeek(dir) {
+  curW += dir;
+  if (curW < 0) {
+    curM--;
+    if (curM < 1) { curM = 12; curY--; }
+    curW = maxWeek(curY, curM);
+  } else if (curW > maxWeek(curY, curM)) {
+    curW = 0;
+    curM++;
+    if (curM > 12) { curM = 1; curY++; }
+    // 0주차면 바로 다시 +1
+    if (curW === 0) { curW = 1; }
+  }
+  render();
 }
+
+function goToday() {
+  const t = dateToWeek(today);
+  curY = t.y; curM = t.m; curW = t.w;
+  render();
+}
+
+render();
 </script>
 </body>
 </html>

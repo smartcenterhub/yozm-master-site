@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440, initial-scale=1.0">
+<title>월간 대시보드</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --glass-bg:rgba(255,255,255,0.74);--glass-bg-strong:rgba(255,255,255,0.92);
+  --glass-border-s:rgba(0,0,0,0.07);
+  --tx:#0a0a0f;--t2:#4a4a5a;--t3:#9898a8;--t4:#c4c4d0;
+  --accent:#3a3af0;--green:#1a8a4a;--red:#d42020;--orange:#c45a10;
+  --c-fc:#3a3af0;--c-pv:#0ea5e9;--c-mx:#c45a10;--c-ac:#1a8a4a;--c-mis:#d42020;
+}
+html{min-width:1188px;height:100%;background:linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#eef0f8 100%) fixed;}
+body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;line-height:1.5;color:var(--tx);width:1188px;min-width:1188px;padding:20px 24px 40px;}
+.month-nav{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.mn-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:13px;color:var(--t2);display:flex;align-items:center;justify-content:center;}
+.mn-label{font-size:15px;font-weight:700;color:var(--tx)}
+.mn-now{margin-left:auto;padding:4px 12px;border-radius:8px;background:rgba(58,58,240,0.08);color:var(--accent);font-size:11.5px;font-weight:500;cursor:pointer;border:none;font-family:inherit;}
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+.kpi{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:12px;padding:12px 14px}
+.kpi-lbl{font-size:10.5px;font-weight:500;margin-bottom:3px}
+.kpi-val{font-size:19px;font-weight:700}
+.chip-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.chip{padding:4px 11px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);color:var(--t2);transition:all .12s;user-select:none;}
+.chip.on{font-weight:500}
+.chip.on-fc{background:rgba(58,58,240,0.1);color:var(--c-fc);border-color:rgba(58,58,240,0.2)}
+.chip.on-pv{background:rgba(14,165,233,0.1);color:var(--c-pv);border-color:rgba(14,165,233,0.2)}
+.chip.on-mx{background:rgba(196,90,16,0.1);color:var(--c-mx);border-color:rgba(196,90,16,0.2)}
+.chip.on-ac{background:rgba(26,138,74,0.1);color:var(--c-ac);border-color:rgba(26,138,74,0.2)}
+.chip.on-mis{background:rgba(212,32,32,0.07);color:var(--c-mis);border-color:rgba(212,32,32,0.15)}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.cal-hdr{text-align:center;font-size:11px;font-weight:500;color:var(--t3);padding:6px 0;}
+.cal-hdr.sun{color:var(--red)}
+.cal-hdr.sat{color:var(--accent)}
+.cal-cell{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:10px;padding:8px 10px;min-height:100px;cursor:pointer;transition:background .12s;}
+.cal-cell:hover{background:var(--glass-bg-strong)}
+.cal-cell.today{background:rgba(254,249,195,0.5);border-color:rgba(196,160,0,0.3)}
+.cal-cell.other-month{opacity:.35}
+.cal-cell.wknd{background:rgba(240,253,244,0.4)}
+.cal-date{font-size:12px;font-weight:600;color:var(--tx);margin-bottom:6px;display:flex;align-items:center;gap:4px}
+.cal-date .w-badge{font-size:9px;color:var(--t4);font-weight:400}
+.cal-nums{display:flex;flex-direction:column;gap:3px}
+.cal-num{font-size:11px;display:flex;justify-content:space-between;align-items:center}
+.cal-num .lbl{font-size:9.5px;font-weight:500}
+.cal-num .val{font-weight:600}
+.mis-badge{display:inline-block;font-size:9.5px;font-weight:600;color:var(--red);margin-top:4px}
+</style>
+</head>
+<body>
+
+<div class="month-nav">
+  <button class="mn-btn" onclick="moveMonth(-1)">‹</button>
+  <span class="mn-label" id="mn-label">—</span>
+  <button class="mn-btn" onclick="moveMonth(1)">›</button>
+  <button class="mn-now" onclick="goNow()">이번 달</button>
+</div>
+
+<div class="kpi-row">
+  <div class="kpi"><div class="kpi-lbl" style="color:var(--c-fc)">예측 합계</div><div class="kpi-val" id="k-fc" style="color:var(--c-fc)">—</div></div>
+  <div class="kpi"><div class="kpi-lbl" style="color:var(--c-pv)">전일 합계</div><div class="kpi-val" id="k-pv" style="color:var(--c-pv)">—</div></div>
+  <div class="kpi"><div class="kpi-lbl" style="color:var(--c-mx)">출고최대 합계</div><div class="kpi-val" id="k-mx" style="color:var(--c-mx)">—</div></div>
+  <div class="kpi"><div class="kpi-lbl" style="color:var(--c-ac)">출고 합계</div><div class="kpi-val" id="k-ac" style="color:var(--c-ac)">—</div></div>
+  <div class="kpi"><div class="kpi-lbl" style="color:var(--c-mis)">미출 합계</div><div class="kpi-val" id="k-mis" style="color:var(--c-mis)">—</div></div>
+</div>
+
+<div class="chip-row">
+  <div class="chip on-fc" onclick="toggleChip(this,'fc')">예측</div>
+  <div class="chip on-pv" onclick="toggleChip(this,'pv')">전일</div>
+  <div class="chip on-mx" onclick="toggleChip(this,'mx')">출고최대</div>
+  <div class="chip on-ac" onclick="toggleChip(this,'ac')">출고</div>
+  <div class="chip on-mis" onclick="toggleChip(this,'mis')">미출</div>
+</div>
+
+<div id="cal-wrap">
+  <div class="cal" id="cal-hdr-row">
+    <div class="cal-hdr">월</div><div class="cal-hdr">화</div><div class="cal-hdr">수</div>
+    <div class="cal-hdr">목</div><div class="cal-hdr">금</div>
+    <div class="cal-hdr sat">토</div><div class="cal-hdr sun">일</div>
+  </div>
+  <div class="cal" id="cal-body" style="margin-top:4px"></div>
+</div>
+
+<script>
+const today=new Date();today.setHours(0,0,0,0);
+let cY=today.getFullYear(),cM=today.getMonth()+1;
+let showT={fc:true,pv:true,mx:true,ac:true,mis:true};
+
+const ITEMS_COUNT=23;
+function sampleDay(type,date){
+  if(date.getDay()===0||date.getDay()===6)return 0;
+  if(date>today)return 0;
+  const seed=date.getDate()*7+date.getMonth()*31;
+  const base=350;
+  const v=Math.abs(Math.floor(Math.sin(seed)*base*0.4+base));
+  if(type==='fc')return v;if(type==='pv')return Math.round(v*0.88);
+  if(type==='mx')return Math.round(v*0.97);if(type==='ac')return Math.round(v*0.92);
+  if(type==='mis')return Math.round(v*0.97)-Math.round(v*0.92);
+  return v;
+}
+
+function week1Mon(y,m){const d=new Date(y,m-1,1);const dw=d.getDay();const df=dw===0?-6:1-dw;return new Date(y,m-1,1+df);}
+function getWeekNum(date){const y=date.getFullYear(),m=date.getMonth()+1;const mon=week1Mon(y,m);const df=Math.floor((date-mon)/86400000);if(df<0)return 0;return Math.floor(df/7)+1;}
+
+function render(){
+  document.getElementById('mn-label').textContent=`${cY}년 ${cM}월`;
+  const firstDay=new Date(cY,cM-1,1);
+  const lastDay=new Date(cY,cM,0);
+  // 월요일 시작 — 1일의 요일 (0=일)
+  let startDow=firstDay.getDay();
+  const startOffset=startDow===0?6:startDow-1; // 0=월
+
+  const cells=[];
+  // 이전 달 채우기
+  for(let i=startOffset-1;i>=0;i--){
+    const d=new Date(firstDay);d.setDate(d.getDate()-(i+1));
+    cells.push({date:d,curr:false});
+  }
+  // 이번 달
+  for(let d=1;d<=lastDay.getDate();d++){cells.push({date:new Date(cY,cM-1,d),curr:true});}
+  // 다음 달 채우기
+  let tail=cells.length%7;if(tail>0){for(let i=1;i<=7-tail;i++){cells.push({date:new Date(cY,cM,i),curr:false});}}
+
+  // KPI
+  let sums={fc:0,pv:0,mx:0,ac:0,mis:0};
+  cells.filter(c=>c.curr).forEach(({date})=>{
+    Object.keys(sums).forEach(t=>{sums[t]+=sampleDay(t,date);});
+  });
+  ['fc','pv','mx','ac','mis'].forEach(t=>{document.getElementById('k-'+t).textContent=sums[t].toLocaleString();});
+
+  // 달력
+  const body=document.getElementById('cal-body');
+  body.innerHTML='';
+  cells.forEach(({date,curr})=>{
+    const cell=document.createElement('div');
+    const isToday=date.getTime()===today.getTime();
+    const isWknd=date.getDay()===0||date.getDay()===6;
+    cell.className='cal-cell'+(isToday?' today':isWknd?' wknd':'')+(curr?'':' other-month');
+
+    const wn=curr?getWeekNum(date):null;
+    cell.innerHTML=`<div class="cal-date">${date.getDate()}<span class="w-badge">${curr&&wn!==null?wn+'주':''}${isToday?' ★':''}</span></div>`;
+
+    if(curr&&!isWknd){
+      const nums=document.createElement('div');nums.className='cal-nums';
+      const types=['fc','pv','mx','ac'];
+      types.forEach(t=>{
+        if(!showT[t])return;
+        const v=sampleDay(t,date);
+        if(v===0)return;
+        const row=document.createElement('div');row.className='cal-num';
+        const colors={fc:'var(--c-fc)',pv:'var(--c-pv)',mx:'var(--c-mx)',ac:'var(--c-ac)'};
+        const labels={fc:'예측',pv:'전일',mx:'최대',ac:'출고'};
+        row.innerHTML=`<span class="lbl" style="color:${colors[t]}">${labels[t]}</span><span class="val" style="color:${colors[t]}">${v.toLocaleString()}</span>`;
+        nums.appendChild(row);
+      });
+      if(showT['mis']){
+        const mis=sampleDay('mis',date);
+        if(mis>0){const b=document.createElement('div');b.className='mis-badge';b.textContent=`미출 ${mis}`;nums.appendChild(b);}
+      }
+      cell.appendChild(nums);
+    }
+    body.appendChild(cell);
+  });
+}
+
+function moveMonth(dir){cM+=dir;if(cM<1){cM=12;cY--;}else if(cM>12){cM=1;cY++;}render();}
+function goNow(){cY=today.getFullYear();cM=today.getMonth()+1;render();}
+function toggleChip(el,t){showT[t]=!showT[t];if(showT[t])el.classList.add('on-'+t);else el.classList.remove('on-'+t);render();}
+render();
+</script>
+</body>
+</html>

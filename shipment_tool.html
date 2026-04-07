@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440, initial-scale=1.0">
+<title>출고 배분기</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--glass-bg:rgba(255,255,255,0.74);--glass-bg-strong:rgba(255,255,255,0.92);--glass-border-s:rgba(0,0,0,0.07);--tx:#0a0a0f;--t2:#4a4a5a;--t3:#9898a8;--t4:#c4c4d0;--accent:#3a3af0;--green:#1a8a4a;--red:#d42020;--orange:#c45a10;}
+html{min-width:1188px;height:100%;background:linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#eef0f8 100%) fixed;}
+body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx);width:1188px;min-width:1188px;padding:20px 24px 40px;}
+.pg-title{font-size:17px;font-weight:700;color:var(--tx);margin-bottom:4px}
+.pg-desc{font-size:12px;color:var(--t3);margin-bottom:20px}
+/* 스텝 네비 */
+.steps{display:flex;gap:0;margin-bottom:24px}
+.step{flex:1;padding:12px 16px;background:var(--glass-bg);border:1px solid var(--glass-border-s);cursor:pointer;transition:all .15s;position:relative}
+.step:first-child{border-radius:10px 0 0 10px}.step:last-child{border-radius:0 10px 10px 0}.step+.step{border-left:none}
+.step.active{background:rgba(58,58,240,0.07);border-color:rgba(58,58,240,0.25)}
+.step.done{background:rgba(26,138,74,0.06);border-color:rgba(26,138,74,0.2)}
+.step-num{font-size:10px;color:var(--t4);margin-bottom:3px}
+.step-lbl{font-weight:500;color:var(--t2);font-size:13px}.step.active .step-lbl{color:var(--accent)}.step.done .step-lbl{color:var(--green)}
+.step-sub{font-size:11px;color:var(--t3);margin-top:2px}
+.step-content{display:none}.step-content.active{display:block}
+/* 카드 */
+.card{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+.card-title{font-size:12.5px;font-weight:600;color:var(--tx);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.card-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+/* 업로드 */
+.upload-zone{border:2px dashed rgba(58,58,240,0.2);border-radius:10px;padding:32px;text-align:center;cursor:pointer;transition:all .15s;background:rgba(58,58,240,0.02);}
+.upload-zone:hover{border-color:rgba(58,58,240,0.4);background:rgba(58,58,240,0.04)}
+.upload-icon{font-size:24px;margin-bottom:8px;opacity:.5}.upload-title{font-size:13px;font-weight:500;color:var(--t2)}.upload-desc{font-size:11.5px;color:var(--t4);margin-top:4px}
+/* 버튼 */
+.btn{display:flex;align-items:center;gap:5px;padding:7px 14px;border-radius:7px;font-size:12px;cursor:pointer;font-family:inherit;border:none;transition:all .12s;}
+.btn-primary{background:var(--accent);color:#fff;font-weight:500}.btn-primary:hover{background:#2a2ad8}
+.btn-green{background:var(--green);color:#fff;font-weight:500}
+.btn-ghost{background:var(--glass-bg-strong);border:1px solid var(--glass-border-s);color:var(--t2)}
+.btn-row{display:flex;gap:8px;margin-top:14px}
+/* 테이블 */
+.tbl-wrap{overflow:auto}
+table{border-collapse:collapse;table-layout:fixed;font-size:12px}
+thead th{padding:8px 12px;text-align:left;font-size:11px;font-weight:500;color:var(--t2);border-bottom:1px solid var(--glass-border-s);background:rgba(255,255,255,0.55);position:sticky;top:0;white-space:nowrap;overflow:hidden}
+tbody td{padding:7px 12px;border-bottom:1px solid rgba(0,0,0,0.03);font-size:12px;color:var(--t2);white-space:nowrap;overflow:hidden}
+tbody tr:hover td{background:rgba(0,0,0,0.015)}
+tbody tr:last-child td{border-bottom:none}
+td.num{text-align:right;font-weight:500}
+.nick{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:17px;border-radius:4px;font-size:9.5px;font-weight:700;padding:0 4px;margin-right:5px;vertical-align:middle}
+/* 한도 입력 */
+.limit-row{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:14px}
+.limit-item{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:8px;padding:10px 12px}
+.limit-nick{font-size:10px;color:var(--t3);margin-bottom:4px;display:flex;align-items:center;gap:4px}
+.limit-input{width:100%;border:1px solid var(--glass-border-s);border-radius:5px;padding:4px 7px;font-size:12.5px;font-weight:500;color:var(--tx);background:var(--glass-bg-strong);font-family:inherit;text-align:right}
+.limit-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(58,58,240,0.1)}
+/* 흐름 화살표 */
+.flow-arrow{text-align:center;padding:10px 0;font-size:20px;color:var(--t4)}
+</style>
+</head>
+<body>
+
+<div class="pg-title">출고 배분기</div>
+<div class="pg-desc">Step 1에서 주문 파일을 파싱하고, Step 2에서 한도 설정 후 배분합니다</div>
+
+<!-- 스텝 네비 -->
+<div class="steps">
+  <div class="step active" id="step1-nav" onclick="goStep(1)">
+    <div class="step-num">STEP 1</div>
+    <div class="step-lbl">옵션 계산기</div>
+    <div class="step-sub">주문 파일 → 품목별 수량 파싱</div>
+  </div>
+  <div class="step" id="step2-nav" onclick="goStep(2)">
+    <div class="step-num">STEP 2</div>
+    <div class="step-lbl">출고 배분</div>
+    <div class="step-sub">한도 설정 → 배분 실행 → 다운로드</div>
+  </div>
+</div>
+
+<!-- STEP 1: 옵션 계산기 -->
+<div class="step-content active" id="step1">
+  <div class="card">
+    <div class="card-title"><div class="card-dot" style="background:var(--accent)"></div>주문 파일 업로드</div>
+    <div class="upload-zone">
+      <div class="upload-icon">📂</div>
+      <div class="upload-title">스마트스토어 전체주문발주발송관리 파일 드래그 또는 클릭</div>
+      <div class="upload-desc">.xlsx 파일 · 주문번호 중복(다품목 주문) 자동 처리</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><div class="card-dot" style="background:var(--accent)"></div>파싱 결과 — 품목별 수량</div>
+    <div class="tbl-wrap">
+      <table style="width:1100px;min-width:1100px">
+        <colgroup><col style="width:60px"><col style="width:220px"><col style="width:100px"><col style="width:100px"><col style="width:100px"><col style="width:100px"><col style="width:120px"></colgroup>
+        <thead><tr><th>NO</th><th>품목명</th><th>닉네임</th><th class="r">주문 수량</th><th class="r">취소 건</th><th class="r">실 주문</th><th>비고</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td><span class="nick" style="color:#3a3af0;background:#eaeaff">플</span>플레인 그릭요거트 100g</td><td>플</td><td class="num">380</td><td class="num" style="color:var(--red)">5</td><td class="num" style="color:var(--accent);font-weight:600">375</td><td></td></tr>
+          <tr><td>2</td><td><span class="nick" style="color:#0ea5e9;background:#e0f2fe">소</span>소프트 그릭요거트 100g</td><td>소</td><td class="num">205</td><td class="num" style="color:var(--red)">5</td><td class="num" style="color:var(--accent);font-weight:600">200</td><td></td></tr>
+          <tr><td>3</td><td><span class="nick" style="color:#059669;background:#d1fae5">말</span>말차 그릭요거트 100g</td><td>말</td><td class="num">182</td><td class="num" style="color:var(--red)">2</td><td class="num" style="color:var(--accent);font-weight:600">180</td><td></td></tr>
+          <tr><td>4</td><td><span class="nick" style="color:#b45309;background:#fef3c7">라</span>카페라떼 그릭요거트 100g</td><td>라</td><td class="num">122</td><td class="num" style="color:var(--red)">2</td><td class="num" style="color:var(--accent);font-weight:600">120</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goStep(2)">다음 단계 → 출고 배분 ›</button>
+      <button class="btn btn-ghost">⬇ 파싱 결과 다운로드</button>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 2: 출고 배분 -->
+<div class="step-content" id="step2">
+  <div class="card">
+    <div class="card-title"><div class="card-dot" style="background:var(--orange)"></div>출고 한도 설정 (품목별 최대 출고 가능 수량)</div>
+    <div class="limit-row">
+      <div class="limit-item"><div class="limit-nick"><span class="nick" style="color:#3a3af0;background:#eaeaff;margin-right:0">플</span> 플레인</div><input class="limit-input" type="number" value="362" min="0"></div>
+      <div class="limit-item"><div class="limit-nick"><span class="nick" style="color:#0ea5e9;background:#e0f2fe;margin-right:0">소</span> 소프트</div><input class="limit-input" type="number" value="203" min="0"></div>
+      <div class="limit-item"><div class="limit-nick"><span class="nick" style="color:#059669;background:#d1fae5;margin-right:0">말</span> 말차</div><input class="limit-input" type="number" value="174" min="0"></div>
+      <div class="limit-item"><div class="limit-nick"><span class="nick" style="color:#b45309;background:#fef3c7;margin-right:0">라</span> 라떼</div><input class="limit-input" type="number" value="116" min="0"></div>
+      <div class="limit-item"><div class="limit-nick"><span class="nick" style="color:#7c3aed;background:#ede9fe;margin-right:0">알</span> 알룰로스</div><input class="limit-input" type="number" value="80" min="0"></div>
+      <div class="limit-item"><div class="limit-nick"><span class="nick" style="color:#1d4ed8;background:#dbeafe;margin-right:0">블</span> 블루베리</div><input class="limit-input" type="number" value="40" min="0"></div>
+    </div>
+    <button class="btn btn-primary" onclick="runAlloc()">▶ 배분 실행</button>
+  </div>
+
+  <div class="card" id="result-card" style="display:none">
+    <div class="card-title"><div class="card-dot" style="background:var(--green)"></div>배분 결과</div>
+    <div class="tbl-wrap">
+      <table style="width:1100px;min-width:1100px">
+        <colgroup><col style="width:220px"><col style="width:100px"><col style="width:100px"><col style="width:100px"><col style="width:100px"><col style="width:140px"></colgroup>
+        <thead><tr><th>품목명</th><th class="r">실 주문</th><th class="r">한도</th><th class="r">출고 수량</th><th class="r">미출</th><th>상태</th></tr></thead>
+        <tbody id="alloc-tbody"></tbody>
+      </table>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-green">⬇ 배분 결과 다운로드</button>
+      <button class="btn btn-ghost" onclick="goStep(1)">‹ Step 1로 돌아가기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ITEMS=[
+  {nick:'플',nc:'#3a3af0',nb:'#eaeaff',name:'플레인 그릭요거트 100g',order:375},
+  {nick:'소',nc:'#0ea5e9',nb:'#e0f2fe',name:'소프트 그릭요거트 100g',order:200},
+  {nick:'말',nc:'#059669',nb:'#d1fae5',name:'말차 그릭요거트 100g',order:180},
+  {nick:'라',nc:'#b45309',nb:'#fef3c7',name:'카페라떼 그릭요거트 100g',order:120},
+  {nick:'알',nc:'#7c3aed',nb:'#ede9fe',name:'알룰로스 블렌드 100g',order:80},
+  {nick:'블',nc:'#1d4ed8',nb:'#dbeafe',name:'플레인 블루베리 130g',order:40},
+];
+
+function goStep(n){
+  document.querySelectorAll('.step-content').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('step'+n).classList.add('active');
+  document.getElementById('step'+n+'-nav').classList.add('active');
+  if(n===1)document.getElementById('step2-nav').classList.remove('done');
+}
+
+function runAlloc(){
+  const inputs=document.querySelectorAll('.limit-input');
+  const limits=Array.from(inputs).map(i=>parseInt(i.value)||0);
+  const tbody=document.getElementById('alloc-tbody');
+  tbody.innerHTML='';
+  ITEMS.forEach((item,i)=>{
+    const limit=limits[i]||0;
+    const order=item.order;
+    const ship=Math.min(order,limit);
+    const mis=Math.max(0,order-limit);
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><span class="nick" style="color:${item.nc};background:${item.nb}">${item.nick}</span>${item.name}</td>
+      <td class="num">${order.toLocaleString()}</td>
+      <td class="num">${limit.toLocaleString()}</td>
+      <td class="num" style="color:var(--green);font-weight:600">${ship.toLocaleString()}</td>
+      <td class="num" style="color:${mis>0?'var(--red)':'var(--green)'};font-weight:600">${mis>0?mis.toLocaleString():'0'}</td>
+      <td><span style="font-size:10px;padding:2px 7px;border-radius:8px;font-weight:500;background:${mis>0?'rgba(212,32,32,0.08)':'rgba(26,138,74,0.1)'};color:${mis>0?'var(--red)':'var(--green)'}">${mis>0?'미출 '+mis:'정상'}</span></td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('result-card').style.display='block';
+  document.getElementById('step2-nav').classList.add('done');
+}
+</script>
+</body>
+</html>

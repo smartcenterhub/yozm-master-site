@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440, initial-scale=1.0">
+<title>주간 대시보드</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --glass-bg:rgba(255,255,255,0.74);--glass-bg-strong:rgba(255,255,255,0.92);
+  --glass-border-s:rgba(0,0,0,0.07);
+  --tx:#0a0a0f;--t2:#4a4a5a;--t3:#9898a8;--t4:#c4c4d0;
+  --accent:#3a3af0;--green:#1a8a4a;--red:#d42020;--orange:#c45a10;--blue:#1a56c8;
+  --c-fc:#3a3af0;--c-pv:#0ea5e9;--c-mx:#c45a10;--c-ac:#1a8a4a;--c-mis:#d42020;
+}
+html{min-width:1188px;height:100%;background:linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#eef0f8 100%) fixed;}
+body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;line-height:1.5;color:var(--tx);width:1188px;min-width:1188px;padding:20px 24px 40px;}
+.week-nav{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.wn-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:13px;color:var(--t2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.wn-label{font-size:15px;font-weight:700;color:var(--tx)}
+.wn-range{font-size:12px;color:var(--t3);margin-left:4px}
+.wn-today{margin-left:auto;padding:4px 12px;border-radius:8px;background:rgba(58,58,240,0.08);color:var(--accent);font-size:11.5px;font-weight:500;cursor:pointer;border:none;font-family:inherit;}
+.kpi-row{display:grid;grid-template-columns:280px 280px 280px 280px;gap:10px;margin-bottom:14px}
+.kpi{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:12px;padding:14px 16px}
+.kpi-lbl{font-size:10.5px;font-weight:500;margin-bottom:4px}
+.kpi-val{font-size:22px;font-weight:700;line-height:1.2}
+.kpi-sub{font-size:10.5px;color:var(--t4);margin-top:3px}
+.kpi-bar{height:3px;border-radius:2px;margin-top:8px;background:rgba(0,0,0,0.06)}
+.kpi-fill{height:100%;border-radius:2px}
+.chip-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.chip{padding:4px 11px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);color:var(--t2);transition:all .12s;user-select:none;}
+.chip.on-fc{background:rgba(58,58,240,0.1);color:var(--c-fc);border-color:rgba(58,58,240,0.2)}
+.chip.on-pv{background:rgba(14,165,233,0.1);color:var(--c-pv);border-color:rgba(14,165,233,0.2)}
+.chip.on-mx{background:rgba(196,90,16,0.1);color:var(--c-mx);border-color:rgba(196,90,16,0.2)}
+.chip.on-ac{background:rgba(26,138,74,0.1);color:var(--c-ac);border-color:rgba(26,138,74,0.2)}
+.chip.on-mis{background:rgba(212,32,32,0.07);color:var(--c-mis);border-color:rgba(212,32,32,0.15)}
+.chip-sep{width:1px;height:18px;background:var(--glass-border-s);margin:0 2px}
+.tbl-wrap{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:12px;overflow:auto;}
+table{border-collapse:collapse;table-layout:fixed;font-size:12px;}
+thead th{padding:7px 8px;text-align:center;font-size:11px;font-weight:500;color:var(--t2);border-bottom:1px solid var(--glass-border-s);background:rgba(255,255,255,0.6);position:sticky;top:0;white-space:nowrap;}
+th.th-item{text-align:left;padding-left:14px;width:188px}
+th.th-type{width:46px}
+th.th-day{width:72px}
+th.th-sum{width:74px;border-left:1px solid rgba(0,0,0,0.08)}
+.th-today{background:rgba(254,249,195,0.9) !important}
+.th-tue{background:rgba(58,58,240,0.06)}
+tbody td{padding:5px 8px;text-align:center;border-bottom:1px solid rgba(0,0,0,0.03);font-size:12px;color:var(--t2);white-space:nowrap;}
+td.td-item{text-align:left;padding-left:10px;font-weight:500;color:var(--tx)}
+td.td-num{text-align:right;padding-right:10px;font-weight:500}
+td.td-dash{color:var(--t4)}
+td.td-today{background:rgba(254,249,195,0.25)}
+td.td-sum{border-left:1px solid rgba(0,0,0,0.08);text-align:right;padding-right:10px;font-weight:600}
+td.td-warn-mx{background:rgba(196,90,16,0.06)}
+td.td-warn-ac{background:rgba(26,138,74,0.06)}
+td.td-warn-pv{background:rgba(254,240,138,0.3)}
+td.mis-zero{color:var(--green);font-weight:700;text-align:right;padding-right:10px}
+td.mis-num{color:var(--red);font-weight:700;text-align:right;padding-right:10px}
+.badge{font-size:10px;padding:1.5px 6px;border-radius:4px;font-weight:500;display:inline-block}
+.b-fc{background:rgba(58,58,240,0.08);color:var(--c-fc)}
+.b-pv{background:rgba(14,165,233,0.08);color:var(--c-pv)}
+.b-mx{background:rgba(196,90,16,0.08);color:var(--c-mx)}
+.b-ac{background:rgba(26,138,74,0.08);color:var(--c-ac)}
+.b-mis{background:rgba(212,32,32,0.06);color:var(--c-mis)}
+.nick{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:17px;border-radius:4px;font-size:9.5px;font-weight:700;padding:0 4px;margin-right:5px;vertical-align:middle;}
+.row-gap td{border-top:1px solid rgba(0,0,0,0.05);padding-top:7px}
+.tbl-legend{display:flex;gap:14px;padding:8px 14px 10px;font-size:10.5px;color:var(--t3);border-top:1px solid rgba(0,0,0,0.04)}
+</style>
+</head>
+<body>
+
+<div class="week-nav">
+  <button class="wn-btn" onclick="moveWeek(-1)">‹</button>
+  <span class="wn-label" id="wn-label">—</span>
+  <button class="wn-btn" onclick="moveWeek(1)">›</button>
+  <span class="wn-range" id="wn-range"></span>
+  <button class="wn-today" onclick="goToday()">이번 주</button>
+</div>
+
+<div class="kpi-row">
+  <div class="kpi"><div class="kpi-lbl" style="color:var(--c-fc)">예측 합계</div><div class="kpi-val" id="kpi-fc" style="color:var(--c-fc)">—</div><div class="kpi-sub">이번 주 전체</div><div class="kpi-bar"><div class="kpi-fill" id="kf-fc" style="background:var(--c-fc)"></div></div></div>
+  <div class="kpi"><div class="kpi-lbl" style="color:var(--c-pv)">전일 결제</div><div class="kpi-val" id="kpi-pv" style="color:var(--c-pv)">—</div><div class="kpi-sub">누적 결제</div><div class="kpi-bar"><div class="kpi-fill" id="kf-pv" style="background:var(--c-pv)"></div></div></div>
+  <div class="kpi"><div class="kpi-lbl" style="color:var(--c-ac)">출고 합계</div><div class="kpi-val" id="kpi-ac" style="color:var(--c-ac)">—</div><div class="kpi-sub">출고 완료</div><div class="kpi-bar"><div class="kpi-fill" id="kf-ac" style="background:var(--c-ac)"></div></div></div>
+  <div class="kpi"><div class="kpi-lbl" style="color:var(--c-mis)">미출 합계</div><div class="kpi-val" id="kpi-mis" style="color:var(--c-mis)">—</div><div class="kpi-sub">미출 발생</div><div class="kpi-bar"><div class="kpi-fill" id="kf-mis" style="background:var(--c-mis)"></div></div></div>
+</div>
+
+<div class="chip-row">
+  <div class="chip on-fc" onclick="toggleChip(this,'fc')">예측</div>
+  <div class="chip on-pv" onclick="toggleChip(this,'pv')">전일</div>
+  <div class="chip on-mx" onclick="toggleChip(this,'mx')">출고최대</div>
+  <div class="chip on-ac" onclick="toggleChip(this,'ac')">출고</div>
+  <div class="chip on-mis" onclick="toggleChip(this,'mis')">미출</div>
+  <div class="chip-sep"></div>
+  <div class="chip on-fc" id="chip-all" onclick="toggleAll(this)">전체</div>
+</div>
+
+<div class="tbl-wrap">
+  <table id="tbl" style="width:1140px;min-width:1140px;">
+    <thead><tr id="t-head"></tr></thead>
+    <tbody id="t-body"></tbody>
+  </table>
+  <div class="tbl-legend">
+    <span>🟡 전일 미입력</span>
+    <span>🟠 출고최대 미입력</span>
+    <span>🟢 출고 미입력</span>
+    <span style="margin-left:auto">★ 오늘</span>
+  </div>
+</div>
+
+<script>
+const ITEMS = [
+  {nick:'플',nc:'#3a3af0',nb:'#eaeaff',name:'플레인 그릭요거트 100g'},
+  {nick:'소',nc:'#0ea5e9',nb:'#e0f2fe',name:'소프트 그릭요거트 100g'},
+  {nick:'알',nc:'#7c3aed',nb:'#ede9fe',name:'알룰로스 블렌드 100g'},
+  {nick:'말',nc:'#059669',nb:'#d1fae5',name:'말차 그릭요거트 100g'},
+  {nick:'라',nc:'#b45309',nb:'#fef3c7',name:'카페라떼 그릭요거트 100g'},
+  {nick:'블',nc:'#1d4ed8',nb:'#dbeafe',name:'플레인 블루베리 130g'},
+  {nick:'애',nc:'#b45309',nb:'#ffedd5',name:'플레인 애플시나몬 130g'},
+  {nick:'오',nc:'#15803d',nb:'#dcfce7',name:'오!그래놀라 저당 그릭요거트 115g'},
+  {nick:'크',nc:'#be185d',nb:'#fce7f3',name:'벨베티 크리스피 120g'},
+  {nick:'카',nc:'#92400e',nb:'#fef3c7',name:'플레인 카카오 120g'},
+  {nick:'푸',nc:'#7e22ce',nb:'#f3e8ff',name:'플레인 푸룬 130g'},
+  {nick:'초',nc:'#6b21a8',nb:'#ede9fe',name:'벨베티 초코소보로 120g'},
+  {nick:'마S',nc:'#0284c7',nb:'#e0f2fe',name:'마시는 그릭요거트 750ml'},
+  {nick:'마L',nc:'#0369a1',nb:'#dbeafe',name:'마시는 그릭요거트 1.8L'},
+  {nick:'블토',nc:'#1d4ed8',nb:'#dbeafe',name:'블루베리콩포트 토핑 (30g×3)'},
+  {nick:'크토',nc:'#be185d',nb:'#fce7f3',name:'크리스피그래놀라 토핑 (30g×3)'},
+  {nick:'초토',nc:'#6b21a8',nb:'#ede9fe',name:'초코소보로그래놀라 토핑 (30g×3)'},
+  {nick:'스토',nc:'#be123c',nb:'#ffe4e6',name:'딸기콩포트 토핑 (30g×3)'},
+  {nick:'카토',nc:'#92400e',nb:'#fef3c7',name:'카카오그래놀라 토핑 (30g×3)'},
+  {nick:'꿀',nc:'#d97706',nb:'#fef9c3',name:'허니스틱 (10포)'},
+  {nick:'줄자',nc:'#374151',nb:'#f3f4f6',name:'피팅줄자'},
+  {nick:'파우치',nc:'#0369a1',nb:'#e0f2fe',name:'아이스 파우치'},
+  {nick:'메이커',nc:'#1a8a4a',nb:'#d1fae5',name:'그릭요거트 메이커'},
+];
+
+const ROWS = ['fc','pv','mx','ac','mis'];
+const BADGE = {fc:'b-fc',pv:'b-pv',mx:'b-mx',ac:'b-ac',mis:'b-mis'};
+const LABEL = {fc:'예측',pv:'전일',mx:'최대',ac:'출고',mis:'미출'};
+let showRows = {fc:true,pv:true,mx:true,ac:true,mis:true};
+
+const today = new Date(); today.setHours(0,0,0,0);
+function week1Mon(y,m){const d=new Date(y,m-1,1);const dw=d.getDay();const df=dw===0?-6:1-dw;return new Date(y,m-1,1+df);}
+function getWeekDays(y,m,w){const mon=new Date(week1Mon(y,m));if(w===0)mon.setDate(mon.getDate()-7);else mon.setDate(mon.getDate()+(w-1)*7);return Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d;});}
+function dateWeek(d){const y=d.getFullYear(),m=d.getMonth()+1;const mon=week1Mon(y,m);const df=Math.floor((d-mon)/86400000);if(df<0)return{y,m,w:0};return{y,m,w:Math.floor(df/7)+1};}
+function maxW(y,m){return dateWeek(new Date(y,m,0)).w;}
+function fmtMD(d){return`${d.getMonth()+1}/${d.getDate()}`;}
+function fmtYMD(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+const DOW=['일','월','화','수','목','금','토'];
+
+let cY,cM,cW;
+(()=>{const t=dateWeek(today);cY=t.y;cM=t.m;cW=t.w;})();
+
+function sampleVal(type,idx,d){
+  const isW=d.getDay()===0||d.getDay()===6;
+  if(isW)return null;
+  if(d>today)return undefined;
+  const b=[375,200,80,60,120,40,20,30,20,20,30,20,50,30,40,10,8,6,15,20,5,8,10];
+  const base=b[idx]||10;
+  const v=Math.abs(Math.floor(Math.sin(idx*3+d.getDate()*7)*base*0.3+base));
+  if(type==='fc')return v;
+  if(type==='pv')return Math.round(v*0.88);
+  if(type==='mx')return Math.round(v*0.97);
+  if(type==='ac')return Math.round(v*0.92);
+  if(type==='mis'){return Math.round(v*0.97)-Math.round(v*0.92);}
+  return v;
+}
+
+function render(){
+  const days=getWeekDays(cY,cM,cW);
+  const todayStr=fmtYMD(today);
+  document.getElementById('wn-label').textContent=`${cY}년 ${cM}월 ${cW}주차`;
+  document.getElementById('wn-range').textContent=`${fmtMD(days[0])}(${DOW[days[0].getDay()]}) ~ ${fmtMD(days[6])}(${DOW[days[6].getDay()]})`;
+
+  // 헤더
+  const thead=document.getElementById('t-head');
+  thead.innerHTML='';
+  const ths=[{cls:'th-item',txt:'품목'},{cls:'th-type',txt:'항목'}];
+  days.forEach(d=>{
+    const isT=fmtYMD(d)===todayStr;
+    const isTue=d.getDay()===2;
+    ths.push({cls:'th-day'+(isT?' th-today':isTue?' th-tue':''),txt:`${fmtMD(d)}<br><span style="font-size:10px">${DOW[d.getDay()]}${isT?'★':''}</span>`});
+  });
+  ths.push({cls:'th-sum',txt:'계'});
+  ths.forEach(h=>{const th=document.createElement('th');th.className=h.cls;th.innerHTML=h.txt;thead.appendChild(th);});
+
+  // KPI 계산
+  let sumFC=0,sumPV=0,sumAC=0,sumMIS=0;
+  ITEMS.forEach((item,idx)=>{
+    days.forEach(d=>{
+      if(d.getDay()===0||d.getDay()===6)return;
+      const fc=sampleVal('fc',idx,d);
+      const ac=sampleVal('ac',idx,d);
+      const pv=sampleVal('pv',idx,d);
+      const mis=sampleVal('mis',idx,d);
+      if(typeof fc==='number')sumFC+=fc;
+      if(typeof pv==='number')sumPV+=pv;
+      if(typeof ac==='number')sumAC+=ac;
+      if(typeof mis==='number'&&mis>0)sumMIS+=mis;
+    });
+  });
+  document.getElementById('kpi-fc').textContent=sumFC.toLocaleString();
+  document.getElementById('kpi-pv').textContent=sumPV.toLocaleString();
+  document.getElementById('kpi-ac').textContent=sumAC.toLocaleString();
+  document.getElementById('kpi-mis').textContent=sumMIS.toLocaleString();
+  const mx=Math.max(sumFC,1);
+  document.getElementById('kf-fc').style.width=Math.min(100,sumFC/mx*100)+'%';
+  document.getElementById('kf-pv').style.width=Math.min(100,sumPV/mx*100)+'%';
+  document.getElementById('kf-ac').style.width=Math.min(100,sumAC/mx*100)+'%';
+  document.getElementById('kf-mis').style.width=Math.min(100,sumMIS/mx*100)+'%';
+
+  // 바디
+  const tbody=document.getElementById('t-body');
+  tbody.innerHTML='';
+  ITEMS.forEach((item,idx)=>{
+    let firstRow=true;
+    ROWS.forEach(type=>{
+      if(!showRows[type])return;
+      const tr=document.createElement('tr');
+      if(firstRow&&idx>0)tr.className='row-gap';
+
+      // 품목명 (첫 행만)
+      const tdItem=document.createElement('td');
+      tdItem.className='td-item';
+      if(firstRow){tdItem.rowSpan=ROWS.filter(r=>showRows[r]).length;tdItem.innerHTML=`<span class="nick" style="color:${item.nc};background:${item.nb}">${item.nick}</span>${item.name}`;firstRow=false;}
+      else tdItem.style.display='none';
+      tr.appendChild(tdItem);
+
+      // 타입 배지
+      const tdType=document.createElement('td');
+      tdType.innerHTML=`<span class="badge ${BADGE[type]}">${LABEL[type]}</span>`;
+      tr.appendChild(tdType);
+
+      let rowSum=0;let hasVal=false;
+      days.forEach(d=>{
+        const isT=fmtYMD(d)===todayStr;
+        const isW=d.getDay()===0||d.getDay()===6;
+        const td=document.createElement('td');
+        if(isT)td.classList.add('td-today');
+        if(isW){td.className=(isT?'td-today ':'')+'td-dash';td.textContent='—';}
+        else{
+          const val=sampleVal(type,idx,d);
+          if(val===undefined){
+            if(d<=today){
+              if(type==='pv')td.classList.add('td-warn-pv');
+              else if(type==='mx')td.classList.add('td-warn-mx');
+              else if(type==='ac')td.classList.add('td-warn-ac');
+              td.textContent='';
+            }else{td.className=(isT?'td-today ':'')+'td-dash';td.textContent='—';}
+          }else if(val===null){td.className=(isT?'td-today ':'')+'td-dash';td.textContent='—';}
+          else{
+            if(type==='mis'){td.className=(isT?'td-today ':'')+(val===0?'mis-zero':'mis-num');td.textContent=val===0?'0':val.toLocaleString();}
+            else{td.className=(isT?'td-today ':'')+'td-num';td.style.color='var(--c-'+type+')';td.textContent=val.toLocaleString();}
+            rowSum+=val;hasVal=true;
+          }
+        }
+        tr.appendChild(td);
+      });
+
+      const tdSum=document.createElement('td');
+      tdSum.className='td-sum';
+      tdSum.textContent=hasVal?rowSum.toLocaleString():'—';
+      tr.appendChild(tdSum);
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+function moveWeek(dir){
+  cW+=dir;
+  if(cW<0){cM--;if(cM<1){cM=12;cY--;}cW=maxW(cY,cM);}
+  else if(cW>maxW(cY,cM)){cW=1;cM++;if(cM>12){cM=1;cY++;}}
+  render();
+}
+function goToday(){const t=dateWeek(today);cY=t.y;cM=t.m;cW=t.w;render();}
+function toggleChip(el,type){showRows[type]=!showRows[type];if(showRows[type])el.classList.add('on-'+type);else el.classList.remove('on-'+type);render();}
+function toggleAll(el){}
+render();
+</script>
+</body>
+</html>

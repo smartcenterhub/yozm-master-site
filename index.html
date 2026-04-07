@@ -13,7 +13,7 @@
   --glass-bg-strong:rgba(255,255,255,0.92);
   --glass-border-s:rgba(0,0,0,0.07);
   --tx:#0a0a0f;--t2:#4a4a5a;--t3:#9898a8;--t4:#c4c4d0;
-  --accent:#3a3af0;--green:#1a8a4a;--red:#d42020;--orange:#c45a10;--blue:#1a56c8;
+  --accent:#3a3af0;--green:#1a8a4a;--red:#d42020;--orange:#c45a10;--blue:#1a56c8;--purple:#6c35cc;
 }
 html{
   min-width:1440px;overflow-x:auto;height:100%;
@@ -323,6 +323,27 @@ body{
         </div>
         <div class="l2-body">
           <div class="l3-item" onclick="go('ads_report.html#monthly','광고 리포트 관리','월간 리포트','월간 리포트',this)"><div class="l3-dot"></div>월간 리포트</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sb-divider"></div>
+
+  <!-- 5. 출고 배분기 -->
+  <div class="l1-block">
+    <div class="l1-hdr" onclick="tL1(this)">
+      <div class="l1-dot" style="background:var(--purple)"></div>
+      <span class="l1-label" style="color:var(--purple)">출고 배분기</span>
+      <span class="l1-chev">▶</span>
+    </div>
+    <div class="l1-body" style="display:none">
+      <div class="l2-block">
+        <div class="l2-hdr" onclick="tL2(this)">
+          <div class="l2-dot"></div>출고 배분기<span class="l2-chev">▶</span>
+        </div>
+        <div class="l2-body">
+          <div class="l3-item" onclick="go('shipment_tool.html','출고 배분기','출고 배분기','옵션 계산기 → 출고 배분',this)"><div class="l3-dot"></div>옵션 계산 → 출고 배분</div>
         </div>
       </div>
     </div>

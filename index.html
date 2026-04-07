@@ -65,13 +65,15 @@ body{
 /* L2 */
 .l2-hdr{
   display:flex;align-items:center;gap:6px;
-  padding:4px 14px 3px 24px;cursor:pointer;user-select:none;
-  color:var(--t2);font-size:12px;transition:all .12s;
+  padding:5px 14px 4px 24px;cursor:pointer;user-select:none;
+  color:var(--t2);font-size:12px;transition:all .12s;position:relative;
 }
 .l2-hdr:hover{color:var(--tx);background:rgba(0,0,0,0.015)}
 .l2-hdr.open{color:var(--tx);font-weight:500}
+.l2-hdr.active{color:var(--accent);font-weight:500}
+.l2-hdr.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2.5px;background:var(--accent);border-radius:0 2px 2px 0}
 .l2-dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.3;flex-shrink:0;transition:opacity .12s}
-.l2-hdr.open .l2-dot{opacity:.7}
+.l2-hdr.open .l2-dot,.l2-hdr.active .l2-dot{opacity:.7}
 .l2-chev{margin-left:auto;font-size:7px;color:var(--t4);transition:transform .18s}
 .l2-hdr.open .l2-chev{transform:rotate(90deg)}
 .l2-tag{font-size:9px;padding:1px 5px;border-radius:6px;font-weight:500;flex-shrink:0}
@@ -167,56 +169,27 @@ body{
       <span class="l1-chev">▶</span>
     </div>
     <div class="l1-body">
-
-      <div class="l2-block">
-        <div class="l2-hdr open" onclick="tL2(this)">
-          <div class="l2-dot"></div>데이터 업로드<span class="l2-chev">▶</span>
-        </div>
-        <div class="l2-body">
-          <div class="l3-item active" onclick="go('vol_upload.html','물량 관리','데이터 업로드','예측 데이터 업로드',this)"><div class="l3-dot"></div>예측 데이터 업로드</div>
-          <div class="l3-item" onclick="go('vol_upload.html#pv','물량 관리','데이터 업로드','전일 데이터 업로드',this)"><div class="l3-dot"></div>전일 데이터 업로드</div>
-          <div class="l3-item" onclick="go('vol_upload.html#mx','물량 관리','데이터 업로드','최대 데이터 업로드',this)"><div class="l3-dot"></div>최대 데이터 업로드</div>
-          <div class="l3-item" onclick="go('vol_upload.html#ac','물량 관리','데이터 업로드','실제 데이터 업로드',this)"><div class="l3-dot"></div>실제 데이터 업로드</div>
-        </div>
+      <div class="l2-hdr active" onclick="goL2('vol_upload.html','물량 관리','데이터 업로드',this)">
+        <div class="l2-dot"></div>데이터 업로드
+      </div>
+      <div class="l2-hdr" onclick="goL2('vol_view.html','물량 관리','데이터 조회',this)">
+        <div class="l2-dot"></div>데이터 조회
       </div>
 
-      <div class="l2-block">
-        <div class="l2-hdr" onclick="tL2(this)">
-          <div class="l2-dot"></div>데이터 조회<span class="l2-chev">▶</span>
-        </div>
-        <div class="l2-body">
-          <div class="l3-item" onclick="go('vol_view.html','물량 관리','데이터 조회','예측 데이터 조회',this)"><div class="l3-dot"></div>예측 데이터 조회</div>
-          <div class="l3-item" onclick="go('vol_view.html#pv','물량 관리','데이터 조회','전일 데이터 조회',this)"><div class="l3-dot"></div>전일 데이터 조회</div>
-          <div class="l3-item" onclick="go('vol_view.html#mx','물량 관리','데이터 조회','최대 데이터 조회',this)"><div class="l3-dot"></div>최대 데이터 조회</div>
-          <div class="l3-item" onclick="go('vol_view.html#ac','물량 관리','데이터 조회','실제 데이터 조회',this)"><div class="l3-dot"></div>실제 데이터 조회</div>
-          <div class="l3-item" onclick="go('vol_view.html#mis','물량 관리','데이터 조회','미출 데이터 조회',this)"><div class="l3-dot"></div>미출 데이터 조회</div>
-        </div>
-      </div>
-
+      <!-- 물량 대시보드만 L3 유지 -->
       <div class="l2-block">
         <div class="l2-hdr" onclick="tL2(this)">
           <div class="l2-dot"></div>물량 대시보드<span class="l2-chev">▶</span>
         </div>
         <div class="l2-body">
-          <div class="l3-item" onclick="go('vol_weekly.html','물량 관리','물량 대시보드','주간 대시보드',this)"><div class="l3-dot"></div>주간 대시보드</div>
-          <div class="l3-item" onclick="go('vol_monthly.html','물량 관리','물량 대시보드','월간 대시보드',this)"><div class="l3-dot"></div>월간 대시보드</div>
+          <div class="l3-item" onclick="goL3('vol_weekly.html','물량 관리','물량 대시보드','주간 대시보드',this)"><div class="l3-dot"></div>주간 대시보드</div>
+          <div class="l3-item" onclick="goL3('vol_monthly.html','물량 관리','물량 대시보드','월간 대시보드',this)"><div class="l3-dot"></div>월간 대시보드</div>
         </div>
       </div>
 
-      <div class="l2-block">
-        <div class="l2-hdr" onclick="tL2(this)">
-          <div class="l2-dot"></div>물량 데이터 관리<span class="l2-chev">▶</span>
-        </div>
-        <div class="l2-body">
-          <div class="l3-item" onclick="go('vol_analytics.html','물량 관리','물량 데이터 관리','오차 관리',this)"><div class="l3-dot"></div>오차 관리 <span class="l3-tag t-plan">예정</span></div>
-          <div class="l3-item" onclick="go('vol_analytics.html#pred','물량 관리','물량 데이터 관리','예측 관리',this)"><div class="l3-dot"></div>예측 관리 <span class="l3-tag t-plan">예정</span></div>
-          <div class="l3-item" onclick="go('vol_analytics.html#coef','물량 관리','물량 데이터 관리','계수 관리',this)"><div class="l3-dot"></div>계수 관리 <span class="l3-tag t-plan">예정</span></div>
-          <div class="l3-item" onclick="go('vol_analytics.html#cur','물량 관리','물량 데이터 관리','현재기준 물량예측',this)"><div class="l3-dot"></div>현재기준 물량예측 <span class="l3-tag t-plan">예정</span></div>
-          <div class="l3-item" onclick="go('vol_analytics.html#hist','물량 관리','물량 데이터 관리','과거기준 물량예측',this)"><div class="l3-dot"></div>과거기준 물량예측 <span class="l3-tag t-plan">예정</span></div>
-          <div class="l3-item" onclick="go('vol_analytics.html#fb','물량 관리','물량 데이터 관리','물량예측 피드백',this)"><div class="l3-dot"></div>물량예측 피드백 <span class="l3-tag t-plan">예정</span></div>
-        </div>
+      <div class="l2-hdr" onclick="goL2('vol_analytics.html','물량 관리','물량 데이터 관리',this)">
+        <div class="l2-dot"></div>물량 데이터 관리 <span class="l2-tag tag-plan">예정</span>
       </div>
-
     </div>
   </div>
   <div class="sb-divider"></div>
@@ -229,23 +202,8 @@ body{
       <span class="l1-chev">▶</span>
     </div>
     <div class="l1-body" style="display:none">
-      <div class="l2-block">
-        <div class="l2-hdr" onclick="tL2(this)">
-          <div class="l2-dot"></div>상품 업로드<span class="l2-chev">▶</span>
-        </div>
-        <div class="l2-body">
-          <div class="l3-item" onclick="go('prod_manage.html','상품 관리','상품 업로드','품목 업로드',this)"><div class="l3-dot"></div>품목 업로드</div>
-          <div class="l3-item" onclick="go('prod_manage.html#sku','상품 관리','상품 업로드','SKU 업로드',this)"><div class="l3-dot"></div>SKU 업로드</div>
-        </div>
-      </div>
-      <div class="l2-block">
-        <div class="l2-hdr" onclick="tL2(this)">
-          <div class="l2-dot"></div>상품 조회<span class="l2-chev">▶</span>
-        </div>
-        <div class="l2-body">
-          <div class="l3-item" onclick="go('prod_manage.html#view-item','상품 관리','상품 조회','품목 조회',this)"><div class="l3-dot"></div>품목 조회</div>
-          <div class="l3-item" onclick="go('prod_manage.html#view-sku','상품 관리','상품 조회','SKU 조회',this)"><div class="l3-dot"></div>SKU 조회</div>
-        </div>
+      <div class="l2-hdr" onclick="goL2('prod_manage.html','상품 관리','상품 관리',this)">
+        <div class="l2-dot"></div>상품 관리
       </div>
     </div>
   </div>
@@ -260,42 +218,8 @@ body{
       <span class="l1-chev">▶</span>
     </div>
     <div class="l1-body" style="display:none">
-      <div class="l2-block">
-        <div class="l2-hdr" onclick="tL2(this)">
-          <div class="l2-dot"></div>행사 제안 <span class="l2-tag tag-plan">진행 전</span><span class="l2-chev">▶</span>
-        </div>
-        <div class="l2-body">
-          <div class="l3-item" onclick="go('evt_manage.html','행사 관리','행사 제안','행사 제안 데이터 업로드',this)"><div class="l3-dot"></div>행사 제안 데이터 업로드</div>
-          <div class="l3-item" onclick="go('evt_manage.html#prop-view','행사 관리','행사 제안','행사 제안 데이터 조회',this)"><div class="l3-dot"></div>행사 제안 데이터 조회</div>
-        </div>
-      </div>
-      <div class="l2-block">
-        <div class="l2-hdr" onclick="tL2(this)">
-          <div class="l2-dot"></div>행사 선정 <span class="l2-tag tag-plan">진행 중</span><span class="l2-chev">▶</span>
-        </div>
-        <div class="l2-body">
-          <div class="l3-item" onclick="go('evt_manage.html#sel-up','행사 관리','행사 선정','행사 선정 데이터 업로드',this)"><div class="l3-dot"></div>행사 선정 데이터 업로드 <span class="l3-tag t-copy">복제</span></div>
-          <div class="l3-item" onclick="go('evt_manage.html#sel-view','행사 관리','행사 선정','행사 선정 데이터 조회',this)"><div class="l3-dot"></div>행사 선정 데이터 조회</div>
-          <div class="l3-item" onclick="go('evt_manage.html#timeline','행사 관리','행사 선정','행사 운영 타임라인',this)"><div class="l3-dot"></div>행사 운영 타임라인 <span class="l3-tag t-ext">별도 HTML</span></div>
-        </div>
-      </div>
-      <div class="l2-block">
-        <div class="l2-hdr" onclick="tL2(this)">
-          <div class="l2-dot"></div>행사 종료 <span class="l2-tag tag-plan">진행 완료</span><span class="l2-chev">▶</span>
-        </div>
-        <div class="l2-body">
-          <div class="l3-item" onclick="go('evt_manage.html#end-up','행사 관리','행사 종료','행사 종료 데이터 조회',this)"><div class="l3-dot"></div>행사 종료 데이터 조회 <span class="l3-tag t-copy">복제</span></div>
-          <div class="l3-item" onclick="go('evt_manage.html#end-perf','행사 관리','행사 종료','행사 성과 데이터 조회',this)"><div class="l3-dot"></div>행사 성과 데이터 조회</div>
-        </div>
-      </div>
-      <div class="l2-block">
-        <div class="l2-hdr" onclick="tL2(this)">
-          <div class="l2-dot"></div>행사 관리<span class="l2-chev">▶</span>
-        </div>
-        <div class="l2-body">
-          <div class="l3-item" onclick="go('evt_manage.html#naver','행사 관리','행사 관리','네이버 행사 알아보기',this)"><div class="l3-dot"></div>네이버 행사 알아보기</div>
-          <div class="l3-item" onclick="go('evt_manage.html#own','행사 관리','행사 관리','자체 행사 알아보기',this)"><div class="l3-dot"></div>자체 행사 알아보기</div>
-        </div>
+      <div class="l2-hdr" onclick="goL2('evt_manage.html','행사 관리','행사 관리',this)">
+        <div class="l2-dot"></div>행사 관리 <span class="l2-tag tag-plan">예정</span>
       </div>
     </div>
   </div>
@@ -309,25 +233,11 @@ body{
       <span class="l1-chev">▶</span>
     </div>
     <div class="l1-body" style="display:none">
-      <div class="l2-block">
-        <div class="l2-hdr" onclick="tL2(this)">
-          <div class="l2-dot"></div>데일리 리포트 <span class="l2-tag tag-ext">별도 HTML</span><span class="l2-chev">▶</span>
-        </div>
-        <div class="l2-body">
-          <div class="l3-item" onclick="go('ads_report.html','광고 리포트 관리','데일리 리포트','데일리 리포트',this)"><div class="l3-dot"></div>데일리 리포트</div>
-        </div>
-      </div>
-      <div class="l2-block">
-        <div class="l2-hdr" onclick="tL2(this)">
-          <div class="l2-dot"></div>월간 리포트 <span class="l2-tag tag-ext">별도 HTML</span><span class="l2-chev">▶</span>
-        </div>
-        <div class="l2-body">
-          <div class="l3-item" onclick="go('ads_report.html#monthly','광고 리포트 관리','월간 리포트','월간 리포트',this)"><div class="l3-dot"></div>월간 리포트</div>
-        </div>
+      <div class="l2-hdr" onclick="goL2('ads_report.html','광고 리포트 관리','광고 리포트',this)">
+        <div class="l2-dot"></div>광고 리포트 <span class="l2-tag tag-ext">별도 HTML</span>
       </div>
     </div>
   </div>
-
   <div class="sb-divider"></div>
 
   <!-- 5. 출고 배분기 -->
@@ -338,13 +248,8 @@ body{
       <span class="l1-chev">▶</span>
     </div>
     <div class="l1-body" style="display:none">
-      <div class="l2-block">
-        <div class="l2-hdr" onclick="tL2(this)">
-          <div class="l2-dot"></div>출고 배분기<span class="l2-chev">▶</span>
-        </div>
-        <div class="l2-body">
-          <div class="l3-item" onclick="go('shipment_tool.html','출고 배분기','출고 배분기','옵션 계산기 → 출고 배분',this)"><div class="l3-dot"></div>옵션 계산 → 출고 배분</div>
-        </div>
+      <div class="l2-hdr" onclick="goL2('shipment_tool.html','출고 배분기','출고 배분기',this)">
+        <div class="l2-dot"></div>출고 배분기
       </div>
     </div>
   </div>
@@ -379,15 +284,27 @@ body{
 </div>
 
 <script>
-let curL3 = document.querySelector('.l3-item.active');
+let curActive = document.querySelector('.l2-hdr.active');
 
-function go(src, l1, l2, l3, el) {
+// L2 직접 파일 열기
+function goL2(src, l1, l2, el) {
+  document.getElementById('content-frame').src = src;
+  document.getElementById('bc').innerHTML =
+    `<span>${l1}</span><span class="bc-sep">›</span><b>${l2}</b>`;
+  // 이전 active 해제
+  document.querySelectorAll('.l2-hdr.active, .l3-item.active').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  curActive = el;
+}
+
+// L3 파일 열기 (물량 대시보드용)
+function goL3(src, l1, l2, l3, el) {
   document.getElementById('content-frame').src = src;
   document.getElementById('bc').innerHTML =
     `<span>${l1}</span><span class="bc-sep">›</span><span>${l2}</span><span class="bc-sep">›</span><b>${l3}</b>`;
-  if (curL3) curL3.classList.remove('active');
+  document.querySelectorAll('.l2-hdr.active, .l3-item.active').forEach(e => e.classList.remove('active'));
   el.classList.add('active');
-  curL3 = el;
+  curActive = el;
 }
 
 function tL1(hdr) {
@@ -410,7 +327,6 @@ const days = ['일','월','화','수','목','금','토'];
 document.getElementById('today-date').textContent =
   `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} (${days[d.getDay()]})`;
 
-// 연동 시간
 const now = new Date();
 document.getElementById('sync-time').textContent =
   `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')} ✅`;

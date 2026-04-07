@@ -47,20 +47,14 @@ tbody tr:last-child td{border-bottom:none}
 
 <!-- 품목 업로드 -->
 <div class="tab-content active" id="t-up-item">
-  <div class="pg-header"><div><div class="pg-title">품목 업로드</div><div class="pg-desc">◆품목기준표 — 단품 품목 코드 및 운영 여부 관리</div><span class="pg-badge">수정 가능 섹션</span></div><div style="display:flex;gap:7px"><button class="btn btn-ghost">📋 시트에서 수정</button><button class="btn btn-primary">⬆ 파일 업로드</button></div></div>
-  <div class="grid-2">
-    <div class="card"><div class="card-title"><div class="card-dot" style="background:var(--green)"></div>파일로 업로드</div><div class="upload-zone"><div class="upload-icon">📂</div><div class="upload-title">품목기준표 Excel 파일 드래그 또는 클릭</div><div class="upload-desc">요즘_상품_품목_리스트.xlsx · 최대 10MB</div></div></div>
-    <div class="card"><div class="card-title"><div class="card-dot" style="background:var(--green)"></div>시트 구조</div><div class="info-row"><b>A열:</b> 분류 (요거트/마시는/토핑/굿즈)<br><b>B열:</b> 품목코드 <code>Y-P-00</code> 형식<br><b>C열:</b> 품목명<br><b>D열:</b> 태그(닉네임)<br><b>E열:</b> 스토어 상품명 별칭<br><b>F열:</b> 운영여부 (<code>OFF</code> 입력 시 비운영)</div><button class="btn btn-ghost" style="margin-top:14px">📋 구글 시트 열기</button></div>
-  </div>
+  <div class="pg-header"><div><div class="pg-title">품목 업로드</div><div class="pg-desc">품목 마스터 데이터 업로드 (Firebase items 컬렉션)</div><span class="pg-badge">수정 가능 섹션</span></div><div style="display:flex;gap:7px"><button class="btn btn-primary">⬆ 파일 업로드</button></div></div>
+  <div class="card"><div class="card-title"><div class="card-dot" style="background:var(--green)"></div>파일로 업로드</div><div class="upload-zone"><div class="upload-icon">📂</div><div class="upload-title">품목기준표 Excel 파일 드래그 또는 클릭</div><div class="upload-desc">요즘_상품_품목_리스트.xlsx · 최대 10MB</div></div></div>
 </div>
 
 <!-- SKU 업로드 -->
 <div class="tab-content" id="t-up-sku">
-  <div class="pg-header"><div><div class="pg-title">SKU 업로드</div><div class="pg-desc">◆sku_기준표 — 행사용 묶음 상품 코드 관리</div><span class="pg-badge">수정 가능 섹션</span></div><div style="display:flex;gap:7px"><button class="btn btn-ghost">📋 시트에서 수정</button><button class="btn btn-primary">⬆ 파일 업로드</button></div></div>
-  <div class="grid-2">
-    <div class="card"><div class="card-title"><div class="card-dot" style="background:var(--green)"></div>파일로 업로드</div><div class="upload-zone"><div class="upload-icon">📂</div><div class="upload-title">SKU기준표 Excel 파일 드래그 또는 클릭</div><div class="upload-desc">최대 10MB</div></div></div>
-    <div class="card"><div class="card-title"><div class="card-dot" style="background:var(--green)"></div>시트 구조</div><div class="info-row"><b>B열:</b> 구분 (상시운영/슈퍼적립/한시운영)<br><b>C열:</b> 태그(닉네임)<br><b>D열:</b> 네이버 상품코드<br><b>E열:</b> 상품명<br><b>M열:</b> 운영여부 (<code>OFF</code> 입력 시 비운영)<br><b>행사제안불가:</b> 대시보드 표시 제외</div><button class="btn btn-ghost" style="margin-top:14px">📋 구글 시트 열기</button></div>
-  </div>
+  <div class="pg-header"><div><div class="pg-title">SKU 업로드</div><div class="pg-desc">SKU 마스터 데이터 업로드 (Firebase skus 컬렉션)</div><span class="pg-badge">수정 가능 섹션</span></div><div style="display:flex;gap:7px"><button class="btn btn-primary">⬆ 파일 업로드</button></div></div>
+  <div class="card"><div class="card-title"><div class="card-dot" style="background:var(--green)"></div>파일로 업로드</div><div class="upload-zone"><div class="upload-icon">📂</div><div class="upload-title">SKU기준표 Excel 파일 드래그 또는 클릭</div><div class="upload-desc">최대 10MB</div></div></div>
 </div>
 
 <!-- 품목 조회 -->

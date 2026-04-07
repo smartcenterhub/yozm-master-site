@@ -133,29 +133,15 @@ tbody tr:last-child td{border-bottom:none}
       <span class="pg-badge">수정 가능 섹션</span>
     </div>
     <div class="pg-actions">
-      <button class="btn btn-ghost">📋 시트에서 수정</button>
       <button class="btn btn-primary">⬆ 파일 업로드</button>
     </div>
   </div>
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title"><div class="card-dot" style="background:var(--accent)"></div>파일로 업로드</div>
-      <div class="upload-zone">
-        <div class="upload-icon">📂</div>
-        <div class="upload-title">Excel 파일을 드래그하거나 클릭해서 선택</div>
-        <div class="upload-desc">물량관리_v8_최종.xlsx 또는 동일 형식 · 최대 10MB</div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title"><div class="card-dot" style="background:var(--accent)"></div>직접 입력 (구글 시트)</div>
-      <div class="info-row">
-        <b>입력 위치:</b> ◆summary_HTML용 탭 → <code>D열(fc)</code><br>
-        <b>날짜 형식:</b> <code>A열 = YYYY-MM-DD</code><br>
-        <b>품목코드:</b> <code>B열 = Y-P-00</code> 형식 유지<br>
-        <b>입력 시점:</b> 매주 화요일 — 다음 주 월~일 전체<br>
-        <b>주의:</b> 예측값 없으면 출고최대 자동추산 기준 없어짐
-      </div>
-      <button class="btn btn-ghost" style="margin-top:14px">📋 구글 시트 열기</button>
+  <div class="card">
+    <div class="card-title"><div class="card-dot" style="background:var(--accent)"></div>파일로 업로드</div>
+    <div class="upload-zone">
+      <div class="upload-icon">📂</div>
+      <div class="upload-title">Excel 파일을 드래그하거나 클릭해서 선택</div>
+      <div class="upload-desc">물량관리_v8_최종.xlsx 또는 동일 형식 · 최대 10MB</div>
     </div>
   </div>
   <div class="card">
@@ -186,29 +172,15 @@ tbody tr:last-child td{border-bottom:none}
       <span class="pg-badge">수정 가능 섹션</span>
     </div>
     <div class="pg-actions">
-      <button class="btn btn-ghost">📋 시트에서 수정</button>
       <button class="btn btn-primary">⬆ 파일 업로드</button>
     </div>
   </div>
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title"><div class="card-dot" style="background:#0ea5e9"></div>파일로 업로드</div>
-      <div class="upload-zone">
-        <div class="upload-icon">📂</div>
-        <div class="upload-title">Excel 파일을 드래그하거나 클릭해서 선택</div>
-        <div class="upload-desc">스마트스토어 상품성과 Excel · 최대 10MB</div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title"><div class="card-dot" style="background:#0ea5e9"></div>직접 입력 (구글 시트)</div>
-      <div class="info-row">
-        <b>데이터 출처:</b> 네이버 스마트스토어 판매 현황<br>
-        <b>입력 위치:</b> ◆summary_HTML용 탭 → <code>E열(pv)</code><br>
-        <b>입력 시점:</b> 매일 오전 — 전날 결제 수량 확인 직후<br>
-        <b>월요일 특수:</b> 금+토+일 pv 합산해서 입력<br>
-        <b>주의:</b> 취소·반품 건 포함될 수 있음
-      </div>
-      <button class="btn btn-ghost" style="margin-top:14px">📋 구글 시트 열기</button>
+  <div class="card">
+    <div class="card-title"><div class="card-dot" style="background:#0ea5e9"></div>파일로 업로드</div>
+    <div class="upload-zone">
+      <div class="upload-icon">📂</div>
+      <div class="upload-title">Excel 파일을 드래그하거나 클릭해서 선택</div>
+      <div class="upload-desc">스마트스토어 상품성과 Excel · 최대 10MB</div>
     </div>
   </div>
   <div class="card">
@@ -239,29 +211,15 @@ tbody tr:last-child td{border-bottom:none}
       <span class="pg-badge">수정 가능 섹션</span>
     </div>
     <div class="pg-actions">
-      <button class="btn btn-ghost">📋 시트에서 수정</button>
       <button class="btn btn-primary">⬆ 파일 업로드</button>
     </div>
   </div>
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title"><div class="card-dot" style="background:var(--orange)"></div>파일로 업로드</div>
-      <div class="upload-zone">
-        <div class="upload-icon">📂</div>
-        <div class="upload-title">Excel 파일을 드래그하거나 클릭해서 선택</div>
-        <div class="upload-desc">물류팀 출고 가능 수량 확정 파일 · 최대 10MB</div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title"><div class="card-dot" style="background:var(--orange)"></div>직접 입력 (구글 시트)</div>
-      <div class="info-row">
-        <b>확인 방법:</b> 창고 재고 + 당일 생산 예정 수량<br>
-        <b>입력 위치:</b> ◆summary_HTML용 탭 → <code>F열(mx)</code><br>
-        <b>입력 시점:</b> 매일 오전 — 출고 준비 전 확정 후<br>
-        <b>미입력 시:</b> <code>fc × 0.967</code> 자동 추산 (참고값)<br>
-        <b>주의:</b> 자동 추산값은 실제 재고와 다를 수 있음
-      </div>
-      <button class="btn btn-ghost" style="margin-top:14px">📋 구글 시트 열기</button>
+  <div class="card">
+    <div class="card-title"><div class="card-dot" style="background:var(--orange)"></div>파일로 업로드</div>
+    <div class="upload-zone">
+      <div class="upload-icon">📂</div>
+      <div class="upload-title">Excel 파일을 드래그하거나 클릭해서 선택</div>
+      <div class="upload-desc">물류팀 출고 가능 수량 확정 파일 · 최대 10MB</div>
     </div>
   </div>
   <div class="card">
@@ -291,29 +249,15 @@ tbody tr:last-child td{border-bottom:none}
       <span class="pg-badge">수정 가능 섹션</span>
     </div>
     <div class="pg-actions">
-      <button class="btn btn-ghost">📋 시트에서 수정</button>
       <button class="btn btn-primary">⬆ 파일 업로드</button>
     </div>
   </div>
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title"><div class="card-dot" style="background:var(--green)"></div>파일로 업로드</div>
-      <div class="upload-zone">
-        <div class="upload-icon">📂</div>
-        <div class="upload-title">Excel 파일을 드래그하거나 클릭해서 선택</div>
-        <div class="upload-desc">전체주문발주발송관리 Excel · 최대 10MB</div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title"><div class="card-dot" style="background:var(--green)"></div>직접 입력 (구글 시트)</div>
-      <div class="info-row">
-        <b>기준:</b> 택배사 수거 완료 건수<br>
-        <b>입력 위치:</b> ◆summary_HTML용 탭 → <code>G열(ac)</code><br>
-        <b>입력 시점:</b> 매일 오후~저녁 — 당일 출고 완료 후<br>
-        <b>미입력 시:</b> 미출(mis) 계산 불가 → <code>—</code> 표시<br>
-        <b>주의:</b> 피킹·패킹 완료여도 수거 전이면 미완료
-      </div>
-      <button class="btn btn-ghost" style="margin-top:14px">📋 구글 시트 열기</button>
+  <div class="card">
+    <div class="card-title"><div class="card-dot" style="background:var(--green)"></div>파일로 업로드</div>
+    <div class="upload-zone">
+      <div class="upload-icon">📂</div>
+      <div class="upload-title">Excel 파일을 드래그하거나 클릭해서 선택</div>
+      <div class="upload-desc">전체주문발주발송관리 Excel · 최대 10MB</div>
     </div>
   </div>
   <div class="card">

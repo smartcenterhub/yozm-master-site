@@ -1144,8 +1144,8 @@ async function processGc(file) {
   const headers = parseCSVLine(lines[0]);
 
   const iGroup    = headers.indexOf('광고 그룹 이름');
-  const iCreative = headers.indexOf('소재 이름');
-  const iCode     = headers.indexOf('소재 코드');
+  const iCreative = headers.indexOf('광고 소재 이름');
+  const iCode     = headers.indexOf('광고 소재 ID');
   const iDate     = headers.indexOf('기간');
   const iConv     = headers.indexOf('총 전환수');
   const iImp      = headers.indexOf('노출수');
@@ -1249,8 +1249,15 @@ async function renderGcCards(selDate) {
         imgSection.appendChild(copyBtn);
       } else {
         const noImg = document.createElement('div');
-        noImg.style.cssText = 'width:160px;height:72px;border:2px dashed var(--glass-border-s);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t4)';
-        noImg.textContent = '이미지 미등록';
+        noImg.style.cssText = 'width:160px;height:72px;border:2px dashed rgba(58,58,240,0.2);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;transition:all .15s;background:rgba(58,58,240,0.02)';
+        noImg.title = '클릭하면 이미지 관리 탭으로 이동';
+        noImg.innerHTML = '<div style="font-size:18px">🖼</div><div style="font-size:10.5px;color:var(--accent);font-weight:500">+ 이미지 등록하러 가기</div>';
+        noImg.onmouseenter = () => { noImg.style.background = 'rgba(58,58,240,0.06)'; noImg.style.borderColor = 'rgba(58,58,240,0.4)'; };
+        noImg.onmouseleave = () => { noImg.style.background = 'rgba(58,58,240,0.02)'; noImg.style.borderColor = 'rgba(58,58,240,0.2)'; };
+        noImg.onclick = () => {
+          const imgTab = document.querySelector('#s-gc .inner-tab:last-child');
+          if (imgTab) imgTab.click();
+        };
         imgSection.appendChild(noImg);
       }
 

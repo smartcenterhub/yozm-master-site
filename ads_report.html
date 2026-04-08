@@ -1007,6 +1007,8 @@ function setupAdvPanel(num) {
   uz.addEventListener('drop', e => { e.preventDefault(); uz.classList.remove('drag-over'); if(e.dataTransfer.files[0]) processAdv(e.dataTransfer.files[0], num); });
   fi.addEventListener('change', e => { if(e.target.files[0]) processAdv(e.target.files[0], num); });
 }
+setupAdvPanel(1);
+setupAdvPanel(2);
 
 async function processAdv(file, num) {
   const uz = document.getElementById(`advUpload${num}`);
@@ -1202,7 +1204,12 @@ async function renderGcCards(selDate) {
     return;
   }
 
-  for (const [groupName, creativeMap] of groupMap) {
+  // GFA_ORDER 기준으로 그룹 정렬
+  const sortedGroups = [...GFA_ORDER.filter(k => groupMap.has(k)),
+    ...[...groupMap.keys()].filter(k => !GFA_ORDER.includes(k))];
+
+  for (const groupName of sortedGroups) {
+    const creativeMap = groupMap.get(groupName);
     const top2 = [...creativeMap.values()].sort((a, b) => b.conv - a.conv).slice(0, 2);
 
     const groupCard = document.createElement('div');
@@ -1241,30 +1248,48 @@ async function renderGcCards(selDate) {
         img.title = '클릭하면 이미지 복사';
         img.onclick = () => copyGcImage(imgData);
         imgSection.appendChild(img);
-
-        const copyBtn = document.createElement('button');
-        copyBtn.className = 'btn btn-ghost btn-sm';
-        copyBtn.textContent = '📋 이미지 복사';
-        copyBtn.onclick = () => copyGcImage(imgData);
-        imgSection.appendChild(copyBtn);
       } else {
         const noImg = document.createElement('div');
         noImg.style.cssText = 'width:160px;height:72px;border:2px dashed rgba(58,58,240,0.2);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;transition:all .15s;background:rgba(58,58,240,0.02)';
-        noImg.title = '클릭하면 이미지 관리 탭으로 이동';
+        noImg.title = '클릭 → 코드 복사 + 이미지 관리 탭 이동';
         noImg.innerHTML = '<div style="font-size:18px">🖼</div><div style="font-size:10.5px;color:var(--accent);font-weight:500">+ 이미지 등록하러 가기</div>';
-        noImg.onmouseenter = () => { noImg.style.background = 'rgba(58,58,240,0.06)'; noImg.style.borderColor = 'rgba(58,58,240,0.4)'; };
-        noImg.onmouseleave = () => { noImg.style.background = 'rgba(58,58,240,0.02)'; noImg.style.borderColor = 'rgba(58,58,240,0.2)'; };
+        noImg.onmouseenter = () => { noImg.style.background='rgba(58,58,240,0.06)'; noImg.style.borderColor='rgba(58,58,240,0.4)'; };
+        noImg.onmouseleave = () => { noImg.style.background='rgba(58,58,240,0.02)'; noImg.style.borderColor='rgba(58,58,240,0.2)'; };
         noImg.onclick = () => {
+          const code = c.code;
+          const name = c.name;
+          // 1. 이미지 관리 탭으로 전환
           const imgTab = document.querySelector('#s-gc .inner-tab:last-child');
           if (imgTab) imgTab.click();
+          // 2. iframe 코드 입력란에 자동 입력
+          const iframe = document.getElementById('gcImageFrame');
+          const fillInputs = () => {
+            try {
+              const doc = iframe.contentDocument || iframe.contentWindow.document;
+              const codeEl = doc.getElementById('codeInput');
+              const nameEl = doc.getElementById('nameInput');
+              if (codeEl) { codeEl.value = code; codeEl.focus(); }
+              if (nameEl && name) nameEl.value = name;
+            } catch(e) {}
+          };
+          try {
+            const st = (iframe.contentDocument || iframe.contentWindow.document).readyState;
+            if (st === 'complete') fillInputs();
+            else iframe.onload = fillInputs;
+          } catch { iframe.onload = fillInputs; }
+          // 3. 코드 클립보드 복사
+          navigator.clipboard.writeText(code).then(() => showToast(`📋 코드 ${code} 복사됨 — 입력란에 자동 입력`)).catch(() => {});
         };
         imgSection.appendChild(noImg);
       }
 
-      // 소재명
+      // 소재명 + 코드
       const nameDiv = document.createElement('div');
-      nameDiv.style.cssText = 'font-size:12px;font-weight:600;color:var(--tx);line-height:1.5;word-break:break-all';
-      nameDiv.textContent = c.name;
+      nameDiv.style.cssText = 'display:flex;flex-direction:column;gap:3px';
+      nameDiv.innerHTML = `
+        <div style="font-size:12px;font-weight:600;color:var(--tx);line-height:1.5;word-break:break-all">${c.name}</div>
+        ${c.code ? `<div style="font-size:10.5px;color:var(--t3)">코드: ${c.code}</div>` : ''}
+      `;
 
       // 전환수
       const convDiv = document.createElement('div');

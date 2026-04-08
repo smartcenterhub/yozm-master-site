@@ -19,8 +19,8 @@ body{
   font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;
   font-size:13px;line-height:1.5;color:var(--tx);
   min-height:100vh;
-  display:flex;align-items:center;justify-content:center;
-  padding:40px 24px;
+  display:flex;align-items:flex-start;justify-content:center;
+  padding:36px 24px 40px;
 }
 
 .container{
@@ -31,8 +31,9 @@ body{
   font-size:22px;font-weight:600;color:var(--tx);margin-bottom:6px;
 }
 .sub{
-  font-size:13px;color:var(--t3);margin-bottom:32px;
+  font-size:13px;color:var(--t3);margin-bottom:32px;display:flex;align-items:center;gap:0;
 }
+.sub-sep{margin:0 8px;color:var(--t4)}
 
 .grid{
   display:grid;
@@ -102,7 +103,13 @@ body{
 <body>
 <div class="container">
   <div class="greeting">안녕하세요 👋</div>
-  <div class="sub" id="today-sub">오늘도 요즘 대시보드를 시작합니다</div>
+  <div class="sub">
+    <span>오늘도 요즘 대시보드를 시작합니다</span>
+    <span class="sub-sep">|</span>
+    <span id="today-week"></span>
+    <span class="sub-sep">|</span>
+    <span id="today-date"></span>
+  </div>
   <div class="grid">
 
     <div class="card card-vol" onclick="go('vol_upload.html','물량 관리')">
@@ -146,8 +153,33 @@ body{
 <script>
 const d = new Date();
 const days = ['일','월','화','수','목','금','토'];
-document.getElementById('today-sub').textContent =
-  `오늘도 요즘 대시보드를 시작합니다 · ${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} (${days[d.getDay()]})`;
+
+// 날짜 표시
+document.getElementById('today-date').textContent =
+  `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} (${days[d.getDay()]})`;
+
+// 주차 계산 함수
+function getWeekInfo(date) {
+  const y = date.getFullYear();
+  const m = date.getMonth(); // 0-based
+
+  // 해당 월 1일
+  const firstDay = new Date(y, m, 1);
+  // 1일이 속한 주의 월요일 (= 1주차 시작)
+  const dow = firstDay.getDay(); // 0=일,1=월...
+  const offset = (dow === 0) ? -6 : 1 - dow; // 월요일까지 오프셋
+  const week1Start = new Date(firstDay);
+  week1Start.setDate(firstDay.getDate() + offset);
+
+  // 오늘과 1주차 시작의 차이(일)
+  const diffMs = date - week1Start;
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  const weekNum = diffDays < 0 ? 0 : Math.floor(diffDays / 7) + 1;
+  return `${m + 1}월 ${weekNum}주차`;
+}
+
+document.getElementById('today-week').textContent = getWeekInfo(d);
 
 function go(src, label) {
   if (window.parent && window.parent !== window) {

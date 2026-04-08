@@ -59,7 +59,10 @@ body{
 .l1-badge{font-size:9px;padding:1px 5px;border-radius:8px;background:rgba(0,0,0,0.05);color:var(--t4);font-weight:500;margin-left:2px}
 .l1-chev{margin-left:auto;font-size:8px;color:var(--t4);transition:transform .2s}
 .l1-block.open .l1-chev{transform:rotate(90deg)}
-.l1-body{display:none}
+.l1-hdr.l1-link{cursor:pointer}
+.l1-hdr.l1-link:hover{background:rgba(0,0,0,0.03)}
+.l1-hdr.active{background:rgba(0,0,0,0.03)}
+
 .l1-block.open .l1-body{display:block}
 
 /* L2 */
@@ -195,62 +198,37 @@ body{
   <div class="sb-divider"></div>
 
   <!-- 2. 상품 관리 -->
-  <div class="l1-block open">
-    <div class="l1-hdr" onclick="tL1(this)">
+  <div class="l1-block">
+    <div class="l1-hdr l1-link" onclick="goL1('prod_manage.html','상품 관리',this)">
       <div class="l1-dot" style="background:var(--green)"></div>
       <span class="l1-label" style="color:var(--green)">상품 관리</span>
-      <span class="l1-chev">▶</span>
-    </div>
-    <div class="l1-body" style="display:block">
-      <div class="l2-hdr" onclick="goL2('prod_manage.html','상품 관리','상품 관리',this)">
-        <div class="l2-dot"></div>상품 관리
-      </div>
     </div>
   </div>
   <div class="sb-divider"></div>
 
   <!-- 3. 행사 관리 -->
-  <div class="l1-block open">
-    <div class="l1-hdr" onclick="tL1(this)">
+  <div class="l1-block">
+    <div class="l1-hdr l1-link" onclick="goL1('evt_manage.html','행사 관리',this)">
       <div class="l1-dot" style="background:var(--orange)"></div>
       <span class="l1-label" style="color:var(--orange)">행사 관리</span>
-      <span class="l1-badge" style="background:rgba(196,90,16,0.1);color:var(--orange)">예정</span>
-      <span class="l1-chev">▶</span>
-    </div>
-    <div class="l1-body" style="display:block">
-      <div class="l2-hdr" onclick="goL2('evt_manage.html','행사 관리','행사 관리',this)">
-        <div class="l2-dot"></div>행사 관리 <span class="l2-tag tag-plan">예정</span>
-      </div>
     </div>
   </div>
   <div class="sb-divider"></div>
 
   <!-- 4. 광고 리포트 관리 -->
-  <div class="l1-block open">
-    <div class="l1-hdr" onclick="tL1(this)">
+  <div class="l1-block">
+    <div class="l1-hdr l1-link" onclick="goL1('ads_report.html','광고 리포트 관리',this)">
       <div class="l1-dot" style="background:var(--blue)"></div>
       <span class="l1-label" style="color:var(--blue)">광고 리포트 관리</span>
-      <span class="l1-chev">▶</span>
-    </div>
-    <div class="l1-body" style="display:block">
-      <div class="l2-hdr" onclick="goL2('ads_report.html','광고 리포트 관리','광고 리포트',this)">
-        <div class="l2-dot"></div>광고 리포트
-      </div>
     </div>
   </div>
   <div class="sb-divider"></div>
 
   <!-- 5. 출고 배분기 -->
-  <div class="l1-block open">
-    <div class="l1-hdr" onclick="tL1(this)">
+  <div class="l1-block">
+    <div class="l1-hdr l1-link" onclick="goL1('shipment_tool.html','출고 배분기',this)">
       <div class="l1-dot" style="background:var(--purple)"></div>
       <span class="l1-label" style="color:var(--purple)">출고 배분기</span>
-      <span class="l1-chev">▶</span>
-    </div>
-    <div class="l1-body" style="display:block">
-      <div class="l2-hdr" onclick="goL2('shipment_tool.html','출고 배분기','출고 배분기',this)">
-        <div class="l2-dot"></div>출고 배분기
-      </div>
     </div>
   </div>
 
@@ -265,13 +243,7 @@ body{
 
 <!-- ══ TOPBAR ══ -->
 <div class="topbar">
-  <div class="bc" id="bc">
-    <span>물량 관리</span>
-    <span class="bc-sep">›</span>
-    <span>데이터 업로드</span>
-    <span class="bc-sep">›</span>
-    <b>예측 데이터 업로드</b>
-  </div>
+  <div class="bc" id="bc"><b>홈</b></div>
   <div class="topbar-right">
     <span class="tb-date" id="today-date"></span>
     <button class="tb-sync">🔄 전체 연동</button>
@@ -280,10 +252,26 @@ body{
 
 <!-- ══ IFRAME ══ -->
 <div class="main">
-  <iframe id="content-frame" src="vol_upload.html"></iframe>
+  <iframe id="content-frame" src="home.html"></iframe>
 </div>
 
 <script>
+window.addEventListener('message', e => {
+  if (e.data && e.data.type === 'nav') {
+    document.getElementById('content-frame').src = e.data.src;
+    document.getElementById('bc').innerHTML = `<b>${e.data.label}</b>`;
+    document.querySelectorAll('.l2-hdr.active,.l3-item.active,.l1-hdr.active').forEach(el => el.classList.remove('active'));
+  }
+});
+
+function goL1(src, label, el) {
+  document.getElementById('content-frame').src = src;
+  document.getElementById('bc').innerHTML = `<b>${label}</b>`;
+  document.querySelectorAll('.l2-hdr.active, .l3-item.active, .l1-hdr.active').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  curActive = el;
+}
+
 let curActive = document.querySelector('.l2-hdr.active');
 
 // L2 직접 파일 열기

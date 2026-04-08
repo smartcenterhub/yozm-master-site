@@ -6,52 +6,1331 @@
 <title>광고 리포트 관리</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--glass-bg:rgba(255,255,255,0.74);--glass-border-s:rgba(0,0,0,0.07);--tx:#0a0a0f;--t2:#4a4a5a;--t3:#9898a8;--t4:#c4c4d0;--accent:#3a3af0;--blue:#1a56c8;}
+:root{
+  --glass-bg:rgba(255,255,255,0.74);
+  --glass-bg-strong:rgba(255,255,255,0.92);
+  --glass-border-s:rgba(0,0,0,0.07);
+  --tx:#0a0a0f;--t2:#4a4a5a;--t3:#9898a8;--t4:#c4c4d0;
+  --accent:#3a3af0;--green:#1a8a4a;--red:#d42020;--orange:#c45a10;--blue:#1a56c8;
+}
 html{min-width:1188px;height:100%;background:linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#eef0f8 100%) fixed;}
-body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx);width:1188px;min-width:1188px;padding:20px 24px 40px;}
-.tabs{display:flex;gap:0;margin-bottom:20px;border-bottom:1px solid var(--glass-border-s)}
+body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;line-height:1.5;color:var(--tx);width:1188px;min-width:1188px;padding:24px 28px 40px;}
+
+/* ── 메인 탭 ── */
+.tabs{display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid var(--glass-border-s)}
 .tab{padding:8px 18px;cursor:pointer;font-size:12.5px;color:var(--t3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;user-select:none;}
-.tab:hover{color:var(--t2)}.tab.active{color:var(--blue);font-weight:500;border-bottom-color:var(--blue)}
+.tab:hover{color:var(--t2)}.tab.active{color:var(--accent);font-weight:500;border-bottom-color:var(--accent)}
 .tab-content{display:none}.tab-content.active{display:block}
-.pg-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
-.pg-title{font-size:17px;font-weight:700;color:var(--tx)}.pg-desc{font-size:12px;color:var(--t3);margin-top:4px}
-.pg-badges{display:flex;gap:6px;margin-top:6px}
-.badge-ext{display:inline-block;font-size:10.5px;padding:3px 9px;border-radius:10px;font-weight:500;background:rgba(26,86,200,0.08);color:var(--blue)}
-.notice-ext{border-radius:10px;padding:14px 18px;font-size:12.5px;line-height:1.8;margin-bottom:16px;background:rgba(26,86,200,0.06);border:1px solid rgba(26,86,200,0.15);color:var(--blue)}
-.notice-ext b{font-weight:600}
+
+/* ── 서브 탭 ── */
+.sub-tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:nowrap}
+.sub-tab{padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;color:var(--t2);background:var(--glass-bg);border:1px solid var(--glass-border-s);transition:all .15s;white-space:nowrap;user-select:none;}
+.sub-tab:hover{color:var(--tx);background:var(--glass-bg-strong)}
+.sub-tab.active{background:rgba(58,58,240,0.08);color:var(--accent);font-weight:600;border-color:rgba(58,58,240,0.18)}
+.sub-content{display:none}.sub-content.active{display:block}
+
+/* ── 페이지 헤더 ── */
+.pg-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
+.pg-title{font-size:17px;font-weight:700;color:var(--tx)}
+.pg-desc{font-size:12px;color:var(--t3);margin-top:4px;line-height:1.6}
+.pg-actions{display:flex;gap:7px;flex-shrink:0}
+
+/* ── 버튼 ── */
 .btn{display:flex;align-items:center;gap:5px;padding:6px 13px;border-radius:7px;font-size:12px;cursor:pointer;font-family:inherit;border:none;transition:all .12s;}
-.btn-ghost{background:rgba(255,255,255,0.92);border:1px solid var(--glass-border-s);color:var(--t2)}
-.ph{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:12px;padding:48px 32px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
+.btn-primary{background:var(--accent);color:#fff;font-weight:500}.btn-primary:hover{background:#2a2ad8}
+.btn-ghost{background:var(--glass-bg-strong);border:1px solid var(--glass-border-s);color:var(--t2)}.btn-ghost:hover{color:var(--tx)}
+.btn-sm{padding:4px 10px;font-size:11.5px}
+
+/* ── 카드 ── */
+.card{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+.card-title{font-size:12.5px;font-weight:600;color:var(--tx);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.card-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* ── 업로드 존 ── */
+.upload-zone{border:2px dashed rgba(58,58,240,0.2);border-radius:10px;padding:36px 20px;text-align:center;cursor:pointer;transition:all .15s;background:rgba(58,58,240,0.02);}
+.upload-zone:hover,.upload-zone.drag-over{border-color:rgba(58,58,240,0.4);background:rgba(58,58,240,0.04)}
+.upload-icon{font-size:26px;margin-bottom:8px;opacity:.5}
+.upload-title{font-size:13px;font-weight:500;color:var(--t2)}
+.upload-desc{font-size:11.5px;color:var(--t4);margin-top:4px}
+
+/* ── 2패널 그리드 ── */
+.panel-grid{display:grid;grid-template-columns:556px 556px;gap:14px}
+.panel-card{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.panel-header{display:flex;align-items:center;justify-content:space-between}
+.panel-title{font-size:13px;font-weight:600;color:var(--tx);display:flex;align-items:center;gap:6px}
+.panel-title-dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+
+/* ── 테이블 ── */
+.tbl-card{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:12px;overflow:hidden;margin-bottom:8px}
+.tbl-scroll{overflow:auto;max-height:420px}
+table{border-collapse:collapse;table-layout:fixed;font-size:12px;width:100%}
+thead th{padding:8px 10px;text-align:right;font-size:11px;font-weight:500;color:var(--t2);border-bottom:1px solid var(--glass-border-s);white-space:nowrap;background:rgba(255,255,255,0.6);position:sticky;top:0}
+thead th:first-child{text-align:left;padding-left:14px}
+tbody td{padding:7px 10px;border-bottom:1px solid rgba(0,0,0,0.03);font-size:12px;color:var(--t2);text-align:right;white-space:nowrap;overflow:hidden;cursor:pointer;position:relative;transition:background .1s;user-select:none}
+tbody td:first-child{text-align:left;padding-left:14px;font-size:11.5px;cursor:default}
+tbody tr:hover td{background:rgba(0,0,0,0.015)}
+tbody tr:last-child td{border-bottom:none}
+tbody td.copyable:hover::after{content:'복사';position:absolute;top:50%;right:5px;transform:translateY(-50%);background:var(--accent);color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;pointer-events:none}
+tbody td.copied{background:rgba(26,138,74,0.08)!important;color:var(--green);font-weight:700}
+tfoot td{padding:7px 10px;font-size:12px;font-weight:700;color:var(--tx);text-align:right;background:rgba(58,58,240,0.04);border-top:1px solid rgba(58,58,240,0.12);cursor:pointer;position:relative;white-space:nowrap;user-select:none}
+tfoot td:first-child{text-align:left;padding-left:14px;cursor:default}
+tfoot td.copyable:hover::after{content:'복사';position:absolute;top:50%;right:5px;transform:translateY(-50%);background:var(--accent);color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;pointer-events:none}
+tfoot td.copied{background:rgba(26,138,74,0.08)!important;color:var(--green)}
+
+/* ── 행 복사 버튼 ── */
+.row-copy-btn{background:rgba(58,58,240,0.06);color:var(--accent);border:none;border-radius:5px;padding:3px 8px;font-size:10.5px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:inherit}
+.row-copy-btn:hover{background:rgba(58,58,240,0.12)}
+.row-copy-btn.copied-row{background:rgba(26,138,74,0.08);color:var(--green)}
+
+/* ── 파일 배지 & 날짜 칩 ── */
+.file-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(58,58,240,0.06);color:var(--accent);border-radius:20px;padding:4px 12px;font-size:11.5px;font-weight:500}
+.date-chip{background:rgba(58,58,240,0.06);color:var(--accent);border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:500}
+
+/* ── 섹션 레이블 ── */
+.sec-label{font-size:12px;font-weight:600;color:var(--tx);margin-bottom:10px;margin-top:4px}
+.sec-label-divider{font-size:12px;font-weight:600;color:var(--tx);border-top:1px solid var(--glass-border-s);padding-top:14px;margin-top:6px;margin-bottom:10px}
+
+/* ── 결과 헤더 ── */
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px;flex-wrap:wrap}
+.result-header-right{display:flex;align-items:center;gap:8px}
+
+/* ── 복사 버튼 행 ── */
+.copy-row{display:flex;justify-content:flex-end;gap:8px;margin-bottom:18px}
+
+/* ── 요약 박스 ── */
+.summary-box{background:rgba(58,58,240,0.03);border:1px solid rgba(58,58,240,0.1);border-radius:10px;padding:14px 16px}
+.summary-box-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.summary-label{font-size:11.5px;font-weight:600;color:var(--t2)}
+.summary-text{font-size:12.5px;color:var(--tx);line-height:1.8;word-break:keep-all}
+
+/* ── 드롭다운 ── */
+select.yozm-sel{border:1px solid var(--glass-border-s);border-radius:7px;padding:5px 10px;font-size:12px;color:var(--t2);background:var(--glass-bg-strong);cursor:pointer;font-family:inherit}
+
+/* ── 힌트 ── */
+.hint{font-size:11.5px;color:var(--t4);text-align:center;margin-top:6px}
+
+/* ── 안내 박스 ── */
+.notice{border-radius:10px;padding:14px 18px;font-size:12.5px;line-height:1.8;margin-bottom:16px}
+.notice b{font-weight:600}
+.notice-plan{background:rgba(152,152,168,0.08);border:1px solid rgba(152,152,168,0.15);color:var(--t2)}
+.notice-ext{background:rgba(26,86,200,0.06);border:1px solid rgba(26,86,200,0.15);color:var(--blue)}
+
+/* ── 플레이스홀더 ── */
+.ph-box{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:12px;padding:48px 32px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px}
 .ph-icon{font-size:28px;opacity:.4}.ph-title{font-size:14px;font-weight:500;color:var(--t2)}.ph-desc{font-size:12px;color:var(--t3);max-width:360px;line-height:1.7}
+
+/* ── 토스트 ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:rgba(10,10,15,0.88);color:#fff;padding:9px 20px;border-radius:24px;font-size:12.5px;font-weight:500;transition:transform .22s ease;z-index:9999;pointer-events:none;backdrop-filter:blur(8px)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ── GFA 빈 그룹 ── */
+tr.empty-group{opacity:.35}
+/* ── 내부 탭 (GFA 소재 내) ── */
+.inner-tabs{display:flex;gap:6px;margin-bottom:16px}
+.inner-tab{padding:5px 14px;border-radius:7px;cursor:pointer;font-size:12px;color:var(--t2);background:var(--glass-bg);border:1px solid var(--glass-border-s);transition:all .15s;user-select:none}
+.inner-tab:hover{color:var(--tx);background:var(--glass-bg-strong)}
+.inner-tab.active{background:rgba(26,86,200,0.08);color:var(--blue);font-weight:600;border-color:rgba(26,86,200,0.18)}
+.inner-content{display:none}.inner-content.active{display:block}
+/* ── 리포트 양식 모달 ── */
+.rpt-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.rpt-modal{background:var(--glass-bg-strong);border-radius:16px;width:680px;max-height:82vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.22);border:1px solid var(--glass-border-s)}
+.rpt-head{padding:16px 20px 14px;border-bottom:1px solid var(--glass-border-s);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.rpt-head-title{font-size:14px;font-weight:700;color:var(--tx)}
+.rpt-head-close{width:26px;height:26px;border-radius:6px;border:none;background:none;cursor:pointer;font-size:16px;color:var(--t3);display:flex;align-items:center;justify-content:center;transition:all .12s}
+.rpt-head-close:hover{background:rgba(0,0,0,0.06);color:var(--tx)}
+.rpt-toolbar{padding:7px 16px;border-bottom:1px solid var(--glass-border-s);display:flex;gap:5px;align-items:center;flex-shrink:0}
+.rpt-tool-btn{padding:3px 10px;border-radius:5px;border:1px solid var(--glass-border-s);background:var(--glass-bg);font-size:11.5px;cursor:pointer;color:var(--t2);font-family:inherit;transition:all .12s}
+.rpt-tool-btn:hover{background:var(--glass-bg-strong);color:var(--tx)}
+.rpt-tool-btn.active{background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2)}
+.rpt-tool-sep{width:1px;height:16px;background:var(--glass-border-s);margin:0 3px}
+.rpt-editor{padding:18px 22px;flex:1;overflow-y:auto;outline:none;font-family:'Inter',-apple-system,sans-serif;font-size:13px;line-height:2;color:var(--tx);white-space:pre-wrap}
+.rpt-editor:focus{outline:none}
+.rpt-foot{padding:12px 20px;border-top:1px solid var(--glass-border-s);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.rpt-foot-hint{font-size:11px;color:var(--t4)}
+.rpt-foot-btns{display:flex;gap:7px}
+.btn-teal{background:rgba(10,120,100,0.08);border:1px solid rgba(10,120,100,0.18);color:#0a7864}.btn-teal:hover{background:rgba(10,120,100,0.14)}
+
 </style>
 </head>
 <body>
+
+<!-- 메인 탭 -->
 <div class="tabs">
   <div class="tab active" onclick="sw('daily',this)">데일리 리포트</div>
   <div class="tab" onclick="sw('monthly',this)">월간 리포트</div>
 </div>
 
+<!-- 데일리 리포트 -->
 <div class="tab-content active" id="t-daily">
   <div class="pg-header">
-    <div><div class="pg-title">데일리 리포트 관리</div><div class="pg-desc">별도 HTML 파일로 제작 예정</div><div class="pg-badges"><span class="badge-ext">별도 HTML</span></div></div>
-    <div><button class="btn btn-ghost">🔗 별도 파일 열기</button></div>
+    <div>
+      <div class="pg-title">데일리 리포트</div>
+      <div class="pg-desc">광고 매체별 일일 성과를 파일 업로드로 빠르게 집계합니다</div>
+    </div>
+    <div class="pg-actions">
+      <button class="btn btn-ghost" onclick="openRptModal()">📝 리포트 양식</button>
+    </div>
   </div>
-  <div class="notice-ext"><b>🔗 별도 HTML 파일(yozm_daily_report.html)로 제작됩니다.</b><br>완성 후 이 버튼에서 바로 열 수 있습니다.</div>
-  <div class="ph"><div class="ph-icon">📰</div><div class="ph-title">데일리 리포트 관리 (별도 HTML)</div><div class="ph-desc">일별 광고 성과 리포트를 관리합니다.</div></div>
+
+  <!-- 리포트 양식 모달 -->
+  <div class="rpt-overlay" id="rptOverlay" style="display:none" onclick="if(event.target===this)closeRptModal()">
+    <div class="rpt-modal">
+      <div class="rpt-head">
+        <div class="rpt-head-title">📝 리포트 텍스트 양식</div>
+        <button class="rpt-head-close" onclick="closeRptModal()">✕</button>
+      </div>
+      <div class="rpt-toolbar">
+        <button class="rpt-tool-btn" id="rptBoldBtn" onclick="rptExec('bold')" title="굵게 (Ctrl+B)"><b>B</b></button>
+        <div class="rpt-tool-sep"></div>
+        <button class="rpt-tool-btn" onclick="rptReset()" title="초기화">↩ 초기화</button>
+        <span style="font-size:11px;color:var(--t4);margin-left:6px">텍스트 선택 후 B 클릭으로 볼드 적용</span>
+      </div>
+      <div class="rpt-editor" id="rptEditor" contenteditable="true" spellcheck="false"></div>
+      <div class="rpt-foot">
+        <span class="rpt-foot-hint">수정 내용은 자동 저장됩니다</span>
+        <div class="rpt-foot-btns">
+          <button class="btn btn-ghost btn-sm" onclick="closeRptModal()">닫기</button>
+          <button class="btn btn-teal btn-sm" id="rptCopyBtn" onclick="rptCopy()">📋 전체 복사</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 서브 탭 -->
+  <div class="sub-tabs">
+    <div class="sub-tab active" onclick="swSub('bk',this)">🔍 브검</div>
+    <div class="sub-tab" onclick="swSub('kw',this)">🏷️ 키워드</div>
+    <div class="sub-tab" onclick="swSub('gfa',this)">📺 GFA</div>
+    <div class="sub-tab" onclick="swSub('gc',this)">🎨 GFA 소재</div>
+    <div class="sub-tab" onclick="swSub('adv',this)">📊 ADVoost</div>
+  </div>
+
+  <!-- ① 브검 -->
+  <div class="sub-content active" id="s-bk">
+    <div class="upload-zone" id="bkUpload" style="max-width:860px" onclick="document.getElementById('bkInput').click()">
+      <div class="upload-icon">📂</div>
+      <div class="upload-title">xlsx 파일을 클릭하거나 드래그해서 업로드</div>
+      <div class="upload-desc">광고그룹 성과 리포트 xlsx</div>
+    </div>
+    <input type="file" id="bkInput" accept=".xlsx" style="display:none">
+    <div id="bkResults" style="display:none">
+      <div class="result-header">
+        <div class="file-badge" id="bkBadge">📄 파일명</div>
+        <button class="btn btn-ghost btn-sm" id="bkReset">↩ 다시 업로드</button>
+      </div>
+      <div class="panel-grid">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title"><div class="panel-title-dot"></div>MO</div>
+            <div id="bkDateMO"></div>
+          </div>
+          <div id="bkContentMO"></div>
+        </div>
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title"><div class="panel-title-dot" style="background:var(--blue)"></div>PC</div>
+            <div id="bkDatePC"></div>
+          </div>
+          <div id="bkContentPC"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 키워드 -->
+  <div class="sub-content" id="s-kw">
+    <div class="panel-grid">
+      <div class="panel-card" id="kwPanel1">
+        <div class="panel-header">
+          <div class="panel-title"><div class="panel-title-dot"></div>MO 매체</div>
+        </div>
+        <div class="upload-zone" id="kwUpload1" onclick="document.getElementById('kwInput1').click()">
+          <div class="upload-icon">📂</div>
+          <div class="upload-title">xlsx 파일 업로드</div>
+          <div class="upload-desc">키워드 성과 리포트 xlsx</div>
+        </div>
+        <input type="file" id="kwInput1" accept=".xlsx" style="display:none">
+        <div id="kwContent1" style="display:none;flex-direction:column;gap:14px"></div>
+      </div>
+      <div class="panel-card" id="kwPanel2">
+        <div class="panel-header">
+          <div class="panel-title"><div class="panel-title-dot" style="background:var(--blue)"></div>PC 매체</div>
+        </div>
+        <div class="upload-zone" id="kwUpload2" onclick="document.getElementById('kwInput2').click()">
+          <div class="upload-icon">📂</div>
+          <div class="upload-title">xlsx 파일 업로드</div>
+          <div class="upload-desc">키워드 성과 리포트 xlsx</div>
+        </div>
+        <input type="file" id="kwInput2" accept=".xlsx" style="display:none">
+        <div id="kwContent2" style="display:none;flex-direction:column;gap:14px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ GFA -->
+  <div class="sub-content" id="s-gfa">
+    <div class="upload-zone" id="gfaUpload" style="max-width:920px" onclick="document.getElementById('gfaInput').click()">
+      <div class="upload-icon">📁</div>
+      <div class="upload-title">ZIP 파일을 클릭하거나 드래그해서 업로드</div>
+      <div class="upload-desc">GFA 성과 리포트 ZIP</div>
+    </div>
+    <input type="file" id="gfaInput" accept=".zip" style="display:none">
+    <div id="gfaResults" style="display:none;max-width:920px">
+      <div class="result-header">
+        <div class="file-badge" id="gfaBadge">📄 파일명</div>
+        <button class="btn btn-ghost btn-sm" id="gfaReset">↩ 다시 업로드</button>
+      </div>
+
+      <div class="sec-label">📅 날짜별 성과</div>
+      <div class="tbl-card">
+        <div class="tbl-scroll">
+          <table>
+            <colgroup><col style="width:130px"><col style="width:110px"><col style="width:90px"><col style="width:110px"><col style="width:90px"><col style="width:110px"><col style="width:76px"></colgroup>
+            <thead><tr><th>날짜</th><th>노출</th><th>클릭</th><th>비용</th><th>전환</th><th>매출</th><th style="text-align:center">행 복사</th></tr></thead>
+            <tbody id="gfaDateBody"></tbody>
+            <tfoot id="gfaDateFoot"></tfoot>
+          </table>
+        </div>
+      </div>
+      <div class="copy-row"><button class="btn btn-primary btn-sm" id="gfaDateCopyAll">📋 전체 복사</button></div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;margin-top:4px">
+        <div class="sec-label" style="margin-bottom:0">📂 그룹별 성과</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-ghost btn-sm" id="gfaToggleEmpty">👁️ 값 없는 그룹 보기</button>
+          <select id="gfaDateSel" class="yozm-sel"><option value="all">전체 기간</option></select>
+        </div>
+      </div>
+      <div class="tbl-card">
+        <div class="tbl-scroll">
+          <table>
+            <colgroup><col style="width:36px"><col style="width:260px"><col style="width:110px"><col style="width:90px"><col style="width:110px"><col style="width:90px"><col style="width:110px"><col style="width:76px"></colgroup>
+            <thead><tr><th style="text-align:center">#</th><th>그룹명</th><th>노출</th><th>클릭</th><th>비용</th><th>전환</th><th>매출</th><th style="text-align:center">행 복사</th></tr></thead>
+            <tbody id="gfaGroupBody"></tbody>
+            <tfoot id="gfaGroupFoot"></tfoot>
+          </table>
+        </div>
+      </div>
+      <div class="copy-row">
+        <button class="btn btn-ghost btn-sm" id="gfaGroupCopyValues">📋 데일리 리포트용 복사</button>
+        <button class="btn btn-primary btn-sm" id="gfaGroupCopyAll">📋 전체 복사</button>
+      </div>
+      <div class="hint">💡 셀 클릭 → 값 복사 &nbsp;|&nbsp; 행 복사 → 탭 구분 복사 (엑셀 한 행에 붙여넣기)</div>
+    </div>
+  </div>
+
+  <!-- ④ GFA 소재 -->
+  <div class="sub-content" id="s-gc">
+
+    <!-- 내부 탭 -->
+    <div class="inner-tabs">
+      <div class="inner-tab active" onclick="swInner('gc-perf',this)">📊 소재 성과</div>
+      <div class="inner-tab" onclick="swInner('gc-img',this)">🖼 이미지 관리</div>
+    </div>
+
+    <!-- 소재 성과 -->
+    <div class="inner-content active" id="gc-perf">
+      <div class="upload-zone" id="gcUpload" style="max-width:920px" onclick="document.getElementById('gcInput').click()">
+        <div class="upload-icon">📁</div>
+        <div class="upload-title">ZIP 파일을 클릭하거나 드래그해서 업로드</div>
+        <div class="upload-desc">GFA 소재 성과 리포트 ZIP</div>
+      </div>
+      <input type="file" id="gcInput" accept=".zip" style="display:none">
+      <div id="gcResults" style="display:none;max-width:920px">
+        <div class="result-header">
+          <div class="file-badge" id="gcBadge">📄 파일명</div>
+          <div class="result-header-right">
+            <button class="btn btn-ghost btn-sm" id="gcRefreshImg">🔄 이미지 새로고침</button>
+            <select id="gcDateSel" class="yozm-sel"><option value="all">전체 기간</option></select>
+            <button class="btn btn-ghost btn-sm" id="gcReset">↩ 다시 업로드</button>
+          </div>
+        </div>
+        <div id="gcCards"></div>
+        <div class="hint" style="margin-top:6px">💡 이미지 클릭 또는 📋 버튼 → 클립보드 복사 → 엑셀 Ctrl+V</div>
+      </div>
+    </div>
+
+    <!-- 이미지 관리 -->
+    <div class="inner-content" id="gc-img">
+      <iframe id="gcImageFrame" src="gfa_creative.html"
+        style="width:100%;height:660px;border:1px solid var(--glass-border-s);border-radius:12px;display:block;max-width:920px"></iframe>
+    </div>
+
+  </div>
+
+  <!-- ⑤ ADVoost -->
+  <div class="sub-content" id="s-adv">
+    <div class="panel-grid">
+      <div class="panel-card" id="advPanel1">
+        <div class="panel-header">
+          <div class="panel-title"><div class="panel-title-dot"></div>DA 매체</div>
+        </div>
+        <div class="upload-zone" id="advUpload1" onclick="document.getElementById('advInput1').click()">
+          <div class="upload-icon">📁</div>
+          <div class="upload-title">ZIP 파일 업로드</div>
+          <div class="upload-desc">ADVoost DA 성과 리포트 ZIP</div>
+        </div>
+        <input type="file" id="advInput1" accept=".zip" style="display:none">
+        <div id="advContent1" style="display:none;flex-direction:column;gap:14px"></div>
+      </div>
+      <div class="panel-card" id="advPanel2">
+        <div class="panel-header">
+          <div class="panel-title"><div class="panel-title-dot" style="background:var(--blue)"></div>SA 매체</div>
+        </div>
+        <div class="upload-zone" id="advUpload2" onclick="document.getElementById('advInput2').click()">
+          <div class="upload-icon">📁</div>
+          <div class="upload-title">ZIP 파일 업로드</div>
+          <div class="upload-desc">ADVoost SA 성과 리포트 ZIP</div>
+        </div>
+        <input type="file" id="advInput2" accept=".zip" style="display:none">
+        <div id="advContent2" style="display:none;flex-direction:column;gap:14px"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
+<!-- 월간 리포트 -->
 <div class="tab-content" id="t-monthly">
   <div class="pg-header">
-    <div><div class="pg-title">월간 리포트 관리</div><div class="pg-desc">별도 HTML 파일로 제작 예정</div><div class="pg-badges"><span class="badge-ext">별도 HTML</span></div></div>
-    <div><button class="btn btn-ghost">🔗 별도 파일 열기</button></div>
+    <div>
+      <div class="pg-title">월간 리포트</div>
+      <div class="pg-desc">월별 광고 성과 리포트를 관리합니다</div>
+    </div>
   </div>
-  <div class="notice-ext"><b>🔗 별도 HTML 파일(yozm_monthly_report.html)로 제작됩니다.</b></div>
-  <div class="ph"><div class="ph-icon">📊</div><div class="ph-title">월간 리포트 관리 (별도 HTML)</div><div class="ph-desc">월별 광고 성과 리포트를 관리합니다.</div></div>
+  <div class="notice notice-plan"><b>🗓 개발 예정</b> — 월간 리포트는 추후 별도 HTML 파일로 제작됩니다.</div>
+  <div class="ph-box">
+    <div class="ph-icon">📊</div>
+    <div class="ph-title">월간 리포트 관리 (예정)</div>
+    <div class="ph-desc">월별 광고 성과 리포트를 집계하고 관리합니다.</div>
+  </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
-function sw(id,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));el.classList.add('active');document.getElementById('t-'+id).classList.add('active');}
-const h=location.hash.replace('#','');if(h==='monthly'){const el=document.querySelector(".tab[onclick*='monthly']");if(el)sw('monthly',el);}
+'use strict';
+
+/* ══════════════════════════════════════
+   리포트 텍스트 양식
+══════════════════════════════════════ */
+const RPT_KEY = 'yozm_rpt_template_v1';
+const RPT_DEFAULT = `안녕하세요.\n올리브파트너스 김규빈입니다.\n광고 실적 보고 드립니다.\n* 브랜드검색\n-  광고그룹 전환\n    -> 운영 중인 광고그룹/ 전환발생 키워드소재_노출순 \n        - MO:\n        - PC:\n    -> 금일 운영 이미지소재\n* 성과형DA(GFA)\n- 현재,  매출상시(1그룹) + 플레인상시(1그룹) + 말차상시(1그룹) + 마시는상시(1그룹) -> 4 캠페인 운영 중.\n    -> 전일 상위성과소재 이미지\n* ADVoost \n- 광고계정 전환 : DA (건) / SA (건)\n.\n.\n.\n* 브랜드 콘텐츠 NEWS \n* 프로모션 제안 \n자세한 사항은 첨부 파일 확인 요청 드립니다.\n감사합니다.\n김규빈 드림.\n.`;
+
+function rptTextToHtml(text) {
+  return text.split('\n').map((line, i, arr) => {
+    const spaces = (line.match(/^( +)/) || ['',''])[1].length;
+    const rest = line.slice(spaces);
+    const nbsp = '&nbsp;'.repeat(spaces);
+    return nbsp + (rest || '') + (i < arr.length - 1 ? '<br>' : '');
+  }).join('\n');
+}
+
+function rptHtmlToText(html) {
+  return html
+    .replace(/<b>([\s\S]*?)<\/b>/gi, '$1')
+    .replace(/<strong>([\s\S]*?)<\/strong>/gi, '$1')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/<br\s*\/?>\n?/gi, '\n')
+    .replace(/<div><br><\/div>/gi, '\n')
+    .replace(/<div>/gi, '\n')
+    .replace(/<\/div>/gi, '')
+    .replace(/<[^>]+>/g, '');
+}
+
+function rptLoad() {
+  // localStorage fallback (Firestore는 async로 별도 처리)
+  try { const s = localStorage.getItem(RPT_KEY); if (s) return s; } catch {}
+  return rptTextToHtml(RPT_DEFAULT);
+}
+
+function rptSave() {
+  const html = document.getElementById('rptEditor').innerHTML;
+  // localStorage 동시 저장 (오프라인 fallback)
+  try { localStorage.setItem(RPT_KEY, html); } catch {}
+  // Firestore 저장
+  if (window._adsFs) {
+    window._adsFs.saveTemplate(html).catch(() => {});
+  }
+}
+
+async function openRptModal() {
+  const ed = document.getElementById('rptEditor');
+  const overlay = document.getElementById('rptOverlay');
+  overlay.style.display = 'flex';
+
+  // 먼저 로컬 데이터로 빠르게 표시
+  ed.innerHTML = rptLoad();
+  setTimeout(() => ed.focus(), 80);
+
+  // 이후 Firestore에서 최신 버전 fetch
+  if (window._adsFs) {
+    try {
+      const cloudHtml = await window._adsFs.loadTemplate();
+      if (cloudHtml) {
+        ed.innerHTML = cloudHtml;
+        // 로컬에도 업데이트
+        try { localStorage.setItem(RPT_KEY, cloudHtml); } catch {}
+      }
+    } catch {}
+  }
+}
+
+function closeRptModal() {
+  rptSave();
+  document.getElementById('rptOverlay').style.display = 'none';
+}
+
+function rptExec(cmd) {
+  document.getElementById('rptEditor').focus();
+  document.execCommand(cmd, false, null);
+}
+
+function rptReset() {
+  if (!confirm('양식을 기본값으로 초기화할까요?')) return;
+  document.getElementById('rptEditor').innerHTML = rptTextToHtml(RPT_DEFAULT);
+  rptSave();
+}
+
+async function rptCopy() {
+  const text = rptHtmlToText(document.getElementById('rptEditor').innerHTML);
+  try {
+    await navigator.clipboard.writeText(text);
+    const btn = document.getElementById('rptCopyBtn');
+    const orig = btn.textContent;
+    btn.textContent = '✅ 복사됨!';
+    setTimeout(() => { btn.textContent = orig; }, 1600);
+  } catch { showToast('❌ 복사 실패'); }
+}
+
+document.addEventListener('keydown', e => {
+  if (document.getElementById('rptOverlay')?.style.display !== 'none') {
+    if (e.key === 'Escape') closeRptModal();
+  }
+});
+
+/* ── 메인 탭 ── */
+function sw(id, el) {
+  document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('t-' + id).classList.add('active');
+}
+const _mh = location.hash.replace('#','');
+if (_mh === 'monthly') { const el = document.querySelector(".tab[onclick*='monthly']"); if(el) sw('monthly',el); }
+
+/* ── 서브 탭 ── */
+function swSub(id, el) {
+  document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('s-' + id).classList.add('active');
+}
+
+/* ── 내부 탭 (GFA 소재) ── */
+function swInner(id, el) {
+  const parent = el.closest('.sub-content');
+  parent.querySelectorAll('.inner-tab').forEach(t => t.classList.remove('active'));
+  parent.querySelectorAll('.inner-content').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  parent.querySelector('#' + id).classList.add('active');
+}
+
+let _toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), 1600);
+}
+
+function parseCSVLine(line) {
+  const cols = []; let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { if (inQ && line[i+1] === '"') { cur += '"'; i++; } else inQ = !inQ; }
+    else if (c === ',' && !inQ) { cols.push(cur); cur = ''; }
+    else cur += c;
+  }
+  cols.push(cur); return cols;
+}
+function parseNum(v) {
+  if (v === null || v === undefined) return 0;
+  return parseFloat(String(v).replace(/[^0-9.\-]/g,'')) || 0;
+}
+const fmt = n => Math.round(n).toLocaleString('ko-KR');
+const raw = n => String(Math.round(n));
+
+function bindCellCopy(scope) {
+  scope.querySelectorAll('td.copyable').forEach(td => {
+    td.onclick = () => {
+      navigator.clipboard.writeText(td.dataset.val).then(() => {
+        td.classList.add('copied');
+        showToast('✅ 복사됨: ' + Number(td.dataset.val).toLocaleString('ko-KR'));
+        setTimeout(() => td.classList.remove('copied'), 900);
+      });
+    };
+  });
+  scope.querySelectorAll('.row-copy-btn').forEach(btn => {
+    btn.onclick = e => {
+      e.stopPropagation();
+      navigator.clipboard.writeText(btn.dataset.row).then(() => {
+        btn.textContent = '✓ 완료'; btn.classList.add('copied-row');
+        showToast('✅ 행 복사 완료');
+        setTimeout(() => { btn.textContent = '복사'; btn.classList.remove('copied-row'); }, 1200);
+      });
+    };
+  });
+}
+
+function buildTableRows(tbody, rows, firstColFn) {
+  tbody.innerHTML = '';
+  rows.forEach(([label, v]) => {
+    const vals = [v.imp, v.clk, v.cost, v.conv, v.rev];
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      `<td style="cursor:default">${firstColFn ? firstColFn(label) : label}</td>` +
+      vals.map(n => `<td class="copyable" data-val="${raw(n)}">${fmt(n)}</td>`).join('') +
+      `<td style="text-align:center;cursor:default"><button class="row-copy-btn" data-row="${vals.map(raw).join('\t')}">복사</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function buildTfoot(tfoot, rows) {
+  const tot = {imp:0,clk:0,cost:0,conv:0,rev:0};
+  rows.forEach(([,v]) => { tot.imp+=v.imp; tot.clk+=v.clk; tot.cost+=v.cost; tot.conv+=v.conv; tot.rev+=v.rev; });
+  const tv = [tot.imp,tot.clk,tot.cost,tot.conv,tot.rev];
+  tfoot.innerHTML =
+    `<tr><td>합계</td>` +
+    tv.map(n => `<td class="copyable" data-val="${raw(n)}">${fmt(n)}</td>`).join('') +
+    `<td style="text-align:center;cursor:default"><button class="row-copy-btn" data-row="${tv.map(raw).join('\t')}">복사</button></td></tr>`;
+  return tot;
+}
+
+/* ══════════════════════════
+   브검 리포트
+══════════════════════════ */
+(function() {
+  const uz = document.getElementById('bkUpload');
+  const fi = document.getElementById('bkInput');
+  uz.addEventListener('dragover', e => { e.preventDefault(); uz.classList.add('drag-over'); });
+  uz.addEventListener('dragleave', () => uz.classList.remove('drag-over'));
+  uz.addEventListener('drop', e => { e.preventDefault(); uz.classList.remove('drag-over'); if(e.dataTransfer.files[0]) processBk(e.dataTransfer.files[0]); });
+  fi.addEventListener('change', e => { if(e.target.files[0]) processBk(e.target.files[0]); });
+  document.getElementById('bkReset').onclick = () => {
+    document.getElementById('bkResults').style.display = 'none';
+    uz.style.display = ''; fi.value = '';
+    ['bkContentMO','bkContentPC'].forEach(id => { document.getElementById(id).innerHTML = ''; });
+    ['bkDateMO','bkDatePC'].forEach(id => { document.getElementById(id).innerHTML = ''; });
+  };
+})();
+
+async function processBk(file) {
+  const dateMatch = file.name.match(/(\d{8})/);
+  const dispDate = dateMatch ? dateMatch[1].replace(/(\d{4})(\d{2})(\d{2})/, '$1.$2.$3.') : '';
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, {type:'array'});
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(ws, {header:1});
+  const hIdx = rows.findIndex(r => String(r[0]).includes('광고그룹 ID'));
+  const h = rows[hIdx >= 0 ? hIdx : 0];
+  const cName = h.findIndex(c => String(c).includes('광고그룹 이름'));
+  const cImp  = h.findIndex(c => String(c).includes('노출'));
+  const cClk  = h.findIndex(c => String(c).includes('클릭'));
+  const cConv = h.findIndex(c => String(c).includes('전환수'));
+  const cRev  = h.findIndex(c => String(c).includes('전환매출'));
+  const dataRows = rows.slice((hIdx>=0?hIdx:0)+1).filter(r => String(r[0]).startsWith('grp'));
+  const gMap = new Map();
+  for (const r of dataRows) {
+    const name = String(r[cName]||'').trim();
+    if (!name) continue;
+    if (!gMap.has(name)) gMap.set(name, {imp:0,clk:0,cost:0,conv:0,rev:0});
+    const g = gMap.get(name);
+    g.imp+=parseNum(r[cImp]); g.clk+=parseNum(r[cClk]); g.conv+=parseNum(r[cConv]); g.rev+=parseNum(r[cRev]);
+  }
+  const moRows = [...gMap.entries()].filter(([n]) => n.toUpperCase().includes('MO')).sort((a,b) => b[1].imp-a[1].imp);
+  const pcRows = [...gMap.entries()].filter(([n]) => n.toUpperCase().includes('PC')).sort((a,b) => b[1].imp-a[1].imp);
+
+  function buildBkPanel(panelRows, contentId, dateId) {
+    if (dispDate) document.getElementById(dateId).innerHTML = `<span class="date-chip">📅 ${dispDate}</span>`;
+    const container = document.getElementById(contentId);
+    container.innerHTML = '';
+    const tableWrap = document.createElement('div');
+    tableWrap.className = 'tbl-card';
+    const scroll = document.createElement('div');
+    scroll.className = 'tbl-scroll'; scroll.style.maxHeight = '400px';
+    const table = document.createElement('table');
+    table.innerHTML = `<thead><tr>
+      <th>광고그룹명</th><th>노출</th><th>클릭</th>
+      <th style="color:var(--t4)">비용</th><th>전환</th><th>매출</th>
+      <th style="text-align:center">행 복사</th>
+    </tr></thead>`;
+    const tbody = document.createElement('tbody');
+    const tfoot = document.createElement('tfoot');
+    let totImp=0, totClk=0, totConv=0, totRev=0;
+    panelRows.forEach(([name, v]) => {
+      totImp+=v.imp; totClk+=v.clk; totConv+=v.conv; totRev+=v.rev;
+      const tr = document.createElement('tr');
+      tr.innerHTML =
+        `<td style="cursor:default">${name}</td>` +
+        `<td class="copyable" data-val="${raw(v.imp)}">${fmt(v.imp)}</td>` +
+        `<td class="copyable" data-val="${raw(v.clk)}">${fmt(v.clk)}</td>` +
+        `<td style="text-align:right;color:var(--t4);cursor:default">-</td>` +
+        `<td class="copyable" data-val="${raw(v.conv)}">${fmt(v.conv)}</td>` +
+        `<td class="copyable" data-val="${raw(v.rev)}">${fmt(v.rev)}</td>` +
+        `<td style="text-align:center;cursor:default"><button class="row-copy-btn" data-row="${[raw(v.imp),raw(v.clk),'',raw(v.conv),raw(v.rev)].join('\t')}">복사</button></td>`;
+      tbody.appendChild(tr);
+    });
+    tfoot.innerHTML =
+      `<tr><td>합계</td>` +
+      `<td class="copyable" data-val="${raw(totImp)}">${fmt(totImp)}</td>` +
+      `<td class="copyable" data-val="${raw(totClk)}">${fmt(totClk)}</td>` +
+      `<td style="text-align:right;color:var(--t4);cursor:default">-</td>` +
+      `<td class="copyable" data-val="${raw(totConv)}">${fmt(totConv)}</td>` +
+      `<td class="copyable" data-val="${raw(totRev)}">${fmt(totRev)}</td>` +
+      `<td style="text-align:center;cursor:default"><button class="row-copy-btn" data-row="${[raw(totImp),raw(totClk),'',raw(totConv),raw(totRev)].join('\t')}">복사</button></td></tr>`;
+    table.appendChild(tbody); table.appendChild(tfoot);
+    scroll.appendChild(table); tableWrap.appendChild(scroll);
+    // 전체 복사 버튼
+    const copyWrap = document.createElement('div');
+    copyWrap.className = 'copy-row'; copyWrap.style.marginTop = '8px';
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'btn btn-primary btn-sm'; copyBtn.textContent = '📋 전체 복사';
+    copyBtn.onclick = () => {
+      const rows2 = [...tbody.querySelectorAll('tr')].map(tr => {
+        const cells = [...tr.querySelectorAll('td.copyable')].map(td => td.dataset.val);
+        return [tr.children[0].textContent, cells[0], cells[1], '', cells[2], cells[3]];
+      });
+      navigator.clipboard.writeText(rows2.map(r=>r.join('\t')).join('\n')).then(() => showToast('✅ 전체 복사 완료'));
+    };
+    copyWrap.appendChild(copyBtn);
+    container.appendChild(tableWrap);
+    container.appendChild(copyWrap);
+    container.style.display = 'flex'; container.style.flexDirection = 'column'; container.style.gap = '0';
+    bindCellCopy(container);
+  }
+  buildBkPanel(moRows, 'bkContentMO', 'bkDateMO');
+  buildBkPanel(pcRows, 'bkContentPC', 'bkDatePC');
+  document.getElementById('bkBadge').textContent = '📄 ' + file.name;
+  document.getElementById('bkResults').style.display = 'block';
+  document.getElementById('bkUpload').style.display = 'none';
+}
+
+/* ══════════════════════════
+   키워드 리포트
+══════════════════════════ */
+const KW_NAMES = {1:'MO 매체', 2:'PC 매체'};
+function setupKwPanel(num) {
+  const uz = document.getElementById(`kwUpload${num}`);
+  const fi = document.getElementById(`kwInput${num}`);
+  uz.addEventListener('dragover', e => { e.preventDefault(); uz.classList.add('drag-over'); });
+  uz.addEventListener('dragleave', () => uz.classList.remove('drag-over'));
+  uz.addEventListener('drop', e => { e.preventDefault(); uz.classList.remove('drag-over'); if(e.dataTransfer.files[0]) processKw(e.dataTransfer.files[0], num); });
+  fi.addEventListener('change', e => { if(e.target.files[0]) processKw(e.target.files[0], num); });
+}
+
+async function processKw(file, num) {
+  const uz = document.getElementById(`kwUpload${num}`);
+  const content = document.getElementById(`kwContent${num}`);
+  const panel = document.getElementById(`kwPanel${num}`);
+  const dateMatch = file.name.match(/(\d{8})/);
+  const dispDate = dateMatch ? dateMatch[1].replace(/(\d{4})(\d{2})(\d{2})/, '$1.$2.$3.') : '';
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, {type:'array'});
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(ws, {header:1});
+  const hIdx = Math.max(0, rows.findIndex(r => r.some(c => String(c).includes('키워드'))));
+  const h = rows[hIdx];
+  const cKw   = h.findIndex(c => String(c).includes('키워드') && !String(c).includes('ID'));
+  const cImp  = h.findIndex(c => String(c).includes('노출'));
+  const cClk  = h.findIndex(c => String(c).includes('클릭'));
+  const cConv = h.findIndex(c => String(c).includes('전환수'));
+  const cRev  = h.findIndex(c => String(c).includes('전환매출'));
+  let dataRows = rows.slice(hIdx+1).filter(r => String(r[0]).startsWith('nkw'));
+  dataRows.sort((a,b) => parseNum(b[cImp]) - parseNum(a[cImp]));
+  dataRows = dataRows.slice(0,30);
+  const totalConv = dataRows.reduce((s,r) => s + parseNum(r[cConv]), 0);
+  const summaryText = `Total(${Math.round(totalConv)}) / ` +
+    dataRows.filter(r => parseNum(r[cConv]) > 0)
+      .map(r => `${r[cKw]}(${Math.round(parseNum(r[cConv]))})`).join(', ');
+
+  // 패널 헤더 업데이트
+  const dotColor = num === 1 ? 'var(--accent)' : 'var(--blue)';
+  panel.querySelector('.panel-header').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:3px">
+      <div class="panel-title"><div class="panel-title-dot" style="background:${dotColor}"></div>${KW_NAMES[num]}</div>
+      <span style="font-size:11px;color:var(--t3)">${file.name}</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      ${dispDate ? `<span class="date-chip">📅 ${dispDate}</span>` : ''}
+      <button class="btn btn-ghost btn-sm" onclick="resetKwPanel(${num})">↩ 재업로드</button>
+    </div>`;
+
+  const tableWrap = document.createElement('div');
+  tableWrap.className = 'tbl-card';
+  const scroll = document.createElement('div');
+  scroll.className = 'tbl-scroll'; scroll.style.maxHeight = '360px';
+  const table = document.createElement('table');
+  table.innerHTML = `<thead><tr>
+    <th>키워드</th><th>노출수</th><th>클릭수</th><th>전환수</th><th>전환매출액</th>
+    <th style="text-align:center">행 복사</th>
+  </tr></thead>`;
+  const tbody = document.createElement('tbody');
+  const tfoot = document.createElement('tfoot');
+  let totImp=0,totClk=0,totConv2=0,totRev=0;
+  dataRows.forEach(r => {
+    const imp=Math.round(parseNum(r[cImp])), clk=Math.round(parseNum(r[cClk]));
+    const conv=Math.round(parseNum(r[cConv])), rev=Math.round(parseNum(r[cRev]));
+    totImp+=imp; totClk+=clk; totConv2+=conv; totRev+=rev;
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      `<td style="cursor:default">${r[cKw]||''}</td>` +
+      `<td class="copyable" data-val="${imp}">${fmt(imp)}</td>` +
+      `<td class="copyable" data-val="${clk}">${fmt(clk)}</td>` +
+      `<td class="copyable" data-val="${conv}">${fmt(conv)}</td>` +
+      `<td class="copyable" data-val="${rev}">${fmt(rev)}</td>` +
+      `<td style="text-align:center;cursor:default"><button class="row-copy-btn" data-row="${[imp,clk,conv,rev].join('\t')}">복사</button></td>`;
+    tbody.appendChild(tr);
+  });
+  const tv = [totImp,totClk,totConv2,totRev];
+  tfoot.innerHTML =
+    `<tr><td>합계</td>` +
+    tv.map(n => `<td class="copyable" data-val="${n}">${fmt(n)}</td>`).join('') +
+    `<td style="text-align:center;cursor:default"><button class="row-copy-btn" data-row="${tv.join('\t')}">복사</button></td></tr>`;
+  table.appendChild(tbody); table.appendChild(tfoot);
+  scroll.appendChild(table); tableWrap.appendChild(scroll);
+
+  const pid = `kwp${num}`;
+  const copyWrap = document.createElement('div');
+  copyWrap.className = 'copy-row'; copyWrap.style.marginTop = '8px';
+  const copyBtn = document.createElement('button');
+  copyBtn.className = 'btn btn-primary btn-sm'; copyBtn.textContent = '📋 전체 복사';
+  copyBtn.onclick = () => {
+    const r2 = [...tbody.querySelectorAll('tr')].map(tr => [tr.children[0].textContent, ...[...tr.querySelectorAll('td.copyable')].map(td=>td.dataset.val)]);
+    navigator.clipboard.writeText(r2.map(r=>r.join('\t')).join('\n')).then(() => showToast('✅ 전체 복사 완료'));
+  };
+  copyWrap.appendChild(copyBtn);
+
+  const summaryBox = document.createElement('div');
+  summaryBox.className = 'summary-box';
+  summaryBox.innerHTML = `
+    <div class="summary-box-header">
+      <span class="summary-label">📝 키워드 요약 (전환 발생, 노출 순)</span>
+      <button class="btn btn-ghost btn-sm" id="${pid}-sumcopy">복사</button>
+    </div>
+    <div class="summary-text">${summaryText || '전환 발생 키워드 없음'}</div>`;
+
+  content.innerHTML = '';
+  content.appendChild(tableWrap);
+  content.appendChild(copyWrap);
+  content.appendChild(summaryBox);
+  content.style.display = 'flex';
+  uz.style.display = 'none';
+  bindCellCopy(content);
+  document.getElementById(`${pid}-sumcopy`).onclick = () => {
+    navigator.clipboard.writeText(summaryText).then(() => showToast('✅ 요약 복사 완료'));
+  };
+}
+
+function resetKwPanel(num) {
+  document.getElementById(`kwInput${num}`).value = '';
+  const content = document.getElementById(`kwContent${num}`);
+  content.innerHTML = ''; content.style.display = 'none';
+  document.getElementById(`kwUpload${num}`).style.display = '';
+  const dotColor = num === 1 ? 'var(--accent)' : 'var(--blue)';
+  document.getElementById(`kwPanel${num}`).querySelector('.panel-header').innerHTML =
+    `<div class="panel-title"><div class="panel-title-dot" style="background:${dotColor}"></div>${KW_NAMES[num]}</div>`;
+}
+setupKwPanel(1); setupKwPanel(2);
+
+/* ══════════════════════════
+   GFA 리포트
+══════════════════════════ */
+const GFA_ORDER = [
+  '그룹) 매출상시_6+3_0401-','그룹) 요즘상시_6+3_0801-','그룹) 요즘상시v2_6+3_1120-',
+  '그룹) 플레인상시_4+4+1_0915-','그룹) 말차상시_말3+플3+초토1_1029-','그룹) 말차상시2_말3+플3+초토1_1112-',
+  '그룹) 말차상시3_말3+플3+초토1_1114-','그룹) 10월넾다_11종_1029-1111','그룹) 11월넾다2_추가_1107-1111',
+  '그룹) 10월말차_말3+플3+초토1_1020-1026','그룹) 10월라떼_플3+3&라1_1023-1028','그룹) 11월애플요거_애4+4+알1_1120-1123',
+  '그룹) 12월강세일_3종_1201-1214','그룹) 12월강세일2_3종_1209-1214','그룹) 12월푸룬런칭_푸3+플3_1211-1217',
+  '그룹) 12월오끝_말3+플3_1213-1214','그룹) 추가상시_3종_1217-','그룹) 저당기획_플4+요4_1229-0107',
+  '그룹) 1월슈적_플3+소3, 푸5 _0101-0131','그룹) 1월푸페 _10종 _0105-0111','그룹) 1월설날사전 _체험8종 _0119-0127',
+  '그룹) 1월오끝 _10+10 _0120-0121','그룹) 2월마시는런칭_마2+토핑6,마2+메이커_0209-0222','그룹) 2월푸페_10종_0223-0301',
+  '그룹) 2월한입_말3+3+플1, 오3+플3 _0223-0301','그룹) 3월한입_선물세트,카4+플4_0306-0312','그룹) 3월오끝_체험8종 _0307-0308',
+  '그룹) 3월푸페_10종_0316-0322','그룹) 마시는상시_마s,메이커_0320-',
+];
+
+let _gfaData = [], _gfaHideEmpty = true;
+
+(function() {
+  const uz = document.getElementById('gfaUpload');
+  const fi = document.getElementById('gfaInput');
+  uz.addEventListener('dragover', e => { e.preventDefault(); uz.classList.add('drag-over'); });
+  uz.addEventListener('dragleave', () => uz.classList.remove('drag-over'));
+  uz.addEventListener('drop', e => { e.preventDefault(); uz.classList.remove('drag-over'); if(e.dataTransfer.files[0]) processGfa(e.dataTransfer.files[0]); });
+  fi.addEventListener('change', e => { if(e.target.files[0]) processGfa(e.target.files[0]); });
+  document.getElementById('gfaReset').onclick = () => {
+    document.getElementById('gfaResults').style.display = 'none';
+    uz.style.display = ''; fi.value = ''; _gfaData = []; _gfaHideEmpty = true;
+    document.getElementById('gfaDateSel').innerHTML = '<option value="all">전체 기간</option>';
+    document.getElementById('gfaToggleEmpty').textContent = '👁️ 값 없는 그룹 보기';
+  };
+  document.getElementById('gfaToggleEmpty').onclick = () => {
+    _gfaHideEmpty = !_gfaHideEmpty;
+    document.getElementById('gfaToggleEmpty').textContent = _gfaHideEmpty ? '👁️ 값 없는 그룹 보기' : '🙈 값 없는 그룹 숨기기';
+    renderGfaGroup(document.getElementById('gfaDateSel').value);
+  };
+})();
+
+async function processGfa(file) {
+  const zip = await JSZip.loadAsync(file);
+  let csvText = null;
+  for (const name of Object.keys(zip.files)) {
+    if (name.toLowerCase().endsWith('.csv')) { csvText = await zip.files[name].async('text'); break; }
+  }
+  if (!csvText) { showToast('❌ CSV 파일을 찾을 수 없습니다'); return; }
+  csvText = csvText.replace(/^\uFEFF/, '');
+  const lines = csvText.trim().split(/\r?\n/);
+  const headers = parseCSVLine(lines[0]);
+  const iGroup = headers.indexOf('광고 그룹 이름');
+  const iDate  = headers.indexOf('기간');
+  const iImp   = headers.indexOf('노출수');
+  const iClk   = headers.indexOf('클릭수');
+  const iCost  = headers.indexOf('총비용');
+  const iConv  = headers.indexOf('총 전환수');
+  const iRev   = headers.indexOf('총 전환매출액');
+  _gfaData = [];
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    const c = parseCSVLine(lines[i]);
+    _gfaData.push({group:(c[iGroup]||'').trim(), date:(c[iDate]||'').trim(),
+      imp:parseNum(c[iImp]), clk:parseNum(c[iClk]), cost:parseNum(c[iCost]),
+      conv:parseNum(c[iConv]), rev:parseNum(c[iRev])});
+  }
+  const dates = [...new Set(_gfaData.map(r => r.date))].sort();
+  const sel = document.getElementById('gfaDateSel');
+  sel.innerHTML = '<option value="all">전체 기간</option>';
+  dates.forEach(d => { const o=document.createElement('option'); o.value=d; o.textContent=d; sel.appendChild(o); });
+  sel.onchange = () => renderGfaGroup(sel.value);
+  const dateMap = new Map();
+  for (const r of _gfaData) {
+    if (!dateMap.has(r.date)) dateMap.set(r.date, {imp:0,clk:0,cost:0,conv:0,rev:0});
+    const d = dateMap.get(r.date);
+    d.imp+=r.imp; d.clk+=r.clk; d.cost+=r.cost; d.conv+=r.conv; d.rev+=r.rev;
+  }
+  const dateSorted = [...dateMap.entries()].sort((a,b) => a[0].localeCompare(b[0]));
+  const dateBody = document.getElementById('gfaDateBody');
+  const dateFoot = document.getElementById('gfaDateFoot');
+  buildTableRows(dateBody, dateSorted, null);
+  buildTfoot(dateFoot, dateSorted);
+  document.getElementById('gfaDateCopyAll').onclick = () => {
+    const rows = [...dateBody.querySelectorAll('tr')].map(tr => [tr.children[0].textContent, ...[...tr.querySelectorAll('td.copyable')].map(td=>td.dataset.val)]);
+    navigator.clipboard.writeText(rows.map(r=>r.join('\t')).join('\n')).then(() => showToast('✅ 전체 복사 완료'));
+  };
+  bindCellCopy(dateBody); bindCellCopy(dateFoot);
+  renderGfaGroup('all');
+  document.getElementById('gfaBadge').textContent = '📄 ' + file.name;
+  document.getElementById('gfaResults').style.display = 'block';
+  document.getElementById('gfaUpload').style.display = 'none';
+}
+
+function renderGfaGroup(selDate) {
+  const filtered = selDate === 'all' ? _gfaData : _gfaData.filter(r => r.date === selDate);
+  const gMap = new Map();
+  for (const r of filtered) {
+    if (!gMap.has(r.group)) gMap.set(r.group, {imp:0,clk:0,cost:0,conv:0,rev:0});
+    const g = gMap.get(r.group);
+    g.imp+=r.imp; g.clk+=r.clk; g.cost+=r.cost; g.conv+=r.conv; g.rev+=r.rev;
+  }
+  const newGroups = [...gMap.keys()].filter(k => !GFA_ORDER.includes(k));
+  const ordered = [...GFA_ORDER, ...newGroups];
+  const tbody = document.getElementById('gfaGroupBody');
+  const tfoot = document.getElementById('gfaGroupFoot');
+  tbody.innerHTML = '';
+  const tot = {imp:0,clk:0,cost:0,conv:0,rev:0};
+  ordered.forEach((name, idx) => {
+    const v = gMap.get(name) || null;
+    if (_gfaHideEmpty && !v) return;
+    const tr = document.createElement('tr');
+    if (v) {
+      const vals = [v.imp,v.clk,v.cost,v.conv,v.rev];
+      tr.innerHTML =
+        `<td style="text-align:center;cursor:default;color:var(--t3);font-size:11px">${idx+1}</td>` +
+        `<td style="cursor:default;font-size:11.5px">${name}</td>` +
+        vals.map(n => `<td class="copyable" data-val="${raw(n)}">${fmt(n)}</td>`).join('') +
+        `<td style="text-align:center;cursor:default"><button class="row-copy-btn" data-row="${vals.map(raw).join('\t')}">복사</button></td>`;
+      tot.imp+=v.imp; tot.clk+=v.clk; tot.cost+=v.cost; tot.conv+=v.conv; tot.rev+=v.rev;
+    } else {
+      tr.className = 'empty-group';
+      tr.innerHTML =
+        `<td style="text-align:center;cursor:default;font-size:11px">${idx+1}</td>` +
+        `<td style="cursor:default;font-size:11.5px">${name}</td>` +
+        `<td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td></td>`;
+    }
+    tbody.appendChild(tr);
+  });
+  const tv = [tot.imp,tot.clk,tot.cost,tot.conv,tot.rev];
+  tfoot.innerHTML =
+    `<tr><td style="text-align:center"></td><td>합계</td>` +
+    tv.map(n => `<td class="copyable" data-val="${raw(n)}">${fmt(n)}</td>`).join('') +
+    `<td style="text-align:center;cursor:default"><button class="row-copy-btn" data-row="${tv.map(raw).join('\t')}">복사</button></td></tr>`;
+  document.getElementById('gfaGroupCopyValues').onclick = () => {
+    const sd = document.getElementById('gfaDateSel').value;
+    const filt = sd === 'all' ? _gfaData : _gfaData.filter(r => r.date === sd);
+    const gm2 = new Map();
+    for (const r of filt) {
+      if (!gm2.has(r.group)) gm2.set(r.group, {imp:0,clk:0,cost:0,conv:0,rev:0});
+      const g = gm2.get(r.group);
+      g.imp+=r.imp; g.clk+=r.clk; g.cost+=r.cost; g.conv+=r.conv; g.rev+=r.rev;
+    }
+    const ng2 = [...gm2.keys()].filter(k => !GFA_ORDER.includes(k));
+    const all2 = [...GFA_ORDER, ...ng2];
+    const rows = all2.map(name => { const v=gm2.get(name)||{imp:0,clk:0,cost:0,conv:0,rev:0}; return [raw(v.imp),raw(v.clk),raw(v.cost),raw(v.conv),raw(v.rev)].join('\t'); });
+    navigator.clipboard.writeText(rows.join('\n')).then(() => showToast('✅ 값만 고정순서 복사 완료 (' + all2.length + '행)'));
+  };
+  document.getElementById('gfaGroupCopyAll').onclick = () => {
+    const rows = [...tbody.querySelectorAll('tr:not(.empty-group)')].map(tr => [tr.children[1].textContent, ...[...tr.querySelectorAll('td.copyable')].map(td=>td.dataset.val)]);
+    navigator.clipboard.writeText(rows.map(r=>r.join('\t')).join('\n')).then(() => showToast('✅ 전체 복사 완료'));
+  };
+  bindCellCopy(tbody); bindCellCopy(tfoot);
+}
+
+/* ══════════════════════════
+   ADVoost 리포트
+══════════════════════════ */
+const ADV_NAMES = {1:'DA 매체', 2:'SA 매체'};
+function setupAdvPanel(num) {
+  const uz = document.getElementById(`advUpload${num}`);
+  const fi = document.getElementById(`advInput${num}`);
+  uz.addEventListener('dragover', e => { e.preventDefault(); uz.classList.add('drag-over'); });
+  uz.addEventListener('dragleave', () => uz.classList.remove('drag-over'));
+  uz.addEventListener('drop', e => { e.preventDefault(); uz.classList.remove('drag-over'); if(e.dataTransfer.files[0]) processAdv(e.dataTransfer.files[0], num); });
+  fi.addEventListener('change', e => { if(e.target.files[0]) processAdv(e.target.files[0], num); });
+}
+
+async function processAdv(file, num) {
+  const uz = document.getElementById(`advUpload${num}`);
+  const content = document.getElementById(`advContent${num}`);
+  const panel = document.getElementById(`advPanel${num}`);
+  const zip = await JSZip.loadAsync(file);
+  let csvText = null;
+  for (const name of Object.keys(zip.files)) {
+    if (name.toLowerCase().endsWith('.csv')) { csvText = await zip.files[name].async('text'); break; }
+  }
+  if (!csvText) { showToast('❌ CSV 파일을 찾을 수 없습니다'); return; }
+  csvText = csvText.replace(/^\uFEFF/, '');
+  const lines = csvText.trim().split(/\r?\n/);
+  const headers = parseCSVLine(lines[0]);
+  const idx = {
+    date:headers.indexOf('기간'), group:headers.indexOf('애셋 그룹 이름'),
+    imp:headers.indexOf('노출수'), clk:headers.indexOf('클릭수'),
+    cost:headers.indexOf('총비용'), conv:headers.indexOf('총 전환수'), rev:headers.indexOf('총 전환매출액'),
+  };
+  const dateMap = new Map(), groupMap = new Map();
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    const c = parseCSVLine(lines[i]);
+    const d = (c[idx.date]||'').trim(), g = (c[idx.group]||'').trim();
+    const imp=parseNum(c[idx.imp]), clk=parseNum(c[idx.clk]), cost=parseNum(c[idx.cost]), conv=parseNum(c[idx.conv]), rev=parseNum(c[idx.rev]);
+    if (d) { if(!dateMap.has(d)) dateMap.set(d,{imp:0,clk:0,cost:0,conv:0,rev:0}); const dr=dateMap.get(d); dr.imp+=imp; dr.clk+=clk; dr.cost+=cost; dr.conv+=conv; dr.rev+=rev; }
+    if (g) { if(!groupMap.has(g)) groupMap.set(g,{imp:0,clk:0,cost:0,conv:0,rev:0}); const gr=groupMap.get(g); gr.imp+=imp; gr.clk+=clk; gr.cost+=cost; gr.conv+=conv; gr.rev+=rev; }
+  }
+  const dateSorted = [...dateMap.entries()].sort((a,b) => a[0].localeCompare(b[0]));
+  const groupSorted = [...groupMap.entries()].sort((a,b) => b[1].imp-a[1].imp);
+
+  // 패널 헤더
+  const dotColor = num === 1 ? 'var(--accent)' : 'var(--blue)';
+  panel.querySelector('.panel-header').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:3px">
+      <div class="panel-title"><div class="panel-title-dot" style="background:${dotColor}"></div>${ADV_NAMES[num]}</div>
+      <span style="font-size:11px;color:var(--t3)">${file.name}</span>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="resetAdvPanel(${num})">↩ 재업로드</button>`;
+
+  function makeTblCard(rows, firstColLabel) {
+    const card = document.createElement('div'); card.className = 'tbl-card';
+    const scroll = document.createElement('div'); scroll.className = 'tbl-scroll'; scroll.style.maxHeight = '320px';
+    const table = document.createElement('table');
+    table.innerHTML = `<thead><tr>
+      <th>${firstColLabel}</th><th>노출</th><th>클릭</th><th>비용</th><th>전환</th><th>매출</th>
+      <th style="text-align:center">행 복사</th>
+    </tr></thead>`;
+    const tbody = document.createElement('tbody'), tfoot = document.createElement('tfoot');
+    buildTableRows(tbody, rows, null); buildTfoot(tfoot, rows);
+    table.appendChild(tbody); table.appendChild(tfoot);
+    scroll.appendChild(table); card.appendChild(scroll);
+    return {card, tbody};
+  }
+
+  const {card:dateCard, tbody:dateTbody} = makeTblCard(dateSorted, '날짜');
+  const dateCopyWrap = document.createElement('div');
+  dateCopyWrap.className = 'copy-row'; dateCopyWrap.style.marginTop = '8px';
+  const dateCopyBtn = document.createElement('button');
+  dateCopyBtn.className = 'btn btn-primary btn-sm'; dateCopyBtn.textContent = '📋 전체 복사';
+  dateCopyBtn.onclick = () => {
+    const r2 = [...dateTbody.querySelectorAll('tr')].map(tr => [tr.children[0].textContent, ...[...tr.querySelectorAll('td.copyable')].map(td=>td.dataset.val)]);
+    navigator.clipboard.writeText(r2.map(r=>r.join('\t')).join('\n')).then(() => showToast('✅ 전체 복사 완료'));
+  };
+  dateCopyWrap.appendChild(dateCopyBtn);
+
+  const groupLbl = document.createElement('div'); groupLbl.className = 'sec-label-divider'; groupLbl.textContent = '📂 그룹별 전기간 성과';
+  const {card:groupCard} = makeTblCard(groupSorted, '그룹명');
+
+  content.innerHTML = '';
+  content.appendChild(dateCard);
+  content.appendChild(dateCopyWrap);
+  content.appendChild(groupLbl);
+  content.appendChild(groupCard);
+  content.style.display = 'flex';
+  uz.style.display = 'none';
+  bindCellCopy(content);
+}
+
+function resetAdvPanel(num) {
+  document.getElementById(`advInput${num}`).value = '';
+  const content = document.getElementById(`advContent${num}`);
+  content.innerHTML = ''; content.style.display = 'none';
+  document.getElementById(`advUpload${num}`).style.display = '';
+  const dotColor = num === 1 ? 'var(--accent)' : 'var(--blue)';
+  document.getElementById(`advPanel${num}`).querySelector('.panel-header').innerHTML =
+    `<div class="panel-title"><div class="panel-title-dot" style="background:${dotColor}"></div>${ADV_NAMES[num]}</div>`;
+}
+/* ══════════════════════════
+   GFA 소재 리포트
+══════════════════════════ */
+let _gcAllData = [];
+let _gcImages = {}; // Firestore 이미지 캐시
+
+async function getGcImages() {
+  if (window._adsFs) {
+    try { _gcImages = await window._adsFs.loadAll(); }
+    catch { _gcImages = {}; }
+  }
+  return _gcImages;
+}
+
+(function() {
+  const uz = document.getElementById('gcUpload');
+  const fi = document.getElementById('gcInput');
+  uz.addEventListener('dragover', e => { e.preventDefault(); uz.classList.add('drag-over'); });
+  uz.addEventListener('dragleave', () => uz.classList.remove('drag-over'));
+  uz.addEventListener('drop', e => { e.preventDefault(); uz.classList.remove('drag-over'); if(e.dataTransfer.files[0]) processGc(e.dataTransfer.files[0]); });
+  fi.addEventListener('change', e => { if(e.target.files[0]) processGc(e.target.files[0]); });
+
+  document.getElementById('gcReset').onclick = () => {
+    document.getElementById('gcResults').style.display = 'none';
+    uz.style.display = ''; fi.value = ''; _gcAllData = [];
+    document.getElementById('gcDateSel').innerHTML = '<option value="all">전체 기간</option>';
+    document.getElementById('gcCards').innerHTML = '';
+  };
+
+  document.getElementById('gcRefreshImg').onclick = async () => {
+    if (_gcAllData.length > 0) {
+      await renderGcCards(document.getElementById('gcDateSel').value);
+      showToast('🔄 이미지 새로고침 완료');
+    }
+  };
+})();
+
+async function processGc(file) {
+  const zip = await JSZip.loadAsync(file);
+  let csvText = null;
+  for (const name of Object.keys(zip.files)) {
+    if (name.toLowerCase().endsWith('.csv')) { csvText = await zip.files[name].async('text'); break; }
+  }
+  if (!csvText) { showToast('❌ CSV 파일을 찾을 수 없습니다'); return; }
+  csvText = csvText.replace(/^\uFEFF/, '');
+  const lines = csvText.trim().split(/\r?\n/);
+  const headers = parseCSVLine(lines[0]);
+
+  const iGroup    = headers.indexOf('광고 그룹 이름');
+  const iCreative = headers.indexOf('소재 이름');
+  const iCode     = headers.indexOf('소재 코드');
+  const iDate     = headers.indexOf('기간');
+  const iConv     = headers.indexOf('총 전환수');
+  const iImp      = headers.indexOf('노출수');
+
+  if (iGroup < 0 || iCreative < 0) { showToast('❌ 소재 성과 CSV 형식이 아닙니다'); return; }
+
+  _gcAllData = [];
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    const c = parseCSVLine(lines[i]);
+    _gcAllData.push({
+      group:    (c[iGroup]    || '').trim(),
+      creative: (c[iCreative] || '').trim(),
+      code:     (c[iCode]     || '').trim(),
+      date:     (c[iDate]     || '').trim(),
+      conv:     parseNum(c[iConv]),
+      imp:      parseNum(c[iImp]),
+    });
+  }
+
+  // 날짜 드롭다운
+  const dates = [...new Set(_gcAllData.map(r => r.date).filter(Boolean))].sort();
+  const sel = document.getElementById('gcDateSel');
+  sel.innerHTML = '<option value="all">전체 기간</option>';
+  dates.forEach(d => { const o = document.createElement('option'); o.value = d; o.textContent = d; sel.appendChild(o); });
+  sel.onchange = () => renderGcCards(sel.value);
+
+  await renderGcCards('all');
+  document.getElementById('gcBadge').textContent = '📄 ' + file.name;
+  document.getElementById('gcResults').style.display = 'block';
+  document.getElementById('gcUpload').style.display = 'none';
+}
+
+async function renderGcCards(selDate) {
+  const filtered = selDate === 'all' ? _gcAllData : _gcAllData.filter(r => r.date === selDate);
+
+  // group → creative 집계
+  const groupMap = new Map();
+  for (const r of filtered) {
+    if (!r.group || !r.creative) continue;
+    if (!groupMap.has(r.group)) groupMap.set(r.group, new Map());
+    const cm = groupMap.get(r.group);
+    if (!cm.has(r.creative)) cm.set(r.creative, { name: r.creative, code: r.code || '', conv: 0, imp: 0 });
+    const c = cm.get(r.creative);
+    c.conv += r.conv; c.imp += r.imp;
+  }
+
+  const images = await getGcImages(); // { code: {name, img} }
+  const container = document.getElementById('gcCards');
+  container.innerHTML = '';
+
+  if (groupMap.size === 0) {
+    container.innerHTML = '<div class="ph-box" style="margin-bottom:14px"><div class="ph-icon">📊</div><div class="ph-title">데이터 없음</div></div>';
+    return;
+  }
+
+  for (const [groupName, creativeMap] of groupMap) {
+    const top2 = [...creativeMap.values()].sort((a, b) => b.conv - a.conv).slice(0, 2);
+
+    const groupCard = document.createElement('div');
+    groupCard.className = 'card';
+    groupCard.style.marginBottom = '14px';
+
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'card-title';
+    titleDiv.innerHTML = `<div class="card-dot" style="background:var(--accent)"></div><span>${groupName}</span>`;
+    groupCard.appendChild(titleDiv);
+
+    const row = document.createElement('div');
+    row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:12px';
+
+    top2.forEach((c, i) => {
+      // 코드로 이미지 조회, 없으면 소재이름으로 fallback
+      const imgEntry = images[c.code] || Object.values(images).find(v => v.name === c.name);
+      const imgData = imgEntry?.img || null;
+      const cell = document.createElement('div');
+      cell.style.cssText = 'border:1px solid var(--glass-border-s);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;background:var(--glass-bg-strong)';
+
+      // 순위 배지
+      const rank = document.createElement('div');
+      rank.style.cssText = 'display:inline-flex;align-items:center;font-size:11px;font-weight:700;padding:3px 10px;border-radius:8px;width:fit-content;' +
+        (i === 0 ? 'background:rgba(250,222,170,0.55);color:#7c4a0a' : 'background:rgba(0,0,0,0.05);color:var(--t3)');
+      rank.textContent = i === 0 ? '🥇 1순위' : '🥈 2순위';
+
+      // 이미지
+      const imgSection = document.createElement('div');
+      imgSection.style.cssText = 'display:flex;flex-direction:column;gap:8px;align-items:flex-start';
+
+      if (imgData) {
+        const img = document.createElement('img');
+        img.src = imgData; img.alt = c.name;
+        img.style.cssText = 'max-width:160px;max-height:120px;object-fit:contain;border-radius:6px;border:1px solid var(--glass-border-s);cursor:pointer;display:block';
+        img.title = '클릭하면 이미지 복사';
+        img.onclick = () => copyGcImage(imgData);
+        imgSection.appendChild(img);
+
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'btn btn-ghost btn-sm';
+        copyBtn.textContent = '📋 이미지 복사';
+        copyBtn.onclick = () => copyGcImage(imgData);
+        imgSection.appendChild(copyBtn);
+      } else {
+        const noImg = document.createElement('div');
+        noImg.style.cssText = 'width:160px;height:72px;border:2px dashed var(--glass-border-s);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t4)';
+        noImg.textContent = '이미지 미등록';
+        imgSection.appendChild(noImg);
+      }
+
+      // 소재명
+      const nameDiv = document.createElement('div');
+      nameDiv.style.cssText = 'font-size:12px;font-weight:600;color:var(--tx);line-height:1.5;word-break:break-all';
+      nameDiv.textContent = c.name;
+
+      // 전환수
+      const convDiv = document.createElement('div');
+      convDiv.style.cssText = 'font-size:13px;font-weight:700;color:var(--accent)';
+      convDiv.textContent = '전환 ' + Math.round(c.conv).toLocaleString('ko-KR') + '건';
+
+      cell.appendChild(rank);
+      cell.appendChild(imgSection);
+      cell.appendChild(nameDiv);
+      cell.appendChild(convDiv);
+      row.appendChild(cell);
+    });
+
+    groupCard.appendChild(row);
+    container.appendChild(groupCard);
+  }
+}
+
+async function copyGcImage(dataURL) {
+  try {
+    const blob = await new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width; canvas.height = img.height;
+        canvas.getContext('2d').drawImage(img, 0, 0);
+        canvas.toBlob(resolve, 'image/png');
+      };
+      img.src = dataURL;
+    });
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    showToast('✅ 이미지 복사됨 — 엑셀에서 Ctrl+V');
+  } catch {
+    showToast('❌ 복사 실패 (브라우저 권한 필요)');
+  }
+}
+
+// gfa_creative iframe storage 이벤트 제거 (Firebase로 대체)
+</script>
+
+<!-- Firebase Firestore (ads_report) -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, doc, getDocs, getDoc, setDoc }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const _app = initializeApp({
+  apiKey: 'AIzaSyCEP7E_VJ6JkE_AZ5udN4aZfa3wUlLYr4I',
+  authDomain: 'daily-report-naver-ad-2026.firebaseapp.com',
+  projectId: 'daily-report-naver-ad-2026',
+  appId: '1:649512750747:web:6597ebc08040f413be003e'
+}, 'adsReport');
+
+const _db = getFirestore(_app);
+const COL = 'gfaImages';
+
+window._adsFs = {
+  async loadAll() {
+    const snap = await getDocs(collection(_db, COL));
+    const r = {};
+    snap.forEach(d => { r[d.id] = { code: d.data().code || d.id, name: d.data().name || d.id, img: d.data().img }; });
+    return r;
+  },
+  async loadTemplate() {
+    try {
+      const d = await getDoc(doc(_db, 'settings', 'rptTemplate'));
+      return d.exists() ? d.data().html : null;
+    } catch { return null; }
+  },
+  async saveTemplate(html) {
+    await setDoc(doc(_db, 'settings', 'rptTemplate'), { html, updatedAt: new Date().toISOString() });
+  }
+};
 </script>
 </body>
 </html>

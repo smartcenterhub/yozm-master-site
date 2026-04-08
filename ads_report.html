@@ -64,7 +64,7 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 .tbl-card{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:12px;overflow:hidden;margin-bottom:8px}
 .tbl-scroll{overflow:auto;max-height:420px}
 table{border-collapse:collapse;table-layout:fixed;font-size:12px;width:100%}
-thead th{padding:8px 10px;text-align:right;font-size:11px;font-weight:500;color:var(--t2);border-bottom:1px solid var(--glass-border-s);white-space:nowrap;background:rgba(255,255,255,0.6);position:sticky;top:0}
+thead th{padding:8px 10px;text-align:right;font-size:11px;font-weight:500;color:var(--t2);border-bottom:1px solid var(--glass-border-s);white-space:nowrap;background:#f4f5f9;position:sticky;top:0;z-index:1}
 thead th:first-child{text-align:left;padding-left:14px}
 tbody td{padding:7px 10px;border-bottom:1px solid rgba(0,0,0,0.03);font-size:12px;color:var(--t2);text-align:right;white-space:nowrap;overflow:hidden;cursor:pointer;position:relative;transition:background .1s;user-select:none}
 tbody td:first-child{text-align:left;padding-left:14px;font-size:11.5px;cursor:default}
@@ -340,10 +340,8 @@ tr.empty-group{opacity:.35}
         <div class="result-header">
           <div class="file-badge" id="gcBadge">📄 파일명</div>
           <div class="result-header-right">
-            <div style="display:flex;gap:3px;background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:7px;padding:2px">
-              <button class="btn btn-sm" id="gcViewCompact" onclick="setGcView('compact')" style="border:none;border-radius:5px;background:var(--accent);color:#fff;font-size:11px;padding:3px 10px">압축 보기</button>
-              <button class="btn btn-sm" id="gcViewCard" onclick="setGcView('card')" style="border:none;border-radius:5px;background:transparent;color:var(--t2);font-size:11px;padding:3px 10px">카드 보기</button>
-            </div>
+            <button class="btn btn-ghost btn-sm" id="gcBtnAll" onclick="toggleGcAll()">전체보기 ON</button>
+            <button class="btn btn-ghost btn-sm" id="gcBtnName" onclick="toggleGcName()">소재 이름 ON</button>
             <button class="btn btn-ghost btn-sm" id="gcRefreshImg">🔄 이미지 새로고침</button>
             <select id="gcDateSel" class="yozm-sel"><option value="all">전체 기간</option></select>
             <button class="btn btn-ghost btn-sm" id="gcReset">↩ 다시 업로드</button>
@@ -851,7 +849,7 @@ setupKwPanel(1); setupKwPanel(2);
 /* ══════════════════════════
    GFA 리포트
 ══════════════════════════ */
-const GFA_ORDER = [
+const GFA_ORDER_DEFAULT = [
   '그룹) 매출상시_6+3_0401-','그룹) 요즘상시_6+3_0801-','그룹) 요즘상시v2_6+3_1120-',
   '그룹) 플레인상시_4+4+1_0915-','그룹) 말차상시_말3+플3+초토1_1029-','그룹) 말차상시2_말3+플3+초토1_1112-',
   '그룹) 말차상시3_말3+플3+초토1_1114-','그룹) 10월넾다_11종_1029-1111','그룹) 11월넾다2_추가_1107-1111',
@@ -863,6 +861,29 @@ const GFA_ORDER = [
   '그룹) 2월한입_말3+3+플1, 오3+플3 _0223-0301','그룹) 3월한입_선물세트,카4+플4_0306-0312','그룹) 3월오끝_체험8종 _0307-0308',
   '그룹) 3월푸페_10종_0316-0322','그룹) 마시는상시_마s,메이커_0320-',
 ];
+let GFA_ORDER = [...GFA_ORDER_DEFAULT];
+
+// Firestore에서 최신 GFA 그룹 순서 로드
+async function loadGfaOrder() {
+  if (!window._adsFs) return;
+  try {
+    const saved = await window._adsFs.loadGfaOrder();
+    if (saved && saved.length > 0) {
+      GFA_ORDER = saved;
+    }
+  } catch {}
+}
+
+// 신규 그룹 감지 → Firestore 업데이트
+async function syncGfaOrder(groupsFromCsv) {
+  const newGroups = groupsFromCsv.filter(k => !GFA_ORDER.includes(k));
+  if (newGroups.length === 0) return;
+  GFA_ORDER = [...GFA_ORDER, ...newGroups];
+  showToast(`✅ 신규 GFA 그룹 ${newGroups.length}개 추가됨`);
+  if (window._adsFs) {
+    try { await window._adsFs.saveGfaOrder(GFA_ORDER); } catch {}
+  }
+}
 
 let _gfaData = [], _gfaHideEmpty = true;
 
@@ -947,7 +968,8 @@ function renderGfaGroup(selDate) {
     g.imp+=r.imp; g.clk+=r.clk; g.cost+=r.cost; g.conv+=r.conv; g.rev+=r.rev;
   }
   const newGroups = [...gMap.keys()].filter(k => !GFA_ORDER.includes(k));
-  const ordered = [...GFA_ORDER, ...newGroups];
+  await syncGfaOrder([...gMap.keys()]);
+  const ordered = [...GFA_ORDER, ...newGroups.filter(k => !GFA_ORDER.includes(k))];
   const tbody = document.getElementById('gfaGroupBody');
   const tfoot = document.getElementById('gfaGroupFoot');
   tbody.innerHTML = '';
@@ -988,7 +1010,8 @@ function renderGfaGroup(selDate) {
       g.imp+=r.imp; g.clk+=r.clk; g.cost+=r.cost; g.conv+=r.conv; g.rev+=r.rev;
     }
     const ng2 = [...gm2.keys()].filter(k => !GFA_ORDER.includes(k));
-    const all2 = [...GFA_ORDER, ...ng2];
+    await syncGfaOrder([...gm2.keys()]);
+    const all2 = [...GFA_ORDER, ...ng2.filter(k => !GFA_ORDER.includes(k))];
     const rows = all2.map(name => { const v=gm2.get(name)||{imp:0,clk:0,cost:0,conv:0,rev:0}; return [raw(v.imp),raw(v.clk),raw(v.cost),raw(v.conv),raw(v.rev)].join('\t'); });
     navigator.clipboard.writeText(rows.join('\n')).then(() => showToast('✅ 값만 고정순서 복사 완료 (' + all2.length + '행)'));
   };
@@ -1013,6 +1036,12 @@ function setupAdvPanel(num) {
 }
 setupAdvPanel(1);
 setupAdvPanel(2);
+
+// Firebase 준비 후 GFA 그룹 순서 로드
+(function waitForFs() {
+  if (window._adsFs) { loadGfaOrder(); }
+  else { setTimeout(waitForFs, 100); }
+})();
 
 async function processAdv(file, num) {
   const uz = document.getElementById(`advUpload${num}`);
@@ -1107,17 +1136,37 @@ function resetAdvPanel(num) {
 let _gcAllData = [];
 let _gcImages = {};
 let _gcView = 'compact';
+let _gcAllOn = false;   // 전체보기 (기본: 전환있는 그룹만)
+let _gcNameOn = false;  // 소재 이름 표시 (기본: OFF)
+
+function toggleGcAll() {
+  _gcAllOn = !_gcAllOn;
+  const btn = document.getElementById('gcBtnAll');
+  if (btn) {
+    btn.textContent = _gcAllOn ? '전체보기 OFF' : '전체보기 ON';
+    btn.style.background = _gcAllOn ? 'rgba(58,58,240,0.08)' : '';
+    btn.style.color = _gcAllOn ? 'var(--accent)' : '';
+    btn.style.borderColor = _gcAllOn ? 'rgba(58,58,240,0.2)' : '';
+  }
+  if (_gcAllData.length > 0) renderGcCards(document.getElementById('gcDateSel').value);
+}
+
+function toggleGcName() {
+  _gcNameOn = !_gcNameOn;
+  const btn = document.getElementById('gcBtnName');
+  if (btn) {
+    btn.textContent = _gcNameOn ? '소재 이름 OFF' : '소재 이름 ON';
+    btn.style.background = _gcNameOn ? 'rgba(58,58,240,0.08)' : '';
+    btn.style.color = _gcNameOn ? 'var(--accent)' : '';
+    btn.style.borderColor = _gcNameOn ? 'rgba(58,58,240,0.2)' : '';
+  }
+  document.querySelectorAll('.gc-name-label').forEach(el => {
+    el.style.display = _gcNameOn ? '' : 'none';
+  });
+}
 
 function setGcView(v) {
   _gcView = v;
-  const cb = document.getElementById('gcViewCompact');
-  const kb = document.getElementById('gcViewCard');
-  if (cb && kb) {
-    cb.style.background = v === 'compact' ? 'var(--accent)' : 'transparent';
-    cb.style.color = v === 'compact' ? '#fff' : 'var(--t2)';
-    kb.style.background = v === 'card' ? 'var(--accent)' : 'transparent';
-    kb.style.color = v === 'card' ? '#fff' : 'var(--t2)';
-  }
   if (_gcAllData.length > 0) renderGcCards(document.getElementById('gcDateSel').value);
 }
 
@@ -1235,6 +1284,14 @@ async function renderGcCards(selDate) {
 
   // ── 압축 보기 ──
   if (_gcView === 'compact') {
+    // 전체보기 OFF면 전환 > 0인 그룹만
+    const visibleGroups = _gcAllOn
+      ? sortedGroups
+      : sortedGroups.filter(k => {
+          const total = [...groupMap.get(k).values()].reduce((s,c) => s+c.conv, 0);
+          return total > 0;
+        });
+
     const tbl = document.createElement('table');
     tbl.style.cssText = 'width:100%;border-collapse:collapse;background:var(--glass-bg-strong);border:1px solid var(--glass-border-s);border-radius:12px;overflow:hidden';
 
@@ -1242,12 +1299,16 @@ async function renderGcCards(selDate) {
     const thead = document.createElement('thead');
     const hRow = document.createElement('tr');
     const thLabel = document.createElement('th');
-    thLabel.style.cssText = 'width:64px;padding:10px 12px;text-align:left;font-size:11px;font-weight:500;color:var(--t2);border-bottom:1px solid var(--glass-border-s);background:var(--glass-bg)';
+    thLabel.style.cssText = 'width:56px;padding:8px 12px;text-align:left;font-size:11px;font-weight:500;color:var(--t2);border-bottom:1px solid var(--glass-border-s);background:var(--glass-bg)';
     hRow.appendChild(thLabel);
-    for (const gName of sortedGroups) {
+    for (const gName of visibleGroups) {
+      const groupTotal = [...groupMap.get(gName).values()].reduce((s,c) => s+c.conv, 0);
       const th = document.createElement('th');
-      th.style.cssText = 'padding:10px 12px;text-align:center;font-size:12px;font-weight:500;color:var(--tx);border-bottom:1px solid var(--glass-border-s);background:var(--glass-bg)';
-      th.textContent = gcShortName(gName);
+      th.style.cssText = 'width:128px;min-width:128px;padding:8px 0 6px;text-align:center;font-size:12px;font-weight:500;color:var(--tx);border-bottom:1px solid var(--glass-border-s);background:var(--glass-bg)';
+      th.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+        <span>${gcShortName(gName)}</span>
+        <span style="font-size:11px;font-weight:500;color:${groupTotal>0?'var(--accent)':'var(--t4)'}"">전환 ${Math.round(groupTotal)}건</span>
+      </div>`;
       hRow.appendChild(th);
     }
     thead.appendChild(hRow);
@@ -1255,49 +1316,37 @@ async function renderGcCards(selDate) {
 
     const tbody = document.createElement('tbody');
 
-    // 전환 행
-    const convRow = document.createElement('tr');
-    const convLabel = document.createElement('td');
-    convLabel.style.cssText = 'padding:10px 12px;font-size:11px;font-weight:500;color:var(--t2);border-right:1px solid var(--glass-border-s);border-bottom:1px solid var(--glass-border-s);background:var(--glass-bg);white-space:nowrap';
-    convLabel.textContent = '전환';
-    convRow.appendChild(convLabel);
-    for (const gName of sortedGroups) {
-      const creativeMap = groupMap.get(gName);
-      const total = [...creativeMap.values()].reduce((s, c) => s + c.conv, 0);
-      const td = document.createElement('td');
-      td.style.cssText = 'padding:10px 12px;text-align:center;border-bottom:1px solid var(--glass-border-s);font-size:20px;font-weight:500;color:var(--tx)';
-      td.textContent = Math.round(total);
-      convRow.appendChild(td);
-    }
-    tbody.appendChild(convRow);
-
     // 1순위 / 2순위 행
     for (let rank = 0; rank < 2; rank++) {
       const row = document.createElement('tr');
       const rankLabel = document.createElement('td');
-      rankLabel.style.cssText = 'padding:10px 12px;font-size:11px;font-weight:500;color:var(--t2);border-right:1px solid var(--glass-border-s);' + (rank < 1 ? 'border-bottom:1px solid var(--glass-border-s);' : '') + 'background:var(--glass-bg);white-space:nowrap';
+      rankLabel.style.cssText = 'padding:0 12px;font-size:11px;font-weight:500;color:var(--t2);border-right:1px solid var(--glass-border-s);background:var(--glass-bg);white-space:nowrap;' + (rank < 1 ? 'border-bottom:1px solid var(--glass-border-s);' : '');
       rankLabel.textContent = rank === 0 ? '1순위' : '2순위';
       row.appendChild(rankLabel);
-      for (const gName of sortedGroups) {
+
+      for (const gName of visibleGroups) {
         const creativeMap = groupMap.get(gName);
         const top2 = [...creativeMap.values()].sort((a, b) => b.conv - a.conv).slice(0, 2);
         const c = top2[rank];
         const td = document.createElement('td');
-        td.style.cssText = 'padding:10px 12px;text-align:center;' + (rank < 1 ? 'border-bottom:1px solid var(--glass-border-s);' : '');
+        td.style.cssText = 'padding:0;text-align:center;width:128px;min-width:128px;' + (rank < 1 ? 'border-bottom:1px solid var(--glass-border-s);' : '');
+
         if (c) {
           const imgEntry = images[c.code] || Object.values(images).find(v => v.name === c.name);
           const imgData = imgEntry?.img || null;
+          const wrap = document.createElement('div');
+          wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;padding:10px 0 8px';
+
           if (imgData) {
             const img = document.createElement('img');
             img.src = imgData; img.alt = c.name;
-            img.style.cssText = 'width:76px;height:60px;object-fit:contain;border-radius:6px;border:1px solid var(--glass-border-s);display:block;margin:0 auto;cursor:pointer;background:#fff';
+            img.style.cssText = 'width:108px;height:108px;object-fit:contain;border-radius:8px;border:1px solid var(--glass-border-s);display:block;cursor:pointer;background:#fff';
             img.title = c.name + '\n클릭하면 이미지 복사';
             img.onclick = () => copyGcImage(imgData);
-            td.appendChild(img);
+            wrap.appendChild(img);
           } else {
             const noImg = document.createElement('div');
-            noImg.style.cssText = 'width:76px;height:60px;border:1.5px dashed rgba(58,58,240,0.2);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;margin:0 auto;background:rgba(58,58,240,0.02);transition:all .15s';
-            noImg.title = c.name + '\n클릭하면 이미지 등록 탭으로 이동';
+            noImg.style.cssText = 'width:108px;height:108px;border:1.5px dashed rgba(58,58,240,0.2);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;background:rgba(58,58,240,0.02);transition:all .15s';
             noImg.innerHTML = '<div style="font-size:14px">🖼</div><div style="font-size:9px;color:var(--accent)">+ 등록</div>';
             noImg.onmouseenter = () => { noImg.style.background='rgba(58,58,240,0.06)'; noImg.style.borderColor='rgba(58,58,240,0.4)'; };
             noImg.onmouseleave = () => { noImg.style.background='rgba(58,58,240,0.02)'; noImg.style.borderColor='rgba(58,58,240,0.2)'; };
@@ -1305,12 +1354,21 @@ async function renderGcCards(selDate) {
               const imgTab = document.querySelector('#s-gc .inner-tab:last-child');
               if (imgTab) imgTab.click();
               const iframe = document.getElementById('gcImageFrame');
-              const fill = () => { try { const d = iframe.contentDocument||iframe.contentWindow.document; const ci=d.getElementById('codeInput'); const ni=d.getElementById('nameInput'); if(ci) ci.value=c.code; if(ni) ni.value=c.name; } catch{} };
+              const fill = () => { try { const d=iframe.contentDocument||iframe.contentWindow.document; const ci=d.getElementById('codeInput'); const ni=d.getElementById('nameInput'); if(ci) ci.value=c.code; if(ni) ni.value=c.name; } catch{} };
               try { const st=(iframe.contentDocument||iframe.contentWindow.document).readyState; if(st==='complete') fill(); else iframe.onload=fill; } catch { iframe.onload=fill; }
               navigator.clipboard.writeText(c.code).then(()=>showToast(`📋 코드 ${c.code} 복사됨`)).catch(()=>{});
             };
-            td.appendChild(noImg);
+            wrap.appendChild(noImg);
           }
+
+          // 소재 이름
+          const nameEl = document.createElement('div');
+          nameEl.className = 'gc-name-label';
+          nameEl.style.cssText = `font-size:10px;color:var(--t3);margin-top:4px;width:108px;text-align:center;line-height:1.4;overflow:hidden;text-overflow:ellipsis;display:${_gcNameOn ? '-webkit-box' : 'none'};-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:keep-all`;
+          nameEl.textContent = c.name;
+          wrap.appendChild(nameEl);
+
+          td.appendChild(wrap);
         }
         row.appendChild(td);
       }
@@ -1476,6 +1534,15 @@ window._adsFs = {
   },
   async saveTemplate(html) {
     await setDoc(doc(_db, 'settings', 'rptTemplate'), { html, updatedAt: new Date().toISOString() });
+  },
+  async loadGfaOrder() {
+    try {
+      const d = await getDoc(doc(_db, 'settings', 'gfaOrder'));
+      return d.exists() ? d.data().order : null;
+    } catch { return null; }
+  },
+  async saveGfaOrder(order) {
+    await setDoc(doc(_db, 'settings', 'gfaOrder'), { order, updatedAt: new Date().toISOString() });
   }
 };
 </script>

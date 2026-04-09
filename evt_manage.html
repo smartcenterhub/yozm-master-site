@@ -797,17 +797,19 @@ function calRender(key){
     confirmBtn.addEventListener('click',()=>{
       const st=CAL_STATE[key];
       if(st.mode==='upload'){
-        if(!st.uploadDate)return;
+        if(!st.uploadDate){confirmBtn.textContent='날짜 선택 필요';setTimeout(()=>{confirmBtn.textContent='✓ 적용';},1400);return;}
+        const u=document.getElementById('ev-upload-date');if(u)u.value=st.uploadDate;
         calUpdateChips(key);
         confirmBtn.textContent='✓';confirmBtn.style.background='var(--gr)';
-        setTimeout(()=>{confirmBtn.textContent='✓ 적용';confirmBtn.style.background='var(--gr)';},1500);
+        setTimeout(()=>{confirmBtn.textContent='✓ 적용';confirmBtn.style.background='var(--gr)';st.mode='deadline';calRender(key);},900);
         return;
       }
       if(st.mode==='deadline'){
-        if(!st.deadlineDate)return;
+        if(!st.deadlineDate){confirmBtn.textContent='날짜 선택 필요';setTimeout(()=>{confirmBtn.textContent='✓ 적용';},1400);return;}
+        const d=document.getElementById('ev-deadline');if(d)d.value=st.deadlineDate;
         calUpdateChips(key);
         confirmBtn.textContent='✓';confirmBtn.style.background='var(--gr)';
-        setTimeout(()=>{confirmBtn.textContent='✓ 적용';confirmBtn.style.background='var(--gr)';},1500);
+        setTimeout(()=>{confirmBtn.textContent='✓ 적용';confirmBtn.style.background='var(--gr)';st.mode='period';calRender(key);},900);
         return;
       }
       /* period */
@@ -837,15 +839,9 @@ function calClick(key,s){
     if(st.startId)document.getElementById(st.startId).value=st.selS||'';
     if(st.endId)document.getElementById(st.endId).value=st.selE||'';
   }else if(st.mode==='upload'){
-    st.uploadDate=s;
-    const u=document.getElementById('ev-upload-date');if(u)u.value=s;
-    calUpdateChips(key);
-    setTimeout(()=>{st.mode='deadline';calRender(key);},220);
+    st.uploadDate=s;  /* 날짜만 선택 — 적용 버튼 클릭 시 확정 */
   }else if(st.mode==='deadline'){
     st.deadlineDate=s;
-    const d=document.getElementById('ev-deadline');if(d)d.value=s;
-    calUpdateChips(key);
-    setTimeout(()=>{st.mode='period';calRender(key);},220);
   }
   calRender(key);
 }

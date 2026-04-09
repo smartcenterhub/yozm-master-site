@@ -1575,8 +1575,6 @@ function buildProdRow(p,tabNum,grpEnded,lbl){
   const mDA=(p.priceNormal&&p.priceMax)?comma(p.priceNormal-p.priceMax):'—';
   const mRate=pct(p.priceNormal,p.priceMax);
   const rowId='row-'+p._id;const epId='ep-'+p._id;
-  let actionBtn='';
-  /* tab2도 행 클릭 수정 없음 */
   const clickable=false;
   return `<tr class="${isGray?' grayed':''}${isDirty?' dirty-row':''}" id="${rowId}">
     <td><span class="st ${stCls}" style="font-size:10px">${cStatus}</span></td>
@@ -1591,7 +1589,6 @@ function buildProdRow(p,tabNum,grpEnded,lbl){
     <td><span class="re">${eRate}</span></td>
     <td><span class="rm">${mRate}</span></td>
     ${tabNum===2?`<td><button class="btn btn-xs" style="color:var(--pu);border-color:rgba(108,53,204,.3)" onclick="event.stopPropagation()">소구문구</button></td>`:''}
-    <td>${actionBtn}</td>
   </tr>
   ${clickable?`<tr class="edit-row" id="${epId}"><td colspan="100" class="edit-panel" style="padding:0">${buildEditPanel(p,tabNum)}</td></tr>`:''}`;
 }

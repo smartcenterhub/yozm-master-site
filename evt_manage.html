@@ -688,6 +688,11 @@ function calRender(key){
   const off=fd===0?6:fd-1;
   const today=calTodayStr();
 
+  /* 모드별 상태 — 날짜 루프보다 먼저 선언 */
+  const isPeriod=!st.mode||st.mode==='period';
+  const isUpload=st.mode==='upload';
+  const isDl=st.mode==='deadline';
+
   let gH=WDAYS.map(d=>`<div class="cal-dow">${d}</div>`).join('');
   for(let i=0;i<off;i++)gH+=`<div class="cal-d c-em"></div>`;
   for(let d=1;d<=dim;d++){
@@ -705,12 +710,6 @@ function calRender(key){
     gH+=`<div class="${cls}" data-date="${s}">${d}</div>`;
   }
 
-  /* 모드별 날짜 선택 상태 */
-  const isPeriod=!st.mode||st.mode==='period';
-  const isUpload=st.mode==='upload';
-  const isDl=st.mode==='deadline';
-
-  /* 날짜 셀 클래스 - 모드에 따라 */
   const sC=st.selS?fmtDate(st.selS,st._sh+':'+st._sm):'시작일';
   const eC=st.selE?fmtDate(st.selE,st._eh+':'+st._em):'종료일';
   const dur=calDur(st.selS,st.selE);

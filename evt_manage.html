@@ -18,15 +18,10 @@ html{min-width:1188px;background:linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#
 body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx);width:1188px;padding:20px 24px 80px}
 
 /* ── 저장 바 ── */
-#save-bar{position:fixed;bottom:0;left:0;right:0;height:46px;background:rgba(255,255,255,.93);border-top:1px solid var(--bd);display:flex;align-items:center;justify-content:center;gap:12px;backdrop-filter:blur(8px);z-index:500;transform:translateY(100%);transition:transform .25s}
-#save-bar.visible{transform:translateY(0)}
-#dirty-msg{font-size:12.5px;color:var(--rd);font-weight:600}
-.savebar-btn{padding:6px 18px;font-size:12.5px;border:none;border-radius:8px;cursor:pointer;font-weight:600}
-#btn-save-all{background:linear-gradient(135deg,var(--ac),#5a3af0);color:#fff}
-#btn-discard{background:rgba(152,152,168,.15);color:var(--t3)}
+
 
 /* ── 탭 ── */
-.tab-bar{display:flex;gap:1px;border-bottom:1px solid var(--bd);margin-bottom:18px;flex-wrap:wrap}
+.tab-bar{display:flex;align-items:center;gap:1px;border-bottom:1px solid var(--bd);margin-bottom:18px}
 .tab{padding:8px 14px;font-size:12px;color:var(--t3);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;border-radius:4px 4px 0 0;user-select:none;white-space:nowrap;transition:all .15s}
 .tab:hover{color:var(--t2);background:rgba(255,255,255,.5)}
 .tab.on{color:var(--or);font-weight:600;border-bottom-color:var(--or)}
@@ -277,6 +272,10 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
   <div class="tab"    onclick="sw(5,this)">행사 종료</div>
   <div class="tab"    onclick="sw(6,this)">행사 성과</div>
   <div class="tab"    onclick="sw(7,this)">행사 유형 정보</div>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:4px;padding:0 8px">
+    <button id="top-undo" onclick="discardAll()" title="변경 취소" style="width:30px;height:28px;border:1px solid var(--bd);border-radius:7px;background:var(--gs);color:var(--t3);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;opacity:.45;transition:all .15s" disabled>↩</button>
+    <button id="top-save" onclick="saveAll()" title="전체 저장" style="height:28px;padding:0 14px;border:none;border-radius:7px;background:var(--ac);color:#fff;cursor:pointer;font-size:12px;font-weight:600;opacity:.45;transition:all .15s" disabled>저장</button>
+  </div>
 </div>
 
 <!-- ═══ 탭0: 행사 등록 ═══ -->
@@ -383,7 +382,7 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
     <div class="rbtn">
       <button class="btn btn-sm btn-gh" onclick="openAddProposal()">+ 제안 추가</button>
       <button class="btn btn-sm" style="border-color:rgba(108,53,204,.3);color:var(--pu)">소구문구 관리 →</button>
-      <button class="tab-save-btn" id="save-btn-2" onclick="saveAll()" disabled>저장</button>
+      
     </div>
   </div>
   <div class="tfilter">
@@ -417,7 +416,7 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
     <div><div class="pg-title">행사 선정</div><div class="pg-desc">events.products[] 기준 · 상품 단위 추가/제거 가능</div></div>
     <div class="rbtn">
       <button class="btn btn-sm btn-gh" onclick="renderSelList()">↻ 새로고침</button>
-      <button class="tab-save-btn" id="save-btn-3" onclick="saveAll()" disabled>저장</button>
+      
     </div>
   </div>
   <div class="tfilter">
@@ -468,7 +467,7 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
     <div><div class="pg-title">행사 종료</div><div class="pg-desc">종료된 항목만 표시</div></div>
     <div class="rbtn">
       <button class="btn btn-sm btn-gh" onclick="renderPropList(5)">↻ 새로고침</button>
-      <button class="tab-save-btn" id="save-btn-5" onclick="saveAll()" disabled>저장</button>
+      
     </div>
   </div>
   <div class="tfilter">
@@ -491,7 +490,7 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
 <div class="pane" id="p6">
   <div class="pg-hd">
     <div><div class="pg-title">행사 성과</div><div class="pg-desc">종료 행사별 판매수량·결제금액 입력</div></div>
-    <div class="rbtn"><button class="tab-save-btn" id="save-btn-6" onclick="saveAll()" disabled>저장</button></div>
+    <div class="rbtn"></div>
   </div>
   <div class="fbar">
     <select id="perf-mf" onchange="renderPerf()"><option value="">전체 기간</option></select>
@@ -509,11 +508,7 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
 </div>
 
 <!-- 저장 바 -->
-<div id="save-bar">
-  <span id="dirty-msg"></span>
-  <button id="btn-save-all" class="savebar-btn" onclick="saveAll()">전체 저장</button>
-  <button id="btn-discard"  class="savebar-btn" onclick="discardAll()">되돌리기</button>
-</div>
+
 <div id="toast"></div>
 
 <script type="module">
@@ -610,9 +605,10 @@ function markDirty(col,id,fields){
 function markDelete(col,id){TO_DELETE.add({col,id});DIRTY.delete(id);refreshSaveUI();}
 function refreshSaveUI(){
   const n=DIRTY.size+TO_DELETE.size;
-  const bar=$('save-bar');if(bar)bar.classList.toggle('visible',n>0);
-  const msg=$('dirty-msg');if(msg)msg.textContent=n>0?`미저장 ${n}건`:'';
-  [2,3,5,6].forEach(t=>{const btn=$('save-btn-'+t);if(btn){btn.disabled=n===0;btn.classList.toggle('has-dirty',n>0);}});
+  const bar=document.getElementById('top-save');
+  const undo=document.getElementById('top-undo');
+  if(bar){bar.disabled=n===0;bar.style.opacity=n>0?'1':'.45';bar.style.animation=n>0?'pulse .8s ease-in-out infinite alternate':'none';}
+  if(undo){undo.disabled=n===0;undo.style.opacity=n>0?'1':'.45';}
 }
 window.saveAll=async function(){
   if(DIRTY.size===0&&TO_DELETE.size===0){toast('저장할 내용 없음');return;}
@@ -1332,7 +1328,7 @@ window.renderPropList=function(tabNum){
     const cStatus=computeStatus(p);
     if(tabNum===2){
       if(sf.size>0&&!sf.has(cStatus)&&!sf.has(p.status))return false;
-      if(sf.size===0){const evEnded=isEvEnded(EVENTS.find(e=>e._id===p.eventSID));if(evEnded)return false;if(!['제안중','제안완료','미선정'].includes(p.status))return false;}
+      if(sf.size===0){const evEnded=isEvEnded(EVENTS.find(e=>e._id===p.eventSID));if(evEnded)return false;if(!['제안중','제안완료','확인필요','선정','미선정'].includes(p.status))return false;}
     }
     if(tabNum===3){if(p.status!=='선정')return false;}
     if(tabNum===5){if(p.status!=='선정')return false;const ev=EVENTS.find(e=>e._id===p.eventSID)||EVENTS.find(e=>e.eventName===p.eventName);if(!isEvEnded(ev))return false;}

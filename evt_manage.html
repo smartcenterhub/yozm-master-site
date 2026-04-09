@@ -632,7 +632,10 @@ window.discardAll=function(){
   DIRTY.clear();TO_DELETE.clear();SNAPSHOTS.clear();refreshSaveUI();toast('되돌리기 완료');
   [2,3,5].forEach(t=>renderPropList(t));renderPerf();
 };
-function makeProposalId(p){return(p.eventName||'').replace(/\s/g,'')+'_'+(p.startDate||'None').replace(/-/g,'')+'_'+(p.endDate||'None').replace(/-/g,'')+'_'+(p.skuCode||'');}
+function makeProposalId(p){
+  /* eventSID 기반 ID (날짜 중복 저장 제거 후) */
+  return(p.eventSID||p.eventName||'').replace(/\s/g,'')+'_'+(p.skuCode||'');
+}
 window.localMod=function(id,col,fields){const list=col==='proposalItems'?PROPOSALS:EVENTS;const item=list.find(x=>x._id===id);if(item)Object.assign(item,fields);markDirty(col,id,fields);};
 
 /* ══ 달력 (CAL) ══ */
@@ -948,14 +951,19 @@ window.saveDateChip=function(grpId,field,prefix){
   const chip=document.getElementById('chip-'+field+'-'+grpId);
   if(chip)chip.classList.add('chip-filled');
   document.getElementById('expand-'+field+'-'+grpId)?.classList.remove('open');
-  /* proposalItems 업데이트 */
+  /* events에 저장 (proposalUploadedAt/proposalDeadline은 events 소속) */
   const fieldMap={upload:'proposalUploadedAt',deadline:'proposalDeadline',propdate:'proposalMyDate'};
   const key=fieldMap[field];
   if(!key)return;
-  /* 해당 그룹 이름 찾기 */
-  const egrp=document.getElementById('grp-2-'+grpId.replace('grp-2-',''));
   const nm=document.getElementById(grpId+'-hd')?.querySelector('.egrpname')?.textContent?.trim();
-  if(nm){PROPOSALS.filter(p=>p.eventName===nm&&!p._deleted).forEach(p=>{p[key]=val;markDirty('proposalItems',p._id,{[key]:val});});}
+  if(nm){
+    if(key==='proposalMyDate'){
+      PROPOSALS.filter(p=>(p.eventSID===nm||p.eventName===nm)&&!p._deleted).forEach(p=>{p[key]=val;markDirty('proposalItems',p._id,{[key]:val});});
+    }else{
+      const ev=EVENTS.find(e=>e._id===nm)||EVENTS.find(e=>e.eventName===nm);
+      if(ev){ev[key]=val;markDirty('events',ev._id,{[key]:val});}
+    }
+  }
   toast('날짜 저장 (저장 버튼으로 반영)');
 };
 window.calSetMode=function(key,mode){
@@ -1330,8 +1338,8 @@ window.renderPropList=function(tabNum){
       if(sf.size===0){const evEnded=isEvEnded(EVENTS.find(e=>e._id===p.eventSID));if(evEnded&&!['선정','미선정'].includes(p.status))return false;if(!['제안중','제안완료','확인필요','선정','미선정'].includes(p.status))return false;}
     }
     if(tabNum===3){if(p.status!=='선정')return false;}
-    if(tabNum===5){if(p.status!=='선정')return false;const ev=EVENTS.find(e=>e._id===p.eventSID)||EVENTS.find(e=>e.eventName===p.eventName);if(!isEvEnded(ev))return false;}
-    const evType=p.eventType||detectType({eventName:p.eventName});
+    if(tabNum===5){if(p.status!=='선정')return false;const ev=EVENTS.find(e=>e._id===p.eventSID)||(p.eventName?EVENTS.find(e=>e.eventName===p.eventName):null);if(!isEvEnded(ev))return false;}
+    const evType=(()=>{const ev5=EVENTS.find(e=>e._id===p.eventSID);return ev5?.eventType||p.eventType||detectType({eventName:ev5?.eventName||p.eventName});})();
     if(tFilter.length>0&&!tFilter.includes(evType))return false;
     if(monthF&&!(p.startDate||'').startsWith(monthF))return false;
     if(search&&!(p.eventName||'').toLowerCase().includes(search)&&!(p.skuNick||'').toLowerCase().includes(search))return false;
@@ -1449,11 +1457,11 @@ function buildGroupHtml(eName,grp,tabNum){
     <div class="egrpbody${allDone&&tabNum===2?' done-state':''}" id="${grpId}-body">
       <div class="date-chip-row">
         <span style="font-size:10.5px;color:var(--t3);margin-right:2px">제안 일정</span>
-        <span id="chip-upload-${grpId}" class="${m.proposalUploadedAt?'date-chip chip-filled':'date-chip'}" onclick="toggleDateChip('expand-upload-${grpId}')">
-          📅 <span id="lbl-upload-${grpId}">${m.proposalUploadedAt?'업로드 '+m.proposalUploadedAt.substring(5).replace('-','/'):'업로드 미입력'}</span>
+        <span id="chip-upload-${grpId}" class="${(ev?.proposalUploadedAt||m.proposalUploadedAt)?'date-chip chip-filled':'date-chip'}" onclick="toggleDateChip('expand-upload-${grpId}')">
+          📅 <span id="lbl-upload-${grpId}">${(ev?.proposalUploadedAt||m.proposalUploadedAt)?'업로드 '+(ev?.proposalUploadedAt||m.proposalUploadedAt).substring(5).replace('-','/'):'업로드 미입력'}</span>
         </span>
-        <span id="chip-deadline-${grpId}" class="${m.proposalDeadline?'date-chip chip-filled':'date-chip'}" onclick="toggleDateChip('expand-deadline-${grpId}')">
-          📅 <span id="lbl-deadline-${grpId}">${m.proposalDeadline?'마감 '+m.proposalDeadline.substring(5).replace('-','/'):'마감 미입력'}</span>
+        <span id="chip-deadline-${grpId}" class="${(ev?.proposalDeadline||m.proposalDeadline)?'date-chip chip-filled':'date-chip'}" onclick="toggleDateChip('expand-deadline-${grpId}')">
+          📅 <span id="lbl-deadline-${grpId}">${(ev?.proposalDeadline||m.proposalDeadline)?'마감 '+(ev?.proposalDeadline||m.proposalDeadline).substring(5).replace('-','/'):'마감 미입력'}</span>
         </span>
         <span id="chip-propdate-${grpId}" class="${m.proposalMyDate?'date-chip chip-filled':'date-chip'}" onclick="toggleDateChip('expand-propdate-${grpId}')">
           📅 <span id="lbl-propdate-${grpId}">${m.proposalMyDate?'제안일 '+m.proposalMyDate.substring(5).replace('-','/'):'제안일 미입력'}</span>
@@ -1461,13 +1469,13 @@ function buildGroupHtml(eName,grp,tabNum){
       </div>
       <div class="date-chip-expand" id="expand-upload-${grpId}">
         <span class="dce-lbl">업로드일</span>
-        <input type="date" id="date-upload-${grpId}" value="${m.proposalUploadedAt||''}">
+        <input type="date" id="date-upload-${grpId}" value="${ev?.proposalUploadedAt||m.proposalUploadedAt||''}">
         <button class="btn btn-sm btn-fw-apply" onclick="saveDateChip('${grpId}','upload','업로드')">적용</button>
         <button class="btn btn-sm btn-fw-close" onclick="closeDateChip('expand-upload-${grpId}')">닫기</button>
       </div>
       <div class="date-chip-expand" id="expand-deadline-${grpId}">
         <span class="dce-lbl">마감일</span>
-        <input type="date" id="date-deadline-${grpId}" value="${m.proposalDeadline||''}">
+        <input type="date" id="date-deadline-${grpId}" value="${ev?.proposalDeadline||m.proposalDeadline||''}">
         <button class="btn btn-sm btn-fw-apply" onclick="saveDateChip('${grpId}','deadline','마감')">적용</button>
         <button class="btn btn-sm btn-fw-close" onclick="closeDateChip('expand-deadline-${grpId}')">닫기</button>
       </div>
@@ -1962,12 +1970,10 @@ window.saveDateChip=function(grpId,field,prefix){
   const chip=document.getElementById('chip-'+field+'-'+grpId);
   if(chip)chip.classList.add('chip-filled');
   document.getElementById('expand-'+field+'-'+grpId)?.classList.remove('open');
-  /* proposalItems 업데이트 */
+  /* events에 저장 (proposalUploadedAt/proposalDeadline은 events 소속) */
   const fieldMap={upload:'proposalUploadedAt',deadline:'proposalDeadline',propdate:'proposalMyDate'};
   const key=fieldMap[field];
   if(!key)return;
-  /* 해당 그룹 이름 찾기 */
-  const egrp=document.getElementById('grp-2-'+grpId.replace('grp-2-',''));
   const nm=document.getElementById(grpId+'-hd')?.querySelector('.egrpname')?.textContent?.trim();
   if(nm){PROPOSALS.filter(p=>p.eventName===nm&&!p._deleted).forEach(p=>{p[key]=val;markDirty('proposalItems',p._id,{[key]:val});});}
   toast('날짜 저장 (저장 버튼으로 반영)');

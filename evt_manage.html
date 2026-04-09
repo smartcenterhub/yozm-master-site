@@ -637,9 +637,11 @@ window.saveAll=async function(){
 };
 /* 행사 전체 삭제 (events + 해당 proposalItems 전부) */
 window.deleteEvent=function(evId,evName){
-  if(!confirm(`"${evName}" 행사를 삭제하시겠습니까?
-
-관련 제안 상품 전체도 함께 삭제됩니다.`))return;
+  if(!confirm(`"${evName}" 행사를 삭제하시겠습니까?\n\n관련 제안 상품 전체도 함께 삭제됩니다.`))return;
+  /* 삭제 전 스냅샷 저장 (취소 복원용) */
+  const evSnap=EVENTS.find(e=>e._id===evId);
+  const propSnap=PROPOSALS.filter(p=>p.eventSID===evId||p.eventName===evName);
+  DELETE_SNAPSHOTS.push({evSnap:evSnap?{...evSnap}:null,propSnap:propSnap.map(p=>({...p}))});
   /* events 삭제 */
   TO_DELETE.add({col:'events',id:evId});
   const evIdx=EVENTS.findIndex(e=>e._id===evId);
@@ -654,6 +656,7 @@ window.deleteEvent=function(evId,evName){
 };
 /* REDO 스택 */
 let REDO_STACK=[];
+let DELETE_SNAPSHOTS=[];  /* 삭제 취소용 스냅샷 */
 window.redoAll=function(){
   if(!REDO_STACK.length){toast('복원할 내용 없음');return;}
   const snap=REDO_STACK.pop();
@@ -668,6 +671,12 @@ window.discardAll=function(){
   const redoSnap=[];DIRTY.forEach((v,id)=>{redoSnap.push({col:v.col,id,fields:{...v.fields}});});
   if(redoSnap.length)REDO_STACK.push(redoSnap);
   DIRTY.forEach((v,id)=>{const orig=SNAPSHOTS.get(id);if(!orig)return;const list=v.col==='proposalItems'?PROPOSALS:EVENTS;const idx=list.findIndex(x=>x._id===id);if(idx>=0)Object.assign(list[idx],orig);});
+  /* 삭제된 항목 복원 */
+  DELETE_SNAPSHOTS.forEach(snap=>{
+    if(snap.evSnap&&!EVENTS.find(e=>e._id===snap.evSnap._id))EVENTS.unshift(snap.evSnap);
+    snap.propSnap.forEach(p=>{if(!PROPOSALS.find(x=>x._id===p._id))PROPOSALS.unshift(p);});
+  });
+  DELETE_SNAPSHOTS=[];
   DIRTY.clear();TO_DELETE.clear();SNAPSHOTS.clear();refreshSaveUI();toast('되돌리기 완료');
   [2,3,5].forEach(t=>renderPropList(t));renderPerf();
 };

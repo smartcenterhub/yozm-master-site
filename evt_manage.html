@@ -1708,6 +1708,8 @@ window.editRemoveProd=function(grpId,idx){
   const p=SEL_EDIT[grpId].products[idx];
   if(!p)return;
   if(!confirm((p.skuNick||p.productName||'상품')+'을(를) 삭제하시겠습니까?'))return;
+  /* 삭제 전 스냅샷 저장 (↩ 취소용) */
+  DELETE_SNAPSHOTS.push({evSnap:null, propSnap:[{...p}]});
   /* proposalItems 삭제 */
   const pid=p._id;
   if(pid){

@@ -927,7 +927,7 @@ function calUpdateChips(key){
   const lblU=document.getElementById('reg-lbl-upload');
   if(chipU&&lblU&&st.uploadDate){
     const d=new Date(st.uploadDate+'T00:00:00');
-    lblU.textContent='업로드 '+(d.getMonth()+1)+'-'+String(d.getDate()).padStart(2,'0');
+    const dowU=['일','월','화','수','목','금','토'];lblU.textContent='업로드 '+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0')+' ('+dowU[d.getDay()]+')';
     chipU.classList.add('chip-filled');
     const hid=document.getElementById('ev-upload-date');if(hid)hid.value=st.uploadDate;
   }
@@ -936,7 +936,7 @@ function calUpdateChips(key){
   const lblD=document.getElementById('reg-lbl-deadline');
   if(chipD&&lblD&&st.deadlineDate){
     const d=new Date(st.deadlineDate+'T00:00:00');
-    lblD.textContent='마감 '+(d.getMonth()+1)+'-'+String(d.getDate()).padStart(2,'0');
+    const dowD=['일','월','화','수','목','금','토'];lblD.textContent='마감 '+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0')+' ('+dowD[d.getDay()]+')';
     chipD.classList.add('chip-filled');
     const hid=document.getElementById('ev-deadline');if(hid)hid.value=st.deadlineDate;
   }
@@ -1169,7 +1169,7 @@ function renderRegProds(){
         </span>
       </div>
       <!-- 2행: 기간 + 일정 칩 -->
-      <div style="display:flex;align-items:center;gap:5px;margin-top:5px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:5px;margin-top:5px;flex-wrap:wrap;width:100%">
         <span class="egrpmeta" style="font-size:10.5px">${dateLabel}</span>
         <span style="width:0.5px;height:12px;background:rgba(0,0,0,.12);flex-shrink:0"></span>
         <span style="font-size:10px;color:var(--t3)">일정</span>
@@ -1393,14 +1393,20 @@ function buildGroupHtml(eName,grp,tabNum){
     return 'state-proposal';
   })():'';
   return `<div class="egrp ${stateClass}" id="${grpId}">
-    <div class="egrphd" id="${grpId}-hd">
-      <span class="st" style="background:rgba(0,0,0,.05);color:var(${tColor});font-size:10px">${eType}</span>
-      <span class="egrpname">${eName}</span>
-      ${allDone&&tabNum===2?'<span class="st s-done">✅ 제안완료</span>':''}
-      <span class="egrpmeta">${dateStr2}</span>
-      <span class="egrpmeta">${metaStr}</span>
-      ${grpEnded&&tabNum===3?'<span class="st s-end">종료</span>':''}
-      ${grpActions?`<span style="margin-left:auto;display:flex;gap:6px">${grpActions}</span>`:''}
+    <div class="egrphd" id="${grpId}-hd" style="flex-direction:column;gap:0;padding:9px 12px">
+      <!-- 1행 -->
+      <div style="display:flex;align-items:center;gap:6px;width:100%">
+        <span class="st" style="background:rgba(0,0,0,.05);color:var(${tColor});font-size:10px">${eType}</span>
+        <span class="egrpname">${eName}</span>
+        ${allDone&&tabNum===2?'<span class="st s-done">✅ 제안완료</span>':''}
+        ${grpEnded&&tabNum===3?'<span class="st s-end">종료</span>':''}
+        ${grpActions?`<span style="margin-left:auto;display:flex;gap:6px">${grpActions}</span>`:''}
+      </div>
+      <!-- 2행: 기간 + 메타(업로드·마감) -->
+      <div style="display:flex;align-items:center;gap:5px;margin-top:5px;width:100%;flex-wrap:wrap">
+        <span class="egrpmeta" style="font-size:10.5px">${dateStr2}</span>
+        ${metaStr&&metaStr!=='제안업로드: — · 마감: — · 제안일: —'?`<span style="width:0.5px;height:11px;background:rgba(0,0,0,.12);flex-shrink:0"></span><span class="egrpmeta" style="font-size:10px">${metaStr}</span>`:''}
+      </div>
     </div>
     <div class="egrpbody${allDone&&tabNum===2?' done-state':''}" id="${grpId}-body">
       <div class="date-chip-row">
@@ -2016,16 +2022,22 @@ function buildSelCard(ev){
   const editHtml=buildSelEditBlock(ev,grpId);
 
   return`<div class="egrp${ended?' grayed':''}" id="${grpId}" style="margin-bottom:13px">
-    <div class="egrphd" id="${grpId}-hd">
-      <span class="st" style="background:rgba(0,0,0,.05);color:var(${tColor});font-size:10px">${eType}</span>
-      <span class="egrpname">${ev.eventName||'—'}</span>
-      ${ended?'<span class="st s-end">종료</span>':'<span class="st s-sel">진행중</span>'}
-      <span class="egrpmeta">${dateLabel}</span>
-      <span style="margin-left:auto;display:flex;gap:6px">
-        <button class="btn btn-sm" style="background:rgba(58,58,240,.07);color:var(--ac);border-color:rgba(58,58,240,.3)" onclick="toggleSelEditBlock('${grpId}')">✏️ 수정</button>
-        <button class="btn btn-sm" onclick="toggleSelAddProd('${evId}','${grpId}')">+ 상품 추가</button>
-        ${!ended?`<button class="btn btn-sm btn-d" onclick="closeByEventId('${evId}')">종료 처리</button>`:''}
-      </span>
+    <div class="egrphd" id="${grpId}-hd" style="flex-direction:column;gap:0;padding:9px 12px">
+      <!-- 1행 -->
+      <div style="display:flex;align-items:center;gap:6px;width:100%">
+        <span class="st" style="background:rgba(0,0,0,.05);color:var(${tColor});font-size:10px">${eType}</span>
+        <span class="egrpname">${ev.eventName||'—'}</span>
+        ${ended?'<span class="st s-end">종료</span>':'<span class="st s-sel">진행중</span>'}
+        <span style="margin-left:auto;display:flex;gap:6px">
+          <button class="btn btn-sm" style="background:rgba(58,58,240,.07);color:var(--ac);border-color:rgba(58,58,240,.3)" onclick="toggleSelEditBlock('${grpId}')">✏️ 수정</button>
+          <button class="btn btn-sm" onclick="toggleSelAddProd('${evId}','${grpId}')">+ 상품 추가</button>
+          ${!ended?`<button class="btn btn-sm btn-d" onclick="closeByEventId('${evId}')">종료 처리</button>`:''}
+        </span>
+      </div>
+      <!-- 2행: 기간 -->
+      <div style="display:flex;align-items:center;gap:5px;margin-top:5px;width:100%;flex-wrap:wrap">
+        <span class="egrpmeta" style="font-size:10.5px">${dateLabel}</span>
+      </div>
     </div>
     <div class="egrpbody" id="${grpId}-body">
       ${editHtml}

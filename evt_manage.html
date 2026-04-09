@@ -1010,7 +1010,10 @@ async function loadAll(){
     autoEvName();
     // reg 달력 초기화
     calInit('reg',{startId:'ev-start',endId:'ev-end'});
-    calRender('reg');
+    /* 칩 클릭 이벤트 위임 (onclick 대신) */
+  document.getElementById('reg-chip-upload')?.addEventListener('click',()=>{calSetMode('reg','upload');toggleDateChip('reg-expand-upload');});
+  document.getElementById('reg-chip-deadline')?.addEventListener('click',()=>{calSetMode('reg','deadline');toggleDateChip('reg-expand-deadline');});
+  calRender('reg');
   }catch(e){toast('로드 실패: '+e.message,'err');}
 }
 function autoCloseExpired(){
@@ -1169,18 +1172,18 @@ function renderRegProds(){
           <button class="btn btn-p" style="width:88px" onclick="submitProposal()">제안하기 →</button>
         </span>
       </div>
-      <!-- 2행: 기간 + 구분 + 일정 칩 -->
+      <!-- 2행: 기간 + 일정 칩 -->
       <div style="display:flex;align-items:center;gap:5px;margin-top:5px;flex-wrap:wrap">
         <span class="egrpmeta" style="font-size:10.5px">${dateLabel}</span>
         <span style="width:0.5px;height:12px;background:rgba(0,0,0,.12);flex-shrink:0"></span>
         <span style="font-size:10px;color:var(--t3)">일정</span>
-        <span id="reg-chip-upload" class="date-chip" onclick="calSetMode('reg','upload');toggleDateChip('reg-expand-upload')">
-          📅 <span id="reg-lbl-upload">${$('ev-upload-date')?.value?'업로드 '+($('ev-upload-date').value.substring(5)):'업로드 미입력'}</span>
+        <span id="reg-chip-upload" class="date-chip" data-calmode="upload" data-expand="reg-expand-upload">
+          📅 <span id="reg-lbl-upload">업로드 미입력</span>
         </span>
-        <span id="reg-chip-deadline" class="date-chip" onclick="calSetMode('reg','deadline');toggleDateChip('reg-expand-deadline')">
-          📅 <span id="reg-lbl-deadline">${$('ev-deadline')?.value?'마감 '+($('ev-deadline').value.substring(5)):'마감 미입력'}</span>
+        <span id="reg-chip-deadline" class="date-chip" data-calmode="deadline" data-expand="reg-expand-deadline">
+          📅 <span id="reg-lbl-deadline">마감 미입력</span>
         </span>
-      </div>
+      </div></div>
     </div>
     <div class="date-chip-expand" id="reg-expand-upload">
       <span class="dce-lbl">업로드일</span>

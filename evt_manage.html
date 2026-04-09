@@ -258,14 +258,16 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
 #toast.ok{background:var(--gr)}
 #toast.err{background:var(--rd)}
 .divider{border:none;border-top:1px solid var(--bd);margin:10px 0}
+.dropdown-menu{display:none}.dropdown-menu.open{display:block}
+.dropdown-item:hover{background:rgba(58,58,240,.06)}
 </style>
 </head>
 <body>
 
 
 <div class="tab-bar">
-  <div class="tab on" onclick="sw(0,this)">행사 등록</div>
   <div class="tab"    onclick="sw(1,this)">행사 셀렉</div>
+  <div class="tab on" onclick="sw(0,this)">행사 등록</div>
   <div class="tab"    onclick="sw(2,this)">행사 제안</div>
   <div class="tab"    onclick="sw(3,this)">행사 선정</div>
   <div class="tab"    onclick="sw(4,this)">운영 타임라인</div>
@@ -274,6 +276,7 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
   <div class="tab"    onclick="sw(7,this)">행사 유형 정보</div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:4px;padding:0 8px">
     <button id="top-undo" onclick="discardAll()" title="변경 취소" style="width:30px;height:28px;border:1px solid var(--bd);border-radius:7px;background:var(--gs);color:var(--t3);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;opacity:.45;transition:all .15s" disabled>↩</button>
+    <button id="top-redo" onclick="redoAll()" title="되돌리기 복원" style="width:30px;height:28px;border:1px solid var(--bd);border-radius:7px;background:var(--gs);color:var(--t3);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;opacity:.45;transition:all .15s" disabled>↪</button>
     <button id="top-save" onclick="saveAll()" title="전체 저장" style="height:28px;padding:0 14px;border:none;border-radius:7px;background:var(--ac);color:#fff;cursor:pointer;font-size:12px;font-weight:600;opacity:.45;transition:all .15s" disabled>저장</button>
   </div>
 </div>
@@ -407,6 +410,7 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
     <select id="prop-mf" onchange="renderPropList(2)"><option value="">전체 월</option></select>
     <span style="margin-left:auto;font-size:11px;color:var(--t3)">최신순 ↓</span>
   </div>
+  <div id="warn-banner-2" style="display:none;padding:8px 13px;background:rgba(196,90,16,.08);border:1px solid rgba(196,90,16,.25);border-radius:8px;margin-bottom:10px;font-size:12px;font-weight:600;color:var(--or)"></div>
   <div id="prop-list-2"><div class="loading"><span class="spin">⟳</span> 불러오는 중...</div></div>
 </div>
 
@@ -608,6 +612,8 @@ function refreshSaveUI(){
   const undo=document.getElementById('top-undo');
   if(bar){bar.disabled=n===0;bar.style.opacity=n>0?'1':'.45';bar.style.animation=n>0?'pulse .8s ease-in-out infinite alternate':'none';}
   if(undo){undo.disabled=n===0;undo.style.opacity=n>0?'1':'.45';}
+  const redo=document.getElementById('top-redo');
+  if(redo){redo.disabled=REDO_STACK.length===0;redo.style.opacity=REDO_STACK.length>0?'1':'.45';}
 }
 window.saveAll=async function(){
   if(DIRTY.size===0&&TO_DELETE.size===0){toast('저장할 내용 없음');return;}
@@ -627,7 +633,38 @@ window.saveAll=async function(){
   toast('✅ '+ok+'건 저장 완료');
   [2,3,5].forEach(t=>renderPropList(t));renderPerf();
 };
+/* 행사 전체 삭제 (events + 해당 proposalItems 전부) */
+window.deleteEvent=function(evId,evName){
+  if(!confirm(`"${evName}" 행사를 삭제하시겠습니까?
+
+관련 제안 상품 전체도 함께 삭제됩니다.`))return;
+  /* events 삭제 */
+  TO_DELETE.add({col:'events',id:evId});
+  const evIdx=EVENTS.findIndex(e=>e._id===evId);
+  if(evIdx>=0)EVENTS.splice(evIdx,1);
+  /* 관련 proposalItems 전부 삭제 */
+  const related=PROPOSALS.filter(p=>p.eventSID===evId||p.eventName===evName);
+  related.forEach(p=>{TO_DELETE.add({col:'proposalItems',id:p._id});});
+  PROPOSALS.splice(0,PROPOSALS.length,...PROPOSALS.filter(p=>p.eventSID!==evId&&p.eventName!==evName));
+  refreshSaveUI();
+  renderPropList(2);renderPropList(3);renderPropList(5);
+  toast(`"${evName}" 행사 삭제 (저장 버튼으로 반영)`);
+};
+/* REDO 스택 */
+let REDO_STACK=[];
+window.redoAll=function(){
+  if(!REDO_STACK.length){toast('복원할 내용 없음');return;}
+  const snap=REDO_STACK.pop();
+  snap.forEach(({col,id,fields})=>{
+    markDirty(col,id,fields);
+  });
+  renderPropList(2);renderPropList(3);renderPropList(5);
+  toast('복원됨');
+};
 window.discardAll=function(){
+  /* 현재 dirty 상태를 REDO_STACK에 저장 */
+  const redoSnap=[];DIRTY.forEach((v,id)=>{redoSnap.push({col:v.col,id,fields:{...v.fields}});});
+  if(redoSnap.length)REDO_STACK.push(redoSnap);
   DIRTY.forEach((v,id)=>{const orig=SNAPSHOTS.get(id);if(!orig)return;const list=v.col==='proposalItems'?PROPOSALS:EVENTS;const idx=list.findIndex(x=>x._id===id);if(idx>=0)Object.assign(list[idx],orig);});
   DIRTY.clear();TO_DELETE.clear();SNAPSHOTS.clear();refreshSaveUI();toast('되돌리기 완료');
   [2,3,5].forEach(t=>renderPropList(t));renderPerf();
@@ -1355,6 +1392,12 @@ window.renderPropList=function(tabNum){
   const el=document.getElementById('prop-list-'+tabNum);
   if(!Object.keys(groups).length){el.innerHTML='<div style="text-align:center;padding:28px;color:var(--t3)">해당하는 항목이 없습니다</div>';return;}
   el.innerHTML=Object.entries(groups).map(([eName,grp])=>buildGroupHtml(eName,grp,tabNum)).join('');
+  /* 확인필요 배너 */
+  if(tabNum===2){
+    const wCnt=PROPOSALS.filter(p=>!p._deleted&&p.status==='확인필요').length;
+    const banner=document.getElementById('warn-banner-2');
+    if(banner){if(wCnt>0){banner.textContent='⚠️ 확인필요 항목이 '+wCnt+'건 있습니다';banner.style.display='block';}else banner.style.display='none';}
+  }
 };
 
 /* 기간 칩 HTML 빌더 */
@@ -1406,11 +1449,23 @@ function buildGroupHtml(eName,grp,tabNum){
     grpActions=`
       <select style="${stSelStyle};font-size:11px;border-radius:6px;padding:2px 8px;height:26px;font-weight:600;width:80px"
         onchange="markGroupStatus(this.closest('.egrp').querySelector('.egrpname').textContent.trim(),this.value);applySelectStyle(this,this.value)">${stOpts}</select>
-      <button class="btn btn-sm btn-fw-edit" style="background:rgba(58,58,240,.07);color:var(--ac);border-color:rgba(58,58,240,.25)" onclick="toggleSelEdit('${grpId}')">✏️ 수정</button>
-      <button class="btn btn-sm btn-fw-add" onclick="toggleGrpAdd('grpadd-${grpId}')">+ 상품 추가</button>`;
+      <button class="btn btn-sm" style="width:28px;padding:0;background:rgba(58,58,240,.07);color:var(--ac);border-color:rgba(58,58,240,.25);display:inline-flex;align-items:center;justify-content:center" title="수정" onclick="toggleSelEdit('${grpId}')">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style="vertical-align:middle"><path d="M9.5 2.5l2 2-7 7H2.5v-2l7-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 4l2 2" stroke="currentColor" stroke-width="1.4"/></svg>
+      </button>
+      <div style="position:relative;display:inline-block">
+        <button class="btn btn-sm" style="padding:0 8px" onclick="this.nextElementSibling.classList.toggle('open')">⋯</button>
+        <div class="dropdown-menu" style="display:none;position:absolute;right:0;top:30px;background:var(--gs);border:1px solid var(--bd);border-radius:8px;min-width:110px;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.1);overflow:hidden">
+          <div class="dropdown-item" onclick="toggleSelEdit('${grpId}');this.closest('.dropdown-menu').classList.remove('open')" style="padding:8px 13px;font-size:12px;cursor:pointer;color:var(--ac)"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" style="vertical-align:middle"><path d="M9.5 2.5l2 2-7 7H2.5v-2l7-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 4l2 2" stroke="currentColor" stroke-width="1.4"/></svg> 수정</div>
+          <div class="dropdown-item" onclick="toggleGrpAdd('grpadd-${grpId}');this.closest('.dropdown-menu').classList.remove('open')" style="padding:8px 13px;font-size:12px;cursor:pointer;border-top:1px solid var(--bd)">+ 상품 추가</div>
+        </div>
+      </div>
+      <button class="btn btn-sm" style="color:var(--rd);border-color:rgba(212,32,32,.25)" onclick="deleteEvent('${evId}','${eName}')">🗑 삭제</button>`;
   }
   if(tabNum===3){
-    grpActions=`<button class="btn btn-sm" style="background:rgba(58,58,240,.07);color:var(--ac);border-color:rgba(58,58,240,.3)" onclick="toggleSelEdit('${grpId}')">✏️ 수정</button>
+    grpActions=`<button class="btn btn-sm" style="width:28px;padding:0;background:rgba(58,58,240,.07);color:var(--ac);border-color:rgba(58,58,240,.3);display:inline-flex;align-items:center;justify-content:center" title="수정" onclick="toggleSelEdit('${grpId}')">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style="vertical-align:middle"><path d="M9.5 2.5l2 2-7 7H2.5v-2l7-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 4l2 2" stroke="currentColor" stroke-width="1.4"/></svg>
+      </button>
+      <button class="btn btn-sm" style="color:var(--or);border-color:rgba(196,90,16,.3);background:rgba(196,90,16,.06)" onclick="cancelSelection('${eName}','${evId}')">선정취소</button>
       ${!grpEnded?`<button class="btn btn-sm btn-d" onclick="closeByEventName('${eName}')">종료 처리</button>`:''}`;
   }
 
@@ -1431,7 +1486,7 @@ function buildGroupHtml(eName,grp,tabNum){
   const selEditHtml=(tabNum===2||tabNum===3)?buildSelGroupEditBlock(eName,evId,grpId,grp.items,ev,lbl,tabNum):'';
 
   /* 상태 클래스 계산 */
-  const stateClass=tabNum===2?(()=>{
+  const stateClass=tabNum===3?'state-selected':tabNum===2?(()=>{
     const s=grp.items.length?grp.items[0].status:'제안중';
     if(s==='제안완료')return 'state-done';
     if(s==='확인필요')return 'state-warning';
@@ -2289,6 +2344,13 @@ window.selAddByCode=function(evId,grpId){
 window.toggleSelEditBlock=function(grpId){
   const el=document.getElementById('sedit-'+grpId);if(!el)return;
   el.classList.toggle('open');
+};
+window.cancelSelection=function(eName,evId){
+  if(!confirm('"'+eName+'" 선정을 취소하시겠습니까?\n\n행사 제안 탭에서 미선정으로 변경됩니다.'))return;
+  PROPOSALS.filter(p=>(p.eventSID===evId||p.eventSID===eName||p.eventName===eName)&&p.status==='선정'&&!p._deleted)
+    .forEach(p=>{p.status='미선정';markDirty('proposalItems',p._id,{status:'미선정'});});
+  toast('"'+eName+'" 선정 취소 → 미선정 (저장 버튼으로 반영)');
+  renderPropList(2);renderPropList(3);
 };
 window.closeByEventId=function(evId){
   if(!confirm('종료 처리하시겠습니까?'))return;

@@ -609,7 +609,7 @@ function markDirty(col,id,fields){
 }
 function markDelete(col,id){TO_DELETE.add({col,id});DIRTY.delete(id);refreshSaveUI();}
 function refreshSaveUI(){
-  const n=DIRTY.size+TO_DELETE.size;
+  const n=DIRTY.size+TO_DELETE.size+DELETE_SNAPSHOTS.length;
   const bar=document.getElementById('top-save');
   const undo=document.getElementById('top-undo');
   if(bar){bar.disabled=n===0;bar.style.opacity=n>0?'1':'.45';bar.style.animation=n>0?'pulse .8s ease-in-out infinite alternate':'none';}
@@ -1397,8 +1397,10 @@ window.renderPropList=function(tabNum){
     if(tabNum===5){if(p.status!=='선정')return false;const ev=EVENTS.find(e=>e._id===p.eventSID)||(p.eventName?EVENTS.find(e=>e.eventName===p.eventName):null);if(!isEvEnded(ev))return false;}
     const evType=(()=>{const ev5=EVENTS.find(e=>e._id===p.eventSID);return ev5?.eventType||p.eventType||detectType({eventName:ev5?.eventName||p.eventName});})();
     if(tFilter.length>0&&!tFilter.includes(evType))return false;
-    if(monthF&&!(p.startDate||'').startsWith(monthF))return false;
-    if(search&&!(p.eventName||'').toLowerCase().includes(search)&&!(p.skuNick||'').toLowerCase().includes(search))return false;
+    const _ev=EVENTS.find(e=>e._id===p.eventSID);
+    if(monthF&&!((_ev?.startDate||p.startDate||'')).startsWith(monthF))return false;
+    const _evName=EVENTS.find(e=>e._id===p.eventSID)?.eventName||p.eventName||'';
+    if(search&&!_evName.toLowerCase().includes(search)&&!(p.skuNick||'').toLowerCase().includes(search))return false;
     return true;
   });
   const groups={};

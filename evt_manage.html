@@ -1328,7 +1328,7 @@ window.renderPropList=function(tabNum){
     const cStatus=computeStatus(p);
     if(tabNum===2){
       if(sf.size>0&&!sf.has(cStatus)&&!sf.has(p.status))return false;
-      if(sf.size===0){const evEnded=isEvEnded(EVENTS.find(e=>e._id===p.eventSID));if(evEnded)return false;if(!['제안중','제안완료','확인필요','선정','미선정'].includes(p.status))return false;}
+      if(sf.size===0){const evEnded=isEvEnded(EVENTS.find(e=>e._id===p.eventSID));if(evEnded&&!['선정','미선정'].includes(p.status))return false;if(!['제안중','제안완료','확인필요','선정','미선정'].includes(p.status))return false;}
     }
     if(tabNum===3){if(p.status!=='선정')return false;}
     if(tabNum===5){if(p.status!=='선정')return false;const ev=EVENTS.find(e=>e._id===p.eventSID)||EVENTS.find(e=>e.eventName===p.eventName);if(!isEvEnded(ev))return false;}

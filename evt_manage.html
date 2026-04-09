@@ -1576,10 +1576,6 @@ function buildProdRow(p,tabNum,grpEnded,lbl){
   const mRate=pct(p.priceNormal,p.priceMax);
   const rowId='row-'+p._id;const epId='ep-'+p._id;
   let actionBtn='';
-  if(tabNum===2){
-    /* × 삭제 버튼 (선정처리 제거) */
-    actionBtn=`<button class="btn btn-xs" style="color:var(--rd);padding:1px 7px" onclick="event.stopPropagation();deletePropItem('${p._id}',${tabNum})">×</button>`;
-  }
   /* tab2도 행 클릭 수정 없음 */
   const clickable=false;
   return `<tr class="${isGray?' grayed':''}${isDirty?' dirty-row':''}" id="${rowId}">
@@ -1634,6 +1630,7 @@ function buildSelGroupEditBlock(eName,evId,grpId,grpItems,ev,lbl,tabNum){
         <span id="semx-${grpId}-${i}" style="${lockSt};padding:2px 6px;border-radius:4px;font-size:11.5px;color:var(--ac);font-weight:600">${comma(mx||null)}</span>
       </td>
       <td style="font-size:11px;color:var(--t2);padding:5px 8px">${p.ship||'무료배송'}</td>
+      <td style="padding:3px 6px"><button class="btn btn-xs" style="color:var(--rd)" onclick="editRemoveProd('${grpId}',${i})">×</button></td>
     </tr>`;
   }).join('');
 
@@ -1700,6 +1697,29 @@ function buildSelGroupEditBlock(eName,evId,grpId,grpItems,ev,lbl,tabNum){
 }
 
 
+window.editRemoveProd=function(grpId,idx){
+  if(!SEL_EDIT[grpId])return;
+  const p=SEL_EDIT[grpId].products[idx];
+  if(!p)return;
+  if(!confirm((p.skuNick||p.productName||'상품')+'을(를) 삭제하시겠습니까?'))return;
+  /* proposalItems 삭제 */
+  const pid=p._id;
+  if(pid){
+    TO_DELETE.add({col:'proposalItems',id:pid});
+    const pi=PROPOSALS.findIndex(x=>x._id===pid);
+    if(pi>=0)PROPOSALS.splice(pi,1);
+  }
+  SEL_EDIT[grpId].products.splice(idx,1);
+  refreshSaveUI();
+  /* 수정폼 재렌더 */
+  const se=SEL_EDIT[grpId];
+  const ev=EVENTS.find(e=>e._id===se.evId);
+  const tabNum=document.getElementById('seledit-'+grpId)?.closest('.pane')?.id==='p3'?3:2;
+  const newBlock=buildSelGroupEditBlock(se.eName,se.evId,grpId,SEL_EDIT[grpId].products,ev,null,tabNum);
+  const el=document.getElementById('seledit-'+grpId);
+  if(el){el.outerHTML=newBlock;document.getElementById('seledit-'+grpId)?.classList.add('open');calRender('edit-'+grpId);}
+  toast('상품 삭제 (저장 버튼으로 반영)');
+};
 window.toggleSelEdit=function(grpId){
   const el=document.getElementById('seledit-'+grpId);
   if(!el)return;
@@ -1751,7 +1771,7 @@ window.saveSelEdit=async function(grpId,tabNum){
 function buildEditPanel(p,tabNum){
   return`<div style="padding:12px 16px">
     <div class="ep-title"><span>✏️ ${p.skuNick||'—'} 수정</span>
-      <button class="btn btn-xs btn-d" onclick="event.stopPropagation();deletePropItem('${p._id}',${tabNum})">삭제</button></div>
+</div>
     <div class="frow" onclick="event.stopPropagation()">
       <div class="fg"><div class="fl">구분</div>
         <select class="fi" onchange="localMod('${p._id}','proposalItems',{isMain:this.value})">
@@ -2131,7 +2151,6 @@ function buildSelCard(ev){
       <td><span class="re">${eRate}</span></td>
       <td><span class="rm">${mRate}</span></td>
       <td style="font-size:11px;color:var(--t2)">${p.ship||'무료배송'}</td>
-      <td><button class="btn btn-xs" style="color:var(--rd)" onclick="selRemoveProd('${evId}',${i},'${grpId}')">×</button></td>
     </tr>`;
   }).join('');
 
@@ -2220,6 +2239,7 @@ function buildSelEditBlock(ev,grpId){
         <span id="semxe-${grpId}-${i}" style="${lockSt};color:var(--ac);font-weight:600">${comma(mx||null)}</span>
       </td>
       <td style="font-size:11px;color:var(--t2);padding:5px 8px">${p.ship||'무료배송'}</td>
+      <td style="padding:3px 6px"><button class="btn btn-xs" style="color:var(--rd)" onclick="editRemoveProd('${grpId}',${i})">×</button></td>
     </tr>`;
   }).join('');
 
@@ -2265,6 +2285,7 @@ function buildSelEditBlock(ev,grpId){
           <th style="text-align:right;color:var(--rd);font-weight:700">제안행사가 ✏️</th>
           <th style="text-align:right">최대혜택가 🔒</th>
           <th>배송 🔒</th>
+          <th></th>
         </tr></thead>
         <tbody>${prodRows}</tbody>
       </table>

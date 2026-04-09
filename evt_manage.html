@@ -590,7 +590,7 @@ function detectType(e){
   return 'OTHER';
 }
 function skuGroup(nick){return MAIN_NICKS.some(n=>nick&&nick.replace(/\s/g,'')===(n.replace(/\s/g,'')))?'main':'sub';}
-function isEvEnded(e){if(!e)return false;if(e.isClosed)return true;const t=new Date().toISOString().substring(0,10);return!!(e.endDate&&e.endDate<t);}
+function isEvEnded(e){if(!e)return false;const t=new Date().toISOString().substring(0,10);return!!(e.endDate&&e.endDate<t);}
 function computeStatus(p){
   const today=new Date().toISOString().substring(0,10);
   if(p.status==='선정'){const ev=EVENTS.find(e=>e._id===p.eventSID)||EVENTS.find(e=>e.eventName===p.eventName);if(ev&&ev.startDate&&ev.endDate&&today>=ev.startDate&&today<=ev.endDate)return '진행중';}
@@ -1452,13 +1452,7 @@ function buildGroupHtml(eName,grp,tabNum){
       <button class="btn btn-sm" style="width:28px;padding:0;background:rgba(58,58,240,.07);color:var(--ac);border-color:rgba(58,58,240,.25);display:inline-flex;align-items:center;justify-content:center" title="수정" onclick="toggleSelEdit('${grpId}')">
         <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style="vertical-align:middle"><path d="M9.5 2.5l2 2-7 7H2.5v-2l7-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 4l2 2" stroke="currentColor" stroke-width="1.4"/></svg>
       </button>
-      <div style="position:relative;display:inline-block">
-        <button class="btn btn-sm" style="padding:0 8px" onclick="this.nextElementSibling.classList.toggle('open')">⋯</button>
-        <div class="dropdown-menu" style="display:none;position:absolute;right:0;top:30px;background:var(--gs);border:1px solid var(--bd);border-radius:8px;min-width:110px;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.1);overflow:hidden">
-          <div class="dropdown-item" onclick="toggleSelEdit('${grpId}');this.closest('.dropdown-menu').classList.remove('open')" style="padding:8px 13px;font-size:12px;cursor:pointer;color:var(--ac)"><svg width="13" height="13" viewBox="0 0 14 14" fill="none" style="vertical-align:middle"><path d="M9.5 2.5l2 2-7 7H2.5v-2l7-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 4l2 2" stroke="currentColor" stroke-width="1.4"/></svg> 수정</div>
-          <div class="dropdown-item" onclick="toggleGrpAdd('grpadd-${grpId}');this.closest('.dropdown-menu').classList.remove('open')" style="padding:8px 13px;font-size:12px;cursor:pointer;border-top:1px solid var(--bd)">+ 상품 추가</div>
-        </div>
-      </div>
+      <button class="btn btn-sm btn-fw-add" onclick="toggleGrpAdd('grpadd-${grpId}')">+ 상품 추가</button>
       <button class="btn btn-sm" style="color:var(--rd);border-color:rgba(212,32,32,.25)" onclick="deleteEvent('${evId}','${eName}')">🗑 삭제</button>`;
   }
   if(tabNum===3){
@@ -1615,7 +1609,6 @@ function buildSelGroupEditBlock(eName,evId,grpId,grpItems,ev,lbl,tabNum){
   const lockSt='background:rgba(248,247,255,.8);color:var(--t2);cursor:not-allowed;border:1px solid rgba(0,0,0,.05)';
   SEL_EDIT[grpId]={evId,eName,products:grpItems.map(p=>({...p}))};
 
-  /* 상품 행: 닉네임🔒 / 기본행사가🔒(주황) / 제안행사가✏️(빨강) / 최대혜택가🔒(자동) / 배송🔒 */
   const prodRows=grpItems.map((p,i)=>{
     const minP=p.priceEvent||0;
     const ap=p.priceAlim||p.priceEvent||'';
@@ -1635,15 +1628,17 @@ function buildSelGroupEditBlock(eName,evId,grpId,grpItems,ev,lbl,tabNum){
     </tr>`;
   }).join('');
 
-  const calOpts={startVal:ev?.startDate||null,endVal:ev?.endDate||null,
-    sh:(ev?.startTime||'00:00').split(':')[0],sm:(ev?.startTime||'00:00').split(':')[1],
-    eh:(ev?.endTime||'23:59').split(':')[0],em:(ev?.endTime||'23:59').split(':')[1],
-    startId:`se-start-${grpId}`,endId:`se-end-${grpId}`};
-  calInit(grpId,calOpts);
-
-  const sId=`se-start-${grpId}`,eId=`se-end-${grpId}`;
-  const lSId=`drp-${sId}-label`,lEId=`drp-${eId}-label`;
-  const curDateLabel=fmtRange(ev?.startDate,ev?.startTime,ev?.endDate,ev?.endTime);
+  /* 달력 초기화 (행사등록과 동일한 모드탭 방식) */
+  const calKey='edit-'+grpId;
+  delete CAL_STATE[calKey];
+  calInit(calKey,{
+    startVal:ev?.startDate||null, endVal:ev?.endDate||null,
+    sh:(ev?.startTime||'00:00').split(':')[0], sm:(ev?.startTime||'00:00').split(':')[1],
+    eh:(ev?.endTime||'23:59').split(':')[0],  em:(ev?.endTime||'23:59').split(':')[1],
+    startId:`se-start-${grpId}`, endId:`se-end-${grpId}`,
+    uploadDate:ev?.proposalUploadedAt||null,
+    deadlineDate:ev?.proposalDeadline||null
+  });
 
   return`<div class="sel-edit-block" id="seledit-${grpId}">
     <input type="hidden" id="se-start-${grpId}" value="${ev?.startDate||''}">
@@ -1655,49 +1650,56 @@ function buildSelGroupEditBlock(eName,evId,grpId,grpItems,ev,lbl,tabNum){
         <button class="btn btn-sm btn-gh" onclick="toggleSelEdit('${grpId}')">닫기</button>
       </div>
     </div>
-    <div class="frow">
-      <div class="fg" style="flex:.6"><div class="fl">유형</div>
-        <select class="fi" id="se-type-${grpId}">
-          ${Object.entries(TYPE_NAME).map(([k,v])=>`<option value="${k}"${eType===k?' selected':''}>${TYPE_EMOJI[k]||''} ${v}</option>`).join('')}
-        </select></div>
-      <div class="fg" style="flex:1.2"><div class="fl">행사명</div>
-        <input class="fi" id="se-name-${grpId}" value="${eName}"></div>
-      <div class="fg"><div class="fl">랜딩페이지</div>
-        <select class="fi" id="se-page-${grpId}">
-          ${['쇼핑스토리+카테고리','쇼핑스토리','카테고리','상품바로랜딩'].map(v=>`<option${ev?.pageType===v?' selected':''}>${v}</option>`).join('')}
-        </select></div>
-      <div class="fg"><div class="fl">추가할인/적립</div>
-        <input class="fi" id="se-adddisc-${grpId}" value="${ev?.additionalDiscount||''}"></div>
-    </div>
-    <div style="margin-bottom:9px">
-      <div class="fl">날짜 / 시간</div>
-      <button class="cal-toggle-btn" id="cal-tbtn-${grpId}" onclick="calToggle('${grpId}','cal-tbtn-${grpId}')">
-        📅 <span style="font-size:11.5px">${curDateLabel||'날짜 선택'}</span>
-      </button>
-      <div class="cal-collapsible" id="cal-wrap-${grpId}"></div>
-    </div>
-    <div style="margin-top:10px">
-      <div class="ptitle" style="font-size:11.5px;margin-bottom:6px">상품 목록
-        <span style="font-size:10px;font-weight:400;color:var(--t3)">🔒 수정불가 · 빨간칸 = 제안행사가 수정</span>
+    <!-- 행사 등록과 동일한 2단 레이아웃 -->
+    <div style="display:grid;grid-template-columns:1fr 252px;gap:12px;align-items:flex-start">
+      <!-- 좌: 기본 정보 + 상품 목록 -->
+      <div>
+        <div class="frow">
+          <div class="fg" style="flex:.6"><div class="fl">유형</div>
+            <select class="fi" id="se-type-${grpId}">
+              ${Object.entries(TYPE_NAME).map(([k,v])=>`<option value="${k}"${eType===k?' selected':''}>${TYPE_EMOJI[k]||''} ${v}</option>`).join('')}
+            </select></div>
+          <div class="fg" style="flex:1.2"><div class="fl">행사명</div>
+            <input class="fi" id="se-name-${grpId}" value="${eName}"></div>
+          <div class="fg"><div class="fl">랜딩페이지</div>
+            <select class="fi" id="se-page-${grpId}">
+              ${['쇼핑스토리+카테고리','쇼핑스토리','카테고리','상품바로랜딩'].map(v=>`<option${ev?.pageType===v?' selected':''}>${v}</option>`).join('')}
+            </select></div>
+          <div class="fg"><div class="fl">추가할인/적립</div>
+            <input class="fi" id="se-adddisc-${grpId}" value="${ev?.additionalDiscount||''}"></div>
+        </div>
+        <div style="margin-top:8px">
+          <div class="ptitle" style="font-size:11.5px;margin-bottom:6px">상품 목록
+            <span style="font-size:10px;font-weight:400;color:var(--t3)">🔒 수정불가 · 빨간칸 = 제안행사가</span>
+          </div>
+          <table class="tbl" style="font-size:11.5px">
+            <thead><tr>
+              <th>닉네임 🔒</th>
+              <th style="text-align:right;color:var(--or)">기본행사가 🔒</th>
+              <th style="text-align:right;color:var(--rd);font-weight:700">제안행사가 ✏️</th>
+              <th style="text-align:right">최대혜택가 🔒</th>
+              <th>배송 🔒</th>
+            </tr></thead>
+            <tbody>${prodRows}</tbody>
+          </table>
+        </div>
       </div>
-      <table class="tbl" style="font-size:11.5px">
-        <thead><tr>
-          <th>닉네임 🔒</th>
-          <th style="text-align:right;color:var(--or)">기본행사가 🔒</th>
-          <th style="text-align:right;color:var(--rd);font-weight:700">제안행사가 ✏️</th>
-          <th style="text-align:right">최대혜택가 🔒</th>
-          <th>배송 🔒</th>
-        </tr></thead>
-        <tbody>${prodRows}</tbody>
-      </table>
+      <!-- 우: 달력 (행사등록과 동일한 모드탭) -->
+      <div class="cal-inline" id="cal-wrap-${calKey}"></div>
     </div>
   </div>`;
 }
+
 
 window.toggleSelEdit=function(grpId){
   const el=document.getElementById('seledit-'+grpId);
   if(!el)return;
   el.classList.toggle('open');
+  if(el.classList.contains('open')){
+    /* 달력 렌더링 (행사등록과 동일한 모드탭) */
+    const calKey='edit-'+grpId;
+    calRender(calKey);
+  }
 };
 
 window.selEditProd=function(grpId,idx,field,val){
@@ -1712,7 +1714,7 @@ window.saveSelEdit=async function(grpId,tabNum){
   const name=document.getElementById('se-name-'+grpId)?.value||eName;
   const start=document.getElementById('se-start-'+grpId)?.value||'';
   const end=document.getElementById('se-end-'+grpId)?.value||'';
-  const {startTime,endTime}=getCalTime(grpId);
+  const {startTime,endTime}=getCalTime('edit-'+grpId);
   const page=document.getElementById('se-page-'+grpId)?.value||'';
   const adddisc=document.getElementById('se-adddisc-'+grpId)?.value||'';
   const fields={eventName:name,startDate:start||null,startTime,endDate:end||null,endTime,pageType:page,additionalDiscount:adddisc,products:se.products};

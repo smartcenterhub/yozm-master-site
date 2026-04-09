@@ -703,9 +703,10 @@ function fmtRange(s,st,e,et){
 function calInit(key,opts){
   if(CAL_STATE[key])return;
   const t=new Date();
+  const initDate=opts?.startVal?new Date(opts.startVal+'T00:00:00'):t;
   CAL_STATE[key]={
     selS:opts?.startVal||null,selE:opts?.endVal||null,hov:null,clicking:'start',
-    vY:t.getFullYear(),vM:t.getMonth(),
+    vY:initDate.getFullYear(),vM:initDate.getMonth(),
     startId:opts?.startId||null,endId:opts?.endId||null,
     _sh:opts?.sh||'00',_sm:opts?.sm||'00',_eh:opts?.eh||'23',_em:opts?.em||'59',
     mode:opts?.mode||'period',
@@ -750,7 +751,7 @@ function calRender(key){
   const dur=calDur(st.selS,st.selE);
 
   /* 모드 탭 (reg 키일 때만) */
-  const hasModes=key==='reg';
+  const hasModes=key==='reg'||key.startsWith('edit-');
   const modeTabHtml=hasModes?`<div style="display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--bd);background:rgba(248,248,255,.9)">
     <div data-calmode="period" style="padding:6px 0;text-align:center;font-size:10.5px;cursor:pointer;border-bottom:2px solid ${isPeriod?'var(--ac)':'transparent'};color:${isPeriod?'var(--ac)':'var(--t3)'};font-weight:${isPeriod?'700':'400'};margin-bottom:-1px">행사기간</div>
     <div data-calmode="upload" style="padding:6px 0;text-align:center;font-size:10.5px;cursor:pointer;border-bottom:2px solid ${isUpload?'var(--ac)':'transparent'};color:${isUpload?'var(--ac)':st.uploadDate?'var(--gr)':'var(--t3)'};font-weight:${isUpload?'700':st.uploadDate?'600':'400'};margin-bottom:-1px">업로드일${st.uploadDate?'<span style="width:5px;height:5px;border-radius:50%;background:var(--gr);display:inline-block;vertical-align:middle;margin-left:2px"></span>':''}</div>
@@ -854,6 +855,13 @@ function calRender(key){
         return;
       }
       if(key==='reg'&&typeof renderRegProds==='function')renderRegProds();
+      if(key.startsWith('edit-')){
+        const gId=key.replace('edit-','');
+        /* 수정폼 내 날짜 hidden input 업데이트 */
+        const st2=CAL_STATE[key];
+        if(st2?.selS){const si=document.getElementById('se-start-'+gId);if(si)si.value=st2.selS;}
+        if(st2?.selE){const ei=document.getElementById('se-end-'+gId);if(ei)ei.value=st2.selE;}
+      }
       calUpdateChips(key);
       confirmBtn.textContent='✓ 적용됨';
       confirmBtn.style.background='var(--gr)';
@@ -1717,7 +1725,14 @@ window.saveSelEdit=async function(grpId,tabNum){
   const {startTime,endTime}=getCalTime('edit-'+grpId);
   const page=document.getElementById('se-page-'+grpId)?.value||'';
   const adddisc=document.getElementById('se-adddisc-'+grpId)?.value||'';
-  const fields={eventName:name,startDate:start||null,startTime,endDate:end||null,endTime,pageType:page,additionalDiscount:adddisc,products:se.products};
+  /* cal state에서 upload/deadline 읽기 */
+  const calSt=CAL_STATE['edit-'+grpId];
+  const uploadDate=calSt?.uploadDate||null;
+  const deadlineDate=calSt?.deadlineDate||null;
+  const fields={eventName:name,startDate:start||null,startTime,endDate:end||null,endTime,pageType:page,additionalDiscount:adddisc,products:se.products,
+    ...(uploadDate?{proposalUploadedAt:uploadDate}:{}),
+    ...(deadlineDate?{proposalDeadline:deadlineDate}:{})
+  };
   if(evId){
     const ev=EVENTS.find(e=>e._id===evId);
     if(ev)Object.assign(ev,fields);

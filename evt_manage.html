@@ -279,7 +279,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   <div style="margin-left:auto;display:flex;align-items:center;gap:4px;padding:0 8px">
     <button id="top-undo" onclick="discardAll()" title="변경 취소" style="width:30px;height:28px;border:1px solid var(--bd);border-radius:7px;background:var(--gs);color:var(--t3);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;opacity:.45;transition:all .15s" disabled>↩</button>
     <button id="top-redo" onclick="redoAll()" title="되돌리기 복원" style="width:30px;height:28px;border:1px solid var(--bd);border-radius:7px;background:var(--gs);color:var(--t3);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;opacity:.45;transition:all .15s" disabled>↪</button>
-    <button id="top-save" onclick="saveAll()" title="전체 저장" style="height:28px;padding:0 14px;border:none;border-radius:7px;background:var(--ac);color:#fff;cursor:pointer;font-size:12px;font-weight:600;opacity:.45;transition:all .15s" disabled>저장</button>
+    <button id="top-save" onclick="saveAll()" title="전체 저장" style="height:28px;padding:0 14px;border:none;border-radius:7px;background:var(--ac);color:#fff;cursor:pointer;font-size:12px;font-weight:600;opacity:.45;transition:all .15s" disabled>Firebase 저장</button>
   </div>
 </div>
 
@@ -1649,7 +1649,7 @@ function buildSelGroupEditBlock(eName,evId,grpId,grpItems,ev,lbl,tabNum){
     <div class="ptitle" style="margin-bottom:11px;font-size:12.5px">
       ✏️ 행사 수정 — <b>${eName}</b>
       <div style="display:flex;gap:7px">
-        <button class="btn btn-sm btn-p" onclick="saveSelEdit('${grpId}',${tabNum})">저장 (미저장)</button>
+        <button class="btn btn-sm btn-p" onclick="saveSelEdit('${grpId}',${tabNum})">Firebase 저장</button>
         <button class="btn btn-sm btn-gh" onclick="toggleSelEdit('${grpId}')">닫기</button>
       </div>
     </div>
@@ -2246,7 +2246,7 @@ function buildSelEditBlock(ev,grpId){
     <div class="ptitle" style="margin-bottom:10px;font-size:12.5px">
       ✏️ 행사 수정 — <b>${ev.eventName}</b>
       <div style="display:flex;gap:7px">
-        <button class="btn btn-sm btn-p" onclick="saveSelEvEdit('${evId}','${grpId}')">저장 (미저장)</button>
+        <button class="btn btn-sm btn-p" onclick="saveSelEvEdit('${evId}','${grpId}')">Firebase 저장</button>
         <button class="btn btn-sm btn-gh" onclick="toggleSelEditBlock('${grpId}')">닫기</button>
       </div>
     </div>

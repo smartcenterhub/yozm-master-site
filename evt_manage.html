@@ -257,6 +257,8 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
 #toast.show{opacity:1}
 #toast.ok{background:var(--gr)}
 #toast.err{background:var(--rd)}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 .divider{border:none;border-top:1px solid var(--bd);margin:10px 0}
 .dropdown-menu{display:none}.dropdown-menu.open{display:block}
 .dropdown-item:hover{background:rgba(58,58,240,.06)}
@@ -1460,7 +1462,6 @@ function buildGroupHtml(eName,grp,tabNum){
       <button class="btn btn-sm" style="width:28px;padding:0;background:rgba(58,58,240,.07);color:var(--ac);border-color:rgba(58,58,240,.25);display:inline-flex;align-items:center;justify-content:center" title="수정" onclick="toggleSelEdit('${grpId}')">
         <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style="vertical-align:middle"><path d="M9.5 2.5l2 2-7 7H2.5v-2l7-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 4l2 2" stroke="currentColor" stroke-width="1.4"/></svg>
       </button>
-      <button class="btn btn-sm btn-fw-add" onclick="toggleGrpAdd('grpadd-${grpId}')">+ 상품 추가</button>
       <button class="btn btn-sm" style="color:var(--rd);border-color:rgba(212,32,32,.25)" onclick="deleteEvent('${evId}','${eName}')">🗑 삭제</button>`;
   }
   if(tabNum===3){

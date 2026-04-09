@@ -413,10 +413,9 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
 <!-- ═══ 탭3~7: 이전과 동일한 구조 ═══ -->
 <div class="pane" id="p3">
   <div class="pg-hd">
-    <div><div class="pg-title">행사 선정</div><div class="pg-desc">events.products[] 기준 · 상품 단위 추가/제거 가능</div></div>
+    <div><div class="pg-title">행사 선정</div><div class="pg-desc">proposalItems 중 선정 상태 항목</div></div>
     <div class="rbtn">
-      <button class="btn btn-sm btn-gh" onclick="renderSelList()">↻ 새로고침</button>
-      
+      <button class="btn btn-sm btn-gh" onclick="renderPropList(3)">↻ 새로고침</button>
     </div>
   </div>
   <div class="tfilter">
@@ -430,10 +429,10 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
     <button class="tfb tc-etc"    onclick="tfClick(this,'tc-etc',3)">기타</button>
   </div>
   <div class="fbar">
-    <input id="sel-search" placeholder="행사명 / 닉네임 검색" oninput="renderSelList()">
-    <select id="sel-mf" onchange="renderSelList()"><option value="">전체 월</option></select>
+    <input id="sel-search-3" placeholder="행사명 / 닉네임 검색" oninput="renderPropList(3)">
+    <select id="sel-mf-3" onchange="renderPropList(3)"><option value="">전체 월</option></select>
   </div>
-  <div id="sel-list-3"><div class="loading"><span class="spin">⟳</span> 불러오는 중...</div></div>
+  <div id="prop-list-3"><div class="loading"><span class="spin">⟳</span> 불러오는 중...</div></div>
 </div>
 
 <div class="pane" id="p4">
@@ -998,7 +997,7 @@ async function loadAll(){
     autoCloseExpired();
     buildSkuButtons('reg');
     buildMonthFilters();
-    renderPropList(2);renderSelList();renderTimeline();renderPropList(5);renderPerf();buildTypeInfo();
+    renderPropList(2);renderPropList(3);renderTimeline();renderPropList(5);renderPerf();buildTypeInfo();
     autoEvName();
     // reg 달력 초기화
     calInit('reg',{startId:'ev-start',endId:'ev-end'});
@@ -1015,10 +1014,10 @@ function autoCloseExpired(){
   /* 제안완료 상태인데 행사 시작일 지났고 선정/미선정 안 된 것 → 확인필요 */
   let warnCnt=0;
   const grpMap={};
-  PROPOSALS.filter(p=>!p._deleted).forEach(p=>{const k=p.eventName;if(!grpMap[k])grpMap[k]=[];grpMap[k].push(p);});
+  PROPOSALS.filter(p=>!p._deleted).forEach(p=>{const k=p.eventSID||p.eventName;if(!grpMap[k])grpMap[k]=[];grpMap[k].push(p);});
   Object.entries(grpMap).forEach(([eName,prods])=>{
     if(prods.every(p=>p.status==='선정'||p.status==='미선정'))return;
-    const ev=EVENTS.find(e=>e.eventName===eName);
+    const ev=EVENTS.find(e=>e._id===eName)||EVENTS.find(e=>e.eventName===eName);
     if(ev?.startDate&&ev.startDate<=today&&prods.some(p=>p.status==='제안완료')){
       prods.filter(p=>p.status==='제안완료').forEach(p=>{p.status='확인필요';markDirty('proposalItems',p._id,{status:'확인필요'});});
       warnCnt++;
@@ -1241,7 +1240,7 @@ window.submitProposal=async function(){
   let cnt=0;
   for(const p of regProducts){
     const pid=(evName+'_'+(start||'').replace(/-/g,'')+'_'+(end||'').replace(/-/g,'')+'_'+p.skuCode).replace(/\s/g,'');
-    const data={eventSID,eventName:evName,eventType:typeCode,startDate:start||null,startTime,endDate:end||null,endTime,skuCode:p.skuCode,skuNick:p.skuNick,productName:p.productName,priceNormal:p.priceNormal,priceBase:p.priceBase,priceEvent:p.priceEvent,priceAlim:p.priceAlim,priceMax:p.priceMax,ship:p.ship,isMain:p.isMain,status:'제안중',createdAt:new Date().toISOString()};
+    const data={eventSID,skuCode:p.skuCode,skuNick:p.skuNick,productName:p.productName,priceNormal:p.priceNormal,priceBase:p.priceBase,priceEvent:p.priceEvent,priceAlim:p.priceAlim,priceMax:p.priceMax,ship:p.ship,isMain:p.isMain,status:'제안중',createdAt:new Date().toISOString()};
     try{await setDoc(doc(db,'proposalItems',pid),data);PROPOSALS.unshift({_id:pid,...data});cnt++;}
     catch(e){toast('저장 오류: '+e.message,'err');}
   }
@@ -1317,8 +1316,8 @@ window.saveEventAndGo=async function(){
 
 /* ══ 제안/선정/종료 렌더 ══ */
 window.renderPropList=function(tabNum){
-  const searchId={2:'prop-search',3:'sel-search',5:'end-search'}[tabNum];
-  const mfId={2:'prop-mf',3:'sel-mf',5:'end-mf'}[tabNum];
+  const searchId={2:'prop-search',3:'sel-search-3',5:'end-search'}[tabNum];
+  const mfId={2:'prop-mf',3:'sel-mf-3',5:'end-mf'}[tabNum];
   const tFilter=propTypeFilter[tabNum]||[];
   const sf=statusFilter[tabNum]||new Set();
   const search=($( searchId)?.value||'').toLowerCase();
@@ -1339,9 +1338,12 @@ window.renderPropList=function(tabNum){
     return true;
   });
   const groups={};
-  list.forEach(p=>{const key=p.eventName||'미분류';if(!groups[key])groups[key]={items:[],meta:p};groups[key].items.push(p);});
-  /* tab3는 renderSelList()가 담당 */
-  if(tabNum===3){renderSelList();return;}
+  list.forEach(p=>{
+    const key=p.eventSID||p.eventName||'미분류';
+    if(!groups[key])groups[key]={items:[],meta:p};
+    groups[key].items.push(p);
+  });
+  /* tab3는 renderPropList 직접 처리 */
   const el=document.getElementById('prop-list-'+tabNum);
   if(!Object.keys(groups).length){el.innerHTML='<div style="text-align:center;padding:28px;color:var(--t3)">해당하는 항목이 없습니다</div>';return;}
   el.innerHTML=Object.entries(groups).map(([eName,grp])=>buildGroupHtml(eName,grp,tabNum)).join('');
@@ -1372,15 +1374,18 @@ function buildDateChips(startDate,startTime,endDate,endTime,uploadDate,deadline)
 }
 function buildGroupHtml(eName,grp,tabNum){
   const m=grp.meta;
-  const eType=m.eventType||detectType({eventName:eName});
+  /* events에서 행사 정보 읽기 (eventSID 우선, eventName fallback) */
+  const ev=EVENTS.find(e=>e._id===eName)||EVENTS.find(e=>e.eventName===m.eventName)||EVENTS.find(e=>e.eventName===eName);
+  const evName=ev?.eventName||m.eventName||eName;
+  const eType=ev?.eventType||m.eventType||detectType({eventName:evName});
   const tColor=TYPE_COLOR[eType]||'--t3';
-  const ev=EVENTS.find(e=>e._id===m.eventSID)||EVENTS.find(e=>e.eventName===eName);
   const evId=ev?._id||'';
   const grpEnded=isEvEnded(ev);
   const allDone=grp.items.every(p=>p.status==='제안완료'||p.status==='선정');
-  const grpId='grp-'+tabNum+'-'+eName.replace(/[^a-zA-Z0-9가-힣]/g,'_');
-  const dateStr2=fmtRange(isoD(m.startDate),m.startTime,isoD(m.endDate),m.endTime);
-  const metaStr=`제안업로드: ${m.proposalUploadedAt||'—'} · 마감: ${m.proposalDeadline||'—'} · 제안일: ${m.proposalMyDate||'—'}`;
+  const grpId='grp-'+tabNum+'-'+(ev?._id||evName).replace(/[^a-zA-Z0-9가-힣]/g,'_');
+  /* 날짜는 events에서 읽기 */
+  const dateStr2=fmtRange(isoD(ev?.startDate||m.startDate),ev?.startTime||m.startTime,isoD(ev?.endDate||m.endDate),ev?.endTime||m.endTime);
+  const metaStr=`제안업로드: ${ev?.proposalUploadedAt||m.proposalUploadedAt||'—'} · 마감: ${ev?.proposalDeadline||m.proposalDeadline||'—'} · 제안일: ${m.proposalMyDate||'—'}`;
   const lbl=getPriceLabels(eType);
   const rows=grp.items.map(p=>buildProdRow(p,tabNum,grpEnded,lbl)).join('');
 
@@ -1727,7 +1732,7 @@ function applySelectStyle(sel,status){
   sel.style.cssText=(STATUS_SELECT_STYLE[status]||'')+';font-size:11px;border-radius:6px;padding:2px 8px;height:26px;font-weight:600';
 }
 window.markGroupStatus=function(eName,status){
-  PROPOSALS.filter(p=>p.eventName===eName&&!p._deleted)
+  PROPOSALS.filter(p=>(p.eventSID===eName||p.eventName===eName)&&!p._deleted)
     .forEach(p=>{p.status=status;markDirty('proposalItems',p._id,{status});});
   toast('상태 변경: '+status+' (저장 버튼으로 반영)');
   document.querySelectorAll('.egrp').forEach(el=>{
@@ -1768,10 +1773,10 @@ window.markGroupDone=function(eName,grpId,btn){
 
 window.closeByEventName=function(eName){
   if(!confirm('['+eName+'] 행사를 종료 처리하시겠습니까?'))return;
-  const ev=EVENTS.find(e=>e.eventName===eName);
+  const ev=EVENTS.find(e=>e._id===eName)||EVENTS.find(e=>e.eventName===eName);
   if(ev){ev.isClosed=true;markDirty('events',ev._id,{isClosed:true,closedAt:new Date().toISOString()});}
   toast('종료 처리 (저장 버튼으로 반영)');
-  renderSelList();renderPropList(5);
+  renderPropList(3);renderPropList(5);
 };
 
 window.toggleGrpAdd=function(panelId){
@@ -1936,7 +1941,7 @@ window.tfClick=function(el,cls,tab){
   if(pane)pane.querySelectorAll('.tfb').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');
   propTypeFilter[tab]=TYPE_FILTER_MAP[cls]||[];
-  if(tab===3)renderSelList();else renderPropList(tab);
+  renderPropList(tab);
 };
 window.sfClick=function(el,statusVal,tab){el.classList.toggle('on');if(!statusFilter[tab])statusFilter[tab]=new Set();if(el.classList.contains('on'))statusFilter[tab].add(statusVal);else statusFilter[tab].delete(statusVal);renderPropList(tab);};
 
@@ -2211,7 +2216,7 @@ window.saveSelEvEdit=function(evId,grpId){
   Object.assign(ev,fields);
   markDirty('events',evId,fields);
   toast('수정 적용 ✅ — 저장 버튼으로 반영');
-  renderSelList();
+  renderPropList(3);
 };
 
 /* 선정탭 상품 제거 */
@@ -2220,7 +2225,7 @@ window.selRemoveProd=function(evId,idx,grpId){
   ev.products[idx].isCancelled=true;
   markDirty('events',evId,{products:ev.products});
   toast('상품 제거 (저장 버튼으로 반영)');
-  renderSelList();
+  renderPropList(3);
 };
 
 /* 선정탭 상품 추가 패널 토글 */
@@ -2273,7 +2278,7 @@ window.selAddByCode=function(evId,grpId){
   });
   markDirty('events',evId,{products:ev.products});
   inp.value='';
-  renderSelList();
+  renderPropList(3);
 };
 window.toggleSelEditBlock=function(grpId){
   const el=document.getElementById('sedit-'+grpId);if(!el)return;
@@ -2283,7 +2288,7 @@ window.closeByEventId=function(evId){
   if(!confirm('종료 처리하시겠습니까?'))return;
   const ev=EVENTS.find(e=>e._id===evId);if(!ev)return;
   ev.isClosed=true;markDirty('events',evId,{isClosed:true,closedAt:new Date().toISOString()});
-  toast('종료 처리 (저장 버튼으로 반영)');renderSelList();
+  toast('종료 처리 (저장 버튼으로 반영)');renderPropList(3);
 };
 
 /* ── 클립보드 복사 ── */

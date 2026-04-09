@@ -288,7 +288,8 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
       <button class="btn btn-p" onclick="saveEventDirect()">Firebase 저장</button>
     </div>
   </div>
-  <!-- 행사 기본 정보 (전체 너비) -->
+
+  <!-- ① 행사 기본 정보 (전체 너비) -->
   <div class="panel" style="margin-bottom:12px">
     <div class="ptitle">행사 기본 정보</div>
     <div class="frow">
@@ -324,47 +325,51 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
         <input class="fi" id="ev-adddisc" placeholder="예) 최대 7% 적립">
       </div>
     </div>
-    <div class="frow">
-      <div class="fg"><div class="fl">제안업로드일</div><input class="fi" id="ev-upload-date" placeholder="2026-04-13"></div>
-      <div class="fg"><div class="fl">제안마감일</div><input class="fi" id="ev-deadline" placeholder="2026-04-15"></div>
-      <div class="fg" style="flex:2"></div>
-    </div>
     <div id="dn-notice" style="display:none" class="ibox ib-or">📢 배송공지 — 상품 없이 저장 후 바로 <b>행사 선정</b> 탭으로 이동됩니다.</div>
   </div>
-  <!-- 숨겨진 날짜 입력값 (달력이 업데이트) -->
+
+  <!-- hidden 날짜 inputs -->
   <input type="hidden" id="ev-start">
   <input type="hidden" id="ev-end">
-  <!-- 2단 그리드: 좌=상품추가 / 우=달력 -->
-  <div class="reg-layout">
-    <div id="ev-prod-panel">
-      <div class="ptitle" style="margin-bottom:8px">
-        <span>상품 추가 <span id="reg-cnt" style="font-size:11px;color:var(--t3);font-weight:400">(0개)</span></span>
-        <span style="font-size:11px;color:var(--t3)"><span style="color:var(--t4)">🔒</span> = 수정 불가 · <span style="color:var(--or);font-weight:600">노란색</span> = 제안가</span>
-      </div>
-      <div class="tgsec" style="margin-bottom:8px">
-        <div class="tghd" onclick="tog('m1')"><span class="tgtitle">방법 1 — SKU 버튼</span><span class="tghint">클릭 선택 ▾</span></div>
-        <div class="tgbody open" id="m1">
-          <div class="sku-area" id="sku-btn-area-reg"><div style="color:var(--t3);font-size:12px">로딩 중...</div></div>
-          <div class="sku-sel-bar"><span>선택됨:</span><span id="sku-chips-reg" style="display:flex;gap:5px;flex-wrap:wrap"></span></div>
+  <input type="hidden" id="ev-upload-date">
+  <input type="hidden" id="ev-deadline">
+
+  <!-- ② 2단: 좌=방법1&2 / 우=달력 -->
+  <div id="ev-prod-panel">
+    <div style="display:grid;grid-template-columns:1fr 252px;gap:12px;align-items:flex-start;margin-bottom:12px">
+      <!-- 방법1 & 2 -->
+      <div>
+        <div class="ptitle" style="margin-bottom:8px">
+          <span>상품 추가 <span id="reg-cnt" style="font-size:11px;color:var(--t3);font-weight:400">(0개)</span></span>
+          <span style="font-size:11px;color:var(--t3)"><span style="color:var(--t4)">🔒</span> = 수정 불가 · <span style="color:var(--or);font-weight:600">노란색</span> = 제안가</span>
         </div>
-      </div>
-      <div class="tgsec" style="margin-bottom:8px">
-        <div class="tghd" onclick="tog('m2')"><span class="tgtitle">방법 2 — 코드 직접 입력</span><span class="tghint">줄바꿈·, 구분 ▾</span></div>
-        <div class="tgbody" id="m2">
-          <div style="padding:11px 13px">
-            <textarea class="fi" id="code-input-reg" style="height:60px;padding:8px;width:100%" placeholder="11186574097&#10;12580546874, 10273725144"></textarea>
-            <div style="display:flex;justify-content:flex-end;margin-top:6px"><button class="btn btn-sm" onclick="addByCode()">코드로 추가</button></div>
+        <div class="tgsec" style="margin-bottom:8px">
+          <div class="tghd" onclick="tog('m1')"><span class="tgtitle">방법 1 — SKU 버튼</span><span class="tghint">클릭 선택 ▾</span></div>
+          <div class="tgbody open" id="m1">
+            <div class="sku-area" id="sku-btn-area-reg"><div style="color:var(--t3);font-size:12px">로딩 중...</div></div>
+            <div class="sku-sel-bar"><span>선택됨:</span><span id="sku-chips-reg" style="display:flex;gap:5px;flex-wrap:wrap"></span></div>
+          </div>
+        </div>
+        <div class="tgsec">
+          <div class="tghd" onclick="tog('m2')"><span class="tgtitle">방법 2 — 코드 직접 입력</span><span class="tghint">줄바꿈·, 구분 ▾</span></div>
+          <div class="tgbody" id="m2">
+            <div style="padding:11px 13px">
+              <textarea class="fi" id="code-input-reg" style="height:60px;padding:8px;width:100%" placeholder="11186574097&#10;12580546874, 10273725144"></textarea>
+              <div style="display:flex;justify-content:flex-end;margin-top:6px"><button class="btn btn-sm" onclick="addByCode()">코드로 추가</button></div>
+            </div>
           </div>
         </div>
       </div>
-      <div class="ptitle" style="margin-bottom:6px">행사 제안 샘플</div>
-      <div id="reg-prod-list"><div style="text-align:center;padding:16px;color:var(--t3);font-size:12px">상품을 추가하세요</div></div>
+
+      <!-- 달력 (오른쪽 고정) -->
+      <div class="cal-inline" id="cal-wrap-reg"></div>
     </div>
-    <!-- 달력 (오른쪽 고정) -->
-    <div class="cal-inline" id="cal-wrap-reg"></div>
+
+    <!-- ③ 행사 제안 샘플 (전체 너비) -->
+    <div class="ptitle" style="margin-bottom:6px">행사 제안 샘플</div>
+    <div id="reg-prod-list"><div style="text-align:center;padding:16px;color:var(--t3);font-size:12px">상품을 추가하세요</div></div>
   </div>
 </div>
-
 <!-- ═══ 탭1: 행사 셀렉 ═══ -->
 <div class="pane" id="p1">
   <div class="pg-hd"><div><div class="pg-title">행사 셀렉</div><div class="pg-desc">추후 개발 예정</div></div></div>
@@ -667,7 +672,10 @@ function calInit(key,opts){
     selS:opts?.startVal||null,selE:opts?.endVal||null,hov:null,clicking:'start',
     vY:t.getFullYear(),vM:t.getMonth(),
     startId:opts?.startId||null,endId:opts?.endId||null,
-    _sh:opts?.sh||'00',_sm:opts?.sm||'00',_eh:opts?.eh||'23',_em:opts?.em||'59'
+    _sh:opts?.sh||'00',_sm:opts?.sm||'00',_eh:opts?.eh||'23',_em:opts?.em||'59',
+    mode:opts?.mode||'period',
+    uploadDate:opts?.uploadDate||null,
+    deadlineDate:opts?.deadlineDate||null
   };
 }
 
@@ -686,21 +694,39 @@ function calRender(key){
     const s=calDs(st.vY,st.vM,d);
     let cls='cal-d';
     if(s===today)cls+=' c-today';
-    if(st.selS&&st.selE&&s===st.selS&&s===st.selE)cls+=' c-ss c-se';
-    else if(s===st.selS)cls+=' c-ss';
-    else if(s===st.selE)cls+=' c-se';
-    if(st.selS&&st.selE&&s>st.selS&&s<st.selE)cls+=' c-ir';
+    if(isPeriod){
+      if(st.selS&&st.selE&&s===st.selS&&s===st.selE)cls+=' c-ss c-se';
+      else if(s===st.selS)cls+=' c-ss';
+      else if(s===st.selE)cls+=' c-se';
+      if(st.selS&&st.selE&&s>st.selS&&s<st.selE)cls+=' c-ir';
+    }else if(isUpload&&s===st.uploadDate)cls+=' c-ss c-se';
+    else if(isDl&&s===st.deadlineDate)cls+=' c-ss c-se';
     /* data-date 속성만 설정 — inline onclick 없음 */
     gH+=`<div class="${cls}" data-date="${s}">${d}</div>`;
   }
 
+  /* 모드별 날짜 선택 상태 */
+  const isPeriod=!st.mode||st.mode==='period';
+  const isUpload=st.mode==='upload';
+  const isDl=st.mode==='deadline';
+
+  /* 날짜 셀 클래스 - 모드에 따라 */
   const sC=st.selS?fmtDate(st.selS,st._sh+':'+st._sm):'시작일';
   const eC=st.selE?fmtDate(st.selE,st._eh+':'+st._em):'종료일';
   const dur=calDur(st.selS,st.selE);
-  const qLabels=['오늘','이번주','다음주','이번달','다음달'];
-  const qH=qLabels.map(l=>`<button class="cal-qb" data-quick="${l}">${l}</button>`).join('');
+
+  /* 모드 탭 (reg 키일 때만) */
+  const hasModes=key==='reg';
+  const modeTabHtml=hasModes?`<div style="display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--bd);background:rgba(248,248,255,.9)">
+    <div data-calmode="period" style="padding:6px 0;text-align:center;font-size:10.5px;cursor:pointer;border-bottom:2px solid ${isPeriod?'var(--ac)':'transparent'};color:${isPeriod?'var(--ac)':'var(--t3)'};font-weight:${isPeriod?'700':'400'};margin-bottom:-1px">행사기간</div>
+    <div data-calmode="upload" style="padding:6px 0;text-align:center;font-size:10.5px;cursor:pointer;border-bottom:2px solid ${isUpload?'var(--ac)':'transparent'};color:${isUpload?'var(--ac)':st.uploadDate?'var(--gr)':'var(--t3)'};font-weight:${isUpload?'700':st.uploadDate?'600':'400'};margin-bottom:-1px">업로드일${st.uploadDate?'<span style="width:5px;height:5px;border-radius:50%;background:var(--gr);display:inline-block;vertical-align:middle;margin-left:2px"></span>':''}</div>
+    <div data-calmode="deadline" style="padding:6px 0;text-align:center;font-size:10.5px;cursor:pointer;border-bottom:2px solid ${isDl?'var(--ac)':'transparent'};color:${isDl?'var(--ac)':st.deadlineDate?'var(--gr)':'var(--t3)'};font-weight:${isDl?'700':st.deadlineDate?'600':'400'};margin-bottom:-1px">마감일${st.deadlineDate?'<span style="width:5px;height:5px;border-radius:50%;background:var(--gr);display:inline-block;vertical-align:middle;margin-left:2px"></span>':''}</div>
+  </div>`:'';
+
+  const qH=`<button class="cal-qb" data-quick="오늘">오늘</button>`;
 
   wrap.innerHTML=`
+    ${modeTabHtml}
     <div class="cal-quick">${qH}</div>
     <div class="cal-i-head">
       <button class="cal-i-nav" data-dir="-1">&#8249;</button>
@@ -708,7 +734,7 @@ function calRender(key){
       <button class="cal-i-nav" data-dir="1">&#8250;</button>
     </div>
     <div class="cal-grid" data-cal-key="${key}">${gH}</div>
-    <div class="cal-time">
+    ${isPeriod?`<div class="cal-time">
       <div class="cal-tc"><div class="cal-tl">시작 시간</div>
         <div class="cal-tv">
           <input class="cal-ti" data-cal-t="sh" value="${st._sh}">
@@ -721,13 +747,19 @@ function calRender(key){
           <span class="cal-tsep">:</span>
           <input class="cal-ti" data-cal-t="em" value="${st._em}">
         </div></div>
-    </div>
+    </div>`:''}
     <div class="cal-result" style="flex-wrap:wrap;gap:3px">
-      <span class="cal-chip" style="font-size:10.5px">${sC}</span>
-      <span style="font-size:10px;color:var(--t3)">→</span>
-      <span class="cal-chip" style="font-size:10.5px">${eC}</span>
-      ${dur?`<span class="cal-dur" style="margin-left:0;font-weight:600;color:var(--ac)">[${dur}일 간]</span>`:''}
-      <button data-confirm="1" style="margin-left:auto;padding:3px 12px;font-size:11.5px;font-weight:600;background:var(--ac);color:#fff;border:none;border-radius:6px;cursor:pointer">✓ 적용</button>
+      ${isPeriod?`
+        <span class="cal-chip" style="font-size:10.5px">${sC}</span>
+        <span style="font-size:10px;color:var(--t3)">→</span>
+        <span class="cal-chip" style="font-size:10.5px">${eC}</span>
+        ${dur?`<span class="cal-dur" style="margin-left:0;font-weight:600;color:var(--ac)">[${dur}일 간]</span>`:''}
+        <button data-confirm="1" style="margin-left:auto;padding:3px 12px;font-size:11.5px;font-weight:600;background:var(--ac);color:#fff;border:none;border-radius:6px;cursor:pointer">✓ 적용</button>
+      `:isUpload?`
+        ${st.uploadDate?`<span class="cal-chip" style="font-size:10.5px;background:rgba(26,138,74,.1);color:var(--gr)">업로드 ${fmtDate(st.uploadDate)}</span><button data-confirm="1" style="margin-left:auto;padding:3px 12px;font-size:11.5px;font-weight:600;background:var(--gr);color:#fff;border:none;border-radius:6px;cursor:pointer">✓ 적용</button>`:'<span style="font-size:10.5px;color:var(--t3)">업로드일을 선택하세요</span>'}
+      `:`
+        ${st.deadlineDate?`<span class="cal-chip" style="font-size:10.5px;background:rgba(26,138,74,.1);color:var(--gr)">마감 ${fmtDate(st.deadlineDate)}</span><button data-confirm="1" style="margin-left:auto;padding:3px 12px;font-size:11.5px;font-weight:600;background:var(--gr);color:#fff;border:none;border-radius:6px;cursor:pointer">✓ 적용</button>`:'<span style="font-size:10.5px;color:var(--t3)">마감일을 선택하세요</span>'}
+      `}
     </div>`;
 
   /* ── 이벤트 위임: innerHTML 교체 후 한 번만 등록 ── */
@@ -751,18 +783,42 @@ function calRender(key){
   wrap.querySelectorAll('.cal-ti').forEach(inp=>{
     inp.addEventListener('input',()=>calTimeChg(key,inp.dataset.calT,inp.value));
   });
-  /* ✓ 적용 버튼: 선택된 기간을 카드에 반영 */
+  /* 모드 탭 클릭 위임 */
+  const modeTabRow=wrap.querySelector('[data-calmode]')?.parentElement;
+  if(modeTabRow){
+    modeTabRow.addEventListener('click',e=>{
+      const t=e.target.closest('[data-calmode]');
+      if(t){CAL_STATE[key].mode=t.dataset.calmode;calRender(key);}
+    });
+  }
+
+  /* ✓ 적용 버튼 */
   const confirmBtn=wrap.querySelector('[data-confirm="1"]');
   if(confirmBtn){
     confirmBtn.addEventListener('click',()=>{
-      if(!CAL_STATE[key]?.selS||!CAL_STATE[key]?.selE){
-        confirmBtn.textContent='날짜를 선택하세요';
+      const st=CAL_STATE[key];
+      if(st.mode==='upload'){
+        if(!st.uploadDate)return;
+        calUpdateChips(key);
+        confirmBtn.textContent='✓';confirmBtn.style.background='var(--gr)';
+        setTimeout(()=>{confirmBtn.textContent='✓ 적용';confirmBtn.style.background='var(--gr)';},1500);
+        return;
+      }
+      if(st.mode==='deadline'){
+        if(!st.deadlineDate)return;
+        calUpdateChips(key);
+        confirmBtn.textContent='✓';confirmBtn.style.background='var(--gr)';
+        setTimeout(()=>{confirmBtn.textContent='✓ 적용';confirmBtn.style.background='var(--gr)';},1500);
+        return;
+      }
+      /* period */
+      if(!st.selS||!st.selE){
+        confirmBtn.textContent='날짜 선택 필요';
         setTimeout(()=>{confirmBtn.textContent='✓ 적용';},1500);
         return;
       }
-      /* reg 달력이면 제안 샘플 카드 갱신 */
       if(key==='reg'&&typeof renderRegProds==='function')renderRegProds();
-      /* 선정/제안 수정폼이면 cal-result 요약만 업데이트 */
+      calUpdateChips(key);
       confirmBtn.textContent='✓ 적용됨';
       confirmBtn.style.background='var(--gr)';
       setTimeout(()=>{confirmBtn.textContent='✓ 적용';confirmBtn.style.background='var(--ac)';},1800);
@@ -776,10 +832,21 @@ function calRender(key){
 
 function calClick(key,s){
   const st=CAL_STATE[key];if(!st)return;
-  if(st.clicking==='start'){st.selS=s;st.selE=null;st.clicking='end';}
-  else{
-    if(s<st.selS){st.selE=st.selS;st.selS=s;}else st.selE=s;
-    st.clicking='start';
+  if(!st.mode||st.mode==='period'){
+    if(st.clicking==='start'){st.selS=s;st.selE=null;st.clicking='end';}
+    else{if(s<st.selS){st.selE=st.selS;st.selS=s;}else st.selE=s;st.clicking='start';}
+    if(st.startId)document.getElementById(st.startId).value=st.selS||'';
+    if(st.endId)document.getElementById(st.endId).value=st.selE||'';
+  }else if(st.mode==='upload'){
+    st.uploadDate=s;
+    const u=document.getElementById('ev-upload-date');if(u)u.value=s;
+    calUpdateChips(key);
+    setTimeout(()=>{st.mode='deadline';calRender(key);},220);
+  }else if(st.mode==='deadline'){
+    st.deadlineDate=s;
+    const d=document.getElementById('ev-deadline');if(d)d.value=s;
+    calUpdateChips(key);
+    setTimeout(()=>{st.mode='period';calRender(key);},220);
   }
   calRender(key);
 }
@@ -796,7 +863,16 @@ function calQuick(key,label){
   const st=CAL_STATE[key];if(!st)return;
   const t=new Date(),f=d=>d.toISOString().substring(0,10);
   let s,e;
-  if(label==='오늘'){s=f(t);e=f(t);}
+  if(label==='오늘'){
+    const todayStr=f(t);
+    /* mode가 있으면 모드별 동작 */
+    if(st.mode==='upload'){st.uploadDate=todayStr;calRender(key);return;}
+    if(st.mode==='deadline'){st.deadlineDate=todayStr;calRender(key);return;}
+    /* 행사기간 or 기본: 시작일만 오늘로 세팅, 종료일 직접 클릭 대기 */
+    st.selS=todayStr;st.selE=null;st.clicking='end';
+    const d=new Date(todayStr);st.vY=d.getFullYear();st.vM=d.getMonth();
+    calRender(key);return;
+  }
   else if(label==='이번주'){
     const d=new Date(t),dow=t.getDay(),mn=dow===0?-6:1-dow;
     d.setDate(t.getDate()+mn);s=f(d);d.setDate(d.getDate()+6);e=f(d);
@@ -847,6 +923,29 @@ window.calRender=calRender;
 window.calInit=calInit;
 
 /* ── 날짜 칩 공통 함수 ── */
+/* 달력 → 행사 제안 샘플 칩 동기화 */
+function calUpdateChips(key){
+  if(key!=='reg')return;
+  const st=CAL_STATE[key];if(!st)return;
+  /* 업로드일 칩 */
+  const chipU=document.getElementById('reg-chip-upload');
+  const lblU=document.getElementById('reg-lbl-upload');
+  if(chipU&&lblU&&st.uploadDate){
+    const d=new Date(st.uploadDate+'T00:00:00');
+    lblU.textContent='업로드 '+(d.getMonth()+1)+'-'+String(d.getDate()).padStart(2,'0');
+    chipU.classList.add('chip-filled');
+    const hid=document.getElementById('ev-upload-date');if(hid)hid.value=st.uploadDate;
+  }
+  /* 마감일 칩 */
+  const chipD=document.getElementById('reg-chip-deadline');
+  const lblD=document.getElementById('reg-lbl-deadline');
+  if(chipD&&lblD&&st.deadlineDate){
+    const d=new Date(st.deadlineDate+'T00:00:00');
+    lblD.textContent='마감 '+(d.getMonth()+1)+'-'+String(d.getDate()).padStart(2,'0');
+    chipD.classList.add('chip-filled');
+    const hid=document.getElementById('ev-deadline');if(hid)hid.value=st.deadlineDate;
+  }
+}
 window.saveDateChip=function(grpId,field,prefix){
   const inp=document.getElementById('date-'+field+'-'+grpId);
   if(!inp?.value)return;
@@ -868,6 +967,10 @@ window.saveDateChip=function(grpId,field,prefix){
   const nm=document.getElementById(grpId+'-hd')?.querySelector('.egrpname')?.textContent?.trim();
   if(nm){PROPOSALS.filter(p=>p.eventName===nm&&!p._deleted).forEach(p=>{p[key]=val;markDirty('proposalItems',p._id,{[key]:val});});}
   toast('날짜 저장 (저장 버튼으로 반영)');
+};
+window.calSetMode=function(key,mode){
+  if(CAL_STATE[key])CAL_STATE[key].mode=mode;
+  calRender(key);
 };
 window.toggleDateChip=function(expandId){
   // 같은 카드 내 다른 expand는 닫기
@@ -1068,10 +1171,10 @@ function renderRegProds(){
     </div>
     <div class="date-chip-row">
       <span style="font-size:10.5px;color:var(--t3);margin-right:2px">제안 일정</span>
-      <span id="reg-chip-upload" class="date-chip" onclick="toggleDateChip('reg-expand-upload')">
+      <span id="reg-chip-upload" class="date-chip" onclick="calSetMode('reg','upload');toggleDateChip('reg-expand-upload')">
         📅 <span id="reg-lbl-upload">${$('ev-upload-date')?.value?'업로드 '+($('ev-upload-date').value.substring(5)):'업로드 미입력'}</span>
       </span>
-      <span id="reg-chip-deadline" class="date-chip" onclick="toggleDateChip('reg-expand-deadline')">
+      <span id="reg-chip-deadline" class="date-chip" onclick="calSetMode('reg','deadline');toggleDateChip('reg-expand-deadline')">
         📅 <span id="reg-lbl-deadline">${$('ev-deadline')?.value?'마감 '+($('ev-deadline').value.substring(5)):'마감 미입력'}</span>
       </span>
     </div>
@@ -1799,6 +1902,7 @@ window.calRender=calRender;
 window.calInit=calInit;
 
 /* ── 날짜 칩 공통 함수 ── */
+/* 달력 → 행사 제안 샘플 칩 동기화 */
 window.saveDateChip=function(grpId,field,prefix){
   const inp=document.getElementById('date-'+field+'-'+grpId);
   if(!inp?.value)return;
@@ -1820,6 +1924,10 @@ window.saveDateChip=function(grpId,field,prefix){
   const nm=document.getElementById(grpId+'-hd')?.querySelector('.egrpname')?.textContent?.trim();
   if(nm){PROPOSALS.filter(p=>p.eventName===nm&&!p._deleted).forEach(p=>{p[key]=val;markDirty('proposalItems',p._id,{[key]:val});});}
   toast('날짜 저장 (저장 버튼으로 반영)');
+};
+window.calSetMode=function(key,mode){
+  if(CAL_STATE[key])CAL_STATE[key].mode=mode;
+  calRender(key);
 };
 window.toggleDateChip=function(expandId){
   // 같은 카드 내 다른 expand는 닫기

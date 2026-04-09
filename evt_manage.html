@@ -43,6 +43,17 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
 
 /* ── 버튼 ── */
 .btn{padding:4px 12px;font-size:11.5px;border:1px solid rgba(0,0,0,.12);border-radius:7px;background:var(--gs);color:var(--tx);cursor:pointer;transition:all .13s}
+.btn-fw-edit{width:64px}.btn-fw-add{width:80px}.btn-fw-end{width:64px}.btn-fw-sel{width:80px}
+.btn-fw-apply{width:46px;background:rgba(58,58,240,.08);color:var(--ac);border-color:rgba(58,58,240,.3)}
+.btn-fw-close{width:40px}
+.date-chip-row{display:flex;align-items:center;gap:5px;padding:6px 12px;background:rgba(248,248,255,.7);border-bottom:1px solid var(--bd)}
+.date-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;font-size:10.5px;border:1px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t3);cursor:pointer;white-space:nowrap;transition:all .1s}
+.date-chip:hover{border-color:var(--ac);color:var(--ac)}
+.date-chip.chip-filled{border-color:rgba(58,58,240,.3);color:var(--ac);background:rgba(58,58,240,.05);font-weight:600}
+.date-chip-expand{display:none;align-items:center;gap:6px;padding:6px 12px;background:rgba(58,58,240,.03);border-bottom:1px solid rgba(58,58,240,.15)}
+.date-chip-expand.open{display:flex}
+.date-chip-expand .dce-lbl{font-size:10.5px;color:var(--t3);white-space:nowrap}
+.date-chip-expand input{height:24px;padding:0 7px;font-size:11.5px;border:1px solid var(--bd);border-radius:6px;background:var(--gs);color:var(--tx);width:130px}
 .btn:hover{transform:translateY(-1px)}
 .btn:active{transform:scale(.98)}
 .btn:disabled{opacity:.4;cursor:default;transform:none}
@@ -63,6 +74,7 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
 .s-end{background:rgba(152,152,168,.1);color:var(--t3)}
 .s-mid{background:rgba(196,90,16,.1);color:var(--or)}
 .s-gray{background:rgba(152,152,168,.1);color:var(--t3)}
+.s-warn{background:rgba(202,138,4,.12);color:#854d0e;font-weight:600}
 .s-done{background:rgba(58,58,240,.1);color:var(--ac)}
 .s-sel{background:rgba(26,138,74,.12);color:var(--gr)}
 .s-rej{background:rgba(212,32,32,.08);color:var(--rd)}
@@ -141,6 +153,8 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
 .state-rejected .egrpbody{border-color:rgba(212,32,32,.15)}
 .state-selected .egrphd{background:rgba(58,58,240,.06);border-color:rgba(58,58,240,.25)}
 .state-selected .egrpbody{border-color:rgba(58,58,240,.18)}
+.state-warning .egrphd{background:rgba(202,138,4,.08);border-color:rgba(202,138,4,.35)}
+.state-warning .egrpbody{border-color:rgba(202,138,4,.2)}
 .egrpname{font-size:13px;font-weight:700}
 .egrpmeta{font-size:10.5px;color:var(--t3)}
 .egrpbody{border:1px solid var(--bd);border-radius:0 0 var(--rl) var(--rl);overflow:hidden;background:var(--gb);transition:border-color .3s}
@@ -309,6 +323,11 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
         <div class="fl">추가할인/적립</div>
         <input class="fi" id="ev-adddisc" placeholder="예) 최대 7% 적립">
       </div>
+    </div>
+    <div class="frow">
+      <div class="fg"><div class="fl">제안업로드일</div><input class="fi" id="ev-upload-date" placeholder="2026-04-13"></div>
+      <div class="fg"><div class="fl">제안마감일</div><input class="fi" id="ev-deadline" placeholder="2026-04-15"></div>
+      <div class="fg" style="flex:2"></div>
     </div>
     <div id="dn-notice" style="display:none" class="ibox ib-or">📢 배송공지 — 상품 없이 저장 후 바로 <b>행사 선정</b> 탭으로 이동됩니다.</div>
   </div>
@@ -574,7 +593,7 @@ function computeStatus(p){
   if(p.status==='선정'){const ev=EVENTS.find(e=>e._id===p.eventSID)||EVENTS.find(e=>e.eventName===p.eventName);if(ev&&ev.startDate&&ev.endDate&&today>=ev.startDate&&today<=ev.endDate)return '진행중';}
   return p.status||'제안중';
 }
-const STATUS_ST={'제안중':'s-gray','제안완료':'s-sel','선정':'s-done','미선정':'s-rej','진행중':'s-run','종료':'s-end'};
+const STATUS_ST={'제안중':'s-gray','제안완료':'s-sel','확인필요':'s-warn','선정':'s-done','미선정':'s-rej','진행중':'s-run','종료':'s-end'};
 
 /* ══ 저장 관리 ══ */
 function markDirty(col,id,fields){
@@ -827,6 +846,54 @@ window.calToggle=calToggle;
 window.calRender=calRender;
 window.calInit=calInit;
 
+/* ── 날짜 칩 공통 함수 ── */
+window.saveDateChip=function(grpId,field,prefix){
+  const inp=document.getElementById('date-'+field+'-'+grpId);
+  if(!inp?.value)return;
+  const val=inp.value;
+  const d=new Date(val);
+  const mm=String(d.getMonth()+1).padStart(2,'0');
+  const dd=String(d.getDate()).padStart(2,'0');
+  const lbl=document.getElementById('lbl-'+field+'-'+grpId);
+  if(lbl)lbl.textContent=prefix+' '+mm+'-'+dd;
+  const chip=document.getElementById('chip-'+field+'-'+grpId);
+  if(chip)chip.classList.add('chip-filled');
+  document.getElementById('expand-'+field+'-'+grpId)?.classList.remove('open');
+  /* proposalItems 업데이트 */
+  const fieldMap={upload:'proposalUploadedAt',deadline:'proposalDeadline',propdate:'proposalMyDate'};
+  const key=fieldMap[field];
+  if(!key)return;
+  /* 해당 그룹 이름 찾기 */
+  const egrp=document.getElementById('grp-2-'+grpId.replace('grp-2-',''));
+  const nm=document.getElementById(grpId+'-hd')?.querySelector('.egrpname')?.textContent?.trim();
+  if(nm){PROPOSALS.filter(p=>p.eventName===nm&&!p._deleted).forEach(p=>{p[key]=val;markDirty('proposalItems',p._id,{[key]:val});});}
+  toast('날짜 저장 (저장 버튼으로 반영)');
+};
+window.toggleDateChip=function(expandId){
+  // 같은 카드 내 다른 expand는 닫기
+  const expand=document.getElementById(expandId);
+  if(!expand)return;
+  const card=expand.closest('.egrp,.egrpbody,.reg-sample-card,.grp-add-panel')?.parentElement||expand.parentElement;
+  card.querySelectorAll('.date-chip-expand').forEach(e=>{if(e.id!==expandId)e.classList.remove('open');});
+  expand.classList.toggle('open');
+};
+window.applyDateChip=function(expandId,prefix,lblId,chipEl){
+  const expand=document.getElementById(expandId);
+  const inp=expand?.querySelector('input[type="date"]');
+  if(!inp?.value){return;}
+  const d=new Date(inp.value);
+  const mm=String(d.getMonth()+1).padStart(2,'0');
+  const dd=String(d.getDate()).padStart(2,'0');
+  const lbl=document.getElementById(lblId);
+  if(lbl)lbl.textContent=prefix+' '+mm+'-'+dd;
+  const chip=document.getElementById(chipEl||'');
+  if(chip)chip.classList.add('chip-filled');
+  expand.classList.remove('open');
+};
+window.closeDateChip=function(expandId){
+  const e=document.getElementById(expandId);if(e)e.classList.remove('open');
+};
+
 /* ══ 데이터 로드 ══ */
 async function loadAll(){
   try{
@@ -848,6 +915,19 @@ function autoCloseExpired(){
   const today=new Date().toISOString().substring(0,10);let cnt=0;
   EVENTS.forEach(e=>{if(!e.isClosed&&e.endDate&&e.endDate<today){e.isClosed=true;markDirty('events',e._id,{isClosed:true,closedAt:new Date().toISOString()});cnt++;}});
   if(cnt)toast(`${cnt}개 행사 자동 종료 처리 (저장 필요)`,'ok');
+  /* 제안완료 상태인데 행사 시작일 지났고 선정/미선정 안 된 것 → 확인필요 */
+  let warnCnt=0;
+  const grpMap={};
+  PROPOSALS.filter(p=>!p._deleted).forEach(p=>{const k=p.eventName;if(!grpMap[k])grpMap[k]=[];grpMap[k].push(p);});
+  Object.entries(grpMap).forEach(([eName,prods])=>{
+    if(prods.every(p=>p.status==='선정'||p.status==='미선정'))return;
+    const ev=EVENTS.find(e=>e.eventName===eName);
+    if(ev?.startDate&&ev.startDate<=today&&prods.some(p=>p.status==='제안완료')){
+      prods.filter(p=>p.status==='제안완료').forEach(p=>{p.status='확인필요';markDirty('proposalItems',p._id,{status:'확인필요'});});
+      warnCnt++;
+    }
+  });
+  if(warnCnt)toast(`⚠️ ${warnCnt}개 행사 확인필요 전환 (저장 필요)`,'ok');
 }
 
 /* ══ SKU 버튼 ══ */
@@ -983,8 +1063,29 @@ function renderRegProds(){
       <span class="egrpmeta" style="font-size:11px;width:100%">${dateLabel}</span>
       <span class="egrpmeta">${regProducts.length}개 상품</span>
       <span style="margin-left:auto">
-        <button class="btn btn-p" onclick="submitProposal()">제안하기 →</button>
+        <button class="btn btn-p" style="width:88px" onclick="submitProposal()">제안하기 →</button>
       </span>
+    </div>
+    <div class="date-chip-row">
+      <span style="font-size:10.5px;color:var(--t3);margin-right:2px">제안 일정</span>
+      <span id="reg-chip-upload" class="date-chip" onclick="toggleDateChip('reg-expand-upload')">
+        📅 <span id="reg-lbl-upload">${$('ev-upload-date')?.value?'업로드 '+($('ev-upload-date').value.substring(5)):'업로드 미입력'}</span>
+      </span>
+      <span id="reg-chip-deadline" class="date-chip" onclick="toggleDateChip('reg-expand-deadline')">
+        📅 <span id="reg-lbl-deadline">${$('ev-deadline')?.value?'마감 '+($('ev-deadline').value.substring(5)):'마감 미입력'}</span>
+      </span>
+    </div>
+    <div class="date-chip-expand" id="reg-expand-upload">
+      <span class="dce-lbl">업로드일</span>
+      <input type="date" id="reg-date-upload" value="${$('ev-upload-date')?.value||''}">
+      <button class="btn btn-sm btn-fw-apply" onclick="(function(){const v=document.getElementById('reg-date-upload').value;if(!v)return;const d=new Date(v);const s=(d.getMonth()+1)+'-'+String(d.getDate()).padStart(2,'0');document.getElementById('reg-lbl-upload').textContent='업로드 '+s;document.getElementById('reg-chip-upload').classList.add('chip-filled');$('ev-upload-date').value=v;closeDateChip('reg-expand-upload');})()">적용</button>
+      <button class="btn btn-sm btn-fw-close" onclick="closeDateChip('reg-expand-upload')">닫기</button>
+    </div>
+    <div class="date-chip-expand" id="reg-expand-deadline">
+      <span class="dce-lbl">마감일</span>
+      <input type="date" id="reg-date-deadline" value="${$('ev-deadline')?.value||''}">
+      <button class="btn btn-sm btn-fw-apply" onclick="(function(){const v=document.getElementById('reg-date-deadline').value;if(!v)return;const d=new Date(v);const s=(d.getMonth()+1)+'-'+String(d.getDate()).padStart(2,'0');document.getElementById('reg-lbl-deadline').textContent='마감 '+s;document.getElementById('reg-chip-deadline').classList.add('chip-filled');$('ev-deadline').value=v;closeDateChip('reg-expand-deadline');})()">적용</button>
+      <button class="btn btn-sm btn-fw-close" onclick="closeDateChip('reg-expand-deadline')">닫기</button>
     </div>
     <div class="egrpbody">
       <table class="tbl">
@@ -1081,7 +1182,7 @@ async function doSaveEvent(){
   if(!name)throw new Error('행사명 필요');
   const isDN=(type==='DN');
   const docId=name.replace(/\s/g,'')+'_'+(start||'None').replace(/-/g,'')+'_'+(end||'None').replace(/-/g,'');
-  const data={eventName:name,startDate:start||null,startTime:startTime,endDate:end||null,endTime:endTime,pageType:$('ev-pagetype').value||null,isNotice:isDN,isClosed:false,additionalDiscount:$('ev-adddisc').value||null,
+  const data={eventName:name,startDate:start||null,startTime:startTime,endDate:end||null,endTime:endTime,pageType:$('ev-pagetype').value||null,isNotice:isDN,isClosed:false,additionalDiscount:$('ev-adddisc').value||null,proposalUploadedAt:$('ev-upload-date')?.value||null,proposalDeadline:$('ev-deadline')?.value||null,
     products:isDN?[]:regProducts.map((p,i)=>({no:i+1,subNo:null,isMain:p.isMain,isCancelled:false,skuCode:p.skuCode,productName:p.productName,link:'https://brand.naver.com/yozmkorea/products/'+p.skuCode,priceNormal:p.priceNormal||null,priceBase:p.priceBase||null,priceEvent:p.priceEvent||null,priceAlim:p.priceAlim||null,priceMax:p.priceMax||null,ship:p.ship||null,options:[]})),
     updatedAt:new Date().toISOString()};
   await setDoc(doc(db,'events',docId),data);
@@ -1148,13 +1249,13 @@ function buildGroupHtml(eName,grp,tabNum){
   if(tabNum===2){
     /* 그룹 상태: 전체 동일이면 그 값, 아니면 첫 번째 */
     const grpSt=grp.items.length?(grp.items.every(p=>p.status===grp.items[0].status)?grp.items[0].status:'제안중'):'제안중';
-    const stOpts=['제안중','제안완료','미선정','선정'].map(s=>`<option${grpSt===s?' selected':''}>${s}</option>`).join('');
+    const stOpts=['제안중','제안완료','확인필요','선정','미선정'].map(s=>`<option${grpSt===s?' selected':''}>${s}</option>`).join('');
     const stSelStyle=STATUS_SELECT_STYLE?.[grpSt]||'';
     grpActions=`
-      <select style="${stSelStyle};font-size:11px;border-radius:6px;padding:2px 8px;height:26px;font-weight:600"
+      <select style="${stSelStyle};font-size:11px;border-radius:6px;padding:2px 8px;height:26px;font-weight:600;width:80px"
         onchange="markGroupStatus(this.closest('.egrp').querySelector('.egrpname').textContent.trim(),this.value);applySelectStyle(this,this.value)">${stOpts}</select>
-      <button class="btn btn-sm" style="background:rgba(58,58,240,.07);color:var(--ac);border-color:rgba(58,58,240,.25)" onclick="toggleSelEdit('${grpId}')">✏️ 수정</button>
-      <button class="btn btn-sm" onclick="toggleGrpAdd('grpadd-${grpId}')">+ 상품 추가</button>`;
+      <button class="btn btn-sm btn-fw-edit" style="background:rgba(58,58,240,.07);color:var(--ac);border-color:rgba(58,58,240,.25)" onclick="toggleSelEdit('${grpId}')">✏️ 수정</button>
+      <button class="btn btn-sm btn-fw-add" onclick="toggleGrpAdd('grpadd-${grpId}')">+ 상품 추가</button>`;
   }
   if(tabNum===3){
     grpActions=`<button class="btn btn-sm" style="background:rgba(58,58,240,.07);color:var(--ac);border-color:rgba(58,58,240,.3)" onclick="toggleSelEdit('${grpId}')">✏️ 수정</button>
@@ -1196,6 +1297,36 @@ function buildGroupHtml(eName,grp,tabNum){
       ${grpActions?`<span style="margin-left:auto;display:flex;gap:6px">${grpActions}</span>`:''}
     </div>
     <div class="egrpbody${allDone&&tabNum===2?' done-state':''}" id="${grpId}-body">
+      <div class="date-chip-row">
+        <span style="font-size:10.5px;color:var(--t3);margin-right:2px">제안 일정</span>
+        <span id="chip-upload-${grpId}" class="${m.proposalUploadedAt?'date-chip chip-filled':'date-chip'}" onclick="toggleDateChip('expand-upload-${grpId}')">
+          📅 <span id="lbl-upload-${grpId}">${m.proposalUploadedAt?'업로드 '+m.proposalUploadedAt.substring(5).replace('-','/'):'업로드 미입력'}</span>
+        </span>
+        <span id="chip-deadline-${grpId}" class="${m.proposalDeadline?'date-chip chip-filled':'date-chip'}" onclick="toggleDateChip('expand-deadline-${grpId}')">
+          📅 <span id="lbl-deadline-${grpId}">${m.proposalDeadline?'마감 '+m.proposalDeadline.substring(5).replace('-','/'):'마감 미입력'}</span>
+        </span>
+        <span id="chip-propdate-${grpId}" class="${m.proposalMyDate?'date-chip chip-filled':'date-chip'}" onclick="toggleDateChip('expand-propdate-${grpId}')">
+          📅 <span id="lbl-propdate-${grpId}">${m.proposalMyDate?'제안일 '+m.proposalMyDate.substring(5).replace('-','/'):'제안일 미입력'}</span>
+        </span>
+      </div>
+      <div class="date-chip-expand" id="expand-upload-${grpId}">
+        <span class="dce-lbl">업로드일</span>
+        <input type="date" id="date-upload-${grpId}" value="${m.proposalUploadedAt||''}">
+        <button class="btn btn-sm btn-fw-apply" onclick="saveDateChip('${grpId}','upload','업로드')">적용</button>
+        <button class="btn btn-sm btn-fw-close" onclick="closeDateChip('expand-upload-${grpId}')">닫기</button>
+      </div>
+      <div class="date-chip-expand" id="expand-deadline-${grpId}">
+        <span class="dce-lbl">마감일</span>
+        <input type="date" id="date-deadline-${grpId}" value="${m.proposalDeadline||''}">
+        <button class="btn btn-sm btn-fw-apply" onclick="saveDateChip('${grpId}','deadline','마감')">적용</button>
+        <button class="btn btn-sm btn-fw-close" onclick="closeDateChip('expand-deadline-${grpId}')">닫기</button>
+      </div>
+      <div class="date-chip-expand" id="expand-propdate-${grpId}">
+        <span class="dce-lbl">제안일</span>
+        <input type="date" id="date-propdate-${grpId}" value="${m.proposalMyDate||''}">
+        <button class="btn btn-sm btn-fw-apply" onclick="saveDateChip('${grpId}','propdate','제안일')">적용</button>
+        <button class="btn btn-sm btn-fw-close" onclick="closeDateChip('expand-propdate-${grpId}')">닫기</button>
+      </div>
       ${selEditHtml}
       <div class="grp-add-panel" id="grpadd-${grpId}">
         <div style="font-size:11.5px;font-weight:700;color:var(--t2);margin-bottom:8px">상품 추가 — ${eName}</div>
@@ -1437,12 +1568,13 @@ window.markOneSel=async function(id,btn){
   toast('선정 처리 (저장 버튼으로 반영)');
 };
 
-const STATUS_CLASS_MAP={'제안중':'state-proposal','제안완료':'state-done','미선정':'state-rejected','선정':'state-selected'};
+const STATUS_CLASS_MAP={'제안중':'state-proposal','제안완료':'state-done','확인필요':'state-warning','미선정':'state-rejected','선정':'state-selected'};
 
 const STATUS_SELECT_STYLE={
   '제안중':'background:rgba(152,152,168,.12);color:var(--t3);border-color:rgba(152,152,168,.4)',
   '제안완료':'background:rgba(26,138,74,.1);color:var(--gr);border-color:rgba(26,138,74,.35)',
   '선정':'background:rgba(58,58,240,.1);color:var(--ac);border-color:rgba(58,58,240,.35)',
+  '확인필요':'background:rgba(202,138,4,.1);color:#854d0e;border-color:rgba(202,138,4,.4)',
   '미선정':'background:rgba(212,32,32,.08);color:var(--rd);border-color:rgba(212,32,32,.3)',
 };
 function applySelectStyle(sel,status){
@@ -1456,10 +1588,18 @@ window.markGroupStatus=function(eName,status){
   document.querySelectorAll('.egrp').forEach(el=>{
     const nm=el.querySelector('.egrpname');
     if(nm&&nm.textContent.trim()===eName){
+      /* 헤더 색 변경 */
       el.classList.remove('state-proposal','state-done','state-rejected','state-selected');
       el.classList.add(STATUS_CLASS_MAP[status]||'state-proposal');
+      /* select 스타일 */
       const sel=el.querySelector('select');
       if(sel)applySelectStyle(sel,status);
+      /* 각 행의 상태 뱃지 즉시 업데이트 */
+      const stCls=STATUS_ST[status]||'s-gray';
+      el.querySelectorAll('td .st').forEach(badge=>{
+        badge.className='st '+stCls;
+        badge.textContent=status;
+      });
     }
   });
 };
@@ -1526,7 +1666,7 @@ window.addProdToGroup=function(eName,tabNum,grpId){
   const m=PROPOSALS.find(p=>p.eventName===eName);
   allCodes.forEach(code=>{
     const sku=SKUS.find(s=>s._id===code)||{};
-    const newP={_id:'NEW_'+Date.now()+'_'+code,_isNew:true,eventName:eName,eventType:m?.eventType||detectType({eventName:eName}),startDate:m?.startDate||null,endDate:m?.endDate||null,startTime:m?.startTime||null,endTime:m?.endTime||null,proposalUploadedAt:m?.proposalUploadedAt||null,proposalDeadline:m?.proposalDeadline||null,proposalMyDate:m?.proposalMyDate||null,skuCode:code,skuNick:sku.nick||sku.name||code,productName:sku.name||'',isMain:skuGroup(sku.nick||sku.name)==='main'?'메인':'서브',status:'제안중',priceNormal:sku.priceNormal||null,priceBase:sku.priceBase||null,priceEvent:sku.priceDisc||sku.priceEvent||null,priceAlim:sku.priceDisc||sku.priceEvent||null,priceMax:sku.priceDisc?(sku.priceDisc-1000):null,ship:'무료배송'};
+    const newP={_id:'NEW_'+Date.now()+'_'+code,_isNew:true,eventName:eName,eventType:m?.eventType||detectType({eventName:eName}),startDate:m?.startDate||null,endDate:m?.endDate||null,startTime:m?.startTime||null,endTime:m?.endTime||null,proposalUploadedAt:$('ev-upload-date')?.value||m?.proposalUploadedAt||null,proposalDeadline:$('ev-deadline')?.value||m?.proposalDeadline||null,proposalMyDate:m?.proposalMyDate||null,skuCode:code,skuNick:sku.nick||sku.name||code,productName:sku.name||'',isMain:skuGroup(sku.nick||sku.name)==='main'?'메인':'서브',status:'제안중',priceNormal:sku.priceNormal||null,priceBase:sku.priceBase||null,priceEvent:sku.priceDisc||sku.priceEvent||null,priceAlim:sku.priceDisc||sku.priceEvent||null,priceMax:sku.priceDisc?(sku.priceDisc-1000):null,ship:'무료배송'};
     PROPOSALS.unshift(newP);markDirty('proposalItems',newP._id,newP);
   });
   if(codeInp)codeInp.value='';
@@ -1657,6 +1797,54 @@ window.sfClick=function(el,statusVal,tab){el.classList.toggle('on');if(!statusFi
 
 window.calRender=calRender;
 window.calInit=calInit;
+
+/* ── 날짜 칩 공통 함수 ── */
+window.saveDateChip=function(grpId,field,prefix){
+  const inp=document.getElementById('date-'+field+'-'+grpId);
+  if(!inp?.value)return;
+  const val=inp.value;
+  const d=new Date(val);
+  const mm=String(d.getMonth()+1).padStart(2,'0');
+  const dd=String(d.getDate()).padStart(2,'0');
+  const lbl=document.getElementById('lbl-'+field+'-'+grpId);
+  if(lbl)lbl.textContent=prefix+' '+mm+'-'+dd;
+  const chip=document.getElementById('chip-'+field+'-'+grpId);
+  if(chip)chip.classList.add('chip-filled');
+  document.getElementById('expand-'+field+'-'+grpId)?.classList.remove('open');
+  /* proposalItems 업데이트 */
+  const fieldMap={upload:'proposalUploadedAt',deadline:'proposalDeadline',propdate:'proposalMyDate'};
+  const key=fieldMap[field];
+  if(!key)return;
+  /* 해당 그룹 이름 찾기 */
+  const egrp=document.getElementById('grp-2-'+grpId.replace('grp-2-',''));
+  const nm=document.getElementById(grpId+'-hd')?.querySelector('.egrpname')?.textContent?.trim();
+  if(nm){PROPOSALS.filter(p=>p.eventName===nm&&!p._deleted).forEach(p=>{p[key]=val;markDirty('proposalItems',p._id,{[key]:val});});}
+  toast('날짜 저장 (저장 버튼으로 반영)');
+};
+window.toggleDateChip=function(expandId){
+  // 같은 카드 내 다른 expand는 닫기
+  const expand=document.getElementById(expandId);
+  if(!expand)return;
+  const card=expand.closest('.egrp,.egrpbody,.reg-sample-card,.grp-add-panel')?.parentElement||expand.parentElement;
+  card.querySelectorAll('.date-chip-expand').forEach(e=>{if(e.id!==expandId)e.classList.remove('open');});
+  expand.classList.toggle('open');
+};
+window.applyDateChip=function(expandId,prefix,lblId,chipEl){
+  const expand=document.getElementById(expandId);
+  const inp=expand?.querySelector('input[type="date"]');
+  if(!inp?.value){return;}
+  const d=new Date(inp.value);
+  const mm=String(d.getMonth()+1).padStart(2,'0');
+  const dd=String(d.getDate()).padStart(2,'0');
+  const lbl=document.getElementById(lblId);
+  if(lbl)lbl.textContent=prefix+' '+mm+'-'+dd;
+  const chip=document.getElementById(chipEl||'');
+  if(chip)chip.classList.add('chip-filled');
+  expand.classList.remove('open');
+};
+window.closeDateChip=function(expandId){
+  const e=document.getElementById(expandId);if(e)e.classList.remove('open');
+};
 
 /* ══ 행사 선정 탭 — events.products[] 기반 렌더 ══ */
 window.renderSelList=function(){

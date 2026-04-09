@@ -2056,31 +2056,11 @@ window.tfClick=function(el,cls,tab){
 };
 window.sfClick=function(el,statusVal,tab){el.classList.toggle('on');if(!statusFilter[tab])statusFilter[tab]=new Set();if(el.classList.contains('on'))statusFilter[tab].add(statusVal);else statusFilter[tab].delete(statusVal);renderPropList(tab);};
 
-window.calRender=calRender;
-window.calInit=calInit;
+
 
 /* ── 날짜 칩 공통 함수 ── */
 /* 달력 → 행사 제안 샘플 칩 동기화 */
-window.saveDateChip=function(grpId,field,prefix){
-  const inp=document.getElementById('date-'+field+'-'+grpId);
-  if(!inp?.value)return;
-  const val=inp.value;
-  const d=new Date(val);
-  const mm=String(d.getMonth()+1).padStart(2,'0');
-  const dd=String(d.getDate()).padStart(2,'0');
-  const lbl=document.getElementById('lbl-'+field+'-'+grpId);
-  if(lbl)lbl.textContent=prefix+' '+mm+'-'+dd;
-  const chip=document.getElementById('chip-'+field+'-'+grpId);
-  if(chip)chip.classList.add('chip-filled');
-  document.getElementById('expand-'+field+'-'+grpId)?.classList.remove('open');
-  /* events에 저장 (proposalUploadedAt/proposalDeadline은 events 소속) */
-  const fieldMap={upload:'proposalUploadedAt',deadline:'proposalDeadline',propdate:'proposalMyDate'};
-  const key=fieldMap[field];
-  if(!key)return;
-  const nm=document.getElementById(grpId+'-hd')?.querySelector('.egrpname')?.textContent?.trim();
-  if(nm){PROPOSALS.filter(p=>p.eventName===nm&&!p._deleted).forEach(p=>{p[key]=val;markDirty('proposalItems',p._id,{[key]:val});});}
-  toast('날짜 저장 (저장 버튼으로 반영)');
-};
+
 window.calSetMode=function(key,mode){
   if(CAL_STATE[key])CAL_STATE[key].mode=mode;
   calRender(key);

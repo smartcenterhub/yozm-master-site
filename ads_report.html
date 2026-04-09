@@ -184,10 +184,63 @@ tr.empty-group{opacity:.35}
       <div class="pg-title">데일리 리포트</div>
       <div class="pg-desc">광고 매체별 일일 성과를 파일 업로드로 빠르게 집계합니다</div>
     </div>
-    <div class="pg-actions">
+    <div class="pg-actions" style="position:relative">
+      <button class="btn btn-ghost btn-sm" onclick="toggleZipGuide()" style="font-size:11.5px">📋 ZIP 가이드</button>
       <button class="btn btn-ghost btn-sm" onclick="document.getElementById('dailyZipInput').click()" style="font-size:11.5px">📦 하루치 ZIP 올리기</button>
       <input type="file" id="dailyZipInput" accept=".zip" style="display:none">
       <button class="btn btn-ghost" onclick="openRptModal()">📝 리포트 양식</button>
+
+      <!-- ZIP 가이드 팝업 -->
+      <div id="zipGuidePopup" style="display:none;position:absolute;top:calc(100% + 8px);right:0;z-index:999;background:var(--glass-bg-strong);border:1px solid var(--glass-border-s);border-radius:14px;width:460px;box-shadow:0 4px 20px rgba(0,0,0,0.12);overflow:hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--glass-border-s)">
+          <span style="font-size:13.5px;font-weight:600;color:var(--tx);display:flex;align-items:center;gap:7px">📦 하루치 ZIP 올리기 가이드</span>
+          <button onclick="toggleZipGuide()" style="width:24px;height:24px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg);cursor:pointer;font-size:13px;color:var(--t2);display:flex;align-items:center;justify-content:center">✕</button>
+        </div>
+        <div style="padding:14px 16px;display:flex;flex-direction:column;gap:14px;max-height:70vh;overflow-y:auto">
+
+          <!-- 1. ZIP명 -->
+          <div>
+            <div style="font-size:10.5px;font-weight:600;color:var(--t3);letter-spacing:.5px;margin-bottom:6px">1 · 전체 ZIP 파일명</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <input type="text" id="zipGuideDate" placeholder="260408" maxlength="6" oninput="zipGuideUpdate()"
+                style="flex:1;padding:6px 10px;border:1px solid var(--glass-border-s);border-radius:7px;font-size:13px;background:var(--glass-bg-strong);color:var(--tx);letter-spacing:1px;font-family:monospace">
+              <button onclick="zipGuideCopy(document.getElementById('zipGuideDate').value+'.zip',this)" style="padding:5px 12px;border-radius:7px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:12px;color:var(--t2);white-space:nowrap">복사</button>
+            </div>
+            <div style="font-size:11px;color:var(--t3);margin-top:4px">날짜 6자리 입력 → ZIP명: <span id="zipNamePreview" style="font-family:monospace;color:var(--accent)">260408.zip</span></div>
+          </div>
+
+          <div style="height:1px;background:var(--glass-border-s)"></div>
+
+          <!-- 2. 내부 파일명 -->
+          <div>
+            <div style="font-size:10.5px;font-weight:600;color:var(--t3);letter-spacing:.5px;margin-bottom:8px">2 · 내부 파일명 (prefix 기준 자동 인식)</div>
+            <div style="display:flex;flex-direction:column;gap:4px" id="zipFileList">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--glass-bg);border-radius:7px;border:1px solid var(--glass-border-s)"><div><span style="font-size:11px;color:var(--t3);margin-right:8px">브검 MO</span><span id="zf-bkmo" style="font-size:12px;font-family:monospace;color:var(--tx)">bkmo_260408.xlsx</span></div><button onclick="zipGuideCopy(document.getElementById('zf-bkmo').textContent,this)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:11px;color:var(--t2)">복사</button></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--glass-bg);border-radius:7px;border:1px solid var(--glass-border-s)"><div><span style="font-size:11px;color:var(--t3);margin-right:8px">브검 PC</span><span id="zf-bkpc" style="font-size:12px;font-family:monospace;color:var(--tx)">bkpc_260408.xlsx</span></div><button onclick="zipGuideCopy(document.getElementById('zf-bkpc').textContent,this)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:11px;color:var(--t2)">복사</button></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--glass-bg);border-radius:7px;border:1px solid var(--glass-border-s)"><div><span style="font-size:11px;color:var(--t3);margin-right:8px">키워드 MO</span><span id="zf-kwmo" style="font-size:12px;font-family:monospace;color:var(--tx)">kwmo_260408.xlsx</span></div><button onclick="zipGuideCopy(document.getElementById('zf-kwmo').textContent,this)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:11px;color:var(--t2)">복사</button></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--glass-bg);border-radius:7px;border:1px solid var(--glass-border-s)"><div><span style="font-size:11px;color:var(--t3);margin-right:8px">키워드 PC</span><span id="zf-kwpc" style="font-size:12px;font-family:monospace;color:var(--tx)">kwpc_260408.xlsx</span></div><button onclick="zipGuideCopy(document.getElementById('zf-kwpc').textContent,this)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:11px;color:var(--t2)">복사</button></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--glass-bg);border-radius:7px;border:1px solid var(--glass-border-s)"><div><span style="font-size:11px;color:var(--t3);margin-right:8px">GFA 성과</span><span id="zf-gfa" style="font-size:12px;font-family:monospace;color:var(--tx)">gfa_260408.zip</span></div><button onclick="zipGuideCopy(document.getElementById('zf-gfa').textContent,this)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:11px;color:var(--t2)">복사</button></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--glass-bg);border-radius:7px;border:1px solid var(--glass-border-s)"><div><span style="font-size:11px;color:var(--t3);margin-right:8px">GFA 소재</span><span id="zf-gc" style="font-size:12px;font-family:monospace;color:var(--tx)">gc_260408.zip</span></div><button onclick="zipGuideCopy(document.getElementById('zf-gc').textContent,this)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:11px;color:var(--t2)">복사</button></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--glass-bg);border-radius:7px;border:1px solid var(--glass-border-s)"><div><span style="font-size:11px;color:var(--t3);margin-right:8px">DA</span><span id="zf-da" style="font-size:12px;font-family:monospace;color:var(--tx)">da_260408.zip</span></div><button onclick="zipGuideCopy(document.getElementById('zf-da').textContent,this)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:11px;color:var(--t2)">복사</button></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--glass-bg);border-radius:7px;border:1px solid var(--glass-border-s)"><div><span style="font-size:11px;color:var(--t3);margin-right:8px">SA</span><span id="zf-sa" style="font-size:12px;font-family:monospace;color:var(--tx)">sa_260408.zip</span></div><button onclick="zipGuideCopy(document.getElementById('zf-sa').textContent,this)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:11px;color:var(--t2)">복사</button></div>
+            </div>
+          </div>
+
+          <div style="height:1px;background:var(--glass-border-s)"></div>
+
+          <!-- 3. 가이드 -->
+          <div>
+            <div style="font-size:10.5px;font-weight:600;color:var(--t3);letter-spacing:.5px;margin-bottom:8px">3 · 적용 가이드</div>
+            <div style="background:var(--glass-bg);border-radius:9px;padding:12px 14px;display:flex;flex-direction:column;gap:6px">
+              <div style="font-size:11.5px;color:var(--t2);display:flex;gap:8px"><span style="font-weight:600;color:var(--t3);min-width:14px">1</span><span>각 파일 다운로드 후 파일명 앞에 <b>prefix_</b> 붙이기 (예: <code style="background:rgba(58,58,240,0.07);padding:1px 5px;border-radius:4px;font-size:11px">bkmo_원래파일명.xlsx</code>)</span></div>
+              <div style="font-size:11.5px;color:var(--t2);display:flex;gap:8px"><span style="font-weight:600;color:var(--t3);min-width:14px">2</span><span>위 파일들을 하나의 ZIP으로 묶어 날짜 6자리로 저장 (예: <code style="background:rgba(58,58,240,0.07);padding:1px 5px;border-radius:4px;font-size:11px">260408.zip</code>)</span></div>
+              <div style="font-size:11.5px;color:var(--t2);display:flex;gap:8px"><span style="font-weight:600;color:var(--t3);min-width:14px">3</span><span>📦 하루치 ZIP 올리기 클릭 → ZIP 업로드 → 날짜 자동 세팅 + 각 탭 자동 배정</span></div>
+              <div style="font-size:11.5px;color:var(--t2);display:flex;gap:8px"><span style="font-weight:600;color:var(--t3);min-width:14px">4</span><span>기간 여러 날짜면 날짜별로 ZIP 따로 만들어 순서대로 업로드 → 날짜 범위 자동 확장</span></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </div>
   </div>
 
@@ -296,7 +349,7 @@ tr.empty-group{opacity:.35}
 
     <!-- 내부 탭 -->
     <div class="inner-tabs" style="display:flex;gap:0;border-bottom:1.5px solid var(--glass-border-s);margin-bottom:14px">
-      <div class="inner-tab active" onclick="swBkInner('bkPerf',this)" style="padding:5px 16px;font-size:12.5px;color:var(--t2);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px">브검 성과</div>
+      <div class="inner-tab active" onclick="swBkInner('bkPerf',this)" style="padding:5px 16px;font-size:12.5px;color:var(--accent);cursor:pointer;border-bottom:2.5px solid var(--accent);margin-bottom:-1.5px">브검 성과</div>
       <div class="inner-tab" onclick="swBkInner('bkKw',this)" style="padding:5px 16px;font-size:12.5px;color:var(--t2);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px">브검 키워드</div>
     </div>
 
@@ -312,7 +365,7 @@ tr.empty-group{opacity:.35}
   <div class="sub-content" id="s-gfa">
     <!-- 내부 탭 -->
     <div class="inner-tabs" style="display:flex;gap:0;border-bottom:1.5px solid var(--glass-border-s);margin-bottom:14px">
-      <div class="inner-tab active" onclick="swGfaInner('gfaPerf',this)" style="padding:5px 16px;font-size:12.5px;color:var(--t2);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px">GFA 성과</div>
+      <div class="inner-tab active" onclick="swGfaInner('gfaPerf',this)" style="padding:5px 16px;font-size:12.5px;color:var(--accent);cursor:pointer;border-bottom:2.5px solid var(--accent);margin-bottom:-1.5px">GFA 성과</div>
       <div class="inner-tab" onclick="swGfaInner('gfaSojai',this)" style="padding:5px 16px;font-size:12.5px;color:var(--t2);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px">GFA 소재</div>
     </div>
     <div id="gfaPerf">
@@ -586,6 +639,55 @@ function dateToStr(d) {
 function dateStrToDisplay(s) {
   const d = new Date(s + 'T00:00:00');
   return `${d.getMonth()+1}월${d.getDate()}일(${DAY_KO[d.getDay()]})`;
+}
+
+/* ══════════════════════════
+   ZIP 가이드 팝업
+══════════════════════════ */
+let _zipGuideOpen = false;
+function toggleZipGuide() {
+  const popup = document.getElementById('zipGuidePopup');
+  _zipGuideOpen = !_zipGuideOpen;
+  popup.style.display = _zipGuideOpen ? '' : 'none';
+  if (_zipGuideOpen) zipGuideUpdate();
+}
+document.addEventListener('click', e => {
+  if (!_zipGuideOpen) return;
+  const popup = document.getElementById('zipGuidePopup');
+  const pg = document.querySelector('.pg-actions');
+  const path = e.composedPath ? e.composedPath() : [];
+  if (!path.some(el => el === popup || el === pg)) {
+    popup.style.display = 'none';
+    _zipGuideOpen = false;
+  }
+});
+function zipGuideUpdate() {
+  const d = document.getElementById('zipGuideDate')?.value.trim() || '260408';
+  const preview = document.getElementById('zipNamePreview');
+  if (preview) preview.textContent = d + '.zip';
+  const FILES = {
+    bkmo:'xlsx', bkpc:'xlsx', kwmo:'xlsx', kwpc:'xlsx',
+    gfa:'zip', gc:'zip', da:'zip', sa:'zip'
+  };
+  Object.entries(FILES).forEach(([p, ext]) => {
+    const el = document.getElementById('zf-' + p);
+    if (el) el.textContent = p + '_' + d + '.' + ext;
+  });
+}
+function zipGuideCopy(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓';
+    btn.style.background = 'rgba(63,160,68,0.12)';
+    btn.style.color = '#3B6D11';
+    btn.style.borderColor = '#97C459';
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.style.background = '';
+      btn.style.color = '';
+      btn.style.borderColor = '';
+    }, 1400);
+  });
 }
 
 /* ══════════════════════════
@@ -1392,9 +1494,14 @@ function swSub(id, el) {
 /* ── 브검 내부 탭 (브검 성과 / 브검 키워드) ── */
 function swBkInner(id, el) {
   ['bkPerf','bkKw'].forEach(p => { const el2=document.getElementById(p); if(el2) el2.style.display='none'; });
-  el.closest('.inner-tabs').querySelectorAll('.inner-tab').forEach(t => t.classList.remove('active'));
+  el.closest('.inner-tabs').querySelectorAll('.inner-tab').forEach(t => {
+    t.classList.remove('active');
+    t.style.borderBottomColor = 'transparent';
+    t.style.color = 'var(--t2)';
+  });
   el.classList.add('active');
-  el.style.borderBottomColor = 'var(--accent)'; el.style.color = 'var(--accent)';
+  el.style.borderBottomColor = 'var(--accent)';
+  el.style.color = 'var(--accent)';
   const target = document.getElementById(id);
   if (target) target.style.display = '';
 }
@@ -1415,7 +1522,7 @@ function swGfaInner(id, el) {
 
 /* ── 내부 탭 (GFA 소재 내 소재성과/이미지관리) ── */
 function swInner(id, el) {
-  const parent = el.closest('.sub-content') || el.closest('[id^="gfa"]') || el.closest('#s-gfa');
+  const parent = document.getElementById('gfaSojai');
   if (parent) {
     parent.querySelectorAll('.inner-tab').forEach(t => t.classList.remove('active'));
     parent.querySelectorAll('.inner-content').forEach(c => c.classList.remove('active'));

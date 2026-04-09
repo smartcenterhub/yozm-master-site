@@ -1027,6 +1027,12 @@ function autoCloseExpired(){
       prods.filter(p=>p.status==='제안완료').forEach(p=>{p.status='확인필요';markDirty('proposalItems',p._id,{status:'확인필요'});});
       warnCnt++;
     }
+    /* 확인필요 조건 (1): 제안 마감일 이후인데 아직 제안중인 경우 */
+    const deadline=prods[0]?.proposalDeadline;
+    if(deadline&&deadline<today&&prods.some(p=>p.status==='제안중')){
+      prods.filter(p=>p.status==='제안중').forEach(p=>{p.status='확인필요';markDirty('proposalItems',p._id,{status:'확인필요'});});
+      warnCnt++;
+    }
   });
   if(warnCnt)toast(`⚠️ ${warnCnt}개 행사 확인필요 전환 (저장 필요)`,'ok');
 }
@@ -1103,6 +1109,14 @@ function renderRegProds(){
   const {startTime,endTime}=getCalTime('reg');
   const tColor=TYPE_COLOR[typeCode]||'--t3';
   const dateLabel=fmtRange(start,startTime,end,endTime);
+  /* 기간 칩 HTML */
+  const dur=calDur(start,end);
+  const dateChipsHtml=start?(
+    `<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(26,86,200,.3);border-radius:20px;background:rgba(26,86,200,.07);color:var(--bl);font-weight:500;white-space:nowrap">${fmtDate(start,startTime)}</span>`+
+    `<span style="font-size:10px;color:var(--t3)">→</span>`+
+    `<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(196,90,16,.3);border-radius:20px;background:rgba(196,90,16,.07);color:var(--or);font-weight:500;white-space:nowrap">${fmtDate(end,endTime)}</span>`+
+    (dur?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(152,152,168,.3);border-radius:20px;background:rgba(152,152,168,.08);color:var(--t2);font-weight:500">[${dur}일 간]</span>`:'')
+  ):`<span style="font-size:10.5px;color:var(--t3)">기간 미설정</span>`;
 
   /* SKU no 기준 정렬 */
   const sorted=[...regProducts].sort((a,b)=>{
@@ -1168,9 +1182,9 @@ function renderRegProds(){
           <button class="btn btn-p" style="width:88px" onclick="submitProposal()">제안하기 →</button>
         </span>
       </div>
-      <!-- 2행: 기간 + 일정 칩 -->
+      <!-- 2행: 기간 칩 + 일정 칩 -->
       <div style="display:flex;align-items:center;gap:5px;margin-top:5px;flex-wrap:wrap;width:100%">
-        <span class="egrpmeta" style="font-size:10.5px">${dateLabel}</span>
+        ${dateChipsHtml}
         <span style="width:0.5px;height:12px;background:rgba(0,0,0,.12);flex-shrink:0"></span>
         <span style="font-size:10px;color:var(--t3)">일정</span>
         <span id="reg-chip-upload" class="date-chip" data-calmode="upload" data-expand="reg-expand-upload">
@@ -1337,6 +1351,29 @@ window.renderPropList=function(tabNum){
   el.innerHTML=Object.entries(groups).map(([eName,grp])=>buildGroupHtml(eName,grp,tabNum)).join('');
 };
 
+/* 기간 칩 HTML 빌더 */
+function buildDateChips(startDate,startTime,endDate,endTime,uploadDate,deadline){
+  const DOW=['일','월','화','수','목','금','토'];
+  function fmtChip(s,t){
+    if(!s)return'';
+    const d=new Date(s+'T00:00:00');
+    const mm=String(d.getMonth()+1).padStart(2,'0');
+    const dd=String(d.getDate()).padStart(2,'0');
+    const dow=DOW[d.getDay()];
+    return mm+'/'+dd+' ('+dow+')'+(t?' '+t:'');
+  }
+  const dur=calDur(startDate,endDate);
+  const sChip=startDate?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(26,86,200,.3);border-radius:20px;background:rgba(26,86,200,.07);color:var(--bl);font-weight:500;white-space:nowrap">${fmtChip(startDate,startTime)}</span>`:'';
+  const arrow=startDate&&endDate?`<span style="font-size:10px;color:var(--t3)">→</span>`:'';
+  const eChip=endDate?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(196,90,16,.3);border-radius:20px;background:rgba(196,90,16,.07);color:var(--or);font-weight:500;white-space:nowrap">${fmtChip(endDate,endTime)}</span>`:'';
+  const dChip=dur?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(152,152,168,.3);border-radius:20px;background:rgba(152,152,168,.08);color:var(--t2);font-weight:500">[${dur}일 간]</span>`:'';
+  const sep=(startDate&&(uploadDate||deadline))?`<span style="width:0.5px;height:11px;background:rgba(0,0,0,.12);flex-shrink:0"></span>`:'';
+  const lbl=(uploadDate||deadline)?`<span style="font-size:10px;color:var(--t3)">일정</span>`:'';
+  const uChip=uploadDate?`<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;font-size:10px;border:1px solid rgba(58,58,240,.25);border-radius:20px;background:rgba(58,58,240,.05);color:var(--ac);font-weight:500;white-space:nowrap">📅 업로드 ${fmtChip(uploadDate,'')}</span>`:'';
+  const dline=deadline?`<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;font-size:10px;border:1px solid rgba(26,138,74,.25);border-radius:20px;background:rgba(26,138,74,.05);color:var(--gr);font-weight:500;white-space:nowrap">📅 마감 ${fmtChip(deadline,'')}</span>`:'';
+  if(!startDate)return`<span style="font-size:10.5px;color:var(--t3)">기간 미설정</span>`;
+  return[sChip,arrow,eChip,dChip,sep,lbl,uChip,dline].filter(Boolean).join('');
+}
 function buildGroupHtml(eName,grp,tabNum){
   const m=grp.meta;
   const eType=m.eventType||detectType({eventName:eName});
@@ -1388,6 +1425,7 @@ function buildGroupHtml(eName,grp,tabNum){
   const stateClass=tabNum===2?(()=>{
     const s=grp.items.length?grp.items[0].status:'제안중';
     if(s==='제안완료')return 'state-done';
+    if(s==='확인필요')return 'state-warning';
     if(s==='미선정')return 'state-rejected';
     if(s==='선정')return 'state-selected';
     return 'state-proposal';
@@ -1402,10 +1440,9 @@ function buildGroupHtml(eName,grp,tabNum){
         ${grpEnded&&tabNum===3?'<span class="st s-end">종료</span>':''}
         ${grpActions?`<span style="margin-left:auto;display:flex;gap:6px">${grpActions}</span>`:''}
       </div>
-      <!-- 2행: 기간 + 메타(업로드·마감) -->
+      <!-- 2행: 기간+일정 칩 -->
       <div style="display:flex;align-items:center;gap:5px;margin-top:5px;width:100%;flex-wrap:wrap">
-        <span class="egrpmeta" style="font-size:10.5px">${dateStr2}</span>
-        ${metaStr&&metaStr!=='제안업로드: — · 마감: — · 제안일: —'?`<span style="width:0.5px;height:11px;background:rgba(0,0,0,.12);flex-shrink:0"></span><span class="egrpmeta" style="font-size:10px">${metaStr}</span>`:''}
+        ${buildDateChips(ev?.startDate,ev?.startTime,ev?.endDate,ev?.endTime,m?.proposalUploadedAt,m?.proposalDeadline)}
       </div>
     </div>
     <div class="egrpbody${allDone&&tabNum===2?' done-state':''}" id="${grpId}-body">
@@ -1701,7 +1738,7 @@ window.markGroupStatus=function(eName,status){
     const nm=el.querySelector('.egrpname');
     if(nm&&nm.textContent.trim()===eName){
       /* 헤더 색 변경 */
-      el.classList.remove('state-proposal','state-done','state-rejected','state-selected');
+      el.classList.remove('state-proposal','state-done','state-warning','state-rejected','state-selected');
       el.classList.add(STATUS_CLASS_MAP[status]||'state-proposal');
       /* select 스타일 */
       const sel=el.querySelector('select');
@@ -2021,7 +2058,7 @@ function buildSelCard(ev){
   /* 수정 블록 */
   const editHtml=buildSelEditBlock(ev,grpId);
 
-  return`<div class="egrp${ended?' grayed':''}" id="${grpId}" style="margin-bottom:13px">
+  return`<div class="egrp state-selected${ended?' grayed':''}" id="${grpId}" style="margin-bottom:13px">
     <div class="egrphd" id="${grpId}-hd" style="flex-direction:column;gap:0;padding:9px 12px">
       <!-- 1행 -->
       <div style="display:flex;align-items:center;gap:6px;width:100%">
@@ -2034,9 +2071,9 @@ function buildSelCard(ev){
           ${!ended?`<button class="btn btn-sm btn-d" onclick="closeByEventId('${evId}')">종료 처리</button>`:''}
         </span>
       </div>
-      <!-- 2행: 기간 -->
+      <!-- 2행: 기간+일정 칩 -->
       <div style="display:flex;align-items:center;gap:5px;margin-top:5px;width:100%;flex-wrap:wrap">
-        <span class="egrpmeta" style="font-size:10.5px">${dateLabel}</span>
+        ${buildDateChips(ev.startDate,ev.startTime,ev.endDate,ev.endTime,ev.proposalUploadedAt,ev.proposalDeadline)}
       </div>
     </div>
     <div class="egrpbody" id="${grpId}-body">

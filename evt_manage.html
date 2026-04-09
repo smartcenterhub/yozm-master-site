@@ -1193,24 +1193,6 @@ function renderRegProds(){
       <input type="date" id="reg-date-deadline" value="${$('ev-deadline')?.value||''}">
       <button class="btn btn-sm btn-fw-apply" onclick="(function(){const v=document.getElementById('reg-date-deadline').value;if(!v)return;const d=new Date(v);const s=(d.getMonth()+1)+'-'+String(d.getDate()).padStart(2,'0');document.getElementById('reg-lbl-deadline').textContent='마감 '+s;document.getElementById('reg-chip-deadline').classList.add('chip-filled');$('ev-deadline').value=v;closeDateChip('reg-expand-deadline');})()">적용</button>
       <button class="btn btn-sm btn-fw-close" onclick="closeDateChip('reg-expand-deadline')">닫기</button>
-    </div>pload')">
-        📅 <span id="reg-lbl-upload">${$('ev-upload-date')?.value?'업로드 '+($('ev-upload-date').value.substring(5)):'업로드 미입력'}</span>
-      </span>
-      <span id="reg-chip-deadline" class="date-chip" onclick="calSetMode('reg','deadline');toggleDateChip('reg-expand-deadline')">
-        📅 <span id="reg-lbl-deadline">${$('ev-deadline')?.value?'마감 '+($('ev-deadline').value.substring(5)):'마감 미입력'}</span>
-      </span>
-    </div>
-    <div class="date-chip-expand" id="reg-expand-upload">
-      <span class="dce-lbl">업로드일</span>
-      <input type="date" id="reg-date-upload" value="${$('ev-upload-date')?.value||''}">
-      <button class="btn btn-sm btn-fw-apply" onclick="(function(){const v=document.getElementById('reg-date-upload').value;if(!v)return;const d=new Date(v);const s=(d.getMonth()+1)+'-'+String(d.getDate()).padStart(2,'0');document.getElementById('reg-lbl-upload').textContent='업로드 '+s;document.getElementById('reg-chip-upload').classList.add('chip-filled');$('ev-upload-date').value=v;closeDateChip('reg-expand-upload');})()">적용</button>
-      <button class="btn btn-sm btn-fw-close" onclick="closeDateChip('reg-expand-upload')">닫기</button>
-    </div>
-    <div class="date-chip-expand" id="reg-expand-deadline">
-      <span class="dce-lbl">마감일</span>
-      <input type="date" id="reg-date-deadline" value="${$('ev-deadline')?.value||''}">
-      <button class="btn btn-sm btn-fw-apply" onclick="(function(){const v=document.getElementById('reg-date-deadline').value;if(!v)return;const d=new Date(v);const s=(d.getMonth()+1)+'-'+String(d.getDate()).padStart(2,'0');document.getElementById('reg-lbl-deadline').textContent='마감 '+s;document.getElementById('reg-chip-deadline').classList.add('chip-filled');$('ev-deadline').value=v;closeDateChip('reg-expand-deadline');})()">적용</button>
-      <button class="btn btn-sm btn-fw-close" onclick="closeDateChip('reg-expand-deadline')">닫기</button>
     </div>
     <div class="egrpbody">
       <table class="tbl">

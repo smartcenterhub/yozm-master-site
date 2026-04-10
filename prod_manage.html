@@ -15,19 +15,24 @@
   --fc-l:rgba(58,58,240,0.08);--fc-m:rgba(58,58,240,0.15);
   --re-l:rgba(212,32,32,0.07);--or-l:rgba(196,90,16,0.08);--bl-l:rgba(26,86,200,0.08);
   --amber-l:rgba(180,120,0,0.07);--amber:#a07800;
+  --fix-bg:#fff;
+  --header-bg:#b8c4d4;
 }
-html{min-width:1200px;height:100%;background:linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#eef0f8 100%) fixed;}
-body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx);padding:20px 24px 80px;}
-.tabs{display:flex;border-bottom:1px solid var(--glass-border-s)}
-.tab{padding:9px 18px;cursor:pointer;font-size:12.5px;color:var(--t3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;user-select:none;}
+html{min-width:1200px;height:100%;background:linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#eef0f8 100%) fixed;overflow:hidden;}
+body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx);padding:0;height:100%;display:flex;flex-direction:column;overflow:hidden;}
+
+.tabs{display:flex;border-bottom:1px solid var(--glass-border-s);padding:0 24px;flex-shrink:0;background:rgba(255,255,255,0.6);backdrop-filter:blur(12px)}
+.tab{padding:9px 18px;cursor:pointer;font-size:12.5px;color:var(--t3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;user-select:none}
 .tab:hover{color:var(--t2)}.tab.active{color:var(--green);font-weight:500;border-bottom-color:var(--green)}
-.tab-content{display:none}.tab-content.active{display:block;padding-top:20px}
-.pg-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.tab-content{display:none;flex:1;flex-direction:column;min-height:0}
+.tab-content.active{display:flex;flex-direction:column;min-height:0}
+.pg-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;padding-top:14px}
 .pg-title{font-size:16px;font-weight:700}.pg-desc{font-size:12px;color:var(--t3);margin-top:3px}
 .pg-actions{display:flex;gap:7px;align-items:center;flex-shrink:0}
-.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:7px;font-size:12px;cursor:pointer;font-family:inherit;border:none;transition:all .12s;}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:7px;font-size:12px;cursor:pointer;font-family:inherit;border:none;transition:all .12s}
 .btn-ghost{background:var(--glass-bg-strong);border:1px solid var(--glass-border-s);color:var(--t2)}.btn-ghost:hover{color:var(--tx)}
 .btn-dl{background:var(--fc-l);border:1px solid rgba(58,58,240,.2);color:var(--accent);font-weight:500}.btn-dl:hover{background:var(--fc-m)}
+
 .upload-section{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:12px;margin-bottom:14px;overflow:hidden}
 .upload-toggle{display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;user-select:none;transition:background .12s}
 .upload-toggle:hover{background:rgba(0,0,0,.02)}
@@ -49,80 +54,144 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
 .add-row-btn.cancel{border-color:rgba(212,32,32,.3);background:var(--re-l);color:var(--red)}
 
 /* ── TABLE CARD ── */
-.tbl-card{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:12px;overflow:hidden}
-.tbl-toolbar{padding:12px 16px;border-bottom:1px solid var(--glass-border-s);display:flex;flex-direction:column;gap:7px}
+/* overflow 절대 쓰지 않음 — sticky 작동의 핵심 */
+.tbl-card{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:12px}
+.sticky-header{
+  flex-shrink:0;
+  padding:0 24px;
+  background:linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#eef0f8 100%);
+  backdrop-filter:blur(12px);
+}
+/* sticky 블록 안에서 tbl-toolbar는 sticky 해제 — 부모가 이미 sticky */
+.sticky-header .tbl-toolbar{
+  position:static;backdrop-filter:none;
+  border-radius:0;border-top:0.5px solid var(--glass-border-s);
+}
+/* upload-section 하단 border-radius 제거 (toolbar와 붙음) */
+.sticky-header .upload-section{
+  border-radius:12px 12px 0 0;margin-bottom:0;border-bottom:none;
+}
+.tbl-card{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:0 0 12px 12px;flex:1;display:flex;flex-direction:column;overflow:hidden;margin:0 24px 16px}
 .toolbar-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 .search-box{width:240px;padding:6px 10px;border:1px solid var(--glass-border-s);border-radius:7px;font-size:12px;font-family:inherit;background:var(--glass-bg-strong);color:var(--tx);outline:none}
 .search-box:focus{border-color:var(--green);box-shadow:0 0 0 3px var(--ac-l)}
 .cnt{font-size:11.5px;color:var(--t3)}
 .filter-lbl{font-size:10px;font-weight:700;color:var(--t4);min-width:24px;letter-spacing:.04em;text-transform:uppercase}
 .fp{padding:3px 10px;border-radius:20px;font-size:11.5px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);color:var(--t2);cursor:pointer;user-select:none;transition:all .1s}
-.fp:hover{color:var(--tx)}.fp.on{background:var(--ac-l);border-color:rgba(26,138,74,.3);color:var(--green);font-weight:500}
+.fp:hover{color:var(--tx)}
+/* 전체/정렬 선택 — 그린 */
+.fp.on{background:var(--ac-l);border-color:rgba(26,138,74,.3);color:var(--green);font-weight:500}
 
-/* ── 틀고정: 좌측 고정 + 우측 스크롤 분리 레이어 ── */
-.tbl-wrap{display:flex;width:100%}
+/* 운영상태 — 기본 연한 색 */
+.fp[data-v="상시"]    {background:rgba(224,242,232,0.45);border-color:rgba(13,107,53,.15);color:#6aaa88}
+.fp[data-v="비운영"]  {background:rgba(235,235,235,0.45);border-color:rgba(100,100,100,.15);color:#aaa}
+.fp[data-v="단종예정"]{background:rgba(255,243,224,0.45);border-color:rgba(180,83,9,.15);color:#d49050}
+.fp[data-v="단종"]    {background:rgba(253,232,232,0.45);border-color:rgba(185,28,28,.15);color:#d47070}
+.fp[data-v="런칭예정"]{background:rgba(232,234,255,0.45);border-color:rgba(55,48,163,.15);color:#8080c8}
+/* 운영상태 — 선택 */
+.fp.on[data-v="상시"]    {background:#e0f2e8;border-color:#0d6b35;color:#0d6b35}
+.fp.on[data-v="비운영"]  {background:#ebebeb;border-color:#666;color:#555}
+.fp.on[data-v="단종예정"]{background:#fff3e0;border-color:#b45309;color:#b45309}
+.fp.on[data-v="단종"]    {background:#fde8e8;border-color:#b91c1c;color:#b91c1c}
+.fp.on[data-v="런칭예정"]{background:#e8eaff;border-color:#3730a3;color:#3730a3}
 
-/* 좌측 고정 패널 */
-.tbl-left{flex-shrink:0;border-right:2px solid rgba(0,0,0,0.08);z-index:1;background:var(--glass-bg)}
-.tbl-left table{border-collapse:collapse;font-size:12px;white-space:nowrap;width:100%}
+/* 유형 — 기본 연한 색 */
+.fp[data-v="상시운영"]   {background:rgba(26,138,74,.08);border-color:rgba(26,138,74,.2);color:#1a8a4a}
+.fp[data-v="슈퍼적립"]   {background:rgba(26,86,200,.08);border-color:rgba(26,86,200,.2);color:#1a56c8}
+.fp[data-v="행사운영"]   {background:rgba(196,90,16,.08);border-color:rgba(196,90,16,.2);color:#c45a10}
+.fp[data-v="행사제안불가"]{background:rgba(136,136,136,.08);border-color:rgba(136,136,136,.2);color:#888}
+/* 유형 — 선택 */
+.fp.on[data-v="상시운영"]   {background:#1a8a4a;border-color:#1a8a4a;color:#fff}
+.fp.on[data-v="슈퍼적립"]   {background:#1a56c8;border-color:#1a56c8;color:#fff}
+.fp.on[data-v="행사운영"]   {background:#c45a10;border-color:#c45a10;color:#fff}
+.fp.on[data-v="행사제안불가"]{background:#888;border-color:#888;color:#fff}
 
-/* 우측 스크롤 패널 */
-.tbl-right{flex:1;overflow-x:auto;min-width:0}
-.tbl-right table{border-collapse:collapse;font-size:12px;white-space:nowrap}
+/* 분류 — 기본 연한 색 */
+.fp[data-v="요거트"]{background:rgba(219,234,254,0.45);border-color:rgba(30,64,175,.15);color:#6090c8}
+.fp[data-v="마시는"]{background:rgba(224,242,254,0.45);border-color:rgba(7,89,133,.15);color:#5090b0}
+.fp[data-v="토핑"]  {background:rgba(252,231,243,0.45);border-color:rgba(157,23,77,.15);color:#c070a0}
+.fp[data-v="굿즈"]  {background:rgba(241,245,249,0.45);border-color:rgba(71,85,105,.15);color:#94a3b8}
+/* 분류 — 선택 */
+.fp.on[data-v="요거트"]{background:#dbeafe;border-color:#1e40af;color:#1e40af}
+.fp.on[data-v="마시는"]{background:#e0f2fe;border-color:#075985;color:#075985}
+.fp.on[data-v="토핑"]  {background:#fce7f3;border-color:#9d174d;color:#9d174d}
+.fp.on[data-v="굿즈"]  {background:#f1f5f9;border-color:#475569;color:#475569}
 
-/* 공통 th/td */
-.tbl-left thead th,.tbl-right thead th{
-  padding:8px 10px;text-align:left;font-size:10.5px;font-weight:600;color:var(--t3);
-  border-bottom:1px solid var(--glass-border-s);background:rgba(255,255,255,0.7);
-  white-space:nowrap;letter-spacing:.02em
+/* 스크롤 컨테이너: 테이블만 직접 감쌈 */
+.tbl-scroll{overflow-x:auto;overflow-y:auto;flex:1}
+
+/* ── TABLE ── */
+table{border-collapse:collapse;font-size:12px;white-space:nowrap;table-layout:fixed}
+thead th{
+  padding:8px 10px;text-align:left;font-size:10.5px;font-weight:600;color:#2a3040;
+  border-bottom:1px solid var(--glass-border-s);
+  background:var(--header-bg);
+  white-space:nowrap;letter-spacing:.02em;
+  position:sticky;top:0;z-index:4
 }
-.tbl-left thead th.r,.tbl-right thead th.r{text-align:right}
-.tbl-right thead th.c-act{text-align:center}
-.tbl-left tbody td,.tbl-right tbody td{
-  padding:7px 10px;border-bottom:1px solid rgba(0,0,0,.035);
-  font-size:12px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+thead th.r{text-align:right}
+thead th.c-act{text-align:center}
+tbody td{padding:7px 10px;border-bottom:1px solid rgba(0,0,0,.035);font-size:12px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+tbody td.r{text-align:right;font-variant-numeric:tabular-nums}
+tbody td.c-act{text-align:center}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:not(.new-row):not(.editing-row):hover td{background:rgba(0,0,0,.012)}
+/* pending */
+tr.is-pending td{background:rgba(180,120,0,.03)}
+tr.is-pending:hover td{background:rgba(180,120,0,.06)}
+/* edit/new */
+tr.editing-row td{background:rgba(26,138,74,.04);padding:5px 6px}
+tr.new-row td{background:rgba(58,58,240,.04);padding:5px 6px}
+
+/* ── 틀고정 sticky 컬럼 ── */
+/* 스크롤 컨테이너(.tbl-scroll)가 바로 부모 → sticky left 정상 작동 */
+th.fix,td.fix{
+  position:sticky;z-index:3;
+  background:var(--fix-bg)
 }
-.tbl-right tbody td.r{text-align:right;font-variant-numeric:tabular-nums}
-.tbl-right td.c-act{text-align:center}
-.tbl-left tbody tr:last-child td,.tbl-right tbody tr:last-child td{border-bottom:none}
-.tbl-left tbody tr:not(.new-row):not(.editing-row):hover td,
-.tbl-right tbody tr:not(.new-row):not(.editing-row):hover td{background:rgba(0,0,0,.012)}
-
-/* pending 행 */
-.tbl-left tr.is-pending td,.tbl-right tr.is-pending td{background:rgba(180,120,0,.03)}
-.tbl-left tr.is-pending:hover td,.tbl-right tr.is-pending:hover td{background:rgba(180,120,0,.06)}
-
-/* edit/new 행 */
-.tbl-left tr.editing-row td,.tbl-right tr.editing-row td{background:rgba(26,138,74,.04);padding:5px 6px}
-.tbl-left tr.new-row td,.tbl-right tr.new-row td{background:rgba(58,58,240,.04);padding:5px 6px}
-
-/* 우측 구분선 효과 — 좌측 패널 마지막 열 */
-.tbl-left thead th:last-child,.tbl-left tbody td:last-child{padding-right:14px}
+th.fix{z-index:5;background:var(--header-bg)}
+/* pending 행은 fix 셀 배경도 맞춤 */
+tr.is-pending th.fix,tr.is-pending td.fix{background:rgba(250,244,220,0.97)}
+tr.editing-row td.fix{background:rgba(232,248,238,0.97)}
+tr.new-row td.fix{background:rgba(232,236,254,0.97)}
+tr:not(.new-row):not(.editing-row):hover td.fix{background:rgba(243,244,248,0.97)}
+/* 마지막 fix 컬럼 우측에 구분선 */
+th.fix-last,td.fix-last{box-shadow:2px 0 6px -1px rgba(0,0,0,0.08)}
 
 /* ── BADGE ── */
 .badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:8px;font-weight:600;white-space:nowrap}
-.b-상시{background:var(--ac-l);color:var(--green)}.b-비운영{background:rgba(0,0,0,.05);color:var(--t3)}
-.b-단종예정{background:var(--or-l);color:var(--orange)}.b-런칭예정{background:var(--fc-l);color:var(--accent)}
-.b-단종{background:var(--re-l);color:var(--red)}.b-cat{background:var(--fc-l);color:var(--accent);font-size:9.5px}
-.b-상시운영{background:var(--ac-l);color:var(--green)}.b-슈퍼적립{background:var(--bl-l);color:var(--blue)}
-.b-행사운영{background:var(--or-l);color:var(--orange)}.b-행사제안불가{background:rgba(0,0,0,.05);color:var(--t3)}
+/* 운영상태 — 옵션 A */
+.b-상시    {background:#e0f2e8;color:#0d6b35}
+.b-비운영  {background:#ebebeb;color:#666}
+.b-단종예정{background:#fff3e0;color:#b45309}
+.b-런칭예정{background:#e8eaff;color:#3730a3}
+.b-단종    {background:#fde8e8;color:#b91c1c}
+/* 유형 — 옵션 B */
+.b-상시운영   {background:#1a8a4a;color:#fff}
+.b-슈퍼적립   {background:#1a56c8;color:#fff}
+.b-행사운영   {background:#c45a10;color:#fff}
+.b-행사제안불가{background:#888;color:#fff}
+/* 분류 — 옵션 A */
+.b-cat{font-size:9.5px}
+.b-cat-요거트{background:#dbeafe;color:#1e40af}
+.b-cat-마시는{background:#e0f2fe;color:#075985}
+.b-cat-토핑  {background:#fce7f3;color:#9d174d}
+.b-cat-굿즈  {background:#f1f5f9;color:#475569}
 .nick{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:18px;border-radius:4px;font-size:10px;font-weight:700;padding:0 5px;background:var(--bl-l);color:var(--blue)}
 .nick.off{background:rgba(0,0,0,.05);color:var(--t3)}
 .pending-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--amber);animation:pulse 1.5s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
-/* ── ICON BTN ── */
+/* ── ICON / EDIT ── */
 .icon-btn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;transition:all .1s;flex-shrink:0}
 .icon-btn:hover{border-color:rgba(26,138,74,.4);background:var(--ac-l)}.icon-btn:hover svg{stroke:var(--green)}
-.icon-btn svg{stroke:var(--t3);transition:stroke .1s}.icon-btn:disabled{opacity:.25;cursor:default;pointer-events:none}
-
-/* ── INLINE EDIT ── */
-.e-input{width:100%;padding:4px 7px;border:1px solid rgba(0,0,0,.12);border-radius:6px;font-size:12px;font-family:inherit;background:var(--glass-bg-strong);color:var(--tx);outline:none;transition:border .1s}
+.icon-btn svg{stroke:var(--t3);transition:stroke .1s;pointer-events:none}.icon-btn:disabled{opacity:.25;cursor:default;pointer-events:none}
+.e-input{width:100%;padding:4px 7px;border:1px solid rgba(0,0,0,.12);border-radius:6px;font-size:12px;font-family:inherit;background:#fff;color:var(--tx);outline:none;transition:border .1s}
 .e-input:focus{border-color:var(--green);box-shadow:0 0 0 2px var(--ac-l)}
 .e-input.r{text-align:right}
 .e-input::-webkit-outer-spin-button,.e-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .e-input[inputmode=numeric]{-moz-appearance:textfield}
-.e-select{width:100%;padding:4px 5px;border:1px solid rgba(0,0,0,.12);border-radius:6px;font-size:11.5px;font-family:inherit;background:var(--glass-bg-strong);color:var(--tx);outline:none;cursor:pointer}
+.e-select{width:100%;padding:4px 5px;border:1px solid rgba(0,0,0,.12);border-radius:6px;font-size:11.5px;font-family:inherit;background:#fff;color:var(--tx);outline:none;cursor:pointer}
 .e-select:focus{border-color:var(--green);box-shadow:0 0 0 2px var(--ac-l)}
 .e-actions{display:flex;gap:4px;justify-content:center}
 .btn-stage{padding:4px 9px;border-radius:6px;font-size:11px;font-weight:600;font-family:inherit;border:none;background:var(--green);color:#fff;cursor:pointer}.btn-stage:hover{background:#157a3e}
@@ -151,144 +220,141 @@ code{font-family:monospace;font-size:11px;background:rgba(0,0,0,.05);padding:1px
 
 <!-- 품목 탭 -->
 <div class="tab-content active" id="t-item">
-  <div class="pg-header">
-    <div><div class="pg-title">품목 관리</div><div class="pg-desc">Firebase <code>items</code> 컬렉션 · 변경 후 하단 Firebase 저장 버튼으로 반영</div></div>
-    <div class="pg-actions">
-      <a class="btn btn-dl" id="itemDlBtn" href="#"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v9M4 8l4 4 4-4"/><rect x="2" y="13" width="12" height="1" rx=".5"/></svg>업로드 양식</a>
-      <button class="btn btn-ghost" onclick="loadAll()">🔄 새로고침</button>
-    </div>
-  </div>
-  <div class="upload-section" id="itemUpSec">
-    <div class="upload-toggle" onclick="toggleUpload('item')">
-      <div class="toggle-arrow"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 6 8 10 12 6"/></svg></div>
-      <span class="toggle-title">업로드</span><span class="toggle-sub">Excel 일괄 · 직접 입력</span>
-      <span class="toggle-badge" id="itemUpBadge" style="display:none;background:var(--amber-l);color:var(--amber)"></span>
-    </div>
-    <div class="upload-body">
-      <div class="upload-bar" onclick="document.getElementById('itemFile').click()">
-        <div class="upload-bar-icon">📂</div>
-        <div class="upload-bar-main"><div class="upload-bar-title">Excel 파일로 일괄 등록</div><div class="upload-bar-sub">요즘_상품_품목_리스트.xlsx — item 시트</div></div>
-        <button class="upload-bar-btn" onclick="event.stopPropagation()">파일 선택</button>
-        <input type="file" id="itemFile" accept=".xlsx" style="display:none">
+  <div class="sticky-header">
+    <div class="pg-header" >
+      <div><div class="pg-title">품목 관리</div><div class="pg-desc">Firebase <code>items</code> 컬렉션 · 변경 후 하단 Firebase 저장 버튼으로 반영</div></div>
+      <div class="pg-actions">
+        <a class="btn btn-dl" id="itemDlBtn" href="#"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v9M4 8l4 4 4-4"/><rect x="2" y="13" width="12" height="1" rx=".5"/></svg>업로드 양식</a>
+        <button class="btn btn-ghost" onclick="loadAll()">🔄 새로고침</button>
       </div>
-      <button class="add-row-btn" id="itemAddBtn" onclick="toggleNewRow('item')">
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>직접 입력
-      </button>
     </div>
-  </div>
-  <div class="tbl-card">
-    <div class="tbl-toolbar">
+    <div class="upload-section" id="itemUpSec">
+      <div class="upload-toggle" onclick="toggleUpload('item')">
+        <div class="toggle-arrow"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 6 8 10 12 6"/></svg></div>
+        <span class="toggle-title">업로드</span><span class="toggle-sub">Excel 일괄 · 직접 입력</span>
+        <span class="toggle-badge" id="itemUpBadge" style="display:none;background:var(--amber-l);color:var(--amber)"></span>
+      </div>
+      <div class="upload-body">
+        <div class="upload-bar" onclick="document.getElementById('itemFile').click()">
+          <div class="upload-bar-icon">📂</div>
+          <div class="upload-bar-main"><div class="upload-bar-title">Excel 파일로 일괄 등록</div><div class="upload-bar-sub">요즘_상품_품목_리스트.xlsx — item 시트</div></div>
+          <button class="upload-bar-btn" onclick="event.stopPropagation()">파일 선택</button>
+          <input type="file" id="itemFile" accept=".xlsx" style="display:none">
+        </div>
+        <button class="add-row-btn" id="itemAddBtn" onclick="toggleNewRow('item')">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>직접 입력
+        </button>
+      </div>
+    </div>
+    <div class="tbl-toolbar" id="iToolbar">
       <div class="toolbar-row">
         <input class="search-box" placeholder="닉네임 · 코드 · 품목명 검색" oninput="renderItemTable(this.value)">
         <span class="cnt" id="itemCnt"></span>
         <span class="cnt" id="itemPendLbl" style="color:var(--amber);display:none"></span>
       </div>
-      <div class="toolbar-row"><span class="filter-lbl">상태</span><span class="fp on" onclick="setFp(this)">전체</span><span class="fp" onclick="setFp(this)">상시</span><span class="fp" onclick="setFp(this)">비운영</span><span class="fp" onclick="setFp(this)">단종예정</span><span class="fp" onclick="setFp(this)">단종</span></div>
-      <div class="toolbar-row"><span class="filter-lbl">분류</span><span class="fp on" onclick="setFp(this)">전체</span><span class="fp" onclick="setFp(this)">요거트</span><span class="fp" onclick="setFp(this)">마시는</span><span class="fp" onclick="setFp(this)">토핑</span><span class="fp" onclick="setFp(this)">굿즈</span></div>
+      <div class="toolbar-row"><span class="filter-lbl">상태</span><span class="fp on" onclick="setFp(this)">전체</span><span class="fp" onclick="setFp(this)" data-v="상시">상시</span><span class="fp" onclick="setFp(this)" data-v="비운영">비운영</span><span class="fp" onclick="setFp(this)" data-v="단종예정">단종예정</span><span class="fp" onclick="setFp(this)" data-v="런칭예정">런칭예정</span><span class="fp" onclick="setFp(this)" data-v="단종">단종</span></div>
+      <div class="toolbar-row"><span class="filter-lbl">분류</span><span class="fp on" onclick="setFp(this)">전체</span><span class="fp" onclick="setFp(this)" data-v="요거트">요거트</span><span class="fp" onclick="setFp(this)" data-v="마시는">마시는</span><span class="fp" onclick="setFp(this)" data-v="토핑">토핑</span><span class="fp" onclick="setFp(this)" data-v="굿즈">굿즈</span></div>
       <div class="toolbar-row"><span class="filter-lbl">정렬</span><span class="fp on" onclick="setFp(this)">No순</span><span class="fp" onclick="setFp(this)">상태순</span><span class="fp" onclick="setFp(this)">최신수정</span></div>
-    </div>
-    <!-- 분리 레이어 테이블 -->
-    <div class="tbl-wrap">
-      <!-- 고정 좌측: pend·No·코드·닉네임 -->
-      <div class="tbl-left">
-        <table id="iLeftTbl" style="width:236px">
-          <thead><tr>
-            <th style="width:24px"></th>
-            <th style="width:44px">No</th>
-            <th style="width:100px;color:var(--accent)">코드</th>
-            <th style="width:68px;color:var(--blue)">닉네임</th>
-          </tr></thead>
-          <tbody id="iLeftBody"><tr><td colspan="4" style="padding:28px;text-align:center;color:var(--t4);font-size:12px">⏳</td></tr></tbody>
-        </table>
-      </div>
-      <!-- 스크롤 우측: 나머지 컬럼 -->
-      <div class="tbl-right">
-        <table id="iRightTbl">
-          <thead><tr>
-            <th style="width:220px">품목명</th>
-            <th style="width:140px">스토어 별칭</th>
-            <th style="width:130px">분류</th>
-            <th style="width:88px;color:var(--green)">상태</th>
-            <th style="width:160px">메모</th>
-            <th style="width:88px">수정일</th>
-            <th style="width:52px" class="c-act"></th>
-          </tr></thead>
-          <tbody id="iRightBody"><tr><td colspan="7" style="padding:28px;text-align:center;color:var(--t4);font-size:12px">⏳ Firebase에서 불러오는 중...</td></tr></tbody>
-        </table>
-      </div>
+    </div><!-- /tbl-toolbar -->
+  </div><!-- /sticky-header -->
+  <div class="tbl-card">
+    <div class="tbl-scroll" id="iScroll">
+      <table style="width:930px">
+        <!-- items: fix 컬럼 left값 — pend:0, No:24, 품목코드:68, 닉네임:168 -->
+        <colgroup>
+          <col style="width:24px"><col style="width:44px"><col style="width:100px"><col style="width:68px">
+          <col style="width:200px"><col style="width:130px"><col style="width:88px">
+          <col style="width:150px"><col style="width:88px"><col style="width:92px">
+        </colgroup>
+        <thead><tr>
+          <th class="fix" style="left:0px"></th>
+          <th class="fix" style="left:24px">No</th>
+          <th class="fix" style="left:68px;">품목코드</th>
+          <th class="fix fix-last" style="left:168px;">닉네임</th>
+          <th>품목명</th>
+          <th>분류</th>
+          <th>운영상태</th>
+          <th>메모</th>
+          <th>수정일</th>
+          <th class="c-act" style="width:184px">수정</th>
+        </tr></thead>
+        <tbody id="itemTbody">
+          <tr><td colspan="11" style="padding:28px;text-align:center;color:var(--t4);font-size:12px">⏳ Firebase에서 불러오는 중...</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
 
 <!-- SKU 탭 -->
 <div class="tab-content" id="t-sku">
-  <div class="pg-header">
-    <div><div class="pg-title">SKU 관리</div><div class="pg-desc">Firebase <code>skus</code> 컬렉션 · 변경 후 하단 Firebase 저장 버튼으로 반영</div></div>
-    <div class="pg-actions">
-      <a class="btn btn-dl" id="skuDlBtn" href="#"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v9M4 8l4 4 4-4"/><rect x="2" y="13" width="12" height="1" rx=".5"/></svg>업로드 양식</a>
-      <button class="btn btn-ghost" onclick="loadAll()">🔄 새로고침</button>
-    </div>
-  </div>
-  <div class="upload-section" id="skuUpSec">
-    <div class="upload-toggle" onclick="toggleUpload('sku')">
-      <div class="toggle-arrow"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 6 8 10 12 6"/></svg></div>
-      <span class="toggle-title">업로드</span><span class="toggle-sub">Excel 일괄 · 직접 입력</span>
-      <span class="toggle-badge" id="skuUpBadge" style="display:none;background:var(--amber-l);color:var(--amber)"></span>
-    </div>
-    <div class="upload-body">
-      <div class="upload-bar" onclick="document.getElementById('skuFile').click()">
-        <div class="upload-bar-icon">📂</div>
-        <div class="upload-bar-main"><div class="upload-bar-title">Excel 파일로 일괄 등록</div><div class="upload-bar-sub">요즘_상품_품목_리스트.xlsx — sku 시트</div></div>
-        <button class="upload-bar-btn" onclick="event.stopPropagation()">파일 선택</button>
-        <input type="file" id="skuFile" accept=".xlsx" style="display:none">
+  <div class="sticky-header">
+    <div class="pg-header" >
+      <div><div class="pg-title">SKU 관리</div><div class="pg-desc">Firebase <code>skus</code> 컬렉션 · 변경 후 하단 Firebase 저장 버튼으로 반영</div></div>
+      <div class="pg-actions">
+        <a class="btn btn-dl" id="skuDlBtn" href="#"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v9M4 8l4 4 4-4"/><rect x="2" y="13" width="12" height="1" rx=".5"/></svg>업로드 양식</a>
+        <button class="btn btn-ghost" onclick="loadAll()">🔄 새로고침</button>
       </div>
-      <button class="add-row-btn" id="skuAddBtn" onclick="toggleNewRow('sku')">
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>직접 입력
-      </button>
     </div>
-  </div>
-  <div class="tbl-card">
-    <div class="tbl-toolbar">
+    <div class="upload-section" id="skuUpSec">
+      <div class="upload-toggle" onclick="toggleUpload('sku')">
+        <div class="toggle-arrow"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 6 8 10 12 6"/></svg></div>
+        <span class="toggle-title">업로드</span><span class="toggle-sub">Excel 일괄 · 직접 입력</span>
+        <span class="toggle-badge" id="skuUpBadge" style="display:none;background:var(--amber-l);color:var(--amber)"></span>
+      </div>
+      <div class="upload-body">
+        <div class="upload-bar" onclick="document.getElementById('skuFile').click()">
+          <div class="upload-bar-icon">📂</div>
+          <div class="upload-bar-main"><div class="upload-bar-title">Excel 파일로 일괄 등록</div><div class="upload-bar-sub">요즘_상품_품목_리스트.xlsx — sku 시트</div></div>
+          <button class="upload-bar-btn" onclick="event.stopPropagation()">파일 선택</button>
+          <input type="file" id="skuFile" accept=".xlsx" style="display:none">
+        </div>
+        <button class="add-row-btn" id="skuAddBtn" onclick="toggleNewRow('sku')">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="8" y1="2" x2="8" y2="14"/><line x1="2" y1="8" x2="14" y2="8"/></svg>직접 입력
+        </button>
+      </div>
+    </div>
+    <div class="tbl-toolbar" id="sToolbar">
       <div class="toolbar-row">
         <input class="search-box" placeholder="닉네임 · 상품코드 · 상품명 검색" oninput="renderSkuTable(this.value)">
         <span class="cnt" id="skuCnt"></span>
         <span class="cnt" id="skuPendLbl" style="color:var(--amber);display:none"></span>
       </div>
-      <div class="toolbar-row"><span class="filter-lbl">상태</span><span class="fp on" onclick="setFp(this)">전체</span><span class="fp" onclick="setFp(this)">상시</span><span class="fp" onclick="setFp(this)">단종예정</span><span class="fp" onclick="setFp(this)">런칭예정</span><span class="fp" onclick="setFp(this)">단종</span></div>
-      <div class="toolbar-row"><span class="filter-lbl">유형</span><span class="fp on" onclick="setFp(this)">전체</span><span class="fp" onclick="setFp(this)">상시운영</span><span class="fp" onclick="setFp(this)">슈퍼적립</span><span class="fp" onclick="setFp(this)">행사운영</span><span class="fp" onclick="setFp(this)">행사제안불가</span></div>
+      <div class="toolbar-row"><span class="filter-lbl">상태</span><span class="fp on" onclick="setFp(this)">전체</span><span class="fp" onclick="setFp(this)" data-v="상시">상시</span><span class="fp" onclick="setFp(this)" data-v="단종예정">단종예정</span><span class="fp" onclick="setFp(this)" data-v="런칭예정">런칭예정</span><span class="fp" onclick="setFp(this)" data-v="단종">단종</span></div>
+      <div class="toolbar-row"><span class="filter-lbl">유형</span><span class="fp on" onclick="setFp(this)">전체</span><span class="fp" onclick="setFp(this)" data-v="상시운영">상시운영</span><span class="fp" onclick="setFp(this)" data-v="슈퍼적립">슈퍼적립</span><span class="fp" onclick="setFp(this)" data-v="행사운영">행사운영</span><span class="fp" onclick="setFp(this)" data-v="행사제안불가">행사제안불가</span></div>
       <div class="toolbar-row"><span class="filter-lbl">정렬</span><span class="fp on" onclick="setFp(this)">No순</span><span class="fp" onclick="setFp(this)">유형순</span><span class="fp" onclick="setFp(this)">상태순</span><span class="fp" onclick="setFp(this)">최신수정</span></div>
-    </div>
-    <div class="tbl-wrap">
-      <!-- 고정 좌측: pend·No·상품코드·닉네임 -->
-      <div class="tbl-left">
-        <table id="sLeftTbl" style="width:260px">
-          <thead><tr>
-            <th style="width:24px"></th>
-            <th style="width:44px">No</th>
-            <th style="width:124px;color:var(--accent)">상품코드</th>
-            <th style="width:68px;color:var(--blue)">닉네임</th>
-          </tr></thead>
-          <tbody id="sLeftBody"><tr><td colspan="4" style="padding:28px;text-align:center;color:var(--t4);font-size:12px">⏳</td></tr></tbody>
-        </table>
-      </div>
-      <!-- 스크롤 우측 -->
-      <div class="tbl-right">
-        <table id="sRightTbl">
-          <thead><tr>
-            <th style="width:200px">상품명</th>
-            <th style="width:110px">유형</th>
-            <th style="width:88px;color:var(--green)">상태</th>
-            <th style="width:82px" class="r">정상가</th>
-            <th style="width:82px" class="r">할인가</th>
-            <th style="width:82px" class="r">최대할인가</th>
-            <th style="width:90px">배송</th>
-            <th style="width:140px">메모</th>
-            <th style="width:88px">수정일</th>
-            <th style="width:52px" class="c-act"></th>
-          </tr></thead>
-          <tbody id="sRightBody"><tr><td colspan="10" style="padding:28px;text-align:center;color:var(--t4);font-size:12px">⏳ Firebase에서 불러오는 중...</td></tr></tbody>
-        </table>
-      </div>
+    </div><!-- /tbl-toolbar -->
+  </div><!-- /sticky-header -->
+  <div class="tbl-card">
+    <div class="tbl-scroll" id="sScroll">
+      <table style="width:1480px">
+        <!-- skus: fix 컬럼 left값 — pend:0, No:24, 네이버상품코드:68, 닉네임:192 -->
+        <colgroup>
+          <col style="width:24px"><col style="width:44px"><col style="width:124px"><col style="width:100px">
+          <col style="width:360px"><col style="width:110px"><col style="width:88px">
+          <col style="width:82px"><col style="width:82px"><col style="width:82px">
+          <col style="width:100px"><col style="width:140px"><col style="width:88px"><col style="width:92px">
+        </colgroup>
+        <thead><tr>
+          <th class="fix" style="left:0px"></th>
+          <th class="fix" style="left:24px">No</th>
+          <th class="fix" style="left:68px;">네이버 상품코드</th>
+          <th class="fix fix-last" style="left:192px;">닉네임</th>
+          <th>상품명</th>
+          <th>유형</th>
+          <th>운영상태</th>
+          <th class="r">정상가</th>
+          <th class="r">상시할인가</th>
+          <th class="r">최대할인가</th>
+          <th>배송조건</th>
+          <th>메모</th>
+          <th>수정일</th>
+          <th class="c-act" style="width:184px">수정</th>
+        </tr></thead>
+        <tbody id="skuTbody">
+          <tr><td colspan="14" style="padding:28px;text-align:center;color:var(--t4);font-size:12px">⏳ Firebase에서 불러오는 중...</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -317,32 +383,57 @@ function sw(id,el){
   if(id==='item')renderItemTable();if(id==='sku')renderSkuTable();
 }
 function toggleUpload(tab){document.getElementById(tab+'UpSec').classList.toggle('open');}
-function setFp(el){el.closest('.toolbar-row').querySelectorAll('.fp').forEach(f=>f.classList.remove('on'));el.classList.add('on');}
-function copyTxt(el,txt){navigator.clipboard.writeText(txt).then(()=>{el.style.background='rgba(58,58,240,.1)';el.style.borderRadius='3px';setTimeout(()=>{el.style.background='';el.style.borderRadius='';},500);}).catch(()=>{});}
+const IF={status:'전체',cat:'전체',sort:'No순'};
+const SF={status:'전체',type:'전체',sort:'No순'};
+
+function setFp(el){
+  el.closest('.toolbar-row').querySelectorAll('.fp').forEach(f=>f.classList.remove('on'));
+  el.classList.add('on');
+  const lbl=el.closest('.toolbar-row').querySelector('.filter-lbl')?.textContent;
+  const val=el.textContent;
+  const inItem=el.closest('#t-item');
+  if(inItem){
+    if(lbl==='상태') IF.status=val;
+    else if(lbl==='분류') IF.cat=val;
+    else if(lbl==='정렬') IF.sort=val;
+    renderItemTable(document.querySelector('#t-item .search-box')?.value);
+  } else {
+    if(lbl==='상태') SF.status=val;
+    else if(lbl==='유형') SF.type=val;
+    else if(lbl==='정렬') SF.sort=val;
+    renderSkuTable(document.querySelector('#t-sku .search-box')?.value);
+  }
+}
+function toast(msg,type){
+  let t=document.getElementById('_toast');
+  if(!t){t=document.createElement('div');t.id='_toast';
+    t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);padding:7px 16px;border-radius:20px;font-size:12px;font-weight:500;z-index:9999;pointer-events:none;transition:opacity .2s;white-space:nowrap';
+    document.body.appendChild(t);}
+  t.style.background=type==='err'?'rgba(212,32,32,.9)':'rgba(30,30,40,.82)';
+  t.style.color='#fff';t.style.opacity='1';t.textContent=msg;
+  clearTimeout(t._tid);t._tid=setTimeout(()=>t.style.opacity='0',1600);
+}
+window.copyToClip=function(text,el){
+  if(text==null||text==='')return;
+  navigator.clipboard.writeText(String(text)).then(()=>{
+    if(el){const o=el.style.background;el.style.background='rgba(152,152,168,.18)';setTimeout(()=>el.style.background=o,600);}
+    toast('복사됨: '+String(text).substring(0,25));
+  }).catch(()=>toast('복사 실패','err'));
+};
 function fmtP(v){return(v!=null&&v!=='')?(+v).toLocaleString()+'원':'<span style="color:var(--t4)">—</span>';}
 function dot(p){return p?'<span class="pending-dot" title="저장 대기 중"></span>':'';}
 function nextNo(arr){return arr.reduce((m,x)=>Math.max(m,Number(x.no)||0),0)+1;}
 function toNum(id){const v=document.getElementById(id)?.value.replace(/,/g,'');return v?Number(v):null;}
 function sel(opts,cur){return opts.map(o=>`<option${cur===o?' selected':''}>${o}</option>`).join('');}
+function dash(v){return v||'<span style="color:var(--t4)">—</span>';}
 
-/* 행 높이 동기화 — 좌우 tbody 행 높이를 맞춤 */
-function syncRowHeights(leftId,rightId){
-  const lRows=document.getElementById(leftId).querySelectorAll('tr');
-  const rRows=document.getElementById(rightId).querySelectorAll('tr');
-  const n=Math.min(lRows.length,rRows.length);
-  for(let i=0;i<n;i++){
-    lRows[i].style.height='';rRows[i].style.height='';
-    const h=Math.max(lRows[i].offsetHeight,rRows[i].offsetHeight);
-    lRows[i].style.height=h+'px';rRows[i].style.height=h+'px';
-  }
-}
-
-/* ── pending bar ── */
+/* pending bar */
 function updatePendBar(){
   const n=[...ITEMS,...SKUS].filter(x=>x.pending).length;
   const iN=ITEMS.filter(x=>x.pending).length,sN=SKUS.filter(x=>x.pending).length;
   document.getElementById('fbPendCount').textContent=n;
-  document.getElementById('fbBadge').textContent=n;
+  const badge=document.getElementById('fbBadge');
+  if(badge) badge.textContent=n;
   document.getElementById('fbSaveBar').classList[n>0?'add':'remove']('show');
   const iB=document.getElementById('itemUpBadge'),sB=document.getElementById('skuUpBadge');
   const iL=document.getElementById('itemPendLbl'),sL=document.getElementById('skuPendLbl');
@@ -365,9 +456,10 @@ async function saveToFirebase(){
       ...pS.map(sk=>window.fsSetDoc(window.fsDoc(window.db,'skus',sk.code),
         {code:sk.code,no:sk.no,nick:sk.nick,name:sk.name,type:sk.type,status:sk.status,
          priceNormal:sk.priceNormal||null,priceDisc:sk.priceDisc||null,priceMax:sk.priceMax||null,
-         ship:sk.ship||null,memo:sk.memo||null,updatedAt:new Date().toISOString()},{merge:true}))
+         ship:sk.ship||null,memo:sk.memo||null,updatedAt:new Date().toISOString()},{merge:true})
+        .then(()=>{ if(sk._oldCode) return window.fsDeleteDoc(window.fsDoc(window.db,'skus',sk._oldCode)); }))
     ]);
-    [...pI,...pS].forEach(x=>{x.pending=false;delete x._isNew;});
+    [...pI,...pS].forEach(x=>{x.pending=false;delete x._isNew;delete x._oldCode;});
     renderItemTable();renderSkuTable();
   }catch(e){alert('저장 실패: '+e.message);}
   btn.disabled=false;
@@ -380,7 +472,7 @@ function discardAll(){
   itemEditCode=null;skuEditCode=null;renderItemTable();renderSkuTable();
 }
 
-/* ════════ ITEMS ════════ */
+/* ════ ITEMS ════ */
 let itemNewOpen=false,itemEditCode=null;
 
 function toggleNewRow(tab){
@@ -388,13 +480,13 @@ function toggleNewRow(tab){
     itemNewOpen=!itemNewOpen;
     const btn=document.getElementById('itemAddBtn');
     btn.classList.toggle('cancel',itemNewOpen);
-    btn.innerHTML=(itemNewOpen?ICO_X+' 취소':ICO_PLUS+' 직접 입력');
+    btn.innerHTML=itemNewOpen?ICO_X+' 취소':ICO_PLUS+' 직접 입력';
     renderItemTable();if(itemNewOpen)setTimeout(()=>document.getElementById('ni-code')?.focus(),50);
   }else{
     skuNewOpen=!skuNewOpen;
     const btn=document.getElementById('skuAddBtn');
     btn.classList.toggle('cancel',skuNewOpen);
-    btn.innerHTML=(skuNewOpen?ICO_X+' 취소':ICO_PLUS+' 직접 입력');
+    btn.innerHTML=skuNewOpen?ICO_X+' 취소':ICO_PLUS+' 직접 입력';
     renderSkuTable();if(skuNewOpen)setTimeout(()=>document.getElementById('ns-code')?.focus(),50);
   }
 }
@@ -403,17 +495,13 @@ function stageItemNew(){
   const code=document.getElementById('ni-code').value.trim();
   const nick=document.getElementById('ni-nick').value.trim();
   const name=document.getElementById('ni-name').value.trim();
-  if(!code||!nick||!name){alert('코드 · 닉네임 · 품목명은 필수입니다.');return;}
+  if(!code||!nick||!name){alert('품목코드 · 닉네임 · 품목명은 필수입니다.');return;}
   if(ITEMS.find(x=>x.code===code)){alert('이미 존재하는 코드: '+code);return;}
-  ITEMS.push({
-    no:Number(document.getElementById('ni-no').value)||nextNo(ITEMS),
-    code,nick,name,alias:document.getElementById('ni-alias').value,
+  ITEMS.push({no:Number(document.getElementById('ni-no').value)||nextNo(ITEMS),code,nick,name,
     category:document.getElementById('ni-cat').value,status:document.getElementById('ni-status').value||'상시',
-    memo:document.getElementById('ni-memo').value,updatedAt:new Date().toISOString().slice(0,10),pending:true,_isNew:true
-  });
+    memo:document.getElementById('ni-memo').value,updatedAt:new Date().toISOString().slice(0,10),pending:true,_isNew:true});
   itemNewOpen=false;
-  document.getElementById('itemAddBtn').classList.remove('cancel');
-  document.getElementById('itemAddBtn').innerHTML=ICO_PLUS+' 직접 입력';
+  const btn=document.getElementById('itemAddBtn');btn.classList.remove('cancel');btn.innerHTML=ICO_PLUS+' 직접 입력';
   renderItemTable();updatePendBar();
 }
 function startItemEdit(code){itemEditCode=code;renderItemTable();}
@@ -423,7 +511,6 @@ function stageItemEdit(code){
   it.no=Number(document.getElementById('ei-no').value)||it.no;
   it.nick=document.getElementById('ei-nick').value||it.nick;
   it.name=document.getElementById('ei-name').value||it.name;
-  it.alias=document.getElementById('ei-alias').value;
   it.category=document.getElementById('ei-cat').value;
   it.status=document.getElementById('ei-status').value;
   it.memo=document.getElementById('ei-memo').value;
@@ -432,72 +519,69 @@ function stageItemEdit(code){
 
 function renderItemTable(q){
   q=(q||'').toLowerCase();
-  const rows=ITEMS.filter(x=>!q||(x.code+x.nick+x.name).toLowerCase().includes(q));
+  const CAT_MAP={'요거트':'그릭요거트 본품','마시는':'마시는 그릭요거트','토핑':'토핑','굿즈':'굿즈/기타'};
+  let rows=ITEMS.filter(x=>{
+    if(q&&!(x.code+x.nick+x.name).toLowerCase().includes(q)) return false;
+    if(IF.status!=='전체'&&x.status!==IF.status) return false;
+    if(IF.cat!=='전체'&&x.category!==(CAT_MAP[IF.cat]||IF.cat)) return false;
+    return true;
+  });
+  if(IF.sort==='No순') rows.sort((a,b)=>(Number(a.no)||99)-(Number(b.no)||99));
+  else if(IF.sort==='상태순') rows.sort((a,b)=>(a.status||'').localeCompare(b.status||''));
+  else if(IF.sort==='최신수정') rows.sort((a,b)=>new Date(b.updatedAt||0)-new Date(a.updatedAt||0));
   document.getElementById('itemCnt').textContent=rows.length+'개';
-  let lHtml='',rHtml='';
-
+  let html='';
+  /* fix 컬럼 left: pend=0, No=24, 코드=68, 닉네임=168 */
   if(itemNewOpen){
-    lHtml+=`<tr class="new-row">
-      <td style="width:24px"></td>
-      <td style="width:44px"><input class="e-input" id="ni-no" inputmode="numeric" value="${nextNo(ITEMS)}" style="width:36px;text-align:center"></td>
-      <td style="width:100px"><input class="e-input" id="ni-code" placeholder="Y-P-00" style="font-family:monospace;font-size:11.5px"></td>
-      <td style="width:68px"><input class="e-input" id="ni-nick" placeholder="플" style="text-align:center"></td>
-    </tr>`;
-    rHtml+=`<tr class="new-row">
+    html+=`<tr class="new-row">
+      <td class="fix" style="left:0px"></td>
+      <td class="fix" style="left:24px"><input class="e-input" id="ni-no" inputmode="numeric" value="${nextNo(ITEMS)}" style="width:36px;text-align:center"></td>
+      <td class="fix" style="left:68px"><input class="e-input" id="ni-code" placeholder="Y-P-00" style="font-family:monospace"></td>
+      <td class="fix fix-last" style="left:168px"><input class="e-input" id="ni-nick" placeholder="플" style="text-align:center"></td>
       <td><input class="e-input" id="ni-name" placeholder="플레인 그릭요거트 100g"></td>
-      <td><input class="e-input" id="ni-alias" placeholder="플레인 100g"></td>
       <td><select class="e-select" id="ni-cat"><option value="">선택</option><option>그릭요거트 본품</option><option>마시는 그릭요거트</option><option>토핑</option><option>굿즈/기타</option></select></td>
-      <td><select class="e-select" id="ni-status"><option>상시</option><option>비운영</option><option>단종예정</option><option>단종</option></select></td>
-      <td><input class="e-input" id="ni-memo" placeholder="메모"></td>
+      <td><select class="e-select" id="ni-status"><option>상시</option><option>비운영</option><option>단종예정</option><option>런칭예정</option><option>단종</option></select></td>
+      <td><input class="e-input" id="ni-memo" placeholder="메모 (선택)"></td>
       <td style="color:var(--t4);font-size:11px">—</td>
-      <td><div class="e-actions"><button class="btn-stage" onclick="stageItemNew()">추가</button><button class="btn-cancel" onclick="toggleNewRow('item')">✕</button></div></td>
+      <td class="c-act"><div class="e-actions"><button class="btn-stage" onclick="stageItemNew()"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 9 6 13 14 3"/></svg></button><button class="btn-cancel" onclick="toggleNewRow('item')">✕</button></div></td>
     </tr>`;
   }
-
   rows.forEach(it=>{
     const isOff=it.status==='비운영'||it.status==='단종';
     const pCls=it.pending?' is-pending':'';
     if(itemEditCode===it.code){
-      lHtml+=`<tr class="editing-row${pCls}">
-        <td style="width:24px">${dot(it.pending)}</td>
-        <td><input class="e-input" id="ei-no" inputmode="numeric" value="${it.no}" style="width:36px;text-align:center"></td>
-        <td style="font-family:monospace;font-size:11px;font-weight:600;color:var(--accent)">${it.code}</td>
-        <td><input class="e-input" id="ei-nick" value="${it.nick}" style="text-align:center"></td>
-      </tr>`;
-      rHtml+=`<tr class="editing-row${pCls}">
+      html+=`<tr class="editing-row${pCls}">
+        <td class="fix" style="left:0px">${dot(it.pending)}</td>
+        <td class="fix" style="left:24px"><input class="e-input" id="ei-no" inputmode="numeric" value="${it.no}" style="width:36px;text-align:center"></td>
+        <td class="fix" style="left:68px;font-family:monospace;font-size:11px;font-weight:600;color:var(--accent)">${it.code}</td>
+        <td class="fix fix-last" style="left:168px"><input class="e-input" id="ei-nick" value="${it.nick}" style="text-align:center"></td>
         <td><input class="e-input" id="ei-name" value="${it.name}"></td>
-        <td><input class="e-input" id="ei-alias" value="${it.alias}" placeholder="—"></td>
         <td><select class="e-select" id="ei-cat">${sel(['그릭요거트 본품','마시는 그릭요거트','토핑','굿즈/기타'],it.category)}</select></td>
-        <td><select class="e-select" id="ei-status">${sel(['상시','비운영','단종예정','단종'],it.status)}</select></td>
+        <td><select class="e-select" id="ei-status">${sel(['상시','비운영','단종예정','런칭예정','단종'],it.status)}</select></td>
         <td><input class="e-input" id="ei-memo" value="${it.memo||''}" placeholder="—"></td>
-        <td style="font-size:11px;color:var(--t4)">${it.updatedAt||''}</td>
-        <td><div class="e-actions"><button class="btn-stage" onclick="stageItemEdit('${it.code}')">확인</button><button class="btn-cancel" onclick="cancelItemEdit()">✕</button></div></td>
+        <td style="font-size:11px;color:var(--t4)">${(it.updatedAt||'').slice(0,10)}</td>
+        <td class="c-act"><div class="e-actions"><button class="btn-stage" onclick="stageItemEdit('${it.code}')"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 9 6 13 14 3"/></svg></button><button class="btn-cancel" onclick="cancelItemEdit()">✕</button></div></td>
       </tr>`;
     }else{
-      lHtml+=`<tr class="${pCls}">
-        <td style="width:24px;text-align:center;padding:7px 4px">${dot(it.pending)}</td>
-        <td style="color:var(--t3);font-size:11px">${it.no}</td>
-        <td><span class="code-val" onclick="copyTxt(this,'${it.code}')" title="클릭 복사">${it.code}</span></td>
-        <td><span class="nick${isOff?' off':''}">${it.nick}</span></td>
-      </tr>`;
-      rHtml+=`<tr class="${pCls}">
-        <td style="color:var(--tx);font-weight:500">${it.name}</td>
-        <td style="color:var(--t2)">${it.alias||'<span style="color:var(--t4)">—</span>'}</td>
-        <td><span class="badge b-cat">${it.category||'—'}</span></td>
-        <td><span class="badge b-${it.status}">${it.status}</span></td>
-        <td style="color:var(--t3)">${it.memo||'<span style="color:var(--t4)">—</span>'}</td>
-        <td style="color:var(--t4);font-size:11px">${it.updatedAt||''}</td>
-        <td style="text-align:center"><button class="icon-btn" onclick="startItemEdit('${it.code}')" title="수정" ${itemEditCode?'disabled':''}>${ICO_EDIT}</button></td>
+      html+=`<tr class="${pCls}">
+        <td class="fix" style="left:0px;text-align:center;padding:7px 4px">${dot(it.pending)}</td>
+        <td class="fix" style="left:24px;color:var(--t3);font-size:11px;cursor:pointer" onclick="copyToClip('${it.no}',this)">${it.no}</td>
+        <td class="fix" style="left:68px;cursor:pointer" onclick="copyToClip('${it.code}',this)"><span class="code-val">${it.code}</span></td>
+        <td class="fix fix-last" style="left:168px;cursor:pointer" onclick="copyToClip('${it.nick}',this)"><span class="nick${isOff?' off':''}">${it.nick}</span></td>
+        <td style="font-weight:500;color:var(--tx);cursor:pointer" onclick="copyToClip('${it.name}',this)">${it.name}</td>
+        <td style="cursor:pointer" onclick="copyToClip('${it.category||''}',this)"><span class="badge b-cat ${it.category==='그릭요거트 본품'?'b-cat-요거트':it.category==='마시는 그릭요거트'?'b-cat-마시는':it.category==='토핑'?'b-cat-토핑':'b-cat-굿즈'}">${it.category||'—'}</span></td>
+        <td style="cursor:pointer" onclick="copyToClip('${it.status}',this)"><span class="badge b-${it.status}">${it.status}</span></td>
+        <td style="color:var(--t3);cursor:pointer" onclick="copyToClip('${(it.memo||'').replace(/'/g,"\\'")}',this)">${dash(it.memo)}</td>
+        <td style="color:var(--t4);font-size:11px;cursor:pointer" onclick="copyToClip('${(it.updatedAt||'').slice(0,10)}',this)">${(it.updatedAt||'').slice(0,10)}</td>
+        <td class="c-act"><button class="icon-btn" onclick="startItemEdit('${it.code}')" title="수정" ${itemEditCode?'disabled':''}>${ICO_EDIT}</button></td>
       </tr>`;
     }
   });
-  document.getElementById('iLeftBody').innerHTML=lHtml||'<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--t4)">데이터 없음</td></tr>';
-  document.getElementById('iRightBody').innerHTML=rHtml||'<tr><td colspan="7" style="padding:20px;text-align:center;color:var(--t4)">데이터 없음</td></tr>';
-  setTimeout(()=>syncRowHeights('iLeftBody','iRightBody'),0);
+  document.getElementById('itemTbody').innerHTML=html||'<tr><td colspan="11" style="padding:20px;text-align:center;color:var(--t4)">데이터 없음</td></tr>';
   updatePendBar();
 }
 
-/* ════════ SKUS ════════ */
+/* ════ SKUS ════ */
 let skuNewOpen=false,skuEditCode=null;
 
 function stageSkuNew(){
@@ -506,23 +590,25 @@ function stageSkuNew(){
   const name=document.getElementById('ns-name').value.trim();
   if(!code||!nick||!name){alert('상품코드 · 닉네임 · 상품명은 필수입니다.');return;}
   if(SKUS.find(x=>x.code===code)){alert('이미 존재하는 코드: '+code);return;}
-  SKUS.push({
-    no:Number(document.getElementById('ns-no').value)||nextNo(SKUS),
-    code,nick,name,type:document.getElementById('ns-type').value||'상시운영',
-    status:document.getElementById('ns-status').value||'상시',
+  SKUS.push({no:Number(document.getElementById('ns-no').value)||nextNo(SKUS),code,nick,name,
+    type:document.getElementById('ns-type').value||'상시운영',status:document.getElementById('ns-status').value||'상시',
     priceNormal:toNum('ns-pn'),priceDisc:toNum('ns-pd'),priceMax:toNum('ns-pm'),
     ship:document.getElementById('ns-ship').value,memo:document.getElementById('ns-memo').value,
-    updatedAt:new Date().toISOString().slice(0,10),pending:true,_isNew:true
-  });
+    updatedAt:new Date().toISOString().slice(0,10),pending:true,_isNew:true});
   skuNewOpen=false;
-  document.getElementById('skuAddBtn').classList.remove('cancel');
-  document.getElementById('skuAddBtn').innerHTML=ICO_PLUS+' 직접 입력';
+  const btn=document.getElementById('skuAddBtn');btn.classList.remove('cancel');btn.innerHTML=ICO_PLUS+' 직접 입력';
   renderSkuTable();updatePendBar();
 }
 function startSkuEdit(code){skuEditCode=code;renderSkuTable();}
 function cancelSkuEdit(){skuEditCode=null;renderSkuTable();}
 function stageSkuEdit(code){
   const sk=SKUS.find(x=>x.code===code);if(!sk)return;
+  const newCode=document.getElementById('es-code').value.trim();
+  if(!newCode){alert('상품코드는 필수입니다.');return;}
+  if(newCode!==code&&SKUS.find(x=>x.code===newCode)){alert('이미 존재하는 코드: '+newCode);return;}
+  // 코드 변경 시 _oldCode 기록 (Firebase 저장 시 구 문서 삭제에 사용)
+  if(newCode!==code) sk._oldCode=code;
+  sk.code=newCode;
   sk.no=Number(document.getElementById('es-no').value)||sk.no;
   sk.nick=document.getElementById('es-nick').value||sk.nick;
   sk.name=document.getElementById('es-name').value||sk.name;
@@ -536,18 +622,25 @@ function stageSkuEdit(code){
 
 function renderSkuTable(q){
   q=(q||'').toLowerCase();
-  const rows=SKUS.filter(x=>!q||(x.code+x.nick+x.name).toLowerCase().includes(q));
+  let rows=SKUS.filter(x=>{
+    if(q&&!(x.code+x.nick+x.name).toLowerCase().includes(q)) return false;
+    if(SF.status!=='전체'&&x.status!==SF.status) return false;
+    if(SF.type!=='전체'&&x.type!==SF.type) return false;
+    return true;
+  });
+  if(SF.sort==='No순') rows.sort((a,b)=>(Number(a.no)||99)-(Number(b.no)||99));
+  else if(SF.sort==='유형순') rows.sort((a,b)=>(a.type||'').localeCompare(b.type||''));
+  else if(SF.sort==='상태순') rows.sort((a,b)=>(a.status||'').localeCompare(b.status||''));
+  else if(SF.sort==='최신수정') rows.sort((a,b)=>new Date(b.updatedAt||0)-new Date(a.updatedAt||0));
   document.getElementById('skuCnt').textContent=rows.length+'개';
-  let lHtml='',rHtml='';
-
+  let html='';
+  /* fix 컬럼 left: pend=0, No=24, 상품코드=68, 닉네임=192 */
   if(skuNewOpen){
-    lHtml+=`<tr class="new-row">
-      <td style="width:24px"></td>
-      <td style="width:44px"><input class="e-input" id="ns-no" inputmode="numeric" value="${nextNo(SKUS)}" style="width:36px;text-align:center"></td>
-      <td style="width:124px"><input class="e-input" id="ns-code" inputmode="numeric" placeholder="12345678901" style="font-family:monospace;font-size:11.5px"></td>
-      <td style="width:68px"><input class="e-input" id="ns-nick" placeholder="플3+소3" style="text-align:center"></td>
-    </tr>`;
-    rHtml+=`<tr class="new-row">
+    html+=`<tr class="new-row">
+      <td class="fix" style="left:0px"></td>
+      <td class="fix" style="left:24px"><input class="e-input" id="ns-no" inputmode="numeric" value="${nextNo(SKUS)}" style="width:36px;text-align:center"></td>
+      <td class="fix" style="left:68px"><input class="e-input" id="ns-code" inputmode="numeric" placeholder="12345678901" style="font-family:monospace"></td>
+      <td class="fix fix-last" style="left:192px"><input class="e-input" id="ns-nick" placeholder="플3+소3" style="text-align:center"></td>
       <td><input class="e-input" id="ns-name" placeholder="플레인3+소프트3"></td>
       <td><select class="e-select" id="ns-type"><option>상시운영</option><option>슈퍼적립</option><option>행사운영</option><option>행사제안불가</option></select></td>
       <td><select class="e-select" id="ns-status"><option>상시</option><option>단종예정</option><option>런칭예정</option><option>단종</option><option>비운영</option></select></td>
@@ -555,23 +648,20 @@ function renderSkuTable(q){
       <td><input class="e-input r" id="ns-pd" inputmode="numeric" placeholder="20500"></td>
       <td><input class="e-input r" id="ns-pm" inputmode="numeric" placeholder="19500"></td>
       <td><select class="e-select" id="ns-ship"><option value="">—</option><option>무료</option><option>조건부무료</option></select></td>
-      <td><input class="e-input" id="ns-memo" placeholder="메모"></td>
+      <td><input class="e-input" id="ns-memo" placeholder="메모 (선택)"></td>
       <td style="color:var(--t4);font-size:11px">—</td>
-      <td><div class="e-actions"><button class="btn-stage" onclick="stageSkuNew()">추가</button><button class="btn-cancel" onclick="toggleNewRow('sku')">✕</button></div></td>
+      <td class="c-act"><div class="e-actions"><button class="btn-stage" onclick="stageSkuNew()"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 9 6 13 14 3"/></svg></button><button class="btn-cancel" onclick="toggleNewRow('sku')">✕</button></div></td>
     </tr>`;
   }
-
   rows.forEach(sk=>{
     const isOff=sk.status==='비운영'||sk.status==='단종';
     const pCls=sk.pending?' is-pending':'';
     if(skuEditCode===sk.code){
-      lHtml+=`<tr class="editing-row${pCls}">
-        <td style="width:24px">${dot(sk.pending)}</td>
-        <td><input class="e-input" id="es-no" inputmode="numeric" value="${sk.no}" style="width:36px;text-align:center"></td>
-        <td style="font-family:monospace;font-size:11px;font-weight:600;color:var(--accent)">${sk.code}</td>
-        <td><input class="e-input" id="es-nick" value="${sk.nick}" style="text-align:center"></td>
-      </tr>`;
-      rHtml+=`<tr class="editing-row${pCls}">
+      html+=`<tr class="editing-row${pCls}">
+        <td class="fix" style="left:0px">${dot(sk.pending)}</td>
+        <td class="fix" style="left:24px"><input class="e-input" id="es-no" inputmode="numeric" value="${sk.no}" style="width:36px;text-align:center"></td>
+        <td class="fix" style="left:68px"><input class="e-input" id="es-code" inputmode="numeric" value="${sk.code}" style="font-family:monospace;font-size:11.5px"></td>
+        <td class="fix fix-last" style="left:192px"><input class="e-input" id="es-nick" value="${sk.nick}" style="text-align:center"></td>
         <td><input class="e-input" id="es-name" value="${sk.name}"></td>
         <td><select class="e-select" id="es-type">${sel(['상시운영','슈퍼적립','행사운영','행사제안불가'],sk.type)}</select></td>
         <td><select class="e-select" id="es-status">${sel(['상시','단종예정','런칭예정','단종','비운영'],sk.status)}</select></td>
@@ -580,37 +670,33 @@ function renderSkuTable(q){
         <td><input class="e-input r" id="es-pm" inputmode="numeric" value="${sk.priceMax||''}" placeholder="—"></td>
         <td><select class="e-select" id="es-ship">${sel(['','무료','조건부무료'],sk.ship||'')}</select></td>
         <td><input class="e-input" id="es-memo" value="${sk.memo||''}" placeholder="—"></td>
-        <td style="font-size:11px;color:var(--t4)">${sk.updatedAt||''}</td>
-        <td><div class="e-actions"><button class="btn-stage" onclick="stageSkuEdit('${sk.code}')">확인</button><button class="btn-cancel" onclick="cancelSkuEdit()">✕</button></div></td>
+        <td style="font-size:11px;color:var(--t4)">${(sk.updatedAt||'').slice(0,10)}</td>
+        <td class="c-act"><div class="e-actions"><button class="btn-stage" onclick="stageSkuEdit('${sk.code}')"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 9 6 13 14 3"/></svg></button><button class="btn-cancel" onclick="cancelSkuEdit()">✕</button></div></td>
       </tr>`;
     }else{
-      lHtml+=`<tr class="${pCls}">
-        <td style="width:24px;text-align:center;padding:7px 4px">${dot(sk.pending)}</td>
-        <td style="color:var(--t3);font-size:11px">${sk.no}</td>
-        <td><span class="code-val" onclick="copyTxt(this,'${sk.code}')" title="클릭 복사">${sk.code}</span></td>
-        <td><span class="nick${isOff?' off':''}">${sk.nick}</span></td>
-      </tr>`;
-      rHtml+=`<tr class="${pCls}">
-        <td style="color:var(--tx);font-weight:500">${sk.name}</td>
-        <td><span class="badge b-${sk.type}">${sk.type}</span></td>
-        <td><span class="badge b-${sk.status}">${sk.status}</span></td>
-        <td class="r">${fmtP(sk.priceNormal)}</td>
-        <td class="r">${fmtP(sk.priceDisc)}</td>
-        <td class="r">${fmtP(sk.priceMax)}</td>
-        <td style="color:var(--t2)">${sk.ship||'<span style="color:var(--t4)">—</span>'}</td>
-        <td style="color:var(--t3)">${sk.memo||'<span style="color:var(--t4)">—</span>'}</td>
-        <td style="color:var(--t4);font-size:11px">${sk.updatedAt||''}</td>
-        <td style="text-align:center"><button class="icon-btn" onclick="startSkuEdit('${sk.code}')" title="수정" ${skuEditCode?'disabled':''}>${ICO_EDIT}</button></td>
+      html+=`<tr class="${pCls}">
+        <td class="fix" style="left:0px;text-align:center;padding:7px 4px">${dot(sk.pending)}</td>
+        <td class="fix" style="left:24px;color:var(--t3);font-size:11px;cursor:pointer" onclick="copyToClip('${sk.no}',this)">${sk.no}</td>
+        <td class="fix" style="left:68px;cursor:pointer" onclick="copyToClip('${sk.code}',this)"><span class="code-val">${sk.code}</span></td>
+        <td class="fix fix-last" style="left:192px;cursor:pointer" onclick="copyToClip('${sk.nick}',this)"><span class="nick${isOff?' off':''}">${sk.nick}</span></td>
+        <td style="font-weight:500;color:var(--tx);cursor:pointer" onclick="copyToClip('${sk.name}',this)">${sk.name}</td>
+        <td style="cursor:pointer" onclick="copyToClip('${sk.type}',this)"><span class="badge b-${sk.type}">${sk.type}</span></td>
+        <td style="cursor:pointer" onclick="copyToClip('${sk.status}',this)"><span class="badge b-${sk.status}">${sk.status}</span></td>
+        <td class="r" style="cursor:pointer" onclick="copyToClip('${sk.priceNormal||''}',this)">${fmtP(sk.priceNormal)}</td>
+        <td class="r" style="cursor:pointer" onclick="copyToClip('${sk.priceDisc||''}',this)">${fmtP(sk.priceDisc)}</td>
+        <td class="r" style="cursor:pointer" onclick="copyToClip('${sk.priceMax||''}',this)">${fmtP(sk.priceMax)}</td>
+        <td style="cursor:pointer" onclick="copyToClip('${sk.ship||''}',this)">${dash(sk.ship)}</td>
+        <td style="color:var(--t3);cursor:pointer" onclick="copyToClip('${(sk.memo||'').replace(/'/g,"\\'")}',this)">${dash(sk.memo)}</td>
+        <td style="color:var(--t4);font-size:11px;cursor:pointer" onclick="copyToClip('${(sk.updatedAt||'').slice(0,10)}',this)">${(sk.updatedAt||'').slice(0,10)}</td>
+        <td class="c-act"><button class="icon-btn" onclick="startSkuEdit('${sk.code}')" title="수정" ${skuEditCode?'disabled':''}>${ICO_EDIT}</button></td>
       </tr>`;
     }
   });
-  document.getElementById('sLeftBody').innerHTML=lHtml||'<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--t4)">데이터 없음</td></tr>';
-  document.getElementById('sRightBody').innerHTML=rHtml||'<tr><td colspan="10" style="padding:20px;text-align:center;color:var(--t4)">데이터 없음</td></tr>';
-  setTimeout(()=>syncRowHeights('sLeftBody','sRightBody'),0);
+  document.getElementById('skuTbody').innerHTML=html||'<tr><td colspan="14" style="padding:20px;text-align:center;color:var(--t4)">데이터 없음</td></tr>';
   updatePendBar();
 }
 
-/* ── 양식 다운로드 ── */
+/* 양식 다운로드 */
 function makeCsv(rows){return rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');}
 function dlCsv(c,n){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+c],{type:'text/csv;charset=utf-8'}));a.download=n;a.click();}
 document.getElementById('itemDlBtn').addEventListener('click',e=>{e.preventDefault();dlCsv(makeCsv([
@@ -628,7 +714,7 @@ document.getElementById('skuDlBtn').addEventListener('click',e=>{e.preventDefaul
 <!-- Firebase SDK -->
 <script type="module">
 import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import{getFirestore,collection,getDocs,doc,setDoc}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import{getFirestore,collection,getDocs,doc,setDoc,deleteDoc}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 const app=initializeApp({
   apiKey:'AIzaSyBB3XxL4kJz5uGVRUn-eLPYirJsuwuiEIU',
   authDomain:'data-hub-app-2026.firebaseapp.com',
@@ -636,12 +722,16 @@ const app=initializeApp({
   appId:'1:127013070764:web:d10d5d24c5b14c31b13c09'
 });
 const db=getFirestore(app);
-window.db=db;window.fsDoc=doc;window.fsSetDoc=setDoc;window.fsGetDocs=getDocs;window.fsCollection=collection;
+window.db=db;window.fsDoc=doc;window.fsSetDoc=setDoc;window.fsDeleteDoc=deleteDoc;window.fsGetDocs=getDocs;window.fsCollection=collection;
 
 function setStatus(ok,msg){
   let el=document.getElementById('fbStatus');
-  if(!el){el=document.createElement('div');el.id='fbStatus';el.style.cssText='position:fixed;top:12px;right:16px;font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;z-index:200;display:flex;align-items:center;gap:5px;border:1px solid';document.body.appendChild(el);}
-  el.style.cssText+=(ok?';background:rgba(26,138,74,.08);border-color:rgba(26,138,74,.25);color:#1a8a4a':';background:rgba(212,32,32,.07);border-color:rgba(212,32,32,.2);color:#d42020');
+  if(!el){el=document.createElement('div');el.id='fbStatus';
+    el.style.cssText='position:fixed;top:12px;right:16px;font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;z-index:200;display:flex;align-items:center;gap:5px;border:1px solid';
+    document.body.appendChild(el);}
+  Object.assign(el.style,ok
+    ?{background:'rgba(26,138,74,.08)',borderColor:'rgba(26,138,74,.25)',color:'#1a8a4a'}
+    :{background:'rgba(212,32,32,.07)',borderColor:'rgba(212,32,32,.2)',color:'#d42020'});
   el.innerHTML=`<span style="width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0"></span>${msg}`;
 }
 
@@ -649,9 +739,11 @@ window.loadAll=async function(){
   setStatus(true,'로딩 중...');
   try{
     const[iSnap,sSnap]=await Promise.all([getDocs(collection(db,'items')),getDocs(collection(db,'skus'))]);
-    ITEMS.length=0;iSnap.forEach(d=>{const dt=d.data();ITEMS.push({...dt,code:d.id,no:dt.no!=null?Number(dt.no):99,pending:false});});
+    ITEMS.length=0;
+    iSnap.forEach(d=>{const dt=d.data();ITEMS.push({...dt,code:d.id,no:dt.no!=null?Number(dt.no):99,pending:false});});
     ITEMS.sort((a,b)=>(Number(a.no)||99)-(Number(b.no)||99));
-    SKUS.length=0;sSnap.forEach(d=>{const dt=d.data();SKUS.push({...dt,code:d.id,no:dt.no!=null?Number(dt.no):99,pending:false});});
+    SKUS.length=0;
+    sSnap.forEach(d=>{const dt=d.data();SKUS.push({...dt,code:d.id,no:dt.no!=null?Number(dt.no):99,pending:false});});
     SKUS.sort((a,b)=>(Number(a.no)||99)-(Number(b.no)||99));
     renderItemTable();renderSkuTable();
     setStatus(true,`연결됨 · items ${ITEMS.length}개 · skus ${SKUS.length}개`);

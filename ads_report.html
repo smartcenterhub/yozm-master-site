@@ -185,59 +185,24 @@ tr.empty-group{opacity:.35}
       <div class="pg-desc">광고 매체별 일일 성과를 파일 업로드로 빠르게 집계합니다</div>
     </div>
     <div class="pg-actions" style="position:relative">
-      <button class="btn btn-ghost btn-sm" onclick="toggleZipGuide()" style="font-size:11.5px">📋 ZIP 가이드</button>
-      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('dailyZipInput').click()" style="font-size:11.5px">📦 하루치 ZIP 올리기</button>
-      <input type="file" id="dailyZipInput" accept=".zip" style="display:none">
+      <button class="btn btn-ghost btn-sm" id="zipGuideBtn" onclick="toggleZipGuide()" style="font-size:11.5px">📦 ZIP 올리기</button>
       <button class="btn btn-ghost" onclick="openRptModal()">📝 리포트 양식</button>
 
-      <!-- ZIP 가이드 팝업 -->
-      <div id="zipGuidePopup" style="display:none;position:absolute;top:calc(100% + 8px);right:0;z-index:999;background:var(--glass-bg-strong);border:1px solid var(--glass-border-s);border-radius:14px;width:460px;box-shadow:0 4px 20px rgba(0,0,0,0.12);overflow:hidden">
+      <!-- ZIP 팝업 -->
+      <div id="zipGuidePopup" style="display:none;position:absolute;top:calc(100% + 8px);right:0;z-index:999;background:var(--glass-bg-strong);border:1px solid var(--glass-border-s);border-radius:14px;width:450px;box-shadow:0 4px 20px rgba(0,0,0,0.12);overflow:hidden">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--glass-border-s)">
-          <span style="font-size:13.5px;font-weight:600;color:var(--tx);display:flex;align-items:center;gap:7px">📦 하루치 ZIP 올리기 가이드</span>
+          <span style="font-size:13.5px;font-weight:600;color:var(--tx)">📦 하루치 ZIP 올리기</span>
           <button onclick="toggleZipGuide()" style="width:24px;height:24px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg);cursor:pointer;font-size:13px;color:var(--t2);display:flex;align-items:center;justify-content:center">✕</button>
         </div>
-        <div style="padding:14px 16px;display:flex;flex-direction:column;gap:14px;max-height:70vh;overflow-y:auto">
-
-          <!-- 1. ZIP명 -->
-          <div>
-            <div style="font-size:10.5px;font-weight:600;color:var(--t3);letter-spacing:.5px;margin-bottom:6px">1 · 전체 ZIP 파일명</div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <input type="text" id="zipGuideDate" placeholder="260408" maxlength="6" oninput="zipGuideUpdate()"
-                style="flex:1;padding:6px 10px;border:1px solid var(--glass-border-s);border-radius:7px;font-size:13px;background:var(--glass-bg-strong);color:var(--tx);letter-spacing:1px;font-family:monospace">
-              <button onclick="zipGuideCopy(document.getElementById('zipGuideDate').value+'.zip',this)" style="padding:5px 12px;border-radius:7px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:12px;color:var(--t2);white-space:nowrap">복사</button>
-            </div>
-            <div style="font-size:11px;color:var(--t3);margin-top:4px">날짜 6자리 입력 → ZIP명: <span id="zipNamePreview" style="font-family:monospace;color:var(--accent)">260408.zip</span></div>
+        <div style="padding:14px 16px;display:flex;flex-direction:column;gap:12px;max-height:72vh;overflow-y:auto">
+          <div id="zgDateTabsWrap">
+            <div style="font-size:10.5px;font-weight:600;color:var(--t3);letter-spacing:.5px;margin-bottom:6px">날짜</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap" id="zgDateTabs"></div>
           </div>
-
           <div style="height:1px;background:var(--glass-border-s)"></div>
-
-          <!-- 2. 내부 파일명 -->
-          <div>
-            <div style="font-size:10.5px;font-weight:600;color:var(--t3);letter-spacing:.5px;margin-bottom:8px">2 · 내부 파일명 (prefix 기준 자동 인식)</div>
-            <div style="display:flex;flex-direction:column;gap:4px" id="zipFileList">
-              <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--glass-bg);border-radius:7px;border:1px solid var(--glass-border-s)"><div><span style="font-size:11px;color:var(--t3);margin-right:8px">브검</span><span id="zf-bk" style="font-size:12px;font-family:monospace;color:var(--tx)">bk_260408.xlsx</span></div><button onclick="zipGuideCopy(document.getElementById('zf-bk').textContent,this)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:11px;color:var(--t2)">복사</button></div>
-              <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--glass-bg);border-radius:7px;border:1px solid var(--glass-border-s)"><div><span style="font-size:11px;color:var(--t3);margin-right:8px">키워드 MO</span><span id="zf-kwmo" style="font-size:12px;font-family:monospace;color:var(--tx)">kwmo_260408.xlsx</span></div><button onclick="zipGuideCopy(document.getElementById('zf-kwmo').textContent,this)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:11px;color:var(--t2)">복사</button></div>
-              <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--glass-bg);border-radius:7px;border:1px solid var(--glass-border-s)"><div><span style="font-size:11px;color:var(--t3);margin-right:8px">키워드 PC</span><span id="zf-kwpc" style="font-size:12px;font-family:monospace;color:var(--tx)">kwpc_260408.xlsx</span></div><button onclick="zipGuideCopy(document.getElementById('zf-kwpc').textContent,this)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:11px;color:var(--t2)">복사</button></div>
-              <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--glass-bg);border-radius:7px;border:1px solid var(--glass-border-s)"><div><span style="font-size:11px;color:var(--t3);margin-right:8px">GFA 성과</span><span id="zf-gfa" style="font-size:12px;font-family:monospace;color:var(--tx)">gfa_260408.zip</span></div><button onclick="zipGuideCopy(document.getElementById('zf-gfa').textContent,this)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:11px;color:var(--t2)">복사</button></div>
-              <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--glass-bg);border-radius:7px;border:1px solid var(--glass-border-s)"><div><span style="font-size:11px;color:var(--t3);margin-right:8px">GFA 소재</span><span id="zf-gc" style="font-size:12px;font-family:monospace;color:var(--tx)">gc_260408.zip</span></div><button onclick="zipGuideCopy(document.getElementById('zf-gc').textContent,this)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:11px;color:var(--t2)">복사</button></div>
-              <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--glass-bg);border-radius:7px;border:1px solid var(--glass-border-s)"><div><span style="font-size:11px;color:var(--t3);margin-right:8px">DA</span><span id="zf-da" style="font-size:12px;font-family:monospace;color:var(--tx)">da_260408.zip</span></div><button onclick="zipGuideCopy(document.getElementById('zf-da').textContent,this)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:11px;color:var(--t2)">복사</button></div>
-              <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--glass-bg);border-radius:7px;border:1px solid var(--glass-border-s)"><div><span style="font-size:11px;color:var(--t3);margin-right:8px">SA</span><span id="zf-sa" style="font-size:12px;font-family:monospace;color:var(--tx)">sa_260408.zip</span></div><button onclick="zipGuideCopy(document.getElementById('zf-sa').textContent,this)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:11px;color:var(--t2)">복사</button></div>
-            </div>
-          </div>
-
-          <div style="height:1px;background:var(--glass-border-s)"></div>
-
-          <!-- 3. 가이드 -->
-          <div>
-            <div style="font-size:10.5px;font-weight:600;color:var(--t3);letter-spacing:.5px;margin-bottom:8px">3 · 적용 가이드</div>
-            <div style="background:var(--glass-bg);border-radius:9px;padding:12px 14px;display:flex;flex-direction:column;gap:6px">
-              <div style="font-size:11.5px;color:var(--t2);display:flex;gap:8px"><span style="font-weight:600;color:var(--t3);min-width:14px">1</span><span>각 파일 다운로드 후 파일명 앞에 <b>prefix_</b> 붙이기 (예: <code style="background:rgba(58,58,240,0.07);padding:1px 5px;border-radius:4px;font-size:11px">bk_원래파일명.xlsx</code>)</span></div>
-              <div style="font-size:11.5px;color:var(--t2);display:flex;gap:8px"><span style="font-weight:600;color:var(--t3);min-width:14px">2</span><span>위 파일들을 하나의 ZIP으로 묶어 날짜 6자리로 저장 (예: <code style="background:rgba(58,58,240,0.07);padding:1px 5px;border-radius:4px;font-size:11px">260408.zip</code>)</span></div>
-              <div style="font-size:11.5px;color:var(--t2);display:flex;gap:8px"><span style="font-weight:600;color:var(--t3);min-width:14px">3</span><span>📦 하루치 ZIP 올리기 클릭 → ZIP 업로드 → 날짜 자동 세팅 + 각 탭 자동 배정</span></div>
-              <div style="font-size:11.5px;color:var(--t2);display:flex;gap:8px"><span style="font-weight:600;color:var(--t3);min-width:14px">4</span><span>기간 여러 날짜면 날짜별로 ZIP 따로 만들어 순서대로 업로드 → 날짜 범위 자동 확장</span></div>
-            </div>
-          </div>
-
+          <div id="zgPanels"></div>
+          <div id="zgAllDone" style="display:none;background:rgba(58,58,240,0.07);border-radius:9px;padding:10px 14px;font-size:12.5px;color:var(--accent);font-weight:500">✅ 모든 날짜 업로드 완료!</div>
+          <div id="zgNoDate" style="font-size:12px;color:var(--t3);text-align:center;padding:16px 0">날짜 바에서 날짜를 먼저 적용해주세요</div>
         </div>
       </div>
     </div>
@@ -643,13 +608,29 @@ function dateStrToDisplay(s) {
 /* ══════════════════════════
    ZIP 가이드 팝업
 ══════════════════════════ */
+const ZG_ROWS = [
+  {lbl:'ZIP명', key:'zip', pf:'',     ext:'zip',  bg:'var(--glass-bg)',            border:'var(--glass-border-s)', lc:'var(--t3)', nc:'var(--tx)'},
+  {lbl:'브검',  key:'bk',  pf:'bk_',  ext:'xlsx', bg:'rgba(29,158,117,0.08)',       border:'rgba(29,158,117,0.3)',  lc:'#0F6E56',  nc:'#085041'},
+  {lbl:'키워드 MO', key:'kwmo', pf:'kwmo_', ext:'xlsx', bg:'rgba(29,158,117,0.08)', border:'rgba(29,158,117,0.3)',  lc:'#0F6E56',  nc:'#085041'},
+  {lbl:'키워드 PC', key:'kwpc', pf:'kwpc_', ext:'xlsx', bg:'rgba(29,158,117,0.08)', border:'rgba(29,158,117,0.3)',  lc:'#0F6E56',  nc:'#085041'},
+  {lbl:'GFA 성과', key:'gfa', pf:'gfa_', ext:'zip', bg:'rgba(127,119,221,0.08)',    border:'rgba(127,119,221,0.35)', lc:'#534AB7', nc:'#3C3489'},
+  {lbl:'GFA 소재', key:'gc',  pf:'gc_',  ext:'zip', bg:'rgba(127,119,221,0.08)',    border:'rgba(127,119,221,0.35)', lc:'#534AB7', nc:'#3C3489'},
+  {lbl:'DA',  key:'da',  pf:'da_',  ext:'zip', bg:'rgba(186,117,23,0.08)',          border:'rgba(186,117,23,0.35)', lc:'#854F0B',  nc:'#633806'},
+  {lbl:'SA',  key:'sa',  pf:'sa_',  ext:'zip', bg:'rgba(186,117,23,0.08)',          border:'rgba(186,117,23,0.35)', lc:'#854F0B',  nc:'#633806'},
+];
+const ZG_TOTAL = ZG_ROWS.length;
+
 let _zipGuideOpen = false;
+const _zgCopied = {};   // dateStr -> Set of keys
+const _zgUploaded = new Set(); // dateStr
+
 function toggleZipGuide() {
   const popup = document.getElementById('zipGuidePopup');
   _zipGuideOpen = !_zipGuideOpen;
   popup.style.display = _zipGuideOpen ? '' : 'none';
-  if (_zipGuideOpen) zipGuideUpdate();
+  if (_zipGuideOpen) zgBuild();
 }
+
 document.addEventListener('click', e => {
   if (!_zipGuideOpen) return;
   const popup = document.getElementById('zipGuidePopup');
@@ -660,95 +641,144 @@ document.addEventListener('click', e => {
     _zipGuideOpen = false;
   }
 });
-function zipGuideUpdate() {
-  const d = document.getElementById('zipGuideDate')?.value.trim() || '260408';
-  const preview = document.getElementById('zipNamePreview');
-  if (preview) preview.textContent = d + '.zip';
-  const FILES = {
-    bk:'xlsx', kwmo:'xlsx', kwpc:'xlsx',
-    gfa:'zip', gc:'zip', da:'zip', sa:'zip'
-  };
-  Object.entries(FILES).forEach(([p, ext]) => {
-    const el = document.getElementById('zf-' + p);
-    if (el) el.textContent = p + '_' + d + '.' + ext;
+
+function zgBuild() {
+  const noDate = document.getElementById('zgNoDate');
+  const tabsWrap = document.getElementById('zgDateTabsWrap');
+  const panels = document.getElementById('zgPanels');
+  const allDone = document.getElementById('zgAllDone');
+  if (!_appliedStart) {
+    noDate.style.display = ''; tabsWrap.style.display = 'none';
+    panels.innerHTML = ''; allDone.style.display = 'none'; return;
+  }
+  noDate.style.display = 'none'; tabsWrap.style.display = '';
+
+  const dates = getDateRange(_appliedStart, _appliedEnd);
+  const tabsEl = document.getElementById('zgDateTabs');
+  tabsEl.innerHTML = '';
+  panels.innerHTML = '';
+  allDone.style.display = 'none';
+
+  dates.forEach((ds, i) => {
+    const dk = dateToKey(ds); // YYYYMMDD
+    const short = dk.slice(2); // 260408
+    const disp = perfDateDisplay(dk);
+    if (!_zgCopied[ds]) _zgCopied[ds] = new Set();
+
+    // 탭
+    const tab = document.createElement('div');
+    tab.style.cssText = `padding:5px 13px;border-radius:20px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:12px;color:var(--t2);transition:all .12s`;
+    tab.textContent = disp;
+    tab.dataset.ds = ds;
+    if (_zgUploaded.has(ds)) { tab.style.background='rgba(63,160,68,0.12)'; tab.style.color='#3B6D11'; tab.style.borderColor='#97C459'; }
+    if (i === 0) { tab.style.background='rgba(58,58,240,0.08)'; tab.style.color='var(--accent)'; tab.style.borderColor='rgba(58,58,240,0.3)'; tab.style.fontWeight='500'; }
+    tab.onclick = () => zgSelectDate(ds);
+    tabsEl.appendChild(tab);
+
+    // 패널
+    const panel = document.createElement('div');
+    panel.id = 'zgPanel_' + ds;
+    panel.style.display = i === 0 ? '' : 'none';
+
+    let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="font-size:10.5px;font-weight:600;color:var(--t3);letter-spacing:.5px">파일명 복사 — ${disp}</div>
+      <span style="font-size:11px;color:var(--t3)" id="zgCnt_${ds}">${_zgCopied[ds].size} / ${ZG_TOTAL} 복사됨</span>
+    </div>`;
+    ZG_ROWS.forEach(r => {
+      const fname = r.pf ? r.pf + short + '.' + r.ext : short + '.' + r.ext;
+      const copied = _zgCopied[ds].has(r.key);
+      html += `<div id="zgRow_${ds}_${r.key}" style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:7px;border:1px solid ${r.border};background:${copied ? r.border : r.bg};margin-bottom:3px">
+        <div><span style="font-size:11px;color:${r.lc};margin-right:8px;min-width:60px;display:inline-block;font-weight:500">${r.lbl}</span><span style="font-size:12px;font-family:monospace;color:${r.nc}">${fname}</span></div>
+        <button onclick="zgCopy('${ds}','${r.key}','${fname}')" style="padding:4px 10px;border-radius:6px;border:1px solid rgba(0,0,0,0.1);background:rgba(255,255,255,0.5);cursor:pointer;font-size:11.5px;color:${r.lc};white-space:nowrap" id="zgBtn_${ds}_${r.key}">${copied ? '✓' : '복사'}</button>
+      </div>`;
+    });
+    html += `<div style="background:var(--glass-bg);border-radius:6px;height:4px;overflow:hidden;margin-top:4px"><div style="height:4px;border-radius:6px;background:var(--accent);width:${Math.round(_zgCopied[ds].size/ZG_TOTAL*100)}%;transition:width .3s" id="zgProg_${ds}"></div></div>`;
+
+    const uploaded = _zgUploaded.has(ds);
+    html += `<label style="display:flex;align-items:center;justify-content:center;gap:7px;width:100%;padding:9px;border-radius:8px;border:1.5px ${uploaded?'solid':'dashed'} ${uploaded?'#97C459':'rgba(58,58,240,0.3)'};background:${uploaded?'rgba(63,160,68,0.08)':'rgba(58,58,240,0.04)'};cursor:pointer;font-size:13px;color:${uploaded?'#3B6D11':'var(--accent)'};font-weight:500;margin-top:6px" id="zgUpLabel_${ds}">
+      <input type="file" accept=".zip" style="display:none" onchange="zgUpload(event,'${ds}')">
+      ${uploaded ? '✅ '+disp+' 업로드 완료' : '📁 '+short+'.zip 올리기'}
+    </label>`;
+
+    panel.innerHTML = html;
+    panels.appendChild(panel);
   });
 }
-function zipGuideCopy(text, btn) {
-  navigator.clipboard.writeText(text).then(() => {
-    const orig = btn.textContent;
-    btn.textContent = '✓';
-    btn.style.background = 'rgba(63,160,68,0.12)';
-    btn.style.color = '#3B6D11';
-    btn.style.borderColor = '#97C459';
-    setTimeout(() => {
-      btn.textContent = orig;
-      btn.style.background = '';
-      btn.style.color = '';
-      btn.style.borderColor = '';
-    }, 1400);
+
+function zgSelectDate(ds) {
+  document.querySelectorAll('#zgDateTabs div').forEach((t,i) => {
+    const tds = t.dataset.ds;
+    if (tds === ds) {
+      t.style.background='rgba(58,58,240,0.08)'; t.style.color='var(--accent)'; t.style.borderColor='rgba(58,58,240,0.3)'; t.style.fontWeight='500';
+    } else {
+      if (_zgUploaded.has(tds)) { t.style.background='rgba(63,160,68,0.12)'; t.style.color='#3B6D11'; t.style.borderColor='#97C459'; t.style.fontWeight='400'; }
+      else { t.style.background='var(--glass-bg-strong)'; t.style.color='var(--t2)'; t.style.borderColor='var(--glass-border-s)'; t.style.fontWeight='400'; }
+    }
   });
+  document.querySelectorAll('[id^="zgPanel_"]').forEach(p => p.style.display='none');
+  const target = document.getElementById('zgPanel_'+ds);
+  if (target) target.style.display='';
+}
+
+function zgCopy(ds, key, fname) {
+  navigator.clipboard.writeText(fname).catch(()=>{});
+  _zgCopied[ds].add(key);
+  const btn = document.getElementById('zgBtn_'+ds+'_'+key);
+  const row = document.getElementById('zgRow_'+ds+'_'+key);
+  const r = ZG_ROWS.find(x=>x.key===key);
+  if (btn) btn.textContent = '✓';
+  if (row && r) row.style.background = r.border;
+  const cnt = _zgCopied[ds].size;
+  const cntEl = document.getElementById('zgCnt_'+ds);
+  const prog = document.getElementById('zgProg_'+ds);
+  if (cntEl) cntEl.textContent = cnt + ' / ' + ZG_TOTAL + ' 복사됨';
+  if (prog) prog.style.width = Math.round(cnt/ZG_TOTAL*100)+'%';
+}
+
+async function zgUpload(e, ds) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const nameMatch = file.name.match(/(\d{6})/);
+  if (!nameMatch) { showToast('⚠️ ZIP명에 날짜 6자리 필요'); return; }
+  const raw = nameMatch[1];
+  const dateKey = '20' + raw;
+  const zipDateStr = `${dateKey.slice(0,4)}-${dateKey.slice(4,6)}-${dateKey.slice(6,8)}`;
+  if (zipDateStr !== ds) { showToast('⚠️ ZIP 날짜(' + raw + ')가 선택 날짜와 다릅니다'); return; }
+  showToast('📦 파일 분석 중...');
+  await processDailyZip(file, dateKey);
+  _zgUploaded.add(ds);
+  const lbl = document.getElementById('zgUpLabel_'+ds);
+  if (lbl) {
+    lbl.style.borderStyle='solid'; lbl.style.borderColor='#97C459';
+    lbl.style.background='rgba(63,160,68,0.08)'; lbl.style.color='#3B6D11';
+    lbl.querySelector('input').disabled=true;
+    lbl.childNodes[lbl.childNodes.length-1].textContent = '✅ '+perfDateDisplay(dateKey)+' 업로드 완료';
+  }
+  document.querySelectorAll('#zgDateTabs div').forEach(t => {
+    if (t.dataset.ds === ds) { t.style.background='rgba(63,160,68,0.12)'; t.style.color='#3B6D11'; t.style.borderColor='#97C459'; }
+  });
+  const dates = getDateRange(_appliedStart, _appliedEnd);
+  if (_zgUploaded.size >= dates.length) document.getElementById('zgAllDone').style.display='';
 }
 
 /* ══════════════════════════
    하루치 ZIP 업로드
 ══════════════════════════ */
-(function setupDailyZip() {
-  const fi = document.getElementById('dailyZipInput');
-  if (!fi) return;
-  fi.addEventListener('change', e => {
-    if (e.target.files[0]) processDailyZip(e.target.files[0]);
-    fi.value = '';
-  });
-})();
-
-async function processDailyZip(zipFile) {
+async function processDailyZip(zipFile, forceDateKey) {
   const nameMatch = zipFile.name.match(/(\d{6})/);
-  if (!nameMatch) { showToast('⚠️ ZIP명에 날짜 6자리 필요 (예: 260408.zip)'); return; }
-  const raw = nameMatch[1];
+  if (!nameMatch && !forceDateKey) { showToast('⚠️ ZIP명에 날짜 6자리 필요 (예: 260408.zip)'); return; }
+  const raw = forceDateKey ? forceDateKey.slice(2) : nameMatch[1];
   const dateKey = '20' + raw;
-  const dateStr = `${dateKey.slice(0,4)}-${dateKey.slice(4,6)}-${dateKey.slice(6,8)}`;
-  showToast('📦 파일 분석 중...');
 
-  // 날짜 바 세팅: 기존 범위 확장 (B안)
-  const prevStart = _appliedStart;
-  const prevEnd   = _appliedEnd;
-  let newStart = dateStr;
-  let newEnd   = dateStr;
-  if (prevStart && prevEnd) {
-    newStart = dateStr < prevStart ? dateStr : prevStart;
-    newEnd   = dateStr > prevEnd   ? dateStr : prevEnd;
+  // 날짜 바 범위 체크
+  if (_appliedStart && _appliedEnd) {
+    const dateStr = `${dateKey.slice(0,4)}-${dateKey.slice(4,6)}-${dateKey.slice(6,8)}`;
+    if (dateStr < _appliedStart || dateStr > _appliedEnd) {
+      showToast('⚠️ ZIP 날짜가 적용된 날짜 범위 밖입니다');
+      return;
+    }
   }
-  _cal.selS = newStart;
-  _cal.selE = newEnd;
-  _cal.vY = parseInt(newStart.slice(0,4));
-  _cal.vM = parseInt(newStart.slice(5,7)) - 1;
-  _cal.clicking = 'start';
-  _appliedStart = newStart;
-  _appliedEnd   = newEnd;
-  const dispS = dateStrToDisplay(newStart);
-  const dispE = dateStrToDisplay(newEnd);
-  const badge = document.getElementById('dateBadge');
-  const lbl = document.getElementById('calToggleLabel');
-  const txt = newStart === newEnd ? dispS + ' 광고 실적' : `${dispS} ~ ${dispE} 광고 실적`;
-  if (badge) { badge.textContent = txt; badge.style.display = ''; }
-  if (lbl) lbl.textContent = newStart === newEnd ? dispS : `${dispS} ~ ${dispE}`;
-  _mailData.date = txt.replace(' 광고 실적','');
 
-  // 서브탭 표시 + 슬롯 생성
-  const subWrap = document.getElementById('subTabsWrap');
-  const guide = document.getElementById('noDateGuide');
-  if (subWrap) subWrap.style.display = '';
-  if (guide) guide.style.display = 'none';
-  if (!document.querySelector('.sub-content.active')) {
-    const bkContent = document.getElementById('s-bk');
-    const bkTab = document.querySelector('[onclick="swSub(\'bk\',this)"]');
-    if (bkContent) bkContent.classList.add('active');
-    if (bkTab) bkTab.classList.add('active');
-  }
-  renderBkSlots();
-  renderKwSlots();
-
-  // ZIP 내부 파일 분류 (prefix 기준)
   const PREFIX_MAP = {
     'bk':   f => processBk(f, dateKey),
     'kwmo': f => processKw(f, dateKey, 'MO'),
@@ -769,17 +799,14 @@ async function processDailyZip(zipFile) {
     try {
       const blob = await entry.async('blob');
       const ext = fname.split('.').pop();
-      const mime = ext === 'xlsx'
-        ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        : 'application/zip';
+      const mime = ext === 'xlsx' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'application/zip';
       const file = new File([blob], fname, { type: mime });
       await PREFIX_MAP[prefix](file);
       done.push(prefix);
-    } catch(e) { fail.push(prefix); }
+    } catch(err) { fail.push(prefix); }
   }
-
   const uniqueDone = [...new Set(done)];
-  let msg = uniqueDone.length ? `✅ ${uniqueDone.join(', ')} 완료` : '⚠️ 매칭 파일 없음 — prefix 확인';
+  let msg = uniqueDone.length ? `✅ ${perfDateDisplay(dateKey)} — ${uniqueDone.join(', ')} 완료` : '⚠️ 매칭 파일 없음 — prefix 확인';
   if (fail.length) msg += ` ❌ 실패: ${[...new Set(fail)].join(', ')}`;
   showToast(msg);
 }
@@ -952,6 +979,7 @@ function dateApply() {
 
   renderBkSlots();
   renderKwSlots();
+  if (_zipGuideOpen) zgBuild();
 
   // 서브 탭 표시
   const subWrap = document.getElementById('subTabsWrap');

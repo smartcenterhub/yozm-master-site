@@ -260,6 +260,7 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
 input[type=number]{-moz-appearance:textfield}
 input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 .divider{border:none;border-top:1px solid var(--bd);margin:10px 0}
+.tab-badge{display:inline-block;width:7px;height:7px;border-radius:50%;background:#d42020;margin-left:4px;vertical-align:middle;flex-shrink:0}
 .dropdown-menu{display:none}.dropdown-menu.open{display:block}
 .dropdown-item:hover{background:rgba(58,58,240,.06)}
 </style>
@@ -270,10 +271,10 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 <div class="tab-bar">
   <div class="tab"    onclick="sw(1,this)">행사 셀렉</div>
   <div class="tab on" onclick="sw(0,this)">행사 등록</div>
-  <div class="tab"    onclick="sw(2,this)">행사 제안</div>
-  <div class="tab"    onclick="sw(3,this)">행사 선정</div>
+  <div class="tab"    onclick="sw(2,this);clearBadge('badge-2')">행사 제안<span id="badge-2" class="tab-badge" style="display:none"></span></div>
+  <div class="tab"    onclick="sw(3,this);clearBadge('badge-3')">행사 선정<span id="badge-3" class="tab-badge" style="display:none"></span></div>
   <div class="tab"    onclick="sw(4,this)">운영 타임라인</div>
-  <div class="tab"    onclick="sw(5,this)">행사 종료</div>
+  <div class="tab"    onclick="sw(5,this);clearBadge('badge-5')">행사 종료<span id="badge-5" class="tab-badge" style="display:none"></span></div>
   <div class="tab"    onclick="sw(6,this)">행사 성과</div>
   <div class="tab"    onclick="sw(7,this)">행사 유형 정보</div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:4px;padding:0 8px">
@@ -569,12 +570,14 @@ const MAIN_NICKS=['체험팩8종','체험팩 8종','소10+꿀10','플4+4+블1','
 /* ── 행사별 컬럼 레이블 (이미지 기준) ── */
 function getPriceLabels(typeCode){
   const m={
-    TD:{normal:'최고가(원가)',base:'현재판매가',fixed:'고정행사가',alim:'행사즉시할인가(제안)',max:'쿠폰적용가(자동)'},
-    FF:{normal:'판매가',base:'상시할인가',fixed:'고정행사가',alim:'즉시할인가(제안)',max:'최종혜택가(자동)'},
-    SA:{normal:'정상가',base:'상시할인가',fixed:'고정행사가',alim:'즉시할인가(제안)',max:'최종혜택가(자동)'},
-    SP:{normal:'정상가',base:'상시할인가',fixed:'고정행사가',alim:'즉시할인가(제안)',max:'최대혜택가(자동)'},
-    HB:{normal:'판매가',base:'상시할인가',fixed:'고정행사가',alim:'즉시할인가(제안)',max:'최종혜택가(자동)'},
-    OD:{normal:'최고가(원가)',base:'현재판매가',fixed:'고정행사가',alim:'행사즉시할인가(제안)',max:'쿠폰적용가(자동)'},
+    TD:{normal:'최초가(원가)',base:'현재판매가',fixed:'고정행사가',alim:'행사즉시할인가',max:'행사쿠폰적용가'},
+    FF:{normal:'판매가',base:null,fixed:'고정행사가',alim:'즉시할인가',max:'최종혜택가'},
+    SA:{normal:'정상가',base:null,fixed:'고정행사가',alim:'즉시할인가',max:'최종혜택가'},
+    SP:{normal:'정상가',base:null,fixed:'고정행사가',alim:'즉시할인가',max:null},
+    HB:{normal:'판매가',base:null,fixed:'고정행사가',alim:'즉시할인가',max:'최종혜택가'},
+    OD:{normal:'최고가(원가)',base:null,fixed:'고정행사가',alim:'즉시할인가',max:'최종혜택가'},
+    YL:{normal:'정상가',base:null,fixed:'고정행사가',alim:'행사가',max:'최종혜택가'},
+    YE:{normal:'정상가',base:null,fixed:'고정행사가',alim:'행사가',max:'최종혜택가'},
   };
   return m[typeCode]||m.FF;
 }
@@ -1270,17 +1273,18 @@ function renderRegProds(){
       <table class="tbl">
         <thead><tr>
           <th>상태</th><th>닉네임</th>
-          <th style="text-align:right">정상가</th>
-          <th style="text-align:right;color:var(--or)">기본행사가 🔒</th>
-          <th style="text-align:right;color:var(--rd);font-weight:700">제안행사가 ✏️</th>
-          <th style="text-align:right">최대혜택가 🔒</th>
+          ${(()=>{const lbl=getPriceLabels(typeCode);const sub=(t,c)=>`<div style="font-size:9.5px;color:${c||'var(--t4)'};margin-top:2px;font-weight:400">${t}</div>`;return`
+          <th style="text-align:right">정상가${sub(lbl.normal)}</th>
+          <th style="text-align:right;color:var(--or)">기본행사가 🔒${sub(lbl.base||'(해당없음)')}</th>
+          <th style="text-align:right;color:var(--rd);font-weight:700">제안행사가 ✏️${sub(lbl.alim,'var(--rd)')}</th>
+          <th style="text-align:right">최대혜택가 🔒${sub(lbl.max||'(해당없음)')}</th>
           <th style="text-align:right;color:var(--or)">행사할인금액</th>
           <th style="text-align:right">제안할인금액</th>
           <th style="text-align:right;color:var(--bl)">최대할인금액</th>
           <th style="color:var(--or)">행사할인율</th>
           <th>제안할인율</th>
           <th>최대할인율</th>
-          <th>배송</th><th></th>
+          <th>배송</th><th></th>`;})()}
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
@@ -1310,7 +1314,7 @@ window.submitProposal=async function(){
   }
   toast(`✅ ${cnt}개 제안 완료 → 제안 탭으로 이동`);
   const tabs=document.querySelectorAll('.tab');
-  sw(2,tabs[2]);renderPropList(2);
+  showBadge('badge-2');sw(2,tabs[2]);clearBadge('badge-2');renderPropList(2);
 };
 
 window.regRemoveProd=function(code){
@@ -1838,13 +1842,14 @@ const STATUS_SELECT_STYLE={
   '확인필요':'background:rgba(202,138,4,.1);color:#854d0e;border-color:rgba(202,138,4,.4)',
   '미선정':'background:rgba(212,32,32,.08);color:var(--rd);border-color:rgba(212,32,32,.3)',
 };
-function applySelectStyle(sel,status){
+window.applySelectStyle=function applySelectStyle(sel,status){
   if(!sel)return;
   sel.style.cssText=(STATUS_SELECT_STYLE[status]||'')+';font-size:11px;border-radius:6px;padding:2px 8px;height:26px;font-weight:600';
 }
 window.markGroupStatus=function(eName,status){
   PROPOSALS.filter(p=>(p.eventSID===eName||p.eventName===eName)&&!p._deleted)
     .forEach(p=>{p.status=status;markDirty('proposalItems',p._id,{status});});
+  if(status==='선정')showBadge('badge-3');
   toast('상태 변경: '+status+' (저장 버튼으로 반영)');
   document.querySelectorAll('.egrp').forEach(el=>{
     const nm=el.querySelector('.egrpname');
@@ -1886,7 +1891,7 @@ window.closeByEventName=function(eName){
   if(!confirm('['+eName+'] 행사를 종료 처리하시겠습니까?'))return;
   const ev=EVENTS.find(e=>e._id===eName)||EVENTS.find(e=>e.eventName===eName);
   if(ev){ev.isClosed=true;markDirty('events',ev._id,{isClosed:true,closedAt:new Date().toISOString()});}
-  toast('종료 처리 (저장 버튼으로 반영)');
+  showBadge('badge-5');toast('종료 처리 (저장 버튼으로 반영)');
   renderPropList(3);renderPropList(5);
 };
 
@@ -2045,6 +2050,8 @@ function buildMonthFilters(){
 }
 
 /* ══ 탭/필터 ══ */
+window.showBadge=function(id){const el=document.getElementById(id);if(el)el.style.display='inline-block';};
+window.clearBadge=function(id){const el=document.getElementById(id);if(el)el.style.display='none';};
 window.sw=function(i,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));el.classList.add('on');$('p'+i).classList.add('on');};
 window.tog=function(id){$(id)?.classList.toggle('open');};
 window.tfClick=function(el,cls,tab){
@@ -2385,7 +2392,7 @@ window.closeByEventId=function(evId){
   if(!confirm('종료 처리하시겠습니까?'))return;
   const ev=EVENTS.find(e=>e._id===evId);if(!ev)return;
   ev.isClosed=true;markDirty('events',evId,{isClosed:true,closedAt:new Date().toISOString()});
-  toast('종료 처리 (저장 버튼으로 반영)');renderPropList(3);
+  showBadge('badge-5');toast('종료 처리 (저장 버튼으로 반영)');renderPropList(3);
 };
 
 /* ── 클립보드 복사 ── */

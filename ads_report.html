@@ -23,10 +23,16 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 .tab-content{display:none}.tab-content.active{display:block}
 
 /* ── 서브 탭 ── */
-.sub-tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:nowrap}
+.sub-tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:nowrap;border-top:1px solid var(--glass-border-s);border-bottom:1px solid var(--glass-border-s);padding:10px 0}
 .sub-tab{padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;color:var(--t2);background:var(--glass-bg);border:1px solid var(--glass-border-s);transition:all .15s;white-space:nowrap;user-select:none;}
 .sub-tab:hover{color:var(--tx);background:var(--glass-bg-strong)}
 .sub-tab.active{background:rgba(58,58,240,0.08);color:var(--accent);font-weight:600;border-color:rgba(58,58,240,0.18)}
+.sub-tab.done{color:#2D6A3F;border-color:#8FCB9B;font-weight:500}
+.sub-tab.done::after{content:' ✓';color:#3B6D11;font-size:12px}
+.sub-tab.done{color:#2D6A3F;border-color:#dde0ea;font-weight:500}
+.sub-tab.done::after{content:' ✓';color:#3B6D11;font-size:11px}
+.inner-tab.done{color:#2D6A3F!important;border-bottom-color:#2D6A3F!important;font-weight:500}
+.inner-tab.done::after{content:' ✓';font-size:10px;color:#3B6D11}
 .sub-content{display:none}.sub-content.active{display:block}
 
 /* ── 페이지 헤더 ── */
@@ -43,6 +49,9 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 
 /* ── 카드 ── */
 .card{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+.card.mail-inactive{opacity:0.5}
+.card.mail-active{border:1.5px solid #3D5A99;background:#F4F6FF}
+.card.mail-active .card-title{color:#3D5A99;font-weight:600}
 .card-title{font-size:12.5px;font-weight:600;color:var(--tx);margin-bottom:12px;display:flex;align-items:center;gap:7px}
 .card-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 
@@ -70,17 +79,19 @@ tbody td{padding:7px 10px;border-bottom:1px solid rgba(0,0,0,0.03);font-size:12p
 tbody td:first-child{text-align:left;padding-left:14px;font-size:11.5px;cursor:default}
 tbody tr:hover td{background:rgba(0,0,0,0.015)}
 tbody tr:last-child td{border-bottom:none}
-tbody td.copyable:hover::after{content:'복사';position:absolute;top:50%;right:5px;transform:translateY(-50%);background:var(--accent);color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;pointer-events:none}
-tbody td.copied{background:rgba(26,138,74,0.08)!important;color:var(--green);font-weight:700}
+tbody td[onclick]:hover{background:rgba(58,58,240,0.04);cursor:pointer}
+
 tfoot td{padding:7px 10px;font-size:12px;font-weight:700;color:var(--tx);text-align:right;background:rgba(58,58,240,0.04);border-top:1px solid rgba(58,58,240,0.12);cursor:pointer;position:relative;white-space:nowrap;user-select:none}
 tfoot td:first-child{text-align:left;padding-left:14px;cursor:default}
-tfoot td.copyable:hover::after{content:'복사';position:absolute;top:50%;right:5px;transform:translateY(-50%);background:var(--accent);color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;pointer-events:none}
-tfoot td.copied{background:rgba(26,138,74,0.08)!important;color:var(--green)}
+tfoot td[onclick]:hover{background:rgba(58,58,240,0.04);cursor:pointer}
 
-/* ── 행 복사 버튼 ── */
-.row-copy-btn{background:rgba(58,58,240,0.06);color:var(--accent);border:none;border-radius:5px;padding:3px 8px;font-size:10.5px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:inherit}
-.row-copy-btn:hover{background:rgba(58,58,240,0.12)}
-.row-copy-btn.copied-row{background:rgba(26,138,74,0.08);color:var(--green)}
+
+/* ── 행 클릭 복사 ── */
+.tr-copyable{cursor:pointer}
+.tr-copyable:hover td{background:rgba(58,58,240,0.03)}
+.tr-flash td{background:rgba(29,158,117,0.12)!important;transition:background .1s}
+/* ── 행 복사 버튼 (숨김 - 행 클릭으로 대체) ── */
+.row-copy-btn{display:none}
 
 /* ── 파일 배지 & 날짜 칩 ── */
 .file-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(58,58,240,0.06);color:var(--accent);border-radius:20px;padding:4px 12px;font-size:11.5px;font-weight:500}
@@ -275,10 +286,10 @@ tr.empty-group{opacity:.35}
 
   <!-- 서브 탭 -->
   <div class="sub-tabs" id="subTabsWrap" style="display:none">
-    <div class="sub-tab active" onclick="swSub('bk',this)">🔍 브검</div>
-    <div class="sub-tab" onclick="swSub('gfa',this)">📺 GFA</div>
-    <div class="sub-tab" onclick="swSub('adv',this)">📊 ADVoost</div>
-    <div class="sub-tab" onclick="swSub('mail',this)" style="margin-left:auto;background:rgba(58,58,240,0.06);color:var(--accent);border-color:rgba(58,58,240,0.2)">✉️ 메일쓰기</div>
+    <div class="sub-tab active" onclick="swSub('bk',this)" id="mainTabBk">[1] 브검</div>
+    <div class="sub-tab" onclick="swSub('gfa',this)" id="mainTabGfa">[2] GFA</div>
+    <div class="sub-tab" onclick="swSub('adv',this)" id="mainTabAdv">[3] ADVoost</div>
+    <div class="sub-tab" onclick="swSub('mail',this)" id="mainTabMail" style="margin-left:auto;background:rgba(58,58,240,0.06);color:var(--accent);border-color:rgba(58,58,240,0.2)">메일쓰기</div>
   </div>
 
   <!-- 날짜 미적용 안내 -->
@@ -313,8 +324,8 @@ tr.empty-group{opacity:.35}
 
     <!-- 내부 탭 -->
     <div class="inner-tabs" style="display:flex;gap:0;border-bottom:1.5px solid var(--glass-border-s);margin-bottom:14px">
-      <div class="inner-tab active" onclick="swBkInner('bkPerf',this)" style="padding:5px 16px;font-size:12.5px;color:var(--accent);cursor:pointer;border-bottom:2.5px solid var(--accent);margin-bottom:-1.5px">브검 성과</div>
-      <div class="inner-tab" onclick="swBkInner('bkKw',this)" style="padding:5px 16px;font-size:12.5px;color:var(--t2);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px">브검 키워드</div>
+      <div class="inner-tab active" id="innerTabBkPerf" onclick="swBkInner('bkPerf',this)" style="padding:5px 16px;font-size:12.5px;color:var(--accent);cursor:pointer;border-bottom:2.5px solid var(--accent);margin-bottom:-1.5px">브검 성과</div>
+      <div class="inner-tab" id="innerTabBkKw" onclick="swBkInner('bkKw',this)" style="padding:5px 16px;font-size:12.5px;color:var(--t2);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px">브검 키워드</div>
     </div>
 
     <div id="bkPerf">
@@ -329,8 +340,8 @@ tr.empty-group{opacity:.35}
   <div class="sub-content" id="s-gfa">
     <!-- 내부 탭 -->
     <div class="inner-tabs" style="display:flex;gap:0;border-bottom:1.5px solid var(--glass-border-s);margin-bottom:14px">
-      <div class="inner-tab active" onclick="swGfaInner('gfaPerf',this)" style="padding:5px 16px;font-size:12.5px;color:var(--accent);cursor:pointer;border-bottom:2.5px solid var(--accent);margin-bottom:-1.5px">GFA 성과</div>
-      <div class="inner-tab" onclick="swGfaInner('gfaSojai',this)" style="padding:5px 16px;font-size:12.5px;color:var(--t2);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px">GFA 소재</div>
+      <div class="inner-tab active" id="innerTabGfaPerf" onclick="swGfaInner('gfaPerf',this)" style="padding:5px 16px;font-size:12.5px;color:var(--accent);cursor:pointer;border-bottom:2.5px solid var(--accent);margin-bottom:-1.5px">GFA 성과</div>
+      <div class="inner-tab" id="innerTabGfaSojai" onclick="swGfaInner('gfaSojai',this)" style="padding:5px 16px;font-size:12.5px;color:var(--t2);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px">GFA 소재</div>
     </div>
     <div id="gfaPerf">
     <div class="upload-zone" id="gfaUpload" style="max-width:920px" onclick="document.getElementById('gfaInput').click()">
@@ -350,7 +361,7 @@ tr.empty-group{opacity:.35}
         <div class="tbl-scroll">
           <table>
             <colgroup><col style="width:130px"><col style="width:110px"><col style="width:90px"><col style="width:110px"><col style="width:90px"><col style="width:110px"><col style="width:76px"></colgroup>
-            <thead><tr><th>날짜</th><th>노출</th><th>클릭</th><th>비용</th><th>전환</th><th>매출</th><th style="text-align:center">행 복사</th></tr></thead>
+            <thead><tr><th>날짜</th><th>노출</th><th>클릭</th><th>비용</th><th>전환</th><th>매출</th><th style="display:none"></th></tr></thead>
             <tbody id="gfaDateBody"></tbody>
             <tfoot id="gfaDateFoot"></tfoot>
           </table>
@@ -369,7 +380,7 @@ tr.empty-group{opacity:.35}
         <div class="tbl-scroll">
           <table>
             <colgroup><col style="width:36px"><col style="width:260px"><col style="width:110px"><col style="width:90px"><col style="width:110px"><col style="width:90px"><col style="width:110px"><col style="width:76px"></colgroup>
-            <thead><tr><th style="text-align:center">#</th><th>그룹명</th><th>노출</th><th>클릭</th><th>비용</th><th>전환</th><th>매출</th><th style="text-align:center">행 복사</th></tr></thead>
+            <thead><tr><th style="text-align:center">#</th><th>그룹명</th><th>노출</th><th>클릭</th><th>비용</th><th>전환</th><th>매출</th><th style="display:none"></th></tr></thead>
             <tbody id="gfaGroupBody"></tbody>
             <tfoot id="gfaGroupFoot"></tfoot>
           </table>
@@ -379,7 +390,7 @@ tr.empty-group{opacity:.35}
         <button class="btn btn-ghost btn-sm" id="gfaGroupCopyValues">📋 데일리 리포트용 복사</button>
         <button class="btn btn-primary btn-sm" id="gfaGroupCopyAll">📋 전체 복사</button>
       </div>
-      <div class="hint">💡 셀 클릭 -> 값 복사 &nbsp;|&nbsp; 행 복사 -> 탭 구분 복사 (엑셀 한 행에 붙여넣기)</div>
+      <div class="hint">💡 셀 클릭 → 값 복사 &nbsp;|&nbsp; 행 클릭 → 행 전체 복사</div>
     </div>
     </div>
 
@@ -403,7 +414,7 @@ tr.empty-group{opacity:.35}
           <div class="file-badge" id="gcBadge">📄 파일명</div>
           <div class="result-header-right">
             <button class="btn btn-ghost btn-sm" id="gcBtnAll" onclick="toggleGcAll()">전체보기 ON</button>
-            <button class="btn btn-ghost btn-sm" id="gcBtnName" onclick="toggleGcName()">소재 이름 ON</button>
+            <button class="btn btn-ghost btn-sm" id="gcBtnName" onclick="toggleGcName()" style="background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2)">소재 이름 OFF</button>
             <button class="btn btn-ghost btn-sm" id="gcRefreshImg">🔄 이미지 새로고침</button>
             <select id="gcDateSel" class="yozm-sel"><option value="all">전체 기간</option></select>
             <button class="btn btn-ghost btn-sm" id="gcReset">↩ 다시 업로드</button>
@@ -460,7 +471,7 @@ tr.empty-group{opacity:.35}
       <div style="display:flex;flex-direction:column;gap:12px">
 
         <!-- 성과 테이블 카드 -->
-        <div class="card" id="mailCardPerf">
+        <div class="card mail-inactive" id="mailCardPerf">
           <div class="card-title" style="justify-content:space-between">
             <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--accent)"></div>날짜별 성과 요약</span>
             <div style="display:flex;gap:6px;align-items:center">
@@ -473,11 +484,11 @@ tr.empty-group{opacity:.35}
             <div style="font-size:12px;color:var(--t3);padding:12px 0;text-align:center">브검 / GFA / ADV 파일 업로드 후 자동으로 채워집니다</div>
           </div>
           <!-- 이미지 캡처용 숨김 렌더링 영역 -->
-          <div id="mailPerfImageArea" style="display:none;font-family:'Malgun Gothic',sans-serif;font-size:12px;background:#fff;padding:16px;color:#222"></div>
+          <div id="mailPerfImageArea" style="display:none;font-family:'Malgun Gothic',sans-serif;font-size:12px;background:#fff;padding:0;color:#222"></div>
         </div>
 
         <!-- 브검 카드 -->
-        <div class="card" id="mailCardBk">
+        <div class="card mail-inactive" id="mailCardBk">
           <div class="card-title" style="justify-content:space-between">
             <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--accent)"></div>* 브랜드검색</span>
             <button class="btn btn-ghost btn-sm" onclick="mailApplyCard('bk')" title="이 카드만 미리보기 반영">↙ 적용</button>
@@ -486,7 +497,7 @@ tr.empty-group{opacity:.35}
         </div>
 
         <!-- GFA 카드 -->
-        <div class="card" id="mailCardGfa">
+        <div class="card mail-inactive" id="mailCardGfa">
           <div class="card-title" style="justify-content:space-between">
             <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--blue)"></div>* 성과형DA(GFA)</span>
             <button class="btn btn-ghost btn-sm" onclick="mailApplyCard('gfa')" title="이 카드만 미리보기 반영">↙ 적용</button>
@@ -495,7 +506,7 @@ tr.empty-group{opacity:.35}
         </div>
 
         <!-- 전일 상위성과소재 이미지 카드 -->
-        <div class="card" id="mailCardGfaImg">
+        <div class="card mail-inactive" id="mailCardGfaImg">
           <div class="card-title" style="justify-content:space-between">
             <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--blue)"></div>전일 상위성과소재 이미지</span>
             <div style="display:flex;gap:6px;align-items:center">
@@ -510,7 +521,7 @@ tr.empty-group{opacity:.35}
         </div>
 
         <!-- ADV 카드 -->
-        <div class="card" id="mailCardAdv">
+        <div class="card mail-inactive" id="mailCardAdv">
           <div class="card-title" style="justify-content:space-between">
             <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--green)"></div>* ADVoost</span>
             <button class="btn btn-ghost btn-sm" onclick="mailApplyCard('adv')" title="이 카드만 미리보기 반영">↙ 적용</button>
@@ -532,9 +543,7 @@ tr.empty-group{opacity:.35}
               <button class="btn btn-primary btn-sm" onclick="mailCopy()">📋 메일 본문 복사</button>
             </div>
           </div>
-          <div id="mailPreview" style="background:var(--glass-bg);border-radius:8px;padding:14px 16px;font-size:12px;line-height:2;color:var(--tx);white-space:pre-wrap;min-height:320px;max-height:520px;overflow-y:auto;font-family:'Malgun Gothic',sans-serif">안녕하세요.
-올리브파트너스 김규빈입니다.
-광고 실적 보고 드립니다.</div>
+          <div id="mailPreview" style="background:var(--glass-bg);border-radius:8px;padding:14px 16px;font-size:12px;line-height:2;color:var(--tx);min-height:320px;max-height:520px;overflow-y:auto;font-family:'Malgun Gothic',sans-serif">안녕하세요.<br>올리브파트너스 김규빈입니다.<br>광고 실적 보고 드립니다.</div>
         </div>
 
         <!-- 변경 로그 -->
@@ -1039,7 +1048,6 @@ const MAIL_LOG_KEY = 'yozm_mail_log_v1';
 // 각 카드의 콘텐츠를 자동 텍스트로 업데이트하는 함수 (타 탭에서 호출)
 function mailUpdateBk(moTotal, moKeywords, pcTotal, pcKeywords, date) {
   _mailData.date = date || _mailData.date;
-  // 키워드 탭 summaryText 우선 사용
   const moKwData = [..._kwByDate.values()].find(d => d.type === 'MO');
   const pcKwData = [..._kwByDate.values()].find(d => d.type === 'PC');
   const moText = moKwData ? moKwData.summaryText : `Total(${moTotal}) / ${moKeywords}`;
@@ -1048,6 +1056,7 @@ function mailUpdateBk(moTotal, moKeywords, pcTotal, pcKeywords, date) {
   const el = document.getElementById('mailBkAuto');
   if (el) el.innerHTML = `<span style="font-size:10px;background:rgba(58,58,240,0.08);color:var(--accent);border-radius:4px;padding:1px 6px;margin-right:6px">자동</span>` +
     `MO: ${moText}<br>PC: ${pcText}`;
+  document.getElementById('mailCardBk')?.classList.remove('mail-inactive'); document.getElementById('mailCardBk')?.classList.add('mail-active');
 }
 
 function mailUpdateGfa(groups) {
@@ -1055,6 +1064,7 @@ function mailUpdateGfa(groups) {
   const count = groups.split('+').length;
   const el = document.getElementById('mailGfaAuto');
   if (el) el.innerHTML = `<span style="font-size:10px;background:rgba(58,58,240,0.08);color:var(--accent);border-radius:4px;padding:1px 6px;margin-right:6px">자동</span>현재, ${groups} → ${count} 캠페인 운영 중.<br>전일 상위성과소재 이미지 (GFA 소재 탭 참조)`;
+  document.getElementById('mailCardGfa')?.classList.remove('mail-inactive'); document.getElementById('mailCardGfa')?.classList.add('mail-active');
 }
 
 async function mailUpdateGfaImg(groupMap, images) {
@@ -1088,7 +1098,7 @@ async function mailUpdateGfaImg(groupMap, images) {
         const imgEntry = images[c.code] || Object.values(images).find(v=>v.name===c.name);
         const imgData = imgEntry?.img || null;
         if (imgData) {
-          html += `<img src="${imgData}" style="width:108px;height:108px;object-fit:contain;border-radius:6px;border:1px solid #E8EDF8;display:block;margin:0 auto">`;
+          html += `<img src="${imgData}" style="width:108px;height:108px;object-fit:contain;object-position:center;border-radius:6px;border:1px solid #E8EDF8;display:block;margin:0 auto;flex-shrink:0">`;
         } else {
           html += `<div style="width:108px;height:108px;background:#f5f5f5;border-radius:6px;border:1px dashed #ddd;margin:0 auto"></div>`;
         }
@@ -1104,15 +1114,56 @@ async function mailUpdateGfaImg(groupMap, images) {
   content.innerHTML = html;
   if (imageArea) imageArea.innerHTML = html;
   if (imgBtn) imgBtn.style.display = '';
+  document.getElementById('mailCardGfaImg')?.classList.remove('mail-inactive'); document.getElementById('mailCardGfaImg')?.classList.add('mail-active');
 }
 
 async function mailCopyGfaImage() {
-  const area = document.getElementById('mailGfaImageArea');
+  const tbl = document.getElementById('gcCompactTbl');
+  if (!tbl) { showToast('⚠️ GFA 소재 탭에서 데이터를 먼저 불러주세요'); return; }
+
+  // 숨겨진 부모 컨테이너 임시 표시
+  const hiddenAncestors = [];
+  let el = tbl.parentElement;
+  while (el && el !== document.body) {
+    if (getComputedStyle(el).display === 'none') {
+      hiddenAncestors.push({el, prev: el.style.display});
+      el.style.display = 'block';
+    }
+    el = el.parentElement;
+  }
+
+  // 소재 이름 라벨 임시 숨김
+  const nameLabels = [...tbl.querySelectorAll('.gc-name-label')];
+  const prevDisplay = nameLabels.map(e => e.style.display);
+  nameLabels.forEach(e => e.style.display = 'none');
+
+  showToast('📷 이미지 생성 중...');
+  try {
+    const canvas = await html2canvas(tbl, { backgroundColor:'#ffffff', scale:3, useCORS:true, logging:false, allowTaint:true });
+    canvas.toBlob(blob => {
+      if (!blob) { showToast('❌ 이미지 생성 실패'); return; }
+      navigator.clipboard.write([new ClipboardItem({'image/png': blob})])
+        .then(() => showToast('✅ 이미지 복사됨 — 메일에 Ctrl+V'))
+        .catch(() => showToast('❌ 클립보드 접근 실패'));
+    }, 'image/png');
+  } catch(e) {
+    showToast('❌ 이미지 생성 실패');
+    console.error(e);
+  } finally {
+    // 부모 컨테이너 복구
+    hiddenAncestors.forEach(({el, prev}) => el.style.display = prev);
+    // 소재 이름 라벨 복구
+    nameLabels.forEach((e, i) => e.style.display = prevDisplay[i]);
+  }
+}
+
+async function mailCopyPerfImage() {
+  const area = document.getElementById('mailPerfImageArea');
   if (!area) return;
   area.style.display = 'block';
   showToast('📷 이미지 생성 중...');
   try {
-    const canvas = await html2canvas(area, { backgroundColor:'#ffffff', scale:2, useCORS:true, logging:false });
+    const canvas = await html2canvas(area, { backgroundColor:'#ffffff', scale:3, useCORS:true, logging:false });
     area.style.display = 'none';
     canvas.toBlob(blob => {
       if (!blob) { showToast('❌ 이미지 생성 실패'); return; }
@@ -1120,16 +1171,16 @@ async function mailCopyGfaImage() {
         .then(() => showToast('✅ 이미지 복사됨 — 메일에 Ctrl+V'))
         .catch(() => showToast('❌ 클립보드 접근 실패'));
     }, 'image/png');
-  } catch {
+  } catch(e) {
     area.style.display = 'none';
     showToast('❌ 이미지 생성 실패');
   }
 }
-
 function mailUpdateAdv(daConv, saConv) {
   _mailData.advConv = `DA (${daConv}건) / SA (${saConv}건)`;
   const el = document.getElementById('mailAdvAuto');
   if (el) el.innerHTML = `<span style="font-size:10px;background:rgba(58,58,240,0.08);color:var(--accent);border-radius:4px;padding:1px 6px;margin-right:6px">자동</span>광고계정 전환: DA <b>${daConv}건</b> / SA <b>${saConv}건</b>`;
+  document.getElementById('mailCardAdv')?.classList.remove('mail-inactive'); document.getElementById('mailCardAdv')?.classList.add('mail-active');
 }
 
 // 날짜별 성과 전역 저장소
@@ -1262,7 +1313,7 @@ function mailRefreshPerf() {
   if (!perfContent) return;
 
   let cardHtml = '';
-  let imgHtml = `<div style="font-family:'Malgun Gothic',sans-serif;padding:16px;background:#fff;color:#222">`;
+  let imgHtml = `<div style="font-family:'Malgun Gothic',sans-serif;padding:0;background:#fff;color:#222">`;
 
   byDate.forEach(({dk, bk, gfa, adv, total}, idx) => {
     const label = perfDateDisplay(dk);
@@ -1300,6 +1351,10 @@ function mailRefreshPerf() {
   // 이미지 복사 버튼 표시
   const imgBtn = document.getElementById('mailPerfImgBtn');
   if (imgBtn) imgBtn.style.display = '';
+
+  // 카드 활성화
+  const perfCard = document.getElementById('mailCardPerf');
+  if (perfCard) { perfCard.classList.remove('mail-inactive'); perfCard.classList.add('mail-active'); }
 }
 
 async function mailCopyPerfImage() {
@@ -1308,7 +1363,7 @@ async function mailCopyPerfImage() {
   area.style.display = 'block';
   showToast('📷 이미지 생성 중...');
   try {
-    const canvas = await html2canvas(area, { backgroundColor:'#ffffff', scale:2, useCORS:true, logging:false });
+    const canvas = await html2canvas(area, { backgroundColor:'#ffffff', scale:3, useCORS:true, logging:false });
     area.style.display = 'none';
     canvas.toBlob(blob => {
       if (!blob) { showToast('❌ 이미지 생성 실패'); return; }
@@ -1325,28 +1380,66 @@ async function mailCopyPerfImage() {
 function mailUpdatePerf(dateStr, rows) {
   _mailData.date = dateStr;
   _mailData.perfTable = rows;
+  if (rows && rows.length) document.getElementById('mailCardPerf')?.classList.remove('mail-inactive'); document.getElementById('mailCardPerf')?.classList.add('mail-active');
+}
+
+function mailBuildHtml() {
+  // 날짜 포맷: "4월9일(목)" 형태
+  const dateLabel = _mailData.date || '';
+
+  // MO/PC 추출
+  let moLine = '', pcLine = '';
+  if (_mailData.bkAuto) {
+    const moMatch = _mailData.bkAuto.match(/MO:\s*(.+?)(?:\n|$)/);
+    const pcMatch = _mailData.bkAuto.match(/PC:\s*(.+?)(?:\n|$)/);
+    if (moMatch) moLine = moMatch[1].trim();
+    if (pcMatch) pcLine = pcMatch[1].trim();
+  }
+
+  // GFA 그룹
+  const gfaLine = _mailData.gfaGroups
+    ? `현재, ${_mailData.gfaGroups} 운영 중.` : '';
+
+  // ADV 전환
+  let daLine = '', saLine = '';
+  if (_mailData.advConv) {
+    const daMatch = _mailData.advConv.match(/DA\s*\((\d+)건\)/);
+    const saMatch = _mailData.advConv.match(/SA\s*\((\d+)건\)/);
+    if (daMatch) daLine = daMatch[1];
+    if (saMatch) saLine = saMatch[1];
+  }
+  const advLine = (daLine||saLine) ? `DA (${daLine||0}건) / SA (${saLine||0}건)` : '';
+
+  return `<div>.</div>
+<p></p>
+<div><br></div>
+<div><br></div>
+안녕하세요.
+<br>
+<div>올리브파트너스 김규빈입니다.<br>.</div>
+<div>.</div>
+<div>.</div>
+<div>광고 실적 보고 드립니다.<br><br><b>${dateLabel}</b><br><br><br><b>* 브랜드검색</b><br><b>&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp; 키워드 소재 (전환)</b><br>&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; → MO: ${moLine}<br>&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;→ PC: ${pcLine}
+<div><b>&nbsp;&nbsp;&nbsp;&nbsp;- 이미지 소재</b><br><br><br><b>* 성과형DA(GFA)</b><br>- ${gfaLine}<br><b>&nbsp; &nbsp; → 전일 상위성과소재 이미지<br></b><br><br><b>* ADVoost<br>- 광고계정 전환 :</b> ${advLine}<br>.<br>.<br>.</div>
+<div><br>자세한 사항은 첨부 파일 확인 요청 드립니다.<br><br></div>
+<div>감사합니다.<br>김규빈 드림.<br><br></div>
+<div><br></div>
+<div>.</div></div>
+<p><br></p>`;
 }
 
 function mailBuildText() {
-  let txt = `안녕하세요.\n올리브파트너스 김규빈입니다.\n광고 실적 보고 드립니다.\n`;
-  if (_mailData.date) txt += `\n${_mailData.date}\n`;
-  if (_mailData.perfTable && _mailData.perfTable.length) {
-    txt += `캠페인 유형\t노출\t클릭\t비용\t전환\t매출\tROAS\n`;
-    _mailData.perfTable.forEach(r => {
-      txt += `${r.label}\t${(r.imp||0).toLocaleString()}\t${(r.clk||0).toLocaleString()}\t${(r.cost||0).toLocaleString()}\t${(r.conv||0).toLocaleString()}\t${(r.rev||0).toLocaleString()}\t${r.roas||'-'}\n`;
-    });
-  }
-  txt += `\n* 브랜드검색\n`;
-  if (_mailData.bkAuto) txt += `-  ${_mailData.bkAuto}\n`;
-
-  txt += `\n* 성과형DA(GFA)\n`;
-  if (_mailData.gfaGroups) txt += `- 현재, ${_mailData.gfaGroups} 운영 중.\n    → 전일 상위성과소재 이미지\n`;
-
-  txt += `\n* ADVoost\n`;
-  if (_mailData.advConv) txt += `- 광고계정 전환 : ${_mailData.advConv}\n`;
-
-  txt += `.\n.\n.\n자세한 사항은 첨부 파일 확인 요청 드립니다.\n감사합니다.\n김규빈 드림.\n.`;
-  return txt;
+  // HTML → plain text (하위 호환)
+  return mailBuildHtml()
+    .replace(/<b>([\s\S]*?)<\/b>/gi, '$1')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/div>\s*<div>/gi, '\n')
+    .replace(/<div>/gi, '').replace(/<\/div>/gi, '\n')
+    .replace(/<p><br><\/p>/gi, '\n').replace(/<p>/gi, '').replace(/<\/p>/gi, '\n')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/<[^>]+>/g, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
 function mailApplyCard(card) {
@@ -1356,16 +1449,33 @@ function mailApplyCard(card) {
 
 function mailApplyAll() {
   const preview = document.getElementById('mailPreview');
-  if (preview) preview.textContent = mailBuildText();
+  if (preview) {
+    preview.style.whiteSpace = 'normal';
+    preview.innerHTML = mailBuildHtml();
+  }
   showToast('⚡ 전체 적용됨');
 }
 
 async function mailCopy() {
-  const text = mailBuildText();
+  const html = mailBuildHtml();
+  const plain = mailBuildText();
   try {
-    await navigator.clipboard.writeText(text);
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        'text/html': new Blob([html], {type:'text/html'}),
+        'text/plain': new Blob([plain], {type:'text/plain'})
+      })
+    ]);
     showToast('✅ 메일 본문 복사됨 — 이메일에 Ctrl+V');
-  } catch { showToast('❌ 복사 실패'); }
+    markTabDone('mainTabMail');
+  } catch {
+    // fallback: plain text
+    try {
+      await navigator.clipboard.writeText(plain);
+      showToast('✅ 메일 본문 복사됨 (텍스트)');
+      markTabDone('mainTabMail');
+    } catch { showToast('❌ 복사 실패'); }
+  }
 }
 
 // 변경 로그
@@ -1421,11 +1531,14 @@ function rptHtmlToText(html) {
     .replace(/<b>([\s\S]*?)<\/b>/gi, '$1')
     .replace(/<strong>([\s\S]*?)<\/strong>/gi, '$1')
     .replace(/&nbsp;/g, ' ')
-    .replace(/<br\s*\/?>\n?/gi, '\n')
-    .replace(/<div><br><\/div>/gi, '\n')
-    .replace(/<div>/gi, '\n')
-    .replace(/<\/div>/gi, '')
-    .replace(/<[^>]+>/g, '');
+    .replace(/<br\s*\/?>/gi, '\n')          // <br> → \n
+    .replace(/<div><br\s*\/?><\/div>/gi, '\n') // <div><br></div> → \n
+    .replace(/<\/div>\s*<div>/gi, '\n')     // </div><div> → \n
+    .replace(/<div>/gi, '\n')               // <div> → \n
+    .replace(/<\/div>/gi, '')               // </div> 제거
+    .replace(/<[^>]+>/g, '')               // 나머지 태그 제거
+    .replace(/\n{3,}/g, '\n\n')            // 3줄 이상 공백 → 2줄로 정리
+    .trim();
 }
 
 function rptLoad() {
@@ -1558,6 +1671,14 @@ function swInner(id, el) {
   if (target) target.classList.add('active');
 }
 
+function markTabDone(tabId) {
+  const tab = document.getElementById(tabId);
+  if (tab) tab.classList.add('done');
+}
+function markInnerTabDone(el) {
+  if (el) el.classList.add('done');
+}
+
 let _toastTimer;
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -1583,23 +1704,28 @@ function parseNum(v) {
 const fmt = n => Math.round(n).toLocaleString('ko-KR');
 const raw = n => String(Math.round(n));
 
+window.copyToClip = function(text, el) {
+  navigator.clipboard.writeText(String(text)).then(() => {
+    if (el) {
+      const o = el.style.background;
+      el.style.background = 'rgba(29,158,117,0.15)';
+      setTimeout(() => el.style.background = o, 600);
+    }
+    showToast('✅ ' + String(text).substring(0, 25));
+  }).catch(() => showToast('❌ 복사 실패'));
+};
+
 function bindCellCopy(scope) {
-  scope.querySelectorAll('td.copyable').forEach(td => {
-    td.onclick = () => {
-      navigator.clipboard.writeText(td.dataset.val).then(() => {
-        td.classList.add('copied');
-        showToast('✅ 복사됨: ' + Number(td.dataset.val).toLocaleString('ko-KR'));
-        setTimeout(() => td.classList.remove('copied'), 900);
-      });
-    };
-  });
-  scope.querySelectorAll('.row-copy-btn').forEach(btn => {
-    btn.onclick = e => {
-      e.stopPropagation();
+  // 행 클릭 → 숨겨진 버튼의 data-row 복사 + 플래시
+  scope.querySelectorAll('tr.tr-copyable').forEach(tr => {
+    tr.onclick = e => {
+      if (e.target.tagName === 'TD' && e.target.hasAttribute('onclick')) return;
+      const btn = tr.querySelector('.row-copy-btn');
+      if (!btn) return;
       navigator.clipboard.writeText(btn.dataset.row).then(() => {
-        btn.textContent = '✓ 완료'; btn.classList.add('copied-row');
+        tr.classList.add('tr-flash');
         showToast('✅ 행 복사 완료');
-        setTimeout(() => { btn.textContent = '복사'; btn.classList.remove('copied-row'); }, 1200);
+        setTimeout(() => tr.classList.remove('tr-flash'), 700);
       });
     };
   });
@@ -1610,10 +1736,11 @@ function buildTableRows(tbody, rows, firstColFn) {
   rows.forEach(([label, v]) => {
     const vals = [v.imp, v.clk, v.cost, v.conv, v.rev];
     const tr = document.createElement('tr');
+    tr.className = 'tr-copyable';
     tr.innerHTML =
       `<td style="cursor:default">${firstColFn ? firstColFn(label) : label}</td>` +
-      vals.map(n => `<td class="copyable" data-val="${raw(n)}">${fmt(n)}</td>`).join('') +
-      `<td style="text-align:center;cursor:default"><button class="row-copy-btn" data-row="${vals.map(raw).join('\t')}">복사</button></td>`;
+      vals.map(n => `<td data-val="${raw(n)}" onclick="copyToClip(${raw(n)},this)">${fmt(n)}</td>`).join('') +
+      `<td><button class="row-copy-btn" data-row="${vals.map(raw).join('\t')}">복사</button></td>`;
     tbody.appendChild(tr);
   });
 }
@@ -1623,9 +1750,9 @@ function buildTfoot(tfoot, rows) {
   rows.forEach(([,v]) => { tot.imp+=v.imp; tot.clk+=v.clk; tot.cost+=v.cost; tot.conv+=v.conv; tot.rev+=v.rev; });
   const tv = [tot.imp,tot.clk,tot.cost,tot.conv,tot.rev];
   tfoot.innerHTML =
-    `<tr><td>합계</td>` +
-    tv.map(n => `<td class="copyable" data-val="${raw(n)}">${fmt(n)}</td>`).join('') +
-    `<td style="text-align:center;cursor:default"><button class="row-copy-btn" data-row="${tv.map(raw).join('\t')}">복사</button></td></tr>`;
+    `<tr class="tr-copyable"><td>합계</td>` +
+    tv.map(n => `<td data-val="${raw(n)}" onclick="copyToClip(${raw(n)},this)">${fmt(n)}</td>`).join('') +
+    `<td><button class="row-copy-btn" data-row="${tv.map(raw).join('\t')}">복사</button></td></tr>`;
   return tot;
 }
 
@@ -1700,6 +1827,8 @@ async function processBk(file, slotDateKey) {
   _perfStore.bk[dateKey] = { imp: bkTotImp, clk: bkTotClk, cost: bkCostGet().total, conv: bkTotConv, rev: bkTotRev };
   mailRefreshPerf();
   showToast(`✅ 브검 ${dispDate} 업로드 완료`);
+  markTabDone('mainTabBk');
+  document.getElementById('innerTabBkPerf')?.classList.add('done');
 }
 
 function renderBkAll() {
@@ -1760,20 +1889,22 @@ function renderBkAll() {
         const tableWrap = document.createElement('div'); tableWrap.className = 'tbl-card';
         const scroll = document.createElement('div'); scroll.className = 'tbl-scroll'; scroll.style.maxHeight = '280px';
         const table = document.createElement('table');
-        table.innerHTML = `<thead><tr><th>광고그룹명</th><th>노출</th><th>클릭</th><th style="color:var(--t4)">비용</th><th>전환</th><th>매출</th><th style="text-align:center">행 복사</th></tr></thead>`;
+        table.innerHTML = `<thead><tr><th>광고그룹명</th><th>노출</th><th>클릭</th><th style="color:var(--t4)">비용</th><th>전환</th><th>매출</th><th style="display:none"></th></tr></thead>`;
         const tbody = document.createElement('tbody'); const tfoot = document.createElement('tfoot');
         let totImp=0,totClk=0,totConv=0,totRev=0;
         panelRows.forEach(([name,v]) => {
           totImp+=v.imp; totClk+=v.clk; totConv+=v.conv; totRev+=v.rev;
           const tr = document.createElement('tr');
-          tr.innerHTML = `<td style="cursor:default">${name}</td><td class="copyable" data-val="${raw(v.imp)}">${fmt(v.imp)}</td><td class="copyable" data-val="${raw(v.clk)}">${fmt(v.clk)}</td><td style="text-align:right;color:var(--t4);cursor:default">-</td><td class="copyable" data-val="${raw(v.conv)}">${fmt(v.conv)}</td><td class="copyable" data-val="${raw(v.rev)}">${fmt(v.rev)}</td><td style="text-align:center;cursor:default"><button class="row-copy-btn" data-row="${[raw(v.imp),raw(v.clk),'',raw(v.conv),raw(v.rev)].join('\t')}">복사</button></td>`;
+          tr.className = 'tr-copyable';
+          tr.innerHTML = `<td style="cursor:default">${name}</td><td data-val="${raw(v.imp)}" onclick="copyToClip(${raw(v.imp)},this)">${fmt(v.imp)}</td><td data-val="${raw(v.clk)}" onclick="copyToClip(${raw(v.clk)},this)">${fmt(v.clk)}</td><td style="text-align:right;color:var(--t4);cursor:default">-</td><td data-val="${raw(v.conv)}" onclick="copyToClip(${raw(v.conv)},this)">${fmt(v.conv)}</td><td data-val="${raw(v.rev)}" onclick="copyToClip(${raw(v.rev)},this)">${fmt(v.rev)}</td><td><button class="row-copy-btn" data-row="${[raw(v.imp),raw(v.clk),'',raw(v.conv),raw(v.rev)].join('\t')}">복사</button></td>`;
           tbody.appendChild(tr);
         });
         // 합계 행: 헤더 아래 빨간 구분선, 목록 맨 위
         const sumTr = document.createElement('tr');
+        sumTr.className = 'tr-copyable';
         const rb = '2px solid #E24B4A';
         const slotCost = type === 'mo' ? bkCostGet().mo : bkCostGet().pc;
-        sumTr.innerHTML = `<td style="font-weight:700;border-top:${rb}">합계</td><td class="copyable" data-val="${raw(totImp)}" style="font-weight:600;border-top:${rb}">${fmt(totImp)}</td><td class="copyable" data-val="${raw(totClk)}" style="font-weight:600;border-top:${rb}">${fmt(totClk)}</td><td class="copyable" data-val="${slotCost}" style="font-weight:600;border-top:${rb};font-style:italic;color:var(--t3)">${slotCost>0?fmt(slotCost):'-'}</td><td class="copyable" data-val="${raw(totConv)}" style="font-weight:600;border-top:${rb}">${fmt(totConv)}</td><td class="copyable" data-val="${raw(totRev)}" style="font-weight:600;border-top:${rb}">${fmt(totRev)}</td><td style="text-align:center;border-top:${rb}"><button class="row-copy-btn" data-row="${[raw(totImp),raw(totClk),slotCost,raw(totConv),raw(totRev)].join('\t')}">복사</button></td>`;
+        sumTr.innerHTML = `<td style="font-weight:700;border-top:${rb}">합계</td><td style="font-weight:600;border-top:${rb}" data-val="${raw(totImp)}" onclick="copyToClip(${raw(totImp)},this)">${fmt(totImp)}</td><td style="font-weight:600;border-top:${rb}" data-val="${raw(totClk)}" onclick="copyToClip(${raw(totClk)},this)">${fmt(totClk)}</td><td style="font-weight:600;border-top:${rb};font-style:italic;color:var(--t3)" data-val="${slotCost}" onclick="copyToClip(${slotCost},this)">${slotCost>0?fmt(slotCost):'-'}</td><td style="font-weight:600;border-top:${rb}" data-val="${raw(totConv)}" onclick="copyToClip(${raw(totConv)},this)">${fmt(totConv)}</td><td style="font-weight:600;border-top:${rb}" data-val="${raw(totRev)}" onclick="copyToClip(${raw(totRev)},this)">${fmt(totRev)}</td><td style="border-top:${rb}"><button class="row-copy-btn" data-row="${[raw(totImp),raw(totClk),slotCost,raw(totConv),raw(totRev)].join('\t')}">복사</button></td>`;
         tbody.insertBefore(sumTr, tbody.firstChild);
         table.appendChild(tbody); scroll.appendChild(table); tableWrap.appendChild(scroll);
         card.appendChild(tableWrap); bindCellCopy(card); grid.appendChild(card);
@@ -1936,6 +2067,8 @@ async function processKw(file, slotDateKey, slotType) {
   // 브검 카드 갱신 (키워드 summaryText 반영)
   mailUpdateBk(0, '', 0, '', '');
   showToast(`✅ 키워드 ${perfDateDisplay(dk)} ${type} 업로드 완료`);
+  markTabDone('mainTabBk');
+  document.getElementById('innerTabBkKw')?.classList.add('done');
 }
 
 function renderKwAll() {
@@ -1969,7 +2102,10 @@ function renderKwAll() {
       const panelHdr = document.createElement('div'); panelHdr.className = 'panel-header';
       panelHdr.innerHTML = `
         <div class="panel-title"><div class="panel-title-dot" style="background:${color}"></div>${type} 매체</div>
-        ${data ? `<button class="btn btn-ghost btn-sm" onclick="kwRemoveSlot('${mapKey}')" style="font-size:11px;color:var(--t3)">✕</button>` : ''}`;
+        ${data ? `<div style="display:flex;align-items:center;gap:6px;margin-left:auto">
+          <button class="btn btn-ghost btn-sm" id="kwRptBtn_${mapKey}" style="font-size:11px">📋 리포트용 복사</button>
+          <button class="btn btn-ghost btn-sm" onclick="kwRemoveSlot('${mapKey}')" style="font-size:11px;color:var(--t3)">✕</button>
+        </div>` : ''}`;
       card.appendChild(panelHdr);
 
       if (!data) {
@@ -1989,20 +2125,22 @@ function renderKwAll() {
         const tableWrap = document.createElement('div'); tableWrap.className = 'tbl-card';
         const scroll = document.createElement('div'); scroll.className = 'tbl-scroll'; scroll.style.maxHeight = '280px';
         const table = document.createElement('table');
-        table.innerHTML = `<thead><tr><th>키워드</th><th>노출</th><th>클릭</th><th style="color:var(--t4)">비용</th><th>전환</th><th>매출</th><th style="text-align:center">행 복사</th></tr></thead>`;
+        table.innerHTML = `<thead><tr><th>키워드</th><th>노출</th><th>클릭</th><th style="color:var(--t4)">비용</th><th>전환</th><th>매출</th><th style="display:none"></th></tr></thead>`;
         const tbody = document.createElement('tbody');
         data.dataRows.forEach(r => {
           const imp=Math.round(parseNum(r[data.cImp])), clk=Math.round(parseNum(r[data.cClk]));
           const conv=Math.round(parseNum(r[data.cConv])), rev=Math.round(parseNum(r[data.cRev]));
           const tr = document.createElement('tr');
-          tr.innerHTML = `<td style="cursor:default">${r[data.cKw]||''}</td><td class="copyable" data-val="${imp}">${fmt(imp)}</td><td class="copyable" data-val="${clk}">${fmt(clk)}</td><td style="text-align:right;color:var(--t4);cursor:default">-</td><td class="copyable" data-val="${conv}">${fmt(conv)}</td><td class="copyable" data-val="${rev}">${fmt(rev)}</td><td style="text-align:center;cursor:default"><button class="row-copy-btn" data-row="${[imp,clk,'',conv,rev].join('\t')}">복사</button></td>`;
+          tr.className = 'tr-copyable';
+          tr.innerHTML = `<td style="cursor:default">${r[data.cKw]||''}</td><td data-val="${imp}" onclick="copyToClip(${imp},this)">${fmt(imp)}</td><td data-val="${clk}" onclick="copyToClip(${clk},this)">${fmt(clk)}</td><td style="text-align:right;color:var(--t4);cursor:default">-</td><td data-val="${conv}" onclick="copyToClip(${conv},this)">${fmt(conv)}</td><td data-val="${rev}" onclick="copyToClip(${rev},this)">${fmt(rev)}</td><td><button class="row-copy-btn" data-row="${[imp,clk,'',conv,rev].join('\t')}">복사</button></td>`;
           tbody.appendChild(tr);
         });
         // 합계 행: 헤더 아래 빨간 구분선, 목록 맨 위
         const rb = '2px solid #E24B4A';
         const kwCost = type === 'MO' ? bkCostGet().mo : bkCostGet().pc;
         const kwSumTr = document.createElement('tr');
-        kwSumTr.innerHTML = `<td style="font-weight:700;border-top:${rb}">합계</td><td class="copyable" data-val="${Math.round(data.totImp)}" style="font-weight:600;border-top:${rb}">${fmt(data.totImp)}</td><td class="copyable" data-val="${Math.round(data.totClk)}" style="font-weight:600;border-top:${rb}">${fmt(data.totClk)}</td><td class="copyable" data-val="${kwCost}" style="font-weight:600;border-top:${rb};font-style:italic;color:var(--t3)">${kwCost>0?fmt(kwCost):'-'}</td><td class="copyable" data-val="${Math.round(data.totConv)}" style="font-weight:600;border-top:${rb}">${fmt(data.totConv)}</td><td class="copyable" data-val="${Math.round(data.totRev)}" style="font-weight:600;border-top:${rb}">${fmt(data.totRev)}</td><td style="text-align:center;border-top:${rb}"><button class="row-copy-btn" data-row="${[Math.round(data.totImp),Math.round(data.totClk),kwCost,Math.round(data.totConv),Math.round(data.totRev)].join('\t')}">복사</button></td>`;
+        kwSumTr.className = 'tr-copyable';
+        kwSumTr.innerHTML = `<td style="font-weight:700;border-top:${rb}">합계</td><td style="font-weight:600;border-top:${rb}" data-val="${Math.round(data.totImp)}" onclick="copyToClip(${Math.round(data.totImp)},this)">${fmt(data.totImp)}</td><td style="font-weight:600;border-top:${rb}" data-val="${Math.round(data.totClk)}" onclick="copyToClip(${Math.round(data.totClk)},this)">${fmt(data.totClk)}</td><td style="font-weight:600;border-top:${rb};font-style:italic;color:var(--t3)" data-val="${kwCost}" onclick="copyToClip(${kwCost},this)">${kwCost>0?fmt(kwCost):'-'}</td><td style="font-weight:600;border-top:${rb}" data-val="${Math.round(data.totConv)}" onclick="copyToClip(${Math.round(data.totConv)},this)">${fmt(data.totConv)}</td><td style="font-weight:600;border-top:${rb}" data-val="${Math.round(data.totRev)}" onclick="copyToClip(${Math.round(data.totRev)},this)">${fmt(data.totRev)}</td><td style="border-top:${rb}"><button class="row-copy-btn" data-row="${[Math.round(data.totImp),Math.round(data.totClk),kwCost,Math.round(data.totConv),Math.round(data.totRev)].join('\t')}">복사</button></td>`;
         tbody.insertBefore(kwSumTr, tbody.firstChild);
         table.appendChild(tbody); scroll.appendChild(table); tableWrap.appendChild(scroll);
 
@@ -2012,7 +2150,26 @@ function renderKwAll() {
 
         card.appendChild(tableWrap); card.appendChild(sumTextBox);
         bindCellCopy(card);
-        setTimeout(() => { const b=document.getElementById(uid); if(b) b.onclick=()=>navigator.clipboard.writeText(data.summaryText).then(()=>showToast('✅ 복사 완료')); }, 0);
+        setTimeout(() => {
+          const b = document.getElementById(uid);
+          if(b) b.onclick = () => navigator.clipboard.writeText(data.summaryText).then(() => showToast('✅ 복사 완료'));
+          const rb = document.getElementById(`kwRptBtn_${mapKey}`);
+          if(rb) rb.onclick = () => {
+            const rows = data.dataRows.slice(0,30).map(r => [
+              r[data.cKw]||'',
+              Math.round(parseNum(r[data.cImp])),
+              Math.round(parseNum(r[data.cClk])),
+              Math.round(parseNum(r[data.cConv])),
+              Math.round(parseNum(r[data.cRev]))
+            ]);
+            const tsv = rows.map(r=>r.join('\t')).join('\n');
+            navigator.clipboard.writeText(tsv).then(()=>{
+              rb.textContent='✅ 복사됨!';
+              showToast(`✅ ${type} 키워드 ${rows.length}개 복사 완료`);
+              setTimeout(()=>{ rb.textContent='📋 리포트용 복사'; },1500);
+            });
+          };
+        }, 0);
       }
       grid.appendChild(card);
     });
@@ -2140,7 +2297,7 @@ async function processGfa(file) {
   buildTableRows(dateBody, dateSorted, null);
   buildTfoot(dateFoot, dateSorted);
   document.getElementById('gfaDateCopyAll').onclick = () => {
-    const rows = [...dateBody.querySelectorAll('tr')].map(tr => [tr.children[0].textContent, ...[...tr.querySelectorAll('td.copyable')].map(td=>td.dataset.val)]);
+    const rows = [...dateBody.querySelectorAll('tr')].map(tr => [tr.children[0].textContent, ...[...tr.querySelectorAll('td[data-val]')].map(td=>td.dataset.val)]);
     navigator.clipboard.writeText(rows.map(r=>r.join('\t')).join('\n')).then(() => showToast('✅ 전체 복사 완료'));
   };
   bindCellCopy(dateBody); bindCellCopy(dateFoot);
@@ -2148,6 +2305,8 @@ async function processGfa(file) {
   document.getElementById('gfaBadge').textContent = '📄 ' + file.name;
   document.getElementById('gfaResults').style.display = 'block';
   document.getElementById('gfaUpload').style.display = 'none';
+  document.getElementById('mainTabGfa')?.classList.add('done');
+  document.getElementById('innerTabGfaPerf')?.classList.add('done');
 }
 
 async function renderGfaGroup(selDate) {
@@ -2171,11 +2330,12 @@ async function renderGfaGroup(selDate) {
     const tr = document.createElement('tr');
     if (v) {
       const vals = [v.imp,v.clk,v.cost,v.conv,v.rev];
+      tr.className = 'tr-copyable';
       tr.innerHTML =
         `<td style="text-align:center;cursor:default;color:var(--t3);font-size:11px">${idx+1}</td>` +
-        `<td style="cursor:default;font-size:11.5px">${name}</td>` +
-        vals.map(n => `<td class="copyable" data-val="${raw(n)}">${fmt(n)}</td>`).join('') +
-        `<td style="text-align:center;cursor:default"><button class="row-copy-btn" data-row="${vals.map(raw).join('\t')}">복사</button></td>`;
+        `<td style="font-size:11.5px" data-val="${name}" onclick="copyToClip('${name.replace(/'/g,"\\'")}',this)">${name}</td>` +
+        vals.map(n => `<td data-val="${raw(n)}" onclick="copyToClip(${raw(n)},this)">${fmt(n)}</td>`).join('') +
+        `<td><button class="row-copy-btn" data-row="${[name,...vals.map(raw)].join('\t')}">복사</button></td>`;
       tot.imp+=v.imp; tot.clk+=v.clk; tot.cost+=v.cost; tot.conv+=v.conv; tot.rev+=v.rev;
     } else {
       tr.className = 'empty-group';
@@ -2188,9 +2348,9 @@ async function renderGfaGroup(selDate) {
   });
   const tv = [tot.imp,tot.clk,tot.cost,tot.conv,tot.rev];
   tfoot.innerHTML =
-    `<tr><td style="text-align:center"></td><td>합계</td>` +
-    tv.map(n => `<td class="copyable" data-val="${raw(n)}">${fmt(n)}</td>`).join('') +
-    `<td style="text-align:center;cursor:default"><button class="row-copy-btn" data-row="${tv.map(raw).join('\t')}">복사</button></td></tr>`;
+    `<tr class="tr-copyable"><td style="text-align:center"></td><td>합계</td>` +
+    tv.map(n => `<td data-val="${raw(n)}" onclick="copyToClip(${raw(n)},this)">${fmt(n)}</td>`).join('') +
+    `<td><button class="row-copy-btn" data-row="${tv.map(raw).join('\t')}">복사</button></td></tr>`;
   document.getElementById('gfaGroupCopyValues').onclick = async () => {
     const sd = document.getElementById('gfaDateSel').value;
     const filt = sd === 'all' ? _gfaData : _gfaData.filter(r => r.date === sd);
@@ -2207,7 +2367,7 @@ async function renderGfaGroup(selDate) {
     navigator.clipboard.writeText(rows.join('\n')).then(() => showToast('✅ 값만 고정순서 복사 완료 (' + all2.length + '행)'));
   };
   document.getElementById('gfaGroupCopyAll').onclick = () => {
-    const rows = [...tbody.querySelectorAll('tr:not(.empty-group)')].map(tr => [tr.children[1].textContent, ...[...tr.querySelectorAll('td.copyable')].map(td=>td.dataset.val)]);
+    const rows = [...tbody.querySelectorAll('tr:not(.empty-group)')].map(tr => [tr.children[1].textContent, ...[...tr.querySelectorAll('td[data-val]')].map(td=>td.dataset.val)]);
     navigator.clipboard.writeText(rows.map(r=>r.join('\t')).join('\n')).then(() => showToast('✅ 전체 복사 완료'));
   };
   bindCellCopy(tbody); bindCellCopy(tfoot);
@@ -2279,7 +2439,6 @@ async function processAdv(file, num) {
     const table = document.createElement('table');
     table.innerHTML = `<thead><tr>
       <th>${firstColLabel}</th><th>노출</th><th>클릭</th><th>비용</th><th>전환</th><th>매출</th>
-      <th style="text-align:center">행 복사</th>
     </tr></thead>`;
     const tbody = document.createElement('tbody'), tfoot = document.createElement('tfoot');
     buildTableRows(tbody, rows, null); buildTfoot(tfoot, rows);
@@ -2294,7 +2453,7 @@ async function processAdv(file, num) {
   const dateCopyBtn = document.createElement('button');
   dateCopyBtn.className = 'btn btn-primary btn-sm'; dateCopyBtn.textContent = '📋 전체 복사';
   dateCopyBtn.onclick = () => {
-    const r2 = [...dateTbody.querySelectorAll('tr')].map(tr => [tr.children[0].textContent, ...[...tr.querySelectorAll('td.copyable')].map(td=>td.dataset.val)]);
+    const r2 = [...dateTbody.querySelectorAll('tr')].map(tr => [tr.children[0].textContent, ...[...tr.querySelectorAll('td[data-val]')].map(td=>td.dataset.val)]);
     navigator.clipboard.writeText(r2.map(r=>r.join('\t')).join('\n')).then(() => showToast('✅ 전체 복사 완료'));
   };
   dateCopyWrap.appendChild(dateCopyBtn);
@@ -2316,6 +2475,7 @@ async function processAdv(file, num) {
   if (num === 1) window._advDaConv = Math.round(totalConv);
   if (num === 2) window._advSaConv = Math.round(totalConv);
   mailUpdateAdv(window._advDaConv||0, window._advSaConv||0);
+  document.getElementById('mainTabAdv')?.classList.add('done');
 
   // 성과 저장소 업데이트
   const store = num === 1 ? _perfStore.da : _perfStore.sa;
@@ -2340,7 +2500,7 @@ let _gcAllData = [];
 let _gcImages = {};
 let _gcView = 'compact';
 let _gcAllOn = false;   // 전체보기 (기본: 전환있는 그룹만)
-let _gcNameOn = false;  // 소재 이름 표시 (기본: OFF)
+let _gcNameOn = true;  // 소재 이름 표시 (기본: ON)
 
 function toggleGcAll() {
   _gcAllOn = !_gcAllOn;
@@ -2455,6 +2615,8 @@ async function processGc(file) {
   await renderGcCards('all');
   document.getElementById('gcBadge').textContent = '📄 ' + file.name;
   document.getElementById('gcResults').style.display = 'block';
+  document.getElementById('mainTabGfa')?.classList.add('done');
+  document.getElementById('innerTabGfaSojai')?.classList.add('done');
   document.getElementById('gcUpload').style.display = 'none';
 
   // 메일쓰기 탭 자동 연동 - 운영 중인 캠페인 그룹 추출
@@ -2507,6 +2669,7 @@ async function renderGcCards(selDate) {
         });
 
     const tbl = document.createElement('table');
+    tbl.id = 'gcCompactTbl';
     tbl.style.cssText = 'width:auto;table-layout:fixed;border-collapse:collapse;background:var(--glass-bg-strong);border:1px solid var(--glass-border-s);border-radius:12px;overflow:hidden';
 
     // 헤더
@@ -2540,21 +2703,25 @@ async function renderGcCards(selDate) {
 
       for (const gName of visibleGroups) {
         const creativeMap = groupMap.get(gName);
-        const top2 = [...creativeMap.values()].sort((a, b) => b.conv - a.conv).slice(0, 2);
+        // 전환 있는 소재만, 전환 순으로 정렬
+        const top2 = [...creativeMap.values()]
+          .filter(c => c.conv > 0)
+          .sort((a, b) => b.conv - a.conv)
+          .slice(0, 2);
         const c = top2[rank];
         const td = document.createElement('td');
-        td.style.cssText = 'padding:0;text-align:center;width:120px;min-width:120px;max-width:120px;height:120px;overflow:hidden;vertical-align:middle;' + (rank < 1 ? 'border-bottom:1px solid var(--glass-border-s);' : '');
+        td.style.cssText = 'padding:0;text-align:center;width:120px;min-width:120px;max-width:120px;height:auto;min-height:120px;overflow:hidden;vertical-align:top;' + (rank < 1 ? 'border-bottom:1px solid var(--glass-border-s);' : '');
 
         if (c) {
           const imgEntry = images[c.code] || Object.values(images).find(v => v.name === c.name);
           const imgData = imgEntry?.img || null;
           const wrap = document.createElement('div');
-          wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;width:120px;height:120px;overflow:hidden';
+          wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:120px;padding:6px 0;overflow:hidden;min-height:120px';
 
           if (imgData) {
             const img = document.createElement('img');
             img.src = imgData; img.alt = c.name;
-            img.style.cssText = 'width:108px;height:108px;object-fit:contain;border-radius:8px;border:1px solid var(--glass-border-s);display:block;cursor:pointer;background:#fff';
+            img.style.cssText = 'max-width:108px;max-height:108px;width:auto;height:auto;object-fit:contain;border-radius:8px;border:1px solid var(--glass-border-s);display:block;cursor:pointer;background:#fff';
             img.title = c.name + '\n클릭하면 이미지 복사';
             img.onclick = () => copyGcImage(imgData);
             wrap.appendChild(img);
@@ -2576,18 +2743,24 @@ async function renderGcCards(selDate) {
               };
               wrap.appendChild(noImg);
             } else {
-              // 소재 이름 OFF -> 빈 박스만
               const blank = document.createElement('div');
               blank.style.cssText = 'width:108px;height:108px;border-radius:8px;background:var(--glass-bg);border:1px solid var(--glass-border-s)';
               wrap.appendChild(blank);
             }
           }
 
-          // 소재 이름 + 코드 (ON일 때만)
+          // 소재 이름 + 코드 + 전환수 + 복사 버튼 (ON일 때만)
           const nameEl = document.createElement('div');
           nameEl.className = 'gc-name-label';
-          nameEl.style.cssText = `font-size:10px;color:var(--t3);margin-top:4px;width:108px;text-align:center;line-height:1.5;overflow:hidden;text-overflow:ellipsis;display:${_gcNameOn ? 'block' : 'none'};word-break:keep-all`;
-          nameEl.innerHTML = `<div style="font-size:10px;color:var(--t2);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name}</div>${c.code ? `<div style="font-size:9.5px;color:var(--t3)">${c.code}</div>` : ''}`;
+          nameEl.style.cssText = `font-size:10px;color:var(--t3);margin-top:2px;width:116px;text-align:center;line-height:1.5;display:${_gcNameOn ? 'block' : 'none'};word-break:keep-all`;
+
+          const convBadge = `<div style="font-size:9.5px;color:var(--accent);font-weight:600;margin-bottom:2px">전환 ${Math.round(c.conv)}건</div>`;
+          const nameLine = `<div onclick="event.stopPropagation();copyToClip('${c.name.replace(/'/g,"\\'")}',this)" title="클릭하면 이름 복사" style="font-size:10px;color:var(--t2);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:112px;cursor:pointer;padding:2px 5px;border-radius:4px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong)">${c.name}</div>`;
+          const copyBtns = `<div style="display:flex;gap:3px;justify-content:center;margin-top:3px;flex-wrap:wrap">
+            ${c.code ? `<button onclick="event.stopPropagation();copyToClip('${c.code}',this)" style="font-size:9px;padding:1px 5px;border-radius:4px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;color:var(--accent);line-height:1.6">${c.code}</button>` : ''}
+          </div>`;
+
+          nameEl.innerHTML = convBadge + nameLine + copyBtns;
           wrap.appendChild(nameEl);
 
           td.appendChild(wrap);
@@ -2600,23 +2773,27 @@ async function renderGcCards(selDate) {
     tbl.appendChild(tbody);
     container.appendChild(tbl);
 
-    // 메일쓰기 전일 상위성과소재 카드에 동일한 표 주입
+    // 메일쓰기 전일 상위성과소재 카드에 동일한 표 주입 (소재 이름 OFF 고정)
     const mailContent = document.getElementById('mailGfaImgContent');
     const mailImageArea = document.getElementById('mailGfaImageArea');
     const mailImgBtn = document.getElementById('mailGfaImgBtn');
     if (mailContent) {
       const clone = tbl.cloneNode(true);
       clone.style.cssText = 'width:auto;table-layout:fixed;border-collapse:collapse;font-family:\'Malgun Gothic\',sans-serif;background:#fff';
+      // 소재 이름 라벨 숨김 고정
+      clone.querySelectorAll('.gc-name-label').forEach(el => el.style.display = 'none');
       mailContent.innerHTML = '';
       mailContent.appendChild(clone);
     }
     if (mailImageArea) {
       const clone2 = tbl.cloneNode(true);
       clone2.style.cssText = 'width:auto;table-layout:fixed;border-collapse:collapse;font-family:\'Malgun Gothic\',sans-serif;background:#fff';
+      clone2.querySelectorAll('.gc-name-label').forEach(el => el.style.display = 'none');
       mailImageArea.innerHTML = '';
       mailImageArea.appendChild(clone2);
     }
     if (mailImgBtn) mailImgBtn.style.display = '';
+    document.getElementById('mailCardGfaImg')?.classList.remove('mail-inactive'); document.getElementById('mailCardGfaImg')?.classList.add('mail-active');
 
     return;
   }

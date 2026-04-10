@@ -215,8 +215,7 @@ tr.empty-group{opacity:.35}
           <div>
             <div style="font-size:10.5px;font-weight:600;color:var(--t3);letter-spacing:.5px;margin-bottom:8px">2 · 내부 파일명 (prefix 기준 자동 인식)</div>
             <div style="display:flex;flex-direction:column;gap:4px" id="zipFileList">
-              <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--glass-bg);border-radius:7px;border:1px solid var(--glass-border-s)"><div><span style="font-size:11px;color:var(--t3);margin-right:8px">브검 MO</span><span id="zf-bkmo" style="font-size:12px;font-family:monospace;color:var(--tx)">bkmo_260408.xlsx</span></div><button onclick="zipGuideCopy(document.getElementById('zf-bkmo').textContent,this)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:11px;color:var(--t2)">복사</button></div>
-              <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--glass-bg);border-radius:7px;border:1px solid var(--glass-border-s)"><div><span style="font-size:11px;color:var(--t3);margin-right:8px">브검 PC</span><span id="zf-bkpc" style="font-size:12px;font-family:monospace;color:var(--tx)">bkpc_260408.xlsx</span></div><button onclick="zipGuideCopy(document.getElementById('zf-bkpc').textContent,this)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:11px;color:var(--t2)">복사</button></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--glass-bg);border-radius:7px;border:1px solid var(--glass-border-s)"><div><span style="font-size:11px;color:var(--t3);margin-right:8px">브검</span><span id="zf-bk" style="font-size:12px;font-family:monospace;color:var(--tx)">bk_260408.xlsx</span></div><button onclick="zipGuideCopy(document.getElementById('zf-bk').textContent,this)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:11px;color:var(--t2)">복사</button></div>
               <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--glass-bg);border-radius:7px;border:1px solid var(--glass-border-s)"><div><span style="font-size:11px;color:var(--t3);margin-right:8px">키워드 MO</span><span id="zf-kwmo" style="font-size:12px;font-family:monospace;color:var(--tx)">kwmo_260408.xlsx</span></div><button onclick="zipGuideCopy(document.getElementById('zf-kwmo').textContent,this)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:11px;color:var(--t2)">복사</button></div>
               <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--glass-bg);border-radius:7px;border:1px solid var(--glass-border-s)"><div><span style="font-size:11px;color:var(--t3);margin-right:8px">키워드 PC</span><span id="zf-kwpc" style="font-size:12px;font-family:monospace;color:var(--tx)">kwpc_260408.xlsx</span></div><button onclick="zipGuideCopy(document.getElementById('zf-kwpc').textContent,this)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:11px;color:var(--t2)">복사</button></div>
               <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--glass-bg);border-radius:7px;border:1px solid var(--glass-border-s)"><div><span style="font-size:11px;color:var(--t3);margin-right:8px">GFA 성과</span><span id="zf-gfa" style="font-size:12px;font-family:monospace;color:var(--tx)">gfa_260408.zip</span></div><button onclick="zipGuideCopy(document.getElementById('zf-gfa').textContent,this)" style="padding:4px 10px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;font-size:11px;color:var(--t2)">복사</button></div>
@@ -666,7 +665,7 @@ function zipGuideUpdate() {
   const preview = document.getElementById('zipNamePreview');
   if (preview) preview.textContent = d + '.zip';
   const FILES = {
-    bkmo:'xlsx', bkpc:'xlsx', kwmo:'xlsx', kwpc:'xlsx',
+    bk:'xlsx', kwmo:'xlsx', kwpc:'xlsx',
     gfa:'zip', gc:'zip', da:'zip', sa:'zip'
   };
   Object.entries(FILES).forEach(([p, ext]) => {
@@ -751,8 +750,7 @@ async function processDailyZip(zipFile) {
 
   // ZIP 내부 파일 분류 (prefix 기준)
   const PREFIX_MAP = {
-    'bkmo': f => processBk(f, dateKey),
-    'bkpc': f => processBk(f, dateKey),
+    'bk':   f => processBk(f, dateKey),
     'kwmo': f => processKw(f, dateKey, 'MO'),
     'kwpc': f => processKw(f, dateKey, 'PC'),
     'gfa':  f => processGfa(f),

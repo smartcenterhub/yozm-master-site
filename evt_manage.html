@@ -125,7 +125,7 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
 .tbl th{text-align:left;padding:6px 7px;color:var(--t3);font-weight:600;border-bottom:1px solid var(--bd);white-space:nowrap;font-size:10.5px}
 .tbl th.locked-col{color:var(--t4)}
 .tbl th.alim-col{color:var(--or);font-weight:700}
-.tbl td{padding:6px 7px;border-bottom:1px solid rgba(0,0,0,.04);vertical-align:middle}
+.tbl td{padding:6px 7px;border-bottom:1px solid rgba(0,0,0,.07);vertical-align:middle}
 .tbl tr:last-child td{border-bottom:none}
 .tbl tr.prod-row{cursor:pointer}
 .tbl tr.prod-row:hover td{background:rgba(58,58,240,.03)}
@@ -172,7 +172,7 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
 .skb.mt:hover,.skb.mt.on{background:rgba(58,58,240,.1);border-color:var(--ac);font-weight:600}
 .skb.st2{border-color:rgba(152,152,168,.3);color:var(--t2)}
 .skb.st2:hover,.skb.st2.on{background:rgba(152,152,168,.12);border-color:var(--t3);font-weight:600}
-.sku-sel-bar{padding:6px 12px;border-top:1px solid var(--bd);background:rgba(58,58,240,.03);font-size:11px;color:var(--t3);display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:32px}
+.sku-sel-bar{padding:6px 12px;border-top:1px solid var(--bd);background:rgba(58,58,240,.03);font-size:11px;color:var(--t3);display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow-x:auto;min-height:32px;cursor:grab}
 .schip{display:inline-block;padding:1px 7px;font-size:11px;border-radius:5px;background:rgba(58,58,240,.1);color:var(--ac);border:1px solid rgba(58,58,240,.2)}
 .tgsec{border:1px solid var(--bd);border-radius:var(--rl);margin-bottom:9px;overflow:hidden}
 .tghd{display:flex;justify-content:space-between;align-items:center;padding:9px 13px;cursor:pointer;background:rgba(255,255,255,.55);user-select:none}
@@ -289,49 +289,89 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   <div class="pg-hd">
     <div><div class="pg-title">행사 등록</div><div class="pg-desc">events 컬렉션에 새 행사 직접 등록</div></div>
     <div class="rbtn">
-      <button class="btn btn-gh btn-sm" onclick="saveEventAndGo()">Firebase 저장 후 → 제안 탭</button>
-      <button class="btn btn-p" onclick="saveEventDirect()">Firebase 저장</button>
+      <button class="btn btn-p" onclick="submitProposal()">Firebase 저장 → 제안 탭</button>
     </div>
   </div>
 
-  <!-- ① 행사 기본 정보 (전체 너비) -->
-  <div class="panel" style="margin-bottom:12px">
-    <div class="ptitle">행사 기본 정보</div>
-    <div class="frow">
-      <div class="fg" style="flex:.8">
-        <div class="fl">유형</div>
-        <select class="fi" id="ev-type" onchange="autoEvName()">
-          <option value="FF">🎪 푸드페스타 (FF)</option>
-          <option value="TD">⏰ 오늘끝딜 (TD)</option>
-          <option value="SP">💜 슈퍼적립 (SP)</option>
-          <option value="HB">🍽️ 한입발견회 (HB)</option>
-          <option value="CB">🍽️ 취향발견회 (CB)</option>
-          <option value="SA">🏷️ +세일 (SA)</option>
-          <option value="OD">🎁 원쁠딜 (OD)</option>
-          <option value="YL">⭐ 자사런칭 (YL)</option>
-          <option value="YE">📋 자체행사 (YE)</option>
-          <option value="AL">📡 상시 (AL)</option>
-          <option value="DN">📢 배송공지 (DN)</option>
-        </select>
+  <!-- 2열 grid: 기본정보+상품추가 | 달력 -->
+  <div style="display:grid;grid-template-columns:1fr 252px;gap:10px;align-items:flex-start;margin-bottom:12px">
+
+    <!-- 좌 컬럼 -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+
+      <!-- 행사 기본 정보 -->
+      <div class="panel" style="margin-bottom:0">
+        <div class="ptitle" style="display:flex;justify-content:space-between;align-items:center">
+          <span>행사 기본 정보</span>
+          <select class="fi" id="ev-type" onchange="autoEvName()" style="width:180px;font-size:12px;flex-shrink:0;margin-bottom:0">
+            <option value="" disabled selected>선택하기</option>
+            <option value="FF">🎪 푸드페스타 (FF)</option>
+            <option value="TD">⏰ 오늘끝딜 (TD)</option>
+            <option value="SP">💜 슈퍼적립 (SP)</option>
+            <option value="HB">🍽️ 한입발견회 (HB)</option>
+            <option value="CB">🍽️ 취향발견회 (CB)</option>
+            <option value="SA">🏷️ +세일 (SA)</option>
+            <option value="OD">🎁 원쁠딜 (OD)</option>
+            <option value="YL">⭐ 자사런칭 (YL)</option>
+            <option value="YE">📋 자체행사 (YE)</option>
+            <option value="AL">📡 상시 (AL)</option>
+            <option value="DN">📢 배송공지 (DN)</option>
+          </select>
+        </div>
+        <div class="frow">
+          <div class="fg" style="flex:1.4">
+            <div class="fl">행사명 <span style="color:var(--t4);font-size:10px">(자동 · 수정 가능)</span></div>
+            <input class="fi" id="ev-name">
+          </div>
+          <div class="fg">
+            <div class="fl">랜딩페이지</div>
+            <select class="fi" id="ev-pagetype">
+              <option>쇼핑스토리+카테고리</option><option>쇼핑스토리</option>
+              <option>카테고리</option><option selected>상품바로랜딩</option>
+            </select>
+          </div>
+          <div class="fg">
+            <div class="fl">추가할인/적립</div>
+            <input class="fi" id="ev-adddisc" placeholder="예) 최대 7% 적립">
+          </div>
+        </div>
+        <div id="dn-notice" style="display:none" class="ibox ib-or">📢 배송공지 — 상품 없이 저장 후 바로 <b>행사 선정</b> 탭으로 이동됩니다.</div>
       </div>
-      <div class="fg" style="flex:1.4">
-        <div class="fl">행사명 <span style="color:var(--t4);font-size:10px">(자동 · 수정 가능)</span></div>
-        <input class="fi" id="ev-name">
-      </div>
-      <div class="fg">
-        <div class="fl">랜딩페이지</div>
-        <select class="fi" id="ev-pagetype">
-          <option>쇼핑스토리+카테고리</option><option>쇼핑스토리</option>
-          <option>카테고리</option><option selected>상품바로랜딩</option>
-        </select>
-      </div>
-      <div class="fg">
-        <div class="fl">추가할인/적립</div>
-        <input class="fi" id="ev-adddisc" placeholder="예) 최대 7% 적립">
-      </div>
-    </div>
-    <div id="dn-notice" style="display:none" class="ibox ib-or">📢 배송공지 — 상품 없이 저장 후 바로 <b>행사 선정</b> 탭으로 이동됩니다.</div>
-  </div>
+
+      <!-- 상품 추가 -->
+      <div id="ev-prod-panel">
+        <div class="ptitle" style="margin-bottom:8px">
+          <span>상품 추가 <span id="reg-cnt" style="font-size:11px;color:var(--t3);font-weight:400">(0개)</span></span>
+          <span style="font-size:11px;color:var(--t3)"><span style="color:var(--t4)">🔒</span> = 수정 불가 · <span style="color:var(--or);font-weight:600">노란색</span> = 제안가</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 200px;gap:10px;align-items:flex-start">
+          <!-- 방법1 -->
+          <div id="reg-m1-wrap" class="tgsec" style="margin-bottom:0;min-width:0;box-sizing:border-box;overflow:auto">
+            <div class="tghd" style="cursor:default"><span class="tgtitle">방법 1 — SKU 버튼</span><span class="tghint">클릭 선택</span></div>
+            <div class="tgbody open" id="m1">
+              <div class="sku-area" id="sku-btn-area-reg"><div style="color:var(--t3);font-size:12px">로딩 중...</div></div>
+              <div class="sku-sel-bar"><span>선택됨:</span><span id="sku-chips-reg" style="display:flex;gap:5px;flex-wrap:wrap"></span></div>
+            </div>
+          </div>
+          <!-- 방법2 -->
+          <div id="reg-m2-wrap" class="tgsec" style="margin-bottom:0;box-sizing:border-box;overflow:auto">
+            <div class="tghd" style="cursor:default"><span class="tgtitle">방법 2 — 코드 직접 입력</span><span class="tghint">줄바꿈·, 구분</span></div>
+            <div class="tgbody open" id="m2">
+              <div style="padding:11px 13px">
+                <textarea class="fi" id="code-input-reg" style="height:60px;padding:8px;width:100%" placeholder="11186574097&#10;12580546874, 10273725144"></textarea>
+                <div style="display:flex;justify-content:flex-end;margin-top:6px"><button class="btn btn-sm" onclick="addByCode()">코드로 추가</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- ev-prod-panel -->
+
+    </div><!-- 좌 컬럼 끝 -->
+
+    <!-- 우 컬럼: 달력 -->
+    <div class="cal-inline" id="cal-wrap-reg" style="align-self:flex-start"></div>
+
+  </div><!-- 2열 grid 끝 -->
 
   <!-- hidden 날짜 inputs -->
   <input type="hidden" id="ev-start">
@@ -339,42 +379,9 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   <input type="hidden" id="ev-upload-date">
   <input type="hidden" id="ev-deadline">
 
-  <!-- ② 2단: 좌=방법1&2 / 우=달력 -->
-  <div id="ev-prod-panel">
-    <div style="display:grid;grid-template-columns:1fr 252px;gap:12px;align-items:flex-start;margin-bottom:12px">
-      <!-- 방법1 & 2 -->
-      <div>
-        <div class="ptitle" style="margin-bottom:8px">
-          <span>상품 추가 <span id="reg-cnt" style="font-size:11px;color:var(--t3);font-weight:400">(0개)</span></span>
-          <span style="font-size:11px;color:var(--t3)"><span style="color:var(--t4)">🔒</span> = 수정 불가 · <span style="color:var(--or);font-weight:600">노란색</span> = 제안가</span>
-        </div>
-        <div class="tgsec" style="margin-bottom:8px">
-          <div class="tghd" onclick="tog('m1')"><span class="tgtitle">방법 1 — SKU 버튼</span><span class="tghint">클릭 선택 ▾</span></div>
-          <div class="tgbody open" id="m1">
-            <div class="sku-area" id="sku-btn-area-reg"><div style="color:var(--t3);font-size:12px">로딩 중...</div></div>
-            <div class="sku-sel-bar"><span>선택됨:</span><span id="sku-chips-reg" style="display:flex;gap:5px;flex-wrap:wrap"></span></div>
-          </div>
-        </div>
-        <div class="tgsec">
-          <div class="tghd" onclick="tog('m2')"><span class="tgtitle">방법 2 — 코드 직접 입력</span><span class="tghint">줄바꿈·, 구분 ▾</span></div>
-          <div class="tgbody" id="m2">
-            <div style="padding:11px 13px">
-              <textarea class="fi" id="code-input-reg" style="height:60px;padding:8px;width:100%" placeholder="11186574097&#10;12580546874, 10273725144"></textarea>
-              <div style="display:flex;justify-content:flex-end;margin-top:6px"><button class="btn btn-sm" onclick="addByCode()">코드로 추가</button></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 달력 (오른쪽 고정) -->
-      <div class="cal-inline" id="cal-wrap-reg"></div>
-    </div>
-
-    <!-- ③ 행사 제안 샘플 (전체 너비) -->
+  <!-- ③ 행사 제안 샘플 (전체 너비) -->
     <div class="ptitle" style="margin-bottom:6px">행사 제안 샘플</div>
     <div id="reg-prod-list"><div style="text-align:center;padding:16px;color:var(--t3);font-size:12px">상품을 추가하세요</div></div>
-  </div>
-</div>
 <!-- ═══ 탭1: 행사 셀렉 ═══ -->
 <div class="pane" id="p1">
   <div class="pg-hd"><div><div class="pg-title">행사 셀렉</div><div class="pg-desc">추후 개발 예정</div></div></div>
@@ -720,7 +727,7 @@ function calInit(key,opts){
   const initDate=opts?.startVal?new Date(opts.startVal+'T00:00:00'):t;
   CAL_STATE[key]={
     selS:opts?.startVal||null,selE:opts?.endVal||null,hov:null,clicking:'start',
-    vY:initDate.getFullYear(),vM:initDate.getMonth(),
+    vY:opts?._initY||initDate.getFullYear(),vM:opts?._initM!==undefined?opts._initM:initDate.getMonth(),
     startId:opts?.startId||null,endId:opts?.endId||null,
     _sh:opts?.sh||'00',_sm:opts?.sm||'00',_eh:opts?.eh||'23',_em:opts?.em||'59',
     mode:opts?.mode||'period',
@@ -837,7 +844,29 @@ function calRender(key){
   if(modeTabRow){
     modeTabRow.addEventListener('click',e=>{
       const t=e.target.closest('[data-calmode]');
-      if(t){CAL_STATE[key].mode=t.dataset.calmode;calRender(key);}
+      if(t){
+        const nextMode=t.dataset.calmode;
+        const st=CAL_STATE[key];
+        /* 현재 모드 자동 적용 */
+        if(st.mode==='upload'&&st.uploadDate){
+          const u=document.getElementById('ev-upload-date');if(u)u.value=st.uploadDate;
+          calUpdateChips(key);
+        }else if(st.mode==='deadline'&&st.deadlineDate){
+          const d=document.getElementById('ev-deadline');if(d)d.value=st.deadlineDate;
+          calUpdateChips(key);
+        }else if(st.mode==='period'&&st.selS&&st.selE){
+          calUpdateChips(key);
+        }
+        /* 업로드일·마감일 탭은 이번달로, 행사기간은 다음달로 */
+        if(nextMode==='upload'||nextMode==='deadline'){
+          const now=new Date();st.vY=now.getFullYear();st.vM=now.getMonth();
+        }else if(nextMode==='period'){
+          const now=new Date();
+          st.vM=now.getMonth()+1>11?0:now.getMonth()+1;
+          st.vY=now.getMonth()+1>11?now.getFullYear()+1:now.getFullYear();
+        }
+        st.mode=nextMode;calRender(key);
+      }
     });
   }
 
@@ -886,6 +915,28 @@ function calRender(key){
   /* hidden input 동기화 */
   if(st.startId){const el=document.getElementById(st.startId);if(el)el.value=st.selS||'';}
   if(st.endId){const el=document.getElementById(st.endId);if(el)el.value=st.selE||'';}
+  /* 행사기간 모드: 높이 기록 / 업로드·마감 모드: 기록된 높이 고정 */
+  if(isPeriod){
+    requestAnimationFrame(()=>{
+      const h=wrap.scrollHeight;
+      if(h>0){
+        wrap._periodH=h;
+        wrap.style.height='';
+        /* 방법1 자연 높이 고정 / 방법2 방법1 높이에 맞춤 */
+        const m1w=document.getElementById('reg-m1-wrap');
+        const m2w=document.getElementById('reg-m2-wrap');
+        if(m1w){m1w.style.height='';m1w.style.overflow='visible';}
+        if(m2w){
+          requestAnimationFrame(()=>{
+            const m1h=m1w?m1w.offsetHeight:0;
+            if(m1h>0){m2w.style.height=m1h+'px';m2w.style.overflow='auto';}
+          });
+        }
+      }
+    });
+  }else{
+    if(wrap._periodH)wrap.style.height=wrap._periodH+'px';
+  }
 }
 
 function calClick(key,s){
@@ -896,9 +947,19 @@ function calClick(key,s){
     if(st.startId)document.getElementById(st.startId).value=st.selS||'';
     if(st.endId)document.getElementById(st.endId).value=st.selE||'';
   }else if(st.mode==='upload'){
-    st.uploadDate=s;  /* 날짜만 선택 — 적용 버튼 클릭 시 확정 */
+    st.uploadDate=s;
+    /* 업로드일: 클릭 즉시 적용 */
+    const u=document.getElementById('ev-upload-date');if(u)u.value=s;
+    calUpdateChips(key);
+    setTimeout(()=>{st.mode='deadline';calRender(key);},300);
+    return;
   }else if(st.mode==='deadline'){
     st.deadlineDate=s;
+    /* 마감일: 클릭 즉시 적용 */
+    const d=document.getElementById('ev-deadline');if(d)d.value=s;
+    calUpdateChips(key);
+    setTimeout(()=>{st.mode='period';calRender(key);},300);
+    return;
   }
   calRender(key);
 }
@@ -1067,7 +1128,12 @@ async function loadAll(){
     renderPropList(2);renderPropList(3);renderTimeline();renderPropList(5);renderPerf();buildTypeInfo();
     autoEvName();
     // reg 달력 초기화
-    calInit('reg',{startId:'ev-start',endId:'ev-end'});
+    (function(){
+  const t=new Date();
+  const nextM=t.getMonth()+1>=12?0:t.getMonth()+1;
+  const nextY=t.getMonth()+1>=12?t.getFullYear()+1:t.getFullYear();
+  calInit('reg',{startId:'ev-start',endId:'ev-end',_initY:nextY,_initM:nextM});
+})();
     /* 칩 클릭 이벤트 위임 (onclick 대신) */
   document.getElementById('reg-chip-upload')?.addEventListener('click',()=>{calSetMode('reg','upload');toggleDateChip('reg-expand-upload');});
   document.getElementById('reg-chip-deadline')?.addEventListener('click',()=>{calSetMode('reg','deadline');toggleDateChip('reg-expand-deadline');});
@@ -1204,26 +1270,36 @@ function renderRegProds(){
     /* 최대할인 (최대혜택가 기준, 자동수식) */
     const mDA=(pn&&mx)?'▼'+comma(pn-mx):'—';
     const mRate=(pn&&mx)?pct(pn,mx):'—';
-    return`<tr data-sku="${p.skuCode}">
-      <td><span class="st s-mid" style="font-size:10px">제안중</span></td>
-      <td style="font-weight:600">${p.skuNick}</td>
-      <td style="text-align:right"><span class="pn">${comma(pn)||'—'}</span></td>
-      <td style="text-align:right"><span style="color:var(--or);font-size:11.5px">${comma(ev)}</span></td>
-      <td style="text-align:right">
-        <input type="number"
-          style="width:72px;height:23px;text-align:right;padding:0 4px;font-size:11.5px;font-weight:600;color:var(--rd);background:rgba(255,240,240,.7);border:1px solid rgba(212,32,32,.3);border-radius:4px"
-          value="${ap!=null?ap:''}" min="${minP}"
-          oninput="updateAlimRow(this,${minP},${pn})">
+    return`<tr data-sku="${p.skuCode}" style="border-bottom:1px solid rgba(0,0,0,.07)">
+      <td style="text-align:center;border-right:1px solid rgba(0,0,0,.07)"><span class="st s-mid" style="font-size:10px">제안중</span></td>
+      <td style="border-right:1px solid rgba(0,0,0,.07);cursor:pointer;text-align:center" onclick="copyToClip('${p.skuNick}',this)">
+        <div style="font-weight:600">${p.skuNick}</div>
+        <div style="margin-top:2px">
+          <span style="display:inline-block;padding:1px 6px;font-size:9.5px;border:1px solid rgba(152,152,168,.3);border-radius:10px;color:var(--t3);cursor:pointer;background:var(--gs)"
+            onclick="copyToClip('${p.skuCode}',this)">${p.skuCode}</span>
+        </div>
       </td>
-      <td style="text-align:right"><span data-f="pmx" style="${lockSt};color:var(--ac);font-weight:600">${comma(mx)}</span></td>
-      <td style="text-align:right"><span style="font-size:11px;color:var(--or)">${bDA}</span></td>
-      <td style="text-align:right"><span data-f="pda" class="da">${pDA}</span></td>
-      <td style="text-align:right"><span data-f="mda" class="da-bl">${mDA}</span></td>
-      <td><span style="background:rgba(196,90,16,.08);color:var(--or);font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">${bRate}</span></td>
-      <td><span data-f="prate" class="re">${pRate}</span></td>
-      <td><span data-f="mrate" class="rm">${mRate}</span></td>
-      <td style="font-size:11px;color:var(--t2);white-space:nowrap">${p.ship||'무료배송'}</td>
-      <td><button class="btn btn-xs" style="color:var(--rd)" onclick="regRemoveProd('${p.skuCode}')">×</button></td>
+      <td style="text-align:right;width:80px;cursor:pointer;border-right:1px solid rgba(0,0,0,.07)" onclick="copyToClip('${pn}',this)"><span class="pn">${comma(pn)||'—'}</span></td>
+      <td style="text-align:right;width:80px;cursor:pointer;border-right:1px solid rgba(0,0,0,.07)" onclick="copyToClip('${ev||''}',this)"><span style="color:var(--or);font-size:11.5px">${comma(ev)||'—'}</span></td>
+      <td style="text-align:right;width:80px;border-right:1px solid rgba(0,0,0,.07);cursor:pointer" onclick="if(event.target.tagName!=='INPUT'&&event.target.id!=='alim-disp-${i}')copyToClip('${ap||''}',this)">
+        <span id="alim-disp-${i}" style="font-weight:600;color:var(--rd);cursor:pointer;font-size:11.5px"
+          onclick="event.stopPropagation();copyToClip('${ap||''}',this)">${comma(ap)||'—'}</span>
+        
+        <input id="alim-inp-${i}" type="number"
+          style="display:none;width:72px;height:23px;text-align:right;padding:0 4px;font-size:11.5px;font-weight:600;color:var(--rd);background:rgba(255,240,240,.7);border:1px solid rgba(212,32,32,.3);border-radius:4px"
+          value="${ap!=null?ap:''}" min="${minP}"
+          oninput="updateAlimRow(this,${minP},${pn})"
+          onblur="(function(inp){const d=document.getElementById('alim-disp-${i}');d.textContent=inp.value?(+inp.value).toLocaleString():'—';d.style.display='inline';inp.style.display='none';})(this)">
+      </td>
+      <td style="text-align:right;width:80px;cursor:pointer;border-right:1px solid rgba(0,0,0,.07)" onclick="copyToClip('${mx||''}',this)"><span data-f="pmx" style="background:rgba(248,247,255,.8);color:var(--ac);font-weight:600;padding:2px 5px;border-radius:4px;font-size:11px">${comma(mx)}</span></td>
+      <td style="text-align:right;width:72px;border-right:1px solid rgba(0,0,0,.07);cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span style="font-size:11px;color:var(--or)">${bDA}</span></td>
+      <td style="text-align:right;width:72px;cursor:pointer;border-right:1px solid rgba(0,0,0,.07)" onclick="copyToClip(this.querySelector('span').textContent,this)"><span data-f="pda" class="da">${pDA}</span></td>
+      <td style="text-align:right;width:72px;border-right:1px solid rgba(0,0,0,.07);cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span data-f="mda" style="font-size:11px;color:var(--bl);font-weight:600">${mDA}</span></td>
+      <td style="text-align:center;width:52px;border-right:1px solid rgba(0,0,0,.07);cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span style="background:rgba(196,90,16,.08);color:var(--or);font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">${bRate}</span></td>
+      <td style="text-align:center;width:52px;cursor:pointer;border-right:1px solid rgba(0,0,0,.07)" onclick="copyToClip(this.querySelector('span').textContent,this)"><span data-f="prate" class="re">${pRate}</span></td>
+      <td style="text-align:center;width:52px;border-right:1px solid rgba(0,0,0,.07);cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span data-f="mrate" style="background:rgba(26,86,200,.08);color:var(--bl);font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">${mRate}</span></td>
+      <td style="text-align:center;font-size:11px;color:var(--t2);white-space:nowrap;width:64px;border-right:1px solid rgba(0,0,0,.07);cursor:pointer" onclick="copyToClip(this.textContent.trim(),this)">${p.ship||'무료배송'}</td>
+      <td style="width:28px"><button class="btn btn-xs" style="color:var(--rd)" onclick="regRemoveProd('${p.skuCode}')">×</button></td>
     </tr>`;
   }).join('');
 
@@ -1240,9 +1316,6 @@ function renderRegProds(){
         <span class="egrpname">${evName}</span>
         ${infoTags}
         <span class="egrpmeta">${regProducts.length}개 상품</span>
-        <span style="margin-left:auto">
-          <button class="btn btn-p" style="width:88px" onclick="submitProposal()">제안하기 →</button>
-        </span>
       </div>
       <!-- 2행: 기간 칩 + 일정 칩 -->
       <div style="display:flex;align-items:center;gap:5px;margin-top:5px;flex-wrap:wrap;width:100%">
@@ -1272,19 +1345,19 @@ function renderRegProds(){
     <div class="egrpbody">
       <table class="tbl">
         <thead><tr>
-          <th>상태</th><th>닉네임</th>
-          ${(()=>{const lbl=getPriceLabels(typeCode);const sub=(t,c)=>`<div style="font-size:9.5px;color:${c||'var(--t4)'};margin-top:2px;font-weight:400">${t}</div>`;return`
-          <th style="text-align:right">정상가${sub(lbl.normal)}</th>
-          <th style="text-align:right;color:var(--or)">기본행사가 🔒${sub(lbl.base||'(해당없음)')}</th>
-          <th style="text-align:right;color:var(--rd);font-weight:700">제안행사가 ✏️${sub(lbl.alim,'var(--rd)')}</th>
-          <th style="text-align:right">최대혜택가 🔒${sub(lbl.max||'(해당없음)')}</th>
-          <th style="text-align:right;color:var(--or)">행사할인금액</th>
-          <th style="text-align:right">제안할인금액</th>
-          <th style="text-align:right;color:var(--bl)">최대할인금액</th>
-          <th style="color:var(--or)">행사할인율</th>
-          <th>제안할인율</th>
-          <th>최대할인율</th>
-          <th>배송</th><th></th>`;})()}
+          <th style="text-align:center;width:50px;border-right:1px solid rgba(0,0,0,.07)">상태</th><th style="text-align:center;width:100px;border-right:1px solid rgba(0,0,0,.07)">닉네임</th>
+          ${(()=>{const lbl=getPriceLabels(typeCode);const sub=(t,c)=>`<div style="font-size:9.5px;color:${c||'var(--t4)'};margin-top:2px;font-weight:400">${t}</div>`;const vl='border-right:1px solid rgba(0,0,0,.07)';return`
+          <th style="text-align:center;${vl}">정상가${sub(lbl.normal)}</th>
+          <th style="text-align:center;color:var(--or);${vl}">기본행사가 🔒${sub(lbl.base||'(해당없음)')}</th>
+          <th style="text-align:center;color:var(--rd);font-weight:700;${vl}">제안행사가 <span onclick="document.querySelectorAll('[id^=alim-disp-]').forEach(d=>{d.style.display='none';const inp=document.getElementById(d.id.replace('disp','inp'));if(inp){inp.style.display='inline-block';inp.focus();inp.select();}});event.stopPropagation();" style="cursor:pointer;color:var(--ac)" title="전체 수정 모드">✏️</span>${sub(lbl.alim,'var(--rd)')}</th>
+          <th style="text-align:center;${vl}">최대혜택가 🔒${sub(lbl.max||'(해당없음)')}</th>
+          <th style="text-align:center;color:var(--or);${vl}">행사할인금액</th>
+          <th style="text-align:center;color:var(--rd);width:72px;${vl}">제안할인금액</th>
+          <th style="text-align:center;color:var(--bl);width:72px;${vl}">최대할인금액</th>
+          <th style="text-align:center;color:var(--or);width:52px;${vl}">행사할인율</th>
+          <th style="text-align:center;color:var(--rd);width:52px;${vl}">제안할인율</th>
+          <th style="text-align:center;color:var(--bl);width:52px;${vl}">최대할인율</th>
+          <th style="text-align:center;${vl}">배송</th><th></th>`;})()}
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
@@ -1300,21 +1373,41 @@ window.submitProposal=async function(){
   const typeCode=$('ev-type')?.value||'FF';
   const {start,end}=getCalDates('reg');
   const {startTime,endTime}=getCalTime('reg');
-  // 이벤트 저장
+  /* events 저장 — doSaveEvent가 regProducts를 초기화하므로 먼저 복사 */
+  const productsCopy=[...regProducts];
   let eventSID='';
-  try{const {docId}=await doSaveEvent();eventSID=docId;}
-  catch(e){const ex=EVENTS.find(ev=>ev.eventName===evName);eventSID=ex?._id||'';}
-  // proposalItems 저장
-  let cnt=0;
-  for(const p of regProducts){
-    const pid=(evName+'_'+(start||'').replace(/-/g,'')+'_'+(end||'').replace(/-/g,'')+'_'+p.skuCode).replace(/\s/g,'');
-    const data={eventSID,skuCode:p.skuCode,skuNick:p.skuNick,productName:p.productName,priceNormal:p.priceNormal,priceBase:p.priceBase,priceEvent:p.priceEvent,priceAlim:p.priceAlim,priceMax:p.priceMax,ship:p.ship,isMain:p.isMain,status:'제안중',createdAt:new Date().toISOString()};
-    try{await setDoc(doc(db,'proposalItems',pid),data);PROPOSALS.unshift({_id:pid,...data});cnt++;}
-    catch(e){toast('저장 오류: '+e.message,'err');}
+  try{
+    const {docId}=await doSaveEvent();
+    eventSID=docId;
+  }catch(e){
+    /* doSaveEvent 실패해도 기존 이벤트 찾기 */
+    const ex=EVENTS.find(ev=>ev.eventName===evName);
+    eventSID=ex?._id||'';
+    if(!eventSID){toast('행사 저장 실패: '+e.message,'err');return;}
   }
-  toast(`✅ ${cnt}개 제안 완료 → 제안 탭으로 이동`);
-  const tabs=document.querySelectorAll('.tab');
-  showBadge('badge-2');sw(2,tabs[2]);clearBadge('badge-2');renderPropList(2);
+  /* proposalItems 저장 */
+  let cnt=0;
+  const errs=[];
+  for(const p of productsCopy){
+    const pid=(eventSID+'_'+(p.skuCode||'')).replace(/\s/g,'');
+    const data={eventSID,skuCode:p.skuCode,skuNick:p.skuNick,productName:p.productName,
+      priceNormal:p.priceNormal,priceBase:p.priceBase,priceEvent:p.priceEvent,
+      priceAlim:p.priceAlim,priceMax:p.priceMax,ship:p.ship,isMain:p.isMain,
+      status:'제안중',createdAt:new Date().toISOString()};
+    try{
+      await setDoc(doc(db,'proposalItems',pid),data);
+      /* 이미 있으면 덮어쓰기 */
+      const existing=PROPOSALS.findIndex(x=>x._id===pid);
+      if(existing>=0)PROPOSALS[existing]={_id:pid,...data};
+      else PROPOSALS.unshift({_id:pid,...data});
+      cnt++;
+    }catch(e){errs.push(p.skuNick+': '+e.message);}
+  }
+  if(errs.length)toast('일부 저장 실패: '+errs.join(', '),'err');
+  toast('✅ '+cnt+'개 제안 완료 → 제안 탭으로 이동');
+  const tabEl=document.querySelector('.tab-bar .tab[onclick*="sw(2,"]');
+  if(tabEl){showBadge('badge-2');sw(2,tabEl);clearBadge('badge-2');}
+  renderPropList(2);
 };
 
 window.regRemoveProd=function(code){
@@ -1334,14 +1427,14 @@ window.addByCode=function(){
 
 /* ══ 행사 등록 ══ */
 window.autoEvName=function(){
-  const type=$('ev-type')?.value;if(!type)return;
+  const type=$('ev-type')?.value;if(!type||type==='')return;
   const isDN=(type==='DN');
   const dn=$('dn-notice');if(dn)dn.style.display=isDN?'block':'none';
   const ep=$('ev-prod-panel');if(ep)ep.style.display=isDN?'none':'block';
   const nameEl=$('ev-name');
   if(nameEl&&!nameEl.dataset.manualEdit){
-    const mon=new Date().getMonth()+1;
-    const yr=new Date().getFullYear();
+    const _n=new Date();const mon=_n.getMonth()+2>12?1:_n.getMonth()+2;
+    const yr=_n.getMonth()+2>12?_n.getFullYear()+1:_n.getFullYear();
     const prefix=`${yr}-${String(mon).padStart(2,'0')}`;
     // 이번 달 같은 유형 행사 수 확인
     const sameCount=EVENTS.filter(e=>{
@@ -1371,7 +1464,7 @@ async function doSaveEvent(){
   await setDoc(doc(db,'events',docId),data);
   EVENTS.unshift({_id:docId,...data});
   ['ev-name','ev-start','ev-end','ev-adddisc'].forEach(id=>{const e=$(id);if(e)e.value='';});
-  delete CAL_STATE['reg'];calInit('reg',{startId:'ev-start',endId:'ev-end'});calRender('reg');
+  delete CAL_STATE['reg'];calInit('reg',(function(){const _t=new Date();const _nM=_t.getMonth()+1>=12?0:_t.getMonth()+1;const _nY=_t.getMonth()+1>=12?_t.getFullYear()+1:_t.getFullYear();return {startId:'ev-start',endId:'ev-end',_initY:_nY,_initM:_nM};})());calRender('reg');
   regProducts=[];selectedSkuCodesReg=[];
   document.querySelectorAll('#sku-btn-area-reg .skb').forEach(b=>b.classList.remove('on'));
   updateSkuChips('reg');renderRegProds();buildMonthFilters();
@@ -1379,7 +1472,12 @@ async function doSaveEvent(){
 }
 window.saveEventDirect=async function(){try{const{docId}=await doSaveEvent();toast('✅ 행사 등록: '+docId);}catch(e){toast('실패: '+e.message,'err');}};
 window.saveEventAndGo=async function(){
-  try{const{docId,isDN}=await doSaveEvent();toast('✅ 등록 완료');const tabIdx=isDN?3:2;const tabs=document.querySelectorAll('.tab');sw(tabIdx,tabs[tabIdx]);renderPropList(isDN?3:2);}catch(e){toast('실패: '+e.message,'err');}
+  try{const{docId,isDN}=await doSaveEvent();toast('✅ 등록 완료');
+    const tabIdx=isDN?3:2;
+    const tabEl=document.querySelector(`.tab-bar .tab[onclick*="sw(${tabIdx},"]`);
+    if(tabEl)sw(tabIdx,tabEl);
+    renderPropList(tabIdx);
+  }catch(e){toast('실패: '+e.message,'err');}
 };
 
 /* ══ 제안/선정/종료 렌더 ══ */
@@ -2398,7 +2496,7 @@ window.closeByEventId=function(evId){
 /* ── 클립보드 복사 ── */
 window.copyToClip=function(text,el){
   navigator.clipboard.writeText(String(text)).then(()=>{
-    if(el){const o=el.style.background;el.style.background='rgba(26,138,74,.15)';setTimeout(()=>el.style.background=o,700);}
+    if(el){const o=el.style.background;el.style.background='rgba(152,152,168,.18)';setTimeout(()=>el.style.background=o,600);}
     toast('복사됨: '+String(text).substring(0,25));
   }).catch(()=>toast('복사 실패','err'));
 };
@@ -2416,7 +2514,7 @@ window.copyColAll=function(col,btn){
 
 loadAll();
 // 달력 즉시 초기화 (Firebase 로드와 무관하게)
-calInit('reg',{startId:'ev-start',endId:'ev-end'});
+calInit('reg',(function(){const _t=new Date();const _nM=_t.getMonth()+1>=12?0:_t.getMonth()+1;const _nY=_t.getMonth()+1>=12?_t.getFullYear()+1:_t.getFullYear();return {startId:'ev-start',endId:'ev-end',_initY:_nY,_initM:_nM};})());
 calRender('reg');
 </script>
 </body>

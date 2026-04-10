@@ -382,6 +382,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   <!-- ③ 행사 제안 샘플 (전체 너비) -->
     <div class="ptitle" style="margin-bottom:6px">행사 제안 샘플</div>
     <div id="reg-prod-list"><div style="text-align:center;padding:16px;color:var(--t3);font-size:12px">상품을 추가하세요</div></div>
+  </div><!-- p0 end -->
 <!-- ═══ 탭1: 행사 셀렉 ═══ -->
 <div class="pane" id="p1">
   <div class="pg-hd"><div><div class="pg-title">행사 셀렉</div><div class="pg-desc">추후 개발 예정</div></div></div>
@@ -850,11 +851,18 @@ function calRender(key){
         /* 현재 모드 자동 적용 */
         if(st.mode==='upload'&&st.uploadDate){
           const u=document.getElementById('ev-upload-date');if(u)u.value=st.uploadDate;
+          /* edit 키: saveSelEdit에서 calSt로 읽으므로 별도 처리 불필요 */
           calUpdateChips(key);
         }else if(st.mode==='deadline'&&st.deadlineDate){
           const d=document.getElementById('ev-deadline');if(d)d.value=st.deadlineDate;
           calUpdateChips(key);
         }else if(st.mode==='period'&&st.selS&&st.selE){
+          /* edit 키: hidden input 업데이트 */
+          if(key.startsWith('edit-')){
+            const gId=key.replace('edit-','');
+            const si=document.getElementById('se-start-'+gId);if(si)si.value=st.selS;
+            const ei=document.getElementById('se-end-'+gId);if(ei)ei.value=st.selE;
+          }
           calUpdateChips(key);
         }
         /* 업로드일·마감일 탭은 이번달로, 행사기간은 다음달로 */
@@ -1759,34 +1767,37 @@ function buildSelGroupEditBlock(eName,evId,grpId,grpItems,ev,lbl,tabNum){
   return`<div class="sel-edit-block" id="seledit-${grpId}">
     <input type="hidden" id="se-start-${grpId}" value="${ev?.startDate||''}">
     <input type="hidden" id="se-end-${grpId}" value="${ev?.endDate||''}">
-    <div class="ptitle" style="margin-bottom:11px;font-size:12.5px">
-      ✏️ 행사 수정 — <b>${eName}</b>
-      <div style="display:flex;gap:7px">
-        <button class="btn btn-sm btn-p" onclick="saveSelEdit('${grpId}',${tabNum})">Firebase 저장</button>
-        <button class="btn btn-sm btn-gh" onclick="toggleSelEdit('${grpId}')">닫기</button>
-      </div>
-    </div>
-    <!-- 행사 등록과 동일한 2단 레이아웃 -->
-    <div style="display:grid;grid-template-columns:1fr 252px;gap:12px;align-items:flex-start">
-      <!-- 좌: 기본 정보 + 상품 목록 -->
+    <!-- 행사 등록과 동일한 레이아웃 -->
+    <!-- 2열: 좌=기본정보+상품목록 / 우=달력 -->
+    <div style="display:grid;grid-template-columns:1fr 252px;gap:10px;align-items:flex-start">
       <div>
-        <div class="frow">
-          <div class="fg" style="flex:.6"><div class="fl">유형</div>
-            <select class="fi" id="se-type-${grpId}">
+        <!-- 기본 정보 패널 -->
+        <div class="panel" style="margin-bottom:10px">
+          <div class="ptitle" style="display:flex;justify-content:space-between;align-items:center">
+            <span>✏️ 행사 수정</span>
+            <select class="fi" id="se-type-${grpId}" style="width:180px;font-size:12px;flex-shrink:0;margin-bottom:0">
               ${Object.entries(TYPE_NAME).map(([k,v])=>`<option value="${k}"${eType===k?' selected':''}>${TYPE_EMOJI[k]||''} ${v}</option>`).join('')}
-            </select></div>
-          <div class="fg" style="flex:1.2"><div class="fl">행사명</div>
-            <input class="fi" id="se-name-${grpId}" value="${eName}"></div>
-          <div class="fg"><div class="fl">랜딩페이지</div>
-            <select class="fi" id="se-page-${grpId}">
-              ${['쇼핑스토리+카테고리','쇼핑스토리','카테고리','상품바로랜딩'].map(v=>`<option${ev?.pageType===v?' selected':''}>${v}</option>`).join('')}
-            </select></div>
-          <div class="fg"><div class="fl">추가할인/적립</div>
-            <input class="fi" id="se-adddisc-${grpId}" value="${ev?.additionalDiscount||''}"></div>
+            </select>
+          </div>
+          <div class="frow">
+            <div class="fg" style="flex:1.4"><div class="fl">행사명</div>
+              <input class="fi" id="se-name-${grpId}" value="${eName}"></div>
+            <div class="fg"><div class="fl">랜딩페이지</div>
+              <select class="fi" id="se-page-${grpId}">
+                ${['쇼핑스토리+카테고리','쇼핑스토리','카테고리','상품바로랜딩'].map(v=>`<option${ev?.pageType===v?' selected':''}>${v}</option>`).join('')}
+              </select></div>
+            <div class="fg"><div class="fl">추가할인/적립</div>
+              <input class="fi" id="se-adddisc-${grpId}" value="${ev?.additionalDiscount||''}"></div>
+          </div>
         </div>
-        <div style="margin-top:8px">
-          <div class="ptitle" style="font-size:11.5px;margin-bottom:6px">상품 목록
+        <!-- 상품 목록 패널 -->
+        <div class="panel" style="margin-bottom:0">
+          <div class="ptitle" style="margin-bottom:6px">상품 목록
             <span style="font-size:10px;font-weight:400;color:var(--t3)">🔒 수정불가 · 빨간칸 = 제안행사가</span>
+            <div style="display:flex;gap:7px;margin-left:auto">
+              <button class="btn btn-sm btn-p" onclick="saveSelEdit('${grpId}',${tabNum})">Firebase 저장</button>
+              <button class="btn btn-sm btn-gh" onclick="toggleSelEdit('${grpId}')">닫기</button>
+            </div>
           </div>
           <table class="tbl" style="font-size:11.5px">
             <thead><tr>
@@ -1800,7 +1811,7 @@ function buildSelGroupEditBlock(eName,evId,grpId,grpItems,ev,lbl,tabNum){
           </table>
         </div>
       </div>
-      <!-- 우: 달력 (행사등록과 동일한 모드탭) -->
+      <!-- 우: 달력 -->
       <div class="cal-inline" id="cal-wrap-${calKey}"></div>
     </div>
   </div>`;

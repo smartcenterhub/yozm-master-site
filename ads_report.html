@@ -802,17 +802,23 @@ async function processDailyZip(zipFile, forceDateKey) {
   const done = [], fail = [];
   for (const [name, entry] of Object.entries(zip.files)) {
     if (entry.dir) continue;
-    const fname = name.split('/').pop().toLowerCase();
-    const prefix = Object.keys(PREFIX_MAP).find(p => fname.startsWith(p + '_') || fname.startsWith(p + '.'));
+    const raw = name.split('/').pop().toLowerCase();
+    const prefix = Object.keys(PREFIX_MAP).find(p => raw.startsWith(p + '_') || raw.startsWith(p + '.'));
     if (!prefix) continue;
     try {
       const blob = await entry.async('blob');
-      const ext = fname.split('.').pop();
-      const mime = ext === 'xlsx' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'application/zip';
-      const file = new File([blob], fname, { type: mime });
+      // 이중 확장자 정규화: .xlsx.xlsx → .xlsx, .zip.zip → .zip
+      const parts = raw.split('.');
+      const ext = parts[parts.length - 1];
+      const ext2 = parts.length >= 2 ? parts[parts.length - 2] : '';
+      const realExt = (ext === ext2 && (ext === 'xlsx' || ext === 'zip')) ? ext : ext;
+      const mime = realExt === 'xlsx' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'application/zip';
+      // 파일명에서 이중 확장자 제거
+      const cleanName = (ext === ext2) ? parts.slice(0, -1).join('.') : raw;
+      const file = new File([blob], cleanName, { type: mime });
       await PREFIX_MAP[prefix](file);
       done.push(prefix);
-    } catch(err) { fail.push(prefix); }
+    } catch(err) { fail.push(prefix); console.error(prefix, err); }
   }
   const uniqueDone = [...new Set(done)];
   let msg = uniqueDone.length ? `✅ ${perfDateDisplay(dateKey)} — ${uniqueDone.join(', ')} 완료` : '⚠️ 매칭 파일 없음 — prefix 확인';
@@ -1196,25 +1202,6 @@ async function mailCopyGfaImage() {
   }
 }
 
-async function mailCopyPerfImage() {
-  const area = document.getElementById('mailPerfImageArea');
-  if (!area) return;
-  area.style.display = 'block';
-  showToast('📷 이미지 생성 중...');
-  try {
-    const canvas = await html2canvas(area, { backgroundColor:'#ffffff', scale:3, useCORS:true, logging:false });
-    area.style.display = 'none';
-    canvas.toBlob(blob => {
-      if (!blob) { showToast('❌ 이미지 생성 실패'); return; }
-      navigator.clipboard.write([new ClipboardItem({'image/png': blob})])
-        .then(() => showToast('✅ 이미지 복사됨 — 메일에 Ctrl+V'))
-        .catch(() => showToast('❌ 클립보드 접근 실패'));
-    }, 'image/png');
-  } catch(e) {
-    area.style.display = 'none';
-    showToast('❌ 이미지 생성 실패');
-  }
-}
 function mailUpdateAdv(daConv, saConv) {
   // _perfStore에서 전체 날짜 합산 (파라미터 대신 직접 계산)
   const daTot = Math.round(Object.values(_perfStore.da).reduce((s,v) => s+(v.conv||0), 0));
@@ -1744,9 +1731,11 @@ function markInnerTabDone(el) {
 let _toastTimer;
 function showToast(msg) {
   const t = document.getElementById('toast');
+  if (!t) return;
   t.textContent = msg; t.classList.add('show');
   clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(() => t.classList.remove('show'), 1600);
+  const dur = msg.includes('❌') || msg.includes('⚠️') ? 3500 : 1800;
+  _toastTimer = setTimeout(() => t.classList.remove('show'), dur);
 }
 
 function parseCSVLine(line) {

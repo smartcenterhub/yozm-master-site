@@ -1795,7 +1795,7 @@ function buildSelGroupEditBlock(eName,evId,grpId,grpItems,ev,lbl,tabNum){
           <div class="ptitle" style="margin-bottom:6px">상품 목록
             <span style="font-size:10px;font-weight:400;color:var(--t3)">🔒 수정불가 · 빨간칸 = 제안행사가</span>
             <div style="display:flex;gap:7px;margin-left:auto">
-              <button class="btn btn-sm btn-p" onclick="saveSelEdit('${grpId}',${tabNum})">적용</button>
+              <button class="btn btn-sm btn-p" onclick="saveSelEdit('${grpId}',${tabNum})">Firebase 저장</button>
               <button class="btn btn-sm btn-gh" onclick="toggleSelEdit('${grpId}')">닫기</button>
             </div>
           </div>
@@ -1890,7 +1890,7 @@ window.saveSelEdit=async function(grpId,tabNum){
   const ok_ids=[];
   for(const[id,{col,fields}]of DIRTY.entries()){
     try{
-      await updateDoc(doc(db,col,id),{...fields,updatedAt:new Date().toISOString()});
+      await setDoc(doc(db,col,id),{...fields,updatedAt:new Date().toISOString()},{merge:true});
       ok_ids.push(id);
     }catch(e){toast('저장 실패: '+e.message,'err');}
   }

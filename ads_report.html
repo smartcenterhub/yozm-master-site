@@ -1034,9 +1034,10 @@ function dateToKey(dateStr) { return dateStr.replace(/-/g, ''); }
 // '2026.04.07.' or '2026-04-07' -> YYYYMMDD
 function normalizeDateKey(raw) {
   if (!raw) return null;
-  const m = raw.match(/(\d{4})[.\-](\d{2})[.\-](\d{2})/);
-  if (m) return m[1]+m[2]+m[3];
-  const m2 = raw.match(/(\d{8})/);
+  const s = String(raw).trim().replace(/\.$/, ''); // 끝 점 제거
+  const m = s.match(/(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
+  if (m) return m[1] + m[2].padStart(2,'0') + m[3].padStart(2,'0');
+  const m2 = s.match(/(\d{8})/);
   return m2 ? m2[1] : null;
 }
 

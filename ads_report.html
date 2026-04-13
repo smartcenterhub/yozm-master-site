@@ -2303,8 +2303,7 @@ async function processGfa(file) {
     const d = dateMap.get(r.date);
     d.imp+=r.imp; d.clk+=r.clk; d.cost+=r.cost; d.conv+=r.conv; d.rev+=r.rev;
   }
-  // 성과 저장소 업데이트
-  Object.keys(_perfStore.gfa).forEach(k => delete _perfStore.gfa[k]);
+  // 성과 저장소 업데이트 (날짜별 머지 — 기존 날짜 데이터 유지)
   dateMap.forEach((v, dk) => { _perfStore.gfa[normalizeDateKey(dk)] = {...v}; });
   mailRefreshPerf();
   const dateSorted = [...dateMap.entries()].sort((a,b) => a[0].localeCompare(b[0]));
@@ -2493,9 +2492,8 @@ async function processAdv(file, num) {
   mailUpdateAdv(window._advDaConv||0, window._advSaConv||0);
   document.getElementById('mainTabAdv')?.classList.add('done');
 
-  // 성과 저장소 업데이트
+  // 성과 저장소 업데이트 (날짜별 머지 — 기존 날짜 데이터 유지)
   const store = num === 1 ? _perfStore.da : _perfStore.sa;
-  Object.keys(store).forEach(k => delete store[k]);
   dateSorted.forEach(([dk, v]) => { store[normalizeDateKey(dk)] = {...v}; });
   mailRefreshPerf();
 }

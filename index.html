@@ -9,6 +9,7 @@
 :root{
   --sb-w:252px;
   --tb-h:42px;
+  --sb-transition:width .22s cubic-bezier(.4,0,.2,1), min-width .22s cubic-bezier(.4,0,.2,1);
   --glass-bg:rgba(255,255,255,0.74);
   --glass-bg-strong:rgba(255,255,255,0.92);
   --glass-border-s:rgba(0,0,0,0.07);
@@ -16,13 +17,13 @@
   --accent:#3a3af0;--green:#1a8a4a;--red:#d42020;--orange:#c45a10;--blue:#1a56c8;--purple:#6c35cc;
 }
 html{
-  min-width:1440px;overflow-x:auto;height:100%;
+  overflow:hidden;height:100%;
   background:linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#eef0f8 100%) fixed;
 }
 body{
   font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;
   font-size:13px;line-height:1.5;color:var(--tx);
-  width:1440px;min-width:1440px;height:100vh;
+  width:100vw;height:100vh;
   display:flex;overflow:hidden;
 }
 
@@ -31,10 +32,14 @@ body{
   width:var(--sb-w);min-width:var(--sb-w);height:100vh;
   position:fixed;left:0;top:0;
   background:var(--glass-bg);border-right:1px solid var(--glass-border-s);
-  display:flex;flex-direction:column;overflow-y:auto;z-index:10;
+  display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;
+  z-index:20;flex-shrink:0;
+  transition:var(--sb-transition);
 }
+.sb.collapsed{overflow:hidden}
 .sb::-webkit-scrollbar{width:3px}
 .sb::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.1);border-radius:2px}
+.sb-inner{min-width:252px;display:flex;flex-direction:column;height:100%;}
 
 .sb-logo{
   padding:0 16px;height:var(--tb-h);display:flex;align-items:center;gap:9px;
@@ -119,11 +124,19 @@ body{
 /* ══ TOPBAR ══ */
 .topbar{
   position:fixed;top:0;left:var(--sb-w);
-  width:calc(1440px - var(--sb-w));min-width:calc(1440px - var(--sb-w));
+  width:calc(100vw - var(--sb-w));
   height:var(--tb-h);
   background:var(--glass-bg);border-bottom:1px solid var(--glass-border-s);
-  display:flex;align-items:center;padding:0 20px;gap:8px;z-index:9;
+  display:flex;align-items:center;padding:0 20px;gap:8px;z-index:19;
+  transition:left .22s cubic-bezier(.4,0,.2,1), width .22s cubic-bezier(.4,0,.2,1);
 }
+.sb-toggle{
+  width:28px;height:28px;border-radius:6px;flex-shrink:0;
+  border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:13px;color:var(--t2);transition:all .12s;
+}
+.sb-toggle:hover{color:var(--accent);border-color:rgba(58,58,240,0.2)}
 .bc{font-size:11.5px;color:var(--t3);display:flex;align-items:center;gap:5px}
 .bc-sep{font-size:10px;color:var(--t4)}
 .bc b{color:var(--accent);font-weight:500}
@@ -139,10 +152,11 @@ body{
 .main{
   margin-left:var(--sb-w);
   padding-top:var(--tb-h);
-  width:calc(1440px - var(--sb-w));
-  min-width:calc(1440px - var(--sb-w));
+  width:calc(100vw - var(--sb-w));
   height:100vh;
   flex-shrink:0;
+  transition:margin-left .22s cubic-bezier(.4,0,.2,1), width .22s cubic-bezier(.4,0,.2,1);
+  overflow:hidden;
 }
 #content-frame{
   width:100%;
@@ -155,7 +169,8 @@ body{
 <body>
 
 <!-- ══ SIDEBAR ══ -->
-<nav class="sb">
+<nav class="sb" id="sidebar">
+<div class="sb-inner">
   <div class="sb-logo">
     <div class="sb-logo-icon">Y</div>
     <div>
@@ -239,10 +254,12 @@ body{
       <span style="margin-left:auto;font-size:10px;color:var(--t4)" id="sync-time">--:--</span>
     </button>
   </div>
+</div><!-- sb-inner -->
 </nav>
 
 <!-- ══ TOPBAR ══ -->
 <div class="topbar">
+  <button class="sb-toggle" id="sb-toggle-btn" onclick="toggleSidebar()">☰</button>
   <div class="bc" id="bc"><b>홈</b></div>
   <div class="topbar-right">
     <span class="tb-date" id="today-date"></span>
@@ -256,6 +273,19 @@ body{
 </div>
 
 <script>
+let sbOpen = true;
+function toggleSidebar() {
+  sbOpen = !sbOpen;
+  const w = sbOpen ? '252px' : '0px';
+  document.documentElement.style.setProperty('--sb-w', w);
+  const sb = document.getElementById('sidebar');
+  if (sbOpen) {
+    sb.classList.remove('collapsed');
+  } else {
+    setTimeout(() => sb.classList.add('collapsed'), 220);
+  }
+}
+
 window.addEventListener('message', e => {
   if (e.data && e.data.type === 'nav') {
     document.getElementById('content-frame').src = e.data.src;

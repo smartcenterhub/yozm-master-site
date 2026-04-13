@@ -9,37 +9,36 @@
 :root{
   --sb-w:252px;
   --tb-h:42px;
-  --sb-transition:width .22s cubic-bezier(.4,0,.2,1), min-width .22s cubic-bezier(.4,0,.2,1);
   --glass-bg:rgba(255,255,255,0.74);
   --glass-bg-strong:rgba(255,255,255,0.92);
   --glass-border-s:rgba(0,0,0,0.07);
   --tx:#0a0a0f;--t2:#4a4a5a;--t3:#9898a8;--t4:#c4c4d0;
   --accent:#3a3af0;--green:#1a8a4a;--red:#d42020;--orange:#c45a10;--blue:#1a56c8;--purple:#6c35cc;
 }
-html{
-  overflow:hidden;height:100%;
-  background:linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#eef0f8 100%) fixed;
-}
+html,body{height:100%;overflow:hidden}
+html{background:linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#eef0f8 100%) fixed}
 body{
   font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;
   font-size:13px;line-height:1.5;color:var(--tx);
-  width:100vw;height:100vh;
-  display:flex;overflow:hidden;
+  display:flex;flex-direction:row;width:100vw;height:100vh;
 }
 
-/* ══ SIDEBAR ══ */
+/* ══ SIDEBAR — normal flow, sticky ══ */
 .sb{
   width:var(--sb-w);min-width:var(--sb-w);height:100vh;
-  position:fixed;left:0;top:0;
+  position:sticky;top:0;flex-shrink:0;
   background:var(--glass-bg);border-right:1px solid var(--glass-border-s);
-  display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;
-  z-index:20;flex-shrink:0;
-  transition:var(--sb-transition);
+  display:flex;flex-direction:column;overflow:hidden;
+  transition:width .22s cubic-bezier(.4,0,.2,1), min-width .22s cubic-bezier(.4,0,.2,1);
 }
-.sb.collapsed{overflow:hidden}
 .sb::-webkit-scrollbar{width:3px}
 .sb::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.1);border-radius:2px}
-.sb-inner{min-width:252px;display:flex;flex-direction:column;height:100%;}
+.sb-inner{
+  width:252px;min-width:252px;height:100%;
+  display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;
+}
+.sb-inner::-webkit-scrollbar{width:3px}
+.sb-inner::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.1);border-radius:2px}
 
 .sb-logo{
   padding:0 16px;height:var(--tb-h);display:flex;align-items:center;gap:9px;
@@ -60,21 +59,19 @@ body{
 }
 .l1-hdr:hover{background:rgba(0,0,0,0.02)}
 .l1-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.l1-label{font-size:12px;font-weight:600}
-.l1-badge{font-size:9px;padding:1px 5px;border-radius:8px;background:rgba(0,0,0,0.05);color:var(--t4);font-weight:500;margin-left:2px}
+.l1-label{font-size:12px;font-weight:600;white-space:nowrap}
 .l1-chev{margin-left:auto;font-size:8px;color:var(--t4);transition:transform .2s}
 .l1-block.open .l1-chev{transform:rotate(90deg)}
 .l1-hdr.l1-link{cursor:pointer}
 .l1-hdr.l1-link:hover{background:rgba(0,0,0,0.03)}
 .l1-hdr.active{background:rgba(0,0,0,0.03)}
-
 .l1-block.open .l1-body{display:block}
 
 /* L2 */
 .l2-hdr{
   display:flex;align-items:center;gap:6px;
   padding:5px 14px 4px 24px;cursor:pointer;user-select:none;
-  color:var(--t2);font-size:12px;transition:all .12s;position:relative;
+  color:var(--t2);font-size:12px;transition:all .12s;position:relative;white-space:nowrap;
 }
 .l2-hdr:hover{color:var(--tx);background:rgba(0,0,0,0.015)}
 .l2-hdr.open{color:var(--tx);font-weight:500}
@@ -86,7 +83,6 @@ body{
 .l2-hdr.open .l2-chev{transform:rotate(90deg)}
 .l2-tag{font-size:9px;padding:1px 5px;border-radius:6px;font-weight:500;flex-shrink:0}
 .tag-plan{background:rgba(0,0,0,0.05);color:var(--t3)}
-.tag-ext{background:rgba(26,86,200,0.08);color:var(--blue)}
 .l2-body{display:none}
 .l2-hdr.open+.l2-body{display:block}
 
@@ -94,20 +90,13 @@ body{
 .l3-item{
   display:flex;align-items:center;gap:5px;
   padding:3px 14px 3px 36px;cursor:pointer;user-select:none;
-  color:var(--t3);font-size:11.5px;transition:all .1s;position:relative;
+  color:var(--t3);font-size:11.5px;transition:all .1s;position:relative;white-space:nowrap;
 }
 .l3-item:hover{color:var(--t2)}
 .l3-item.active{color:var(--accent);font-weight:500}
-.l3-item.active::before{
-  content:'';position:absolute;left:0;top:0;bottom:0;
-  width:2.5px;background:var(--accent);border-radius:0 2px 2px 0;
-}
+.l3-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2.5px;background:var(--accent);border-radius:0 2px 2px 0}
 .l3-dot{width:3px;height:3px;border-radius:50%;background:currentColor;opacity:.45;flex-shrink:0}
 .l3-item.active .l3-dot{opacity:1}
-.l3-tag{font-size:9px;padding:1px 5px;border-radius:5px;font-weight:500;margin-left:auto;flex-shrink:0}
-.t-plan{background:rgba(152,152,168,0.12);color:var(--t3)}
-.t-ext{background:rgba(26,86,200,0.08);color:var(--blue)}
-.t-copy{background:rgba(108,53,204,0.08);color:#6c35cc}
 
 .sb-divider{height:1px;background:var(--glass-border-s);margin:4px 0}
 .sb-spacer{flex:1;min-height:16px}
@@ -115,20 +104,22 @@ body{
 .sync-btn{
   display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:6px;
   background:var(--glass-bg-strong);border:1px solid var(--glass-border-s);
-  cursor:pointer;font-size:11.5px;color:var(--t2);width:100%;font-family:inherit;
-  transition:all .12s;
+  cursor:pointer;font-size:11.5px;color:var(--t2);width:100%;font-family:inherit;transition:all .12s;
 }
 .sync-btn:hover{color:var(--accent)}
 .sync-live{width:6px;height:6px;border-radius:50%;background:#22c55e;flex-shrink:0}
 
-/* ══ TOPBAR ══ */
+/* ══ 우측 영역 — topbar + iframe ══ */
+.right{
+  flex:1;min-width:0;height:100vh;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+
+/* ══ TOPBAR — 우측 영역 안에서만 sticky ══ */
 .topbar{
-  position:fixed;top:0;left:var(--sb-w);
-  width:calc(100vw - var(--sb-w));
-  height:var(--tb-h);
+  height:var(--tb-h);flex-shrink:0;
   background:var(--glass-bg);border-bottom:1px solid var(--glass-border-s);
-  display:flex;align-items:center;padding:0 20px;gap:8px;z-index:19;
-  transition:left .22s cubic-bezier(.4,0,.2,1), width .22s cubic-bezier(.4,0,.2,1);
+  display:flex;align-items:center;padding:0 20px;gap:8px;
 }
 .sb-toggle{
   width:28px;height:28px;border-radius:6px;flex-shrink:0;
@@ -148,22 +139,9 @@ body{
   cursor:pointer;font-weight:500;font-family:inherit;border:none;
 }
 
-/* ══ IFRAME 영역 ══ */
-.main{
-  margin-left:var(--sb-w);
-  padding-top:var(--tb-h);
-  width:calc(100vw - var(--sb-w));
-  height:100vh;
-  flex-shrink:0;
-  transition:margin-left .22s cubic-bezier(.4,0,.2,1), width .22s cubic-bezier(.4,0,.2,1);
-  overflow:hidden;
-}
-#content-frame{
-  width:100%;
-  height:calc(100vh - var(--tb-h));
-  border:none;
-  display:block;
-}
+/* ══ IFRAME ══ */
+.main{flex:1;overflow:hidden}
+#content-frame{width:100%;height:100%;border:none;display:block}
 </style>
 </head>
 <body>
@@ -257,6 +235,9 @@ body{
 </div><!-- sb-inner -->
 </nav>
 
+<!-- ══ 우측 영역 ══ -->
+<div class="right">
+
 <!-- ══ TOPBAR ══ -->
 <div class="topbar">
   <button class="sb-toggle" id="sb-toggle-btn" onclick="toggleSidebar()">☰</button>
@@ -272,18 +253,15 @@ body{
   <iframe id="content-frame" src="home.html"></iframe>
 </div>
 
+</div><!-- .right -->
+
 <script>
 let sbOpen = true;
 function toggleSidebar() {
   sbOpen = !sbOpen;
-  const w = sbOpen ? '252px' : '0px';
-  document.documentElement.style.setProperty('--sb-w', w);
   const sb = document.getElementById('sidebar');
-  if (sbOpen) {
-    sb.classList.remove('collapsed');
-  } else {
-    setTimeout(() => sb.classList.add('collapsed'), 220);
-  }
+  sb.style.width = sbOpen ? '252px' : '0px';
+  sb.style.minWidth = sbOpen ? '252px' : '0px';
 }
 
 window.addEventListener('message', e => {

@@ -1225,12 +1225,13 @@ function mailRefreshPerf() {
   ]);
   if (allDates.size === 0) return;
 
-  // 범위 내 날짜만 성과 요약에 사용
-  const rangeKeys = _appliedStart
-    ? new Set(getDateRange(_appliedStart, _appliedEnd).map(dateToKey))
-    : allDates;
+  // 범위 내 전체 날짜 (데이터 없는 날도 포함)
+  const allRangeDates = _appliedStart
+    ? getDateRange(_appliedStart, _appliedEnd).map(dateToKey)
+    : [...allDates].sort();
 
-  const sortedDates = [...allDates].filter(dk => rangeKeys.has(dk)).sort();
+  const sortedDates = allRangeDates.filter(dk => allDates.has(dk) || (_appliedStart && _appliedEnd))
+    .map(dk => dk); // 범위 내 전체
   const bkCost = bkCostGet().total;
 
   // 날짜별 + 합산 데이터 계산
@@ -1384,31 +1385,45 @@ function mailUpdatePerf(dateStr, rows) {
 }
 
 function mailBuildHtml() {
-  // 날짜 포맷: "4월9일(목)" 형태
-  const dateLabel = _mailData.date || '';
-
-  // MO/PC 추출
-  let moLine = '', pcLine = '';
-  if (_mailData.bkAuto) {
-    const moMatch = _mailData.bkAuto.match(/MO:\s*(.+?)(?:\n|$)/);
-    const pcMatch = _mailData.bkAuto.match(/PC:\s*(.+?)(?:\n|$)/);
-    if (moMatch) moLine = moMatch[1].trim();
-    if (pcMatch) pcLine = pcMatch[1].trim();
+  // ── 날짜 라벨 ──
+  let dateLabel = _mailData.date || '';
+  if (_appliedStart && _appliedEnd) {
+    if (_appliedStart === _appliedEnd) {
+      dateLabel = dateStrToDisplay(_appliedStart);
+    } else {
+      dateLabel = `${dateStrToDisplay(_appliedStart)} ~ ${dateStrToDisplay(_appliedEnd)}`;
+    }
   }
 
-  // GFA 그룹
-  const gfaLine = _mailData.gfaGroups
-    ? `현재, ${_mailData.gfaGroups} 운영 중.` : '';
-
-  // ADV 전환
-  let daLine = '', saLine = '';
-  if (_mailData.advConv) {
-    const daMatch = _mailData.advConv.match(/DA\s*\((\d+)건\)/);
-    const saMatch = _mailData.advConv.match(/SA\s*\((\d+)건\)/);
-    if (daMatch) daLine = daMatch[1];
-    if (saMatch) saLine = saMatch[1];
+  // ── 브랜드검색: 전체 날짜 합산 ──
+  let moTotal = 0, pcTotal = 0;
+  let moKwSummary = '', pcKwSummary = '';
+  for (const [, d] of _bkByDate) {
+    moTotal += (d.moTot?.conv || 0);
+    pcTotal += (d.pcTot?.conv || 0);
   }
-  const advLine = (daLine||saLine) ? `DA (${daLine||0}건) / SA (${saLine||0}건)` : '';
+  // 키워드 summaryText는 가장 최근 날짜 기준
+  const moKwData = [..._kwByDate.values()].filter(d => d.type === 'MO').sort((a,b) => b.dateKey?.localeCompare(a.dateKey||'')||0)[0];
+  const pcKwData = [..._kwByDate.values()].filter(d => d.type === 'PC').sort((a,b) => b.dateKey?.localeCompare(a.dateKey||'')||0)[0];
+  const moLine = moKwData ? moKwData.summaryText : (moTotal > 0 ? `Total(${moTotal})` : '');
+  const pcLine = pcKwData ? pcKwData.summaryText : (pcTotal > 0 ? `Total(${pcTotal})` : '');
+
+  // ── GFA: 전체 데이터에서 unique 그룹 추출 ──
+  let gfaLine = '';
+  if (_gfaData && _gfaData.length) {
+    const groups = [...new Set(_gfaData.map(r => r.group).filter(Boolean))];
+    if (groups.length) {
+      gfaLine = `현재, ${groups.map(g => `${g}(1그룹)`).join(' + ')} 운영 중.`;
+    }
+  } else if (_mailData.gfaGroups) {
+    gfaLine = `현재, ${_mailData.gfaGroups} 운영 중.`;
+  }
+
+  // ── ADV: 전체 날짜 합산 ──
+  let daTot = 0, saTot = 0;
+  for (const dk of Object.keys(_perfStore.da || {})) daTot += (_perfStore.da[dk]?.conv || 0);
+  for (const dk of Object.keys(_perfStore.sa || {})) saTot += (_perfStore.sa[dk]?.conv || 0);
+  const advLine = (daTot || saTot) ? `DA (${Math.round(daTot)}건) / SA (${Math.round(saTot)}건)` : (_mailData.advConv || '');
 
   return `<div>.</div>
 <p></p>

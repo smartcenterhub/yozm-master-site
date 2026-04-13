@@ -373,7 +373,7 @@ tr.empty-group{opacity:.35}
         <div class="sec-label" style="margin-bottom:0">📂 그룹별 성과</div>
         <div style="display:flex;gap:8px;align-items:center">
           <button class="btn btn-ghost btn-sm" id="gfaToggleEmpty">👁️ 값 없는 그룹 보기</button>
-          <select id="gfaDateSel" class="yozm-sel"><option value="all">전체 기간</option></select>
+          <div id="gfaDateTabs" style="display:flex;gap:4px;flex-wrap:wrap"></div>
         </div>
       </div>
       <div class="tbl-card">
@@ -416,7 +416,7 @@ tr.empty-group{opacity:.35}
             <button class="btn btn-ghost btn-sm" id="gcBtnAll" onclick="toggleGcAll()">전체보기 ON</button>
             <button class="btn btn-ghost btn-sm" id="gcBtnName" onclick="toggleGcName()" style="background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2)">소재 이름 OFF</button>
             <button class="btn btn-ghost btn-sm" id="gcRefreshImg">🔄 이미지 새로고침</button>
-            <select id="gcDateSel" class="yozm-sel"><option value="all">전체 기간</option></select>
+            <div id="gcDateTabs" style="display:flex;gap:4px;flex-wrap:wrap"></div>
             <button class="btn btn-ghost btn-sm" id="gcReset">↩ 다시 업로드</button>
           </div>
         </div>
@@ -1055,8 +1055,19 @@ function mailUpdateBk(moTotal, moKeywords, pcTotal, pcKeywords, date) {
   const pcText = pcKwData ? pcKwData.summaryText : `Total(${pcTotal}) / ${pcKeywords}`;
   _mailData.bkAuto = `광고그룹 전환\n    → MO: ${moText}\n    → PC: ${pcText}`;
   const el = document.getElementById('mailBkAuto');
-  if (el) el.innerHTML = `<span style="font-size:10px;background:rgba(58,58,240,0.08);color:var(--accent);border-radius:4px;padding:1px 6px;margin-right:6px">자동</span>` +
-    `MO: ${moText}<br>PC: ${pcText}`;
+  if (!el) return;
+  // 날짜별 집계 표시
+  const dates = Object.keys(_perfStore.bk).sort();
+  let dateHtml = '';
+  if (dates.length > 1) {
+    dateHtml = dates.map(dk => {
+      const d = _perfStore.bk[dk];
+      return `<div style="font-size:11px;color:var(--t3)">${perfDateDisplay(dk)}: 전환 ${Math.round(d.conv||0)}건</div>`;
+    }).join('');
+    const totConv = Math.round(Object.values(_perfStore.bk).reduce((s,v) => s+(v.conv||0), 0));
+    dateHtml += `<div style="font-size:11px;font-weight:600;color:var(--tx);margin-top:3px">합계 전환: ${totConv}건</div>`;
+  }
+  el.innerHTML = `<span style="font-size:10px;background:rgba(58,58,240,0.08);color:var(--accent);border-radius:4px;padding:1px 6px;margin-right:6px">자동</span>MO: ${moText}<br>PC: ${pcText}${dateHtml ? '<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--glass-border-s)">' + dateHtml + '</div>' : ''}`;
   document.getElementById('mailCardBk')?.classList.remove('mail-inactive'); document.getElementById('mailCardBk')?.classList.add('mail-active');
 }
 
@@ -1064,7 +1075,19 @@ function mailUpdateGfa(groups) {
   _mailData.gfaGroups = groups;
   const count = groups.split('+').length;
   const el = document.getElementById('mailGfaAuto');
-  if (el) el.innerHTML = `<span style="font-size:10px;background:rgba(58,58,240,0.08);color:var(--accent);border-radius:4px;padding:1px 6px;margin-right:6px">자동</span>현재, ${groups} → ${count} 캠페인 운영 중.<br>전일 상위성과소재 이미지 (GFA 소재 탭 참조)`;
+  if (!el) return;
+  // 날짜별 집계 표시
+  const dates = Object.keys(_perfStore.gfa).sort();
+  let dateHtml = '';
+  if (dates.length > 1) {
+    dateHtml = dates.map(dk => {
+      const d = _perfStore.gfa[dk];
+      return `<div style="font-size:11px;color:var(--t3)">${perfDateDisplay(dk)}: 전환 ${Math.round(d.conv||0)}건</div>`;
+    }).join('');
+    const totConv = Math.round(Object.values(_perfStore.gfa).reduce((s,v) => s+(v.conv||0), 0));
+    dateHtml += `<div style="font-size:11px;font-weight:600;color:var(--tx);margin-top:3px">합계 전환: ${totConv}건</div>`;
+  }
+  el.innerHTML = `<span style="font-size:10px;background:rgba(58,58,240,0.08);color:var(--accent);border-radius:4px;padding:1px 6px;margin-right:6px">자동</span>현재, ${groups} → ${count} 캠페인 운영 중.<br>전일 상위성과소재 이미지 (GFA 소재 탭 참조)${dateHtml ? '<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--glass-border-s)">' + dateHtml + '</div>' : ''}`;
   document.getElementById('mailCardGfa')?.classList.remove('mail-inactive'); document.getElementById('mailCardGfa')?.classList.add('mail-active');
 }
 
@@ -1178,9 +1201,23 @@ async function mailCopyPerfImage() {
   }
 }
 function mailUpdateAdv(daConv, saConv) {
-  _mailData.advConv = `DA (${daConv}건) / SA (${saConv}건)`;
+  // _perfStore에서 전체 날짜 합산 (파라미터 대신 직접 계산)
+  const daTot = Math.round(Object.values(_perfStore.da).reduce((s,v) => s+(v.conv||0), 0));
+  const saTot = Math.round(Object.values(_perfStore.sa).reduce((s,v) => s+(v.conv||0), 0));
+  _mailData.advConv = `DA (${daTot}건) / SA (${saTot}건)`;
   const el = document.getElementById('mailAdvAuto');
-  if (el) el.innerHTML = `<span style="font-size:10px;background:rgba(58,58,240,0.08);color:var(--accent);border-radius:4px;padding:1px 6px;margin-right:6px">자동</span>광고계정 전환: DA <b>${daConv}건</b> / SA <b>${saConv}건</b>`;
+  if (!el) return;
+  const dates = [...new Set([...Object.keys(_perfStore.da), ...Object.keys(_perfStore.sa)])].sort();
+  let dateHtml = '';
+  if (dates.length > 1) {
+    dateHtml = dates.map(dk => {
+      const da = _perfStore.da[dk]?.conv || 0;
+      const sa = _perfStore.sa[dk]?.conv || 0;
+      return `<div style="font-size:11px;color:var(--t3)">${perfDateDisplay(dk)}: DA ${Math.round(da)}건 / SA ${Math.round(sa)}건</div>`;
+    }).join('');
+    dateHtml += `<div style="font-size:11px;font-weight:600;color:var(--tx);margin-top:3px">합계: DA ${daTot}건 / SA ${saTot}건</div>`;
+  }
+  el.innerHTML = `<span style="font-size:10px;background:rgba(58,58,240,0.08);color:var(--accent);border-radius:4px;padding:1px 6px;margin-right:6px">자동</span>광고계정 전환: DA <b>${daTot}건</b> / SA <b>${saTot}건</b>${dateHtml ? '<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--glass-border-s)">' + dateHtml + '</div>' : ''}`;
   document.getElementById('mailCardAdv')?.classList.remove('mail-inactive'); document.getElementById('mailCardAdv')?.classList.add('mail-active');
 }
 
@@ -1227,18 +1264,16 @@ function mailRefreshPerf() {
   if (allDates.size === 0) return;
 
   // 범위 내 전체 날짜 (데이터 없는 날도 포함)
-  const allRangeDates = _appliedStart
+  const sortedDates = _appliedStart
     ? getDateRange(_appliedStart, _appliedEnd).map(dateToKey)
     : [...allDates].sort();
-
-  const sortedDates = allRangeDates.filter(dk => allDates.has(dk) || (_appliedStart && _appliedEnd))
-    .map(dk => dk); // 범위 내 전체
   const bkCost = bkCostGet().total;
 
   // 날짜별 + 합산 데이터 계산
   const byDate = sortedDates.map(dk => {
-    const bk  = _perfStore.bk[dk]  || {imp:0,clk:0,cost:bkCost,conv:0,rev:0};
-    const gfa = _perfStore.gfa[dk] || {imp:0,clk:0,cost:0,conv:0,rev:0};
+    const bkRaw = _perfStore.bk[dk] || {imp:0,clk:0,cost:0,conv:0,rev:0};
+    const bk  = {...bkRaw, cost: bkCost}; // 원본 수정 방지, 비용 고정
+    const gfa = {...(_perfStore.gfa[dk] || {imp:0,clk:0,cost:0,conv:0,rev:0})};
     const adv = {
       imp:  (_perfStore.da[dk]?.imp||0) + (_perfStore.sa[dk]?.imp||0),
       clk:  (_perfStore.da[dk]?.clk||0) + (_perfStore.sa[dk]?.clk||0),
@@ -1246,7 +1281,6 @@ function mailRefreshPerf() {
       conv: (_perfStore.da[dk]?.conv||0)+ (_perfStore.sa[dk]?.conv||0),
       rev:  (_perfStore.da[dk]?.rev||0) + (_perfStore.sa[dk]?.rev||0),
     };
-    bk.cost = bkCost; // 브검 비용 고정
     const total = {
       imp: bk.imp+gfa.imp+adv.imp, clk: bk.clk+gfa.clk+adv.clk,
       cost: bk.cost+gfa.cost+adv.cost, conv: bk.conv+gfa.conv+adv.conv,
@@ -1255,15 +1289,16 @@ function mailRefreshPerf() {
     return { dk, bk, gfa, adv, total };
   });
 
-  // 합산 (2일 이상)
+  // 합산 (2일 이상) — 초기값 명시해서 첫 날 중복 합산 방지
   let grand = null;
   if (sortedDates.length >= 2) {
+    const zero = {imp:0,clk:0,cost:0,conv:0,rev:0};
     grand = byDate.reduce((acc, d) => ({
       bk:  {imp:acc.bk.imp+d.bk.imp,   clk:acc.bk.clk+d.bk.clk,   cost:acc.bk.cost+d.bk.cost,   conv:acc.bk.conv+d.bk.conv,   rev:acc.bk.rev+d.bk.rev},
       gfa: {imp:acc.gfa.imp+d.gfa.imp, clk:acc.gfa.clk+d.gfa.clk, cost:acc.gfa.cost+d.gfa.cost, conv:acc.gfa.conv+d.gfa.conv, rev:acc.gfa.rev+d.gfa.rev},
       adv: {imp:acc.adv.imp+d.adv.imp, clk:acc.adv.clk+d.adv.clk, cost:acc.adv.cost+d.adv.cost, conv:acc.adv.conv+d.adv.conv, rev:acc.adv.rev+d.adv.rev},
       total:{imp:acc.total.imp+d.total.imp,clk:acc.total.clk+d.total.clk,cost:acc.total.cost+d.total.cost,conv:acc.total.conv+d.total.conv,rev:acc.total.rev+d.total.rev},
-    }));
+    }), {bk:{...zero},gfa:{...zero},adv:{...zero},total:{...zero}});
   }
 
   // 표 HTML 생성 함수 (C1 스타일)
@@ -2245,7 +2280,31 @@ async function syncGfaOrder(groupsFromCsv) {
   }
 }
 
-let _gfaData = [], _gfaHideEmpty = true;
+// 날짜 탭 빌더
+function buildDateTabs(containerId, dates, currentVal, onSelect) {
+  const wrap = document.getElementById(containerId);
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  const allDates = ['all', ...dates];
+  allDates.forEach(d => {
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-ghost btn-sm';
+    btn.textContent = d === 'all' ? '전체' : perfDateDisplay(normalizeDateKey(d) || d);
+    btn.dataset.val = d;
+    if (d === currentVal) {
+      btn.style.cssText = 'background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2);font-weight:500';
+    }
+    btn.onclick = () => {
+      wrap.querySelectorAll('button').forEach(b => { b.style.cssText = ''; });
+      btn.style.cssText = 'background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2);font-weight:500';
+      onSelect(d);
+    };
+    wrap.appendChild(btn);
+  });
+}
+
+let _gfaCurDate = 'all';
+let _gcCurDate = 'all';
 
 (function() {
   const uz = document.getElementById('gfaUpload');
@@ -2257,13 +2316,14 @@ let _gfaData = [], _gfaHideEmpty = true;
   document.getElementById('gfaReset').onclick = () => {
     document.getElementById('gfaResults').style.display = 'none';
     uz.style.display = ''; fi.value = ''; _gfaData = []; _gfaHideEmpty = true;
-    document.getElementById('gfaDateSel').innerHTML = '<option value="all">전체 기간</option>';
+    document.getElementById('gfaDateTabs').innerHTML = '';
+    _gfaCurDate = 'all';
     document.getElementById('gfaToggleEmpty').textContent = '👁️ 값 없는 그룹 보기';
   };
   document.getElementById('gfaToggleEmpty').onclick = () => {
     _gfaHideEmpty = !_gfaHideEmpty;
     document.getElementById('gfaToggleEmpty').textContent = _gfaHideEmpty ? '👁️ 값 없는 그룹 보기' : '🙈 값 없는 그룹 숨기기';
-    renderGfaGroup(document.getElementById('gfaDateSel').value);
+    renderGfaGroup(_gfaCurDate);
   };
 })();
 
@@ -2293,10 +2353,8 @@ async function processGfa(file) {
       conv:parseNum(c[iConv]), rev:parseNum(c[iRev])});
   }
   const dates = [...new Set(_gfaData.map(r => r.date))].sort();
-  const sel = document.getElementById('gfaDateSel');
-  sel.innerHTML = '<option value="all">전체 기간</option>';
-  dates.forEach(d => { const o=document.createElement('option'); o.value=d; o.textContent=d; sel.appendChild(o); });
-  sel.onchange = () => renderGfaGroup(sel.value);
+  _gfaCurDate = 'all';
+  buildDateTabs('gfaDateTabs', dates, 'all', (d) => { _gfaCurDate = d; renderGfaGroup(d); });
   const dateMap = new Map();
   for (const r of _gfaData) {
     if (!dateMap.has(r.date)) dateMap.set(r.date, {imp:0,clk:0,cost:0,conv:0,rev:0});
@@ -2367,7 +2425,7 @@ async function renderGfaGroup(selDate) {
     tv.map(n => `<td data-val="${raw(n)}" onclick="copyToClip(${raw(n)},this)">${fmt(n)}</td>`).join('') +
     `<td><button class="row-copy-btn" data-row="${tv.map(raw).join('\t')}">복사</button></td></tr>`;
   document.getElementById('gfaGroupCopyValues').onclick = async () => {
-    const sd = document.getElementById('gfaDateSel').value;
+    const sd = _gfaCurDate;
     const filt = sd === 'all' ? _gfaData : _gfaData.filter(r => r.date === sd);
     const gm2 = new Map();
     for (const r of filt) {
@@ -2525,7 +2583,7 @@ function toggleGcAll() {
     btn.style.color = _gcAllOn ? 'var(--accent)' : '';
     btn.style.borderColor = _gcAllOn ? 'rgba(58,58,240,0.2)' : '';
   }
-  if (_gcAllData.length > 0) renderGcCards(document.getElementById('gcDateSel').value);
+  if (_gcAllData.length > 0) renderGcCards(_gcCurDate);
 }
 
 function toggleGcName() {
@@ -2544,7 +2602,7 @@ function toggleGcName() {
 
 function setGcView(v) {
   _gcView = v;
-  if (_gcAllData.length > 0) renderGcCards(document.getElementById('gcDateSel').value);
+  if (_gcAllData.length > 0) renderGcCards(_gcCurDate);
 }
 
 function gcShortName(groupName) {
@@ -2573,13 +2631,14 @@ async function getGcImages() {
   document.getElementById('gcReset').onclick = () => {
     document.getElementById('gcResults').style.display = 'none';
     uz.style.display = ''; fi.value = ''; _gcAllData = [];
-    document.getElementById('gcDateSel').innerHTML = '<option value="all">전체 기간</option>';
+    document.getElementById('gcDateTabs').innerHTML = '';
     document.getElementById('gcCards').innerHTML = '';
+    _gcCurDate = 'all';
   };
 
   document.getElementById('gcRefreshImg').onclick = async () => {
     if (_gcAllData.length > 0) {
-      await renderGcCards(document.getElementById('gcDateSel').value);
+      await renderGcCards(_gcCurDate);
       showToast('🔄 이미지 새로고침 완료');
     }
   };
@@ -2619,12 +2678,10 @@ async function processGc(file) {
     });
   }
 
-  // 날짜 드롭다운
+  // 날짜 탭
   const dates = [...new Set(_gcAllData.map(r => r.date).filter(Boolean))].sort();
-  const sel = document.getElementById('gcDateSel');
-  sel.innerHTML = '<option value="all">전체 기간</option>';
-  dates.forEach(d => { const o = document.createElement('option'); o.value = d; o.textContent = d; sel.appendChild(o); });
-  sel.onchange = () => renderGcCards(sel.value);
+  _gcCurDate = 'all';
+  buildDateTabs('gcDateTabs', dates, 'all', async (d) => { _gcCurDate = d; await renderGcCards(d); });
 
   await renderGcCards('all');
   document.getElementById('gcBadge').textContent = '📄 ' + file.name;

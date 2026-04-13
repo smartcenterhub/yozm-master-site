@@ -1049,10 +1049,14 @@ const MAIL_LOG_KEY = 'yozm_mail_log_v1';
 // 각 카드의 콘텐츠를 자동 텍스트로 업데이트하는 함수 (타 탭에서 호출)
 function mailUpdateBk(moTotal, moKeywords, pcTotal, pcKeywords, date) {
   _mailData.date = date || _mailData.date;
-  const moKwData = [..._kwByDate.values()].find(d => d.type === 'MO');
-  const pcKwData = [..._kwByDate.values()].find(d => d.type === 'PC');
-  const moText = moKwData ? moKwData.summaryText : `Total(${moTotal}) / ${moKeywords}`;
-  const pcText = pcKwData ? pcKwData.summaryText : `Total(${pcTotal}) / ${pcKeywords}`;
+  // 전체 날짜 합산 MO/PC 전환수
+  let moTotAll = 0, pcTotAll = 0;
+  for (const [, d] of _bkByDate) {
+    moTotAll += Math.round(d.moTot || 0);
+    pcTotAll += Math.round(d.pcTot || 0);
+  }
+  const moText = `Total(${moTotAll})`;
+  const pcText = `Total(${pcTotAll})`;
   _mailData.bkAuto = `광고그룹 전환\n    → MO: ${moText}\n    → PC: ${pcText}`;
   const el = document.getElementById('mailBkAuto');
   if (!el) return;
@@ -1076,6 +1080,17 @@ function mailUpdateGfa(groups) {
   const count = groups.split('+').length;
   const el = document.getElementById('mailGfaAuto');
   if (!el) return;
+  // 전체 기간 기준 그룹 합산
+  let groupSummary = '';
+  if (_gfaData && _gfaData.length > 0) {
+    const allGroups = [...new Set(_gfaData.map(r=>r.group).filter(Boolean))];
+    const convGroups = allGroups.filter(g => _gfaData.filter(r=>r.group===g).reduce((s,r)=>s+r.conv,0) > 0);
+    groupSummary = convGroups.length > 0
+      ? convGroups.map(g => `${gcShortName(g)}(1그룹)`).join(' + ') + ` → ${convGroups.length}캠페인`
+      : `${groups} → ${count}캠페인`;
+  } else {
+    groupSummary = `${groups} → ${count}캠페인`;
+  }
   // 날짜별 집계 표시
   const dates = Object.keys(_perfStore.gfa).sort();
   let dateHtml = '';
@@ -1087,7 +1102,7 @@ function mailUpdateGfa(groups) {
     const totConv = Math.round(Object.values(_perfStore.gfa).reduce((s,v) => s+(v.conv||0), 0));
     dateHtml += `<div style="font-size:11px;font-weight:600;color:var(--tx);margin-top:3px">합계 전환: ${totConv}건</div>`;
   }
-  el.innerHTML = `<span style="font-size:10px;background:rgba(58,58,240,0.08);color:var(--accent);border-radius:4px;padding:1px 6px;margin-right:6px">자동</span>현재, ${groups} → ${count} 캠페인 운영 중.<br>전일 상위성과소재 이미지 (GFA 소재 탭 참조)${dateHtml ? '<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--glass-border-s)">' + dateHtml + '</div>' : ''}`;
+  el.innerHTML = `<span style="font-size:10px;background:rgba(58,58,240,0.08);color:var(--accent);border-radius:4px;padding:1px 6px;margin-right:6px">자동</span>현재, ${groupSummary} 운영 중.<br>전일 상위성과소재 이미지 (GFA 소재 탭 참조)${dateHtml ? '<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--glass-border-s)">' + dateHtml + '</div>' : ''}`;
   document.getElementById('mailCardGfa')?.classList.remove('mail-inactive'); document.getElementById('mailCardGfa')?.classList.add('mail-active');
 }
 
@@ -1432,17 +1447,13 @@ function mailBuildHtml() {
   }
 
   // ── 브랜드검색: 전체 날짜 합산 ──
-  let moTotal = 0, pcTotal = 0;
-  let moKwSummary = '', pcKwSummary = '';
+  let moTotAll = 0, pcTotAll = 0;
   for (const [, d] of _bkByDate) {
-    moTotal += (d.moTot?.conv || 0);
-    pcTotal += (d.pcTot?.conv || 0);
+    moTotAll += Math.round(d.moTot || 0);
+    pcTotAll += Math.round(d.pcTot || 0);
   }
-  // 키워드 summaryText는 가장 최근 날짜 기준
-  const moKwData = [..._kwByDate.values()].filter(d => d.type === 'MO').sort((a,b) => b.dateKey?.localeCompare(a.dateKey||'')||0)[0];
-  const pcKwData = [..._kwByDate.values()].filter(d => d.type === 'PC').sort((a,b) => b.dateKey?.localeCompare(a.dateKey||'')||0)[0];
-  const moLine = moKwData ? moKwData.summaryText : (moTotal > 0 ? `Total(${moTotal})` : '');
-  const pcLine = pcKwData ? pcKwData.summaryText : (pcTotal > 0 ? `Total(${pcTotal})` : '');
+  const moLine = `Total(${moTotAll})`;
+  const pcLine = `Total(${pcTotAll})`;
 
   // ── GFA: 전체 데이터에서 unique 그룹 추출 ──
   let gfaLine = '';
@@ -2306,6 +2317,27 @@ function buildDateTabs(containerId, dates, currentVal, onSelect) {
 let _gfaCurDate = 'all';
 let _gcCurDate = 'all';
 
+// GFA 날짜별 성과 표를 _perfStore.gfa 전체 기준으로 재렌더링
+function refreshGfaDateTable() {
+  const dateSorted = Object.entries(_perfStore.gfa)
+    .sort((a,b) => a[0].localeCompare(b[0]))
+    .map(([dk, v]) => {
+      const label = dk.slice(0,4)+'.'+dk.slice(4,6)+'.'+dk.slice(6,8)+'.';
+      return [label, v];
+    });
+  const dateBody = document.getElementById('gfaDateBody');
+  const dateFoot = document.getElementById('gfaDateFoot');
+  if (!dateBody) return;
+  buildTableRows(dateBody, dateSorted, null);
+  buildTfoot(dateFoot, dateSorted);
+  const copyBtn = document.getElementById('gfaDateCopyAll');
+  if (copyBtn) copyBtn.onclick = () => {
+    const rows = [...dateBody.querySelectorAll('tr')].map(tr => [tr.children[0].textContent, ...[...tr.querySelectorAll('td[data-val]')].map(td=>td.dataset.val)]);
+    navigator.clipboard.writeText(rows.map(r=>r.join('\t')).join('\n')).then(() => showToast('✅ 전체 복사 완료'));
+  };
+  bindCellCopy(dateBody); bindCellCopy(dateFoot);
+}
+
 (function() {
   const uz = document.getElementById('gfaUpload');
   const fi = document.getElementById('gfaInput');
@@ -2344,14 +2376,18 @@ async function processGfa(file) {
   const iCost  = headers.indexOf('총비용');
   const iConv  = headers.indexOf('총 전환수');
   const iRev   = headers.indexOf('총 전환매출액');
-  _gfaData = [];
+  // 이번 파일에 포함된 날짜 파악 → 해당 날짜 데이터만 교체 (다른 날짜는 유지)
+  const newRows = [];
   for (let i = 1; i < lines.length; i++) {
     if (!lines[i].trim()) continue;
     const c = parseCSVLine(lines[i]);
-    _gfaData.push({group:(c[iGroup]||'').trim(), date:(c[iDate]||'').trim(),
+    newRows.push({group:(c[iGroup]||'').trim(), date:(c[iDate]||'').trim(),
       imp:parseNum(c[iImp]), clk:parseNum(c[iClk]), cost:parseNum(c[iCost]),
       conv:parseNum(c[iConv]), rev:parseNum(c[iRev])});
   }
+  const newDates = new Set(newRows.map(r => r.date));
+  // 기존 _gfaData에서 이번 파일 날짜 제거 후 새 데이터 추가
+  _gfaData = _gfaData.filter(r => !newDates.has(r.date)).concat(newRows);
   const dates = [...new Set(_gfaData.map(r => r.date))].sort();
   _gfaCurDate = 'all';
   buildDateTabs('gfaDateTabs', dates, 'all', (d) => { _gfaCurDate = d; renderGfaGroup(d); });
@@ -2361,19 +2397,18 @@ async function processGfa(file) {
     const d = dateMap.get(r.date);
     d.imp+=r.imp; d.clk+=r.clk; d.cost+=r.cost; d.conv+=r.conv; d.rev+=r.rev;
   }
-  // 성과 저장소 업데이트 (날짜별 머지 — 기존 날짜 데이터 유지)
+  // _perfStore.gfa 에 머지 후 날짜 표 전체 재렌더링
   dateMap.forEach((v, dk) => { _perfStore.gfa[normalizeDateKey(dk)] = {...v}; });
   mailRefreshPerf();
-  const dateSorted = [...dateMap.entries()].sort((a,b) => a[0].localeCompare(b[0]));
-  const dateBody = document.getElementById('gfaDateBody');
-  const dateFoot = document.getElementById('gfaDateFoot');
-  buildTableRows(dateBody, dateSorted, null);
-  buildTfoot(dateFoot, dateSorted);
-  document.getElementById('gfaDateCopyAll').onclick = () => {
-    const rows = [...dateBody.querySelectorAll('tr')].map(tr => [tr.children[0].textContent, ...[...tr.querySelectorAll('td[data-val]')].map(td=>td.dataset.val)]);
-    navigator.clipboard.writeText(rows.map(r=>r.join('\t')).join('\n')).then(() => showToast('✅ 전체 복사 완료'));
-  };
-  bindCellCopy(dateBody); bindCellCopy(dateFoot);
+  refreshGfaDateTable();
+  const allDatesForTabs = [...new Set([
+    ...Object.keys(_perfStore.gfa).map(dk => {
+      // YYYYMMDD → 원래 날짜 문자열로 역변환 (표시용)
+      return dk.slice(0,4)+'.'+dk.slice(4,6)+'.'+dk.slice(6,8)+'.';
+    })
+  ])].sort();
+  _gfaCurDate = 'all';
+  buildDateTabs('gfaDateTabs', allDatesForTabs, 'all', (d) => { _gfaCurDate = d; renderGfaGroup(d); });
   renderGfaGroup('all');
   document.getElementById('gfaBadge').textContent = '📄 ' + file.name;
   document.getElementById('gfaResults').style.display = 'block';

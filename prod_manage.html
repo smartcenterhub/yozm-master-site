@@ -354,6 +354,7 @@ tr.opt-row.opt-last td{border-bottom:1px solid rgba(58,58,240,.12)}
         <span class="cnt" id="skuCnt"></span>
         <span class="cnt" id="skuPendLbl" style="color:var(--amber);display:none"></span>
         <span class="copy-toggle" id="skuCopyToggle" onclick="toggleCopy('sku')"><span class="dot"></span>복사 OFF</span>
+        <span class="copy-toggle" id="skuPriceToggle" onclick="toggleSkuPrice()" style="margin-left:4px">가격 접기</span>
       </div>
       <div class="toolbar-row"><span class="filter-lbl">상태</span><span class="fp on" onclick="setFp(this)">전체</span><span class="fp" onclick="setFp(this)" data-v="상시">상시</span><span class="fp" onclick="setFp(this)" data-v="단종예정">단종예정</span><span class="fp" onclick="setFp(this)" data-v="런칭예정">런칭예정</span><span class="fp" onclick="setFp(this)" data-v="단종">단종</span></div>
       <div class="toolbar-row"><span class="filter-lbl">유형</span><span class="fp on" onclick="setFp(this)">전체</span><span class="fp" onclick="setFp(this)" data-v="상시운영">상시운영</span><span class="fp" onclick="setFp(this)" data-v="슈퍼적립">슈퍼적립</span><span class="fp" onclick="setFp(this)" data-v="행사운영">행사운영</span><span class="fp" onclick="setFp(this)" data-v="행사제안불가">행사제안불가</span></div>
@@ -665,8 +666,23 @@ function renderItemTable(q){
 }
 
 /* ════ SKUS ════ */
-let skuNewOpen=false,skuEditCode=null;
-const skuOpenSet=new Set();
+let skuPriceVisible=true;
+function toggleSkuPrice(){
+  skuPriceVisible=!skuPriceVisible;
+  const btn=document.getElementById('skuPriceToggle');
+  btn.textContent=skuPriceVisible?'가격 접기':'가격 펼치기';
+  btn.classList.toggle('on',!skuPriceVisible);
+  /* th/td nth-child: 정상가=7, 상시할인가=8, 최대할인가=9 */
+  const tbl=document.querySelector('#t-sku table');
+  if(!tbl)return;
+  const disp=skuPriceVisible?'':'none';
+  tbl.querySelectorAll('tr').forEach(tr=>{
+    [7,8,9].forEach(n=>{
+      const cell=tr.children[n-1];
+      if(cell) cell.style.display=disp;
+    });
+  });
+}
 
 function stageSkuNew(){
   const code=document.getElementById('ns-code').value.trim();
@@ -935,6 +951,12 @@ function renderSkuTable(q){
   });
   document.getElementById('skuTbody').innerHTML=html||'<tr><td colspan="15" style="padding:20px;text-align:center;color:var(--t4)">데이터 없음</td></tr>';
   updatePendBar();
+  if(!skuPriceVisible){
+    const tbl=document.querySelector('#t-sku table');
+    if(tbl) tbl.querySelectorAll('tr').forEach(tr=>{
+      [7,8,9].forEach(n=>{const c=tr.children[n-1];if(c)c.style.display='none';});
+    });
+  }
 }
 
 function toggleSkuOpts(code){

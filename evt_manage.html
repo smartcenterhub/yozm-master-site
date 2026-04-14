@@ -196,6 +196,9 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
 .tfb.on.tc-yself{background:rgba(13,122,107,.1);border-color:var(--tl);color:var(--tl)}
 .tfb.on.tc-etc{background:rgba(152,152,168,.12);border-color:var(--t3);color:var(--t3)}
 .tfsep{width:1px;height:18px;background:var(--bd);margin:0 4px}
+.sort-crit-btn{padding:2px 8px;font-size:11px;border:1px solid var(--bd);border-radius:6px;background:var(--gs);color:var(--t3);cursor:pointer;transition:all .13s;white-space:nowrap}
+.sort-crit-btn:hover{color:var(--t2);background:rgba(255,255,255,.8)}
+.sort-crit-btn.on{background:rgba(58,58,240,.08);border-color:rgba(58,58,240,.3);color:var(--ac);font-weight:600}
 /* 행사 선정 그룹 수정 폼 */
 .sel-edit-block{background:rgba(248,248,255,.97);border-bottom:2px solid rgba(58,58,240,.2);padding:14px 16px;display:none}
 .sel-edit-block.open{display:block}
@@ -434,7 +437,14 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   <div class="fbar">
     <input id="prop-search" placeholder="행사명 / 닉네임 검색" oninput="renderPropList(2)">
     <select id="prop-mf" onchange="renderPropList(2)"><option value="">전체 월</option></select>
-    <button id="sort-toggle-2" style="margin-left:auto;font-size:11px;color:var(--t3);border:none;background:none;cursor:pointer;padding:2px 4px;border-radius:4px;transition:all .15s" onclick="toggleSort(2)" title="정렬 변경">최신순 ↓</button>
+    <div style="margin-left:auto;display:flex;gap:4px;align-items:center">
+      <span style="font-size:10.5px;color:var(--t3)">정렬</span>
+      <button id="sort-btn-2-startDate"  class="sort-crit-btn on" onclick="setSortCrit(2,'startDate',this)">행사시작일 <span id="sort-dir-2-startDate">↓</span></button>
+      <button id="sort-btn-2-endDate"    class="sort-crit-btn"     onclick="setSortCrit(2,'endDate',this)">행사마감일 <span id="sort-dir-2-endDate">↓</span></button>
+      <button id="sort-btn-2-uploadDate" class="sort-crit-btn"     onclick="setSortCrit(2,'uploadDate',this)">업로드일 <span id="sort-dir-2-uploadDate">↓</span></button>
+      <button id="sort-btn-2-deadline"   class="sort-crit-btn"     onclick="setSortCrit(2,'deadline',this)">제안마감일 <span id="sort-dir-2-deadline">↓</span></button>
+      <button id="sort-btn-2-propDate"   class="sort-crit-btn"     onclick="setSortCrit(2,'propDate',this)">제안일 <span id="sort-dir-2-propDate">↓</span></button>
+    </div>
   </div>
   <div id="warn-banner-2" style="display:none;padding:8px 13px;background:rgba(196,90,16,.08);border:1px solid rgba(196,90,16,.25);border-radius:8px;margin-bottom:10px;font-size:12px;font-weight:600;color:var(--or)"></div>
   <div id="prop-list-2"><div class="loading"><span class="spin">⟳</span> 불러오는 중...</div></div>
@@ -1583,13 +1593,35 @@ window.saveEventAndGo=async function(){
 };
 
 /* ══ 정렬 상태 ══ */
-const sortOrder={2:'desc',3:'desc',5:'desc'};
-window.toggleSort=function(tabNum){
-  sortOrder[tabNum]=sortOrder[tabNum]==='desc'?'asc':'desc';
-  const btn=document.getElementById('sort-toggle-'+tabNum);
-  if(btn)btn.textContent=sortOrder[tabNum]==='desc'?'최신순 ↓':'오래된순 ↑';
-  renderPropList(tabNum);
+const sortState={
+  2:{crit:'startDate',dir:'desc'},
+  3:{crit:'startDate',dir:'desc'},
+  5:{crit:'startDate',dir:'desc'}
 };
+window.setSortCrit=function(tab,crit,btn){
+  const s=sortState[tab];
+  if(s.crit===crit){
+    s.dir=s.dir==='desc'?'asc':'desc';
+  }else{
+    /* 이전 버튼 off */
+    const prev=document.getElementById('sort-btn-'+tab+'-'+s.crit);
+    if(prev){prev.classList.remove('on');}
+    s.crit=crit;s.dir='desc';
+    if(btn)btn.classList.add('on');
+  }
+  /* 방향 화살표 업데이트 */
+  const dirEl=document.getElementById('sort-dir-'+tab+'-'+crit);
+  if(dirEl)dirEl.textContent=s.dir==='desc'?'↓':'↑';
+  renderPropList(tab);
+};
+function getSortKey(ev,meta,crit){
+  if(crit==='startDate')  return ev?.startDate||'';
+  if(crit==='endDate')    return ev?.endDate||'';
+  if(crit==='uploadDate') return ev?.proposalUploadedAt||meta?.proposalUploadedAt||'';
+  if(crit==='deadline')   return ev?.proposalDeadline||meta?.proposalDeadline||'';
+  if(crit==='propDate')   return meta?.proposalMyDate||'';
+  return '';
+}
 
 /* ══ 제안/선정/종료 렌더 ══ */
 window.renderPropList=function(tabNum){
@@ -1622,12 +1654,19 @@ window.renderPropList=function(tabNum){
     if(!groups[key])groups[key]={items:[],meta:p};
     groups[key].items.push(p);
   });
-  /* 정렬 적용: 그룹 대표 startDate 기준 */
-  const isAsc=(sortOrder[tabNum]||'desc')==='asc';
+  /* 정렬: 날짜 있는 것 먼저, 없으면 맨 아래(createdAt 기준) */
+  const ss=sortState[tabNum]||{crit:'startDate',dir:'desc'};
+  const isAsc=ss.dir==='asc';
   const sortedEntries=Object.entries(groups).sort(([,a],[,b])=>{
-    const da=(EVENTS.find(e=>e._id===(a.meta.eventSID||a.meta.eventName))?.startDate||a.meta.startDate||a.meta.createdAt||'');
-    const db2=(EVENTS.find(e=>e._id===(b.meta.eventSID||b.meta.eventName))?.startDate||b.meta.startDate||b.meta.createdAt||'');
-    return isAsc?da.localeCompare(db2):db2.localeCompare(da);
+    const evA=EVENTS.find(e=>e._id===(a.meta.eventSID||a.meta.eventName));
+    const evB=EVENTS.find(e=>e._id===(b.meta.eventSID||b.meta.eventName));
+    const da=getSortKey(evA,a.meta,ss.crit);
+    const db=getSortKey(evB,b.meta,ss.crit);
+    /* 미입력은 항상 맨 아래 */
+    if(!da&&!db)return (b.meta.createdAt||'').localeCompare(a.meta.createdAt||'');
+    if(!da)return 1;
+    if(!db)return -1;
+    return isAsc?da.localeCompare(db):db.localeCompare(da);
   });
   const el=document.getElementById('prop-list-'+tabNum);
   if(!sortedEntries.length){el.innerHTML='<div style="text-align:center;padding:28px;color:var(--t3)">해당하는 항목이 없습니다</div>';return;}

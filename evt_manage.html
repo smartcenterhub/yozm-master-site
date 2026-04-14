@@ -199,12 +199,19 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
 /* 행사 선정 그룹 수정 폼 */
 .sel-edit-block{background:rgba(248,248,255,.97);border-bottom:2px solid rgba(58,58,240,.2);padding:14px 16px;display:none}
 .sel-edit-block.open{display:block}
-.sfb{padding:2px 9px;font-size:10.5px;border:1px solid rgba(0,0,0,.1);border-radius:6px;background:var(--gs);cursor:pointer;white-space:nowrap}
+.sfb{padding:2px 9px;font-size:10.5px;border:1px solid rgba(0,0,0,.1);border-radius:6px;background:var(--gs);cursor:pointer;color:var(--t2)}
+.sfb.sf-proposal{color:#c45a10}
+.sfb.sf-done{color:var(--ac)}
+.sfb.sf-warning{color:#854d0e}
+.sfb.sf-sel{color:var(--gr)}
+.sfb.sf-rej{color:var(--rd)}
+.sfb.sf-run{color:var(--pk)}
 .sfb.on.sf-proposal{background:rgba(196,90,16,.1);border-color:var(--or);color:var(--or);font-weight:600}
 .sfb.on.sf-done{background:rgba(58,58,240,.1);border-color:var(--ac);color:var(--ac);font-weight:600}
+.sfb.on.sf-warning{background:rgba(202,138,4,.1);border-color:#b45309;color:#854d0e;font-weight:600}
 .sfb.on.sf-sel{background:rgba(26,138,74,.12);border-color:var(--gr);color:var(--gr);font-weight:600}
 .sfb.on.sf-rej{background:rgba(212,32,32,.08);border-color:var(--rd);color:var(--rd);font-weight:600}
-.sfb.on.sf-run{background:rgba(196,40,120,.1);border-color:var(--pk);color:var(--pk);font-weight:600}
+.sfb.on.sf-run{background:rgba(196,40,120,.1);border-color:var(--pk);color:var(--pk);font-weight:600}ter;white-space:nowrap}
 
 /* ── 가격 ── */
 .pn{color:var(--t2);font-size:11.5px}
@@ -411,6 +418,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     <div class="tfsep"></div>
     <button class="sfb sf-proposal" onclick="sfClick(this,'제안중',2)">제안중</button>
     <button class="sfb sf-done"     onclick="sfClick(this,'제안완료',2)">제안완료</button>
+    <button class="sfb sf-warning"  onclick="sfClick(this,'확인필요',2)">확인필요</button>
     <div class="tfsep"></div>
     <button class="sfb sf-run"  onclick="sfClick(this,'진행중',2)">진행중</button>
     <button class="sfb sf-rej"  onclick="sfClick(this,'미선정',2)">미선정</button>
@@ -857,6 +865,11 @@ function calRender(key){
           const d=document.getElementById('ev-deadline');if(d)d.value=st.deadlineDate;
           calUpdateChips(key);
         }else if(st.mode==='period'&&st.selS&&st.selE){
+          /* reg 키: hidden input 업데이트 */
+          if(key==='reg'){
+            const si=document.getElementById('ev-start');if(si)si.value=st.selS;
+            const ei=document.getElementById('ev-end');if(ei)ei.value=st.selE;
+          }
           /* edit 키: hidden input 업데이트 */
           if(key.startsWith('edit-')){
             const gId=key.replace('edit-','');
@@ -912,6 +925,15 @@ function calRender(key){
         const st2=CAL_STATE[key];
         if(st2?.selS){const si=document.getElementById('se-start-'+gId);if(si)si.value=st2.selS;}
         if(st2?.selE){const ei=document.getElementById('se-end-'+gId);if(ei)ei.value=st2.selE;}
+        /* 카드 헤더 기간 칩 즉시 업데이트 */
+        const hd=document.getElementById(gId+'-hd');
+        if(hd){
+          const chipRow=hd.querySelector('.egrphd > div:nth-child(2)');
+          if(chipRow&&typeof buildDateChips==='function'){
+            const cs=CAL_STATE[key];
+            chipRow.innerHTML=buildDateChips(cs.selS,cs._sh+':'+cs._sm,cs.selE,cs._eh+':'+cs._em,cs.uploadDate,cs.deadlineDate);
+          }
+        }
       }
       calUpdateChips(key);
       confirmBtn.textContent='✓ 적용됨';
@@ -959,6 +981,7 @@ function calClick(key,s){
     /* 업로드일: 클릭 즉시 적용 */
     const u=document.getElementById('ev-upload-date');if(u)u.value=s;
     calUpdateChips(key);
+    if(key.startsWith('edit-')){const gId=key.replace('edit-','');saveDateChip(gId,'upload','업로드',s);}
     setTimeout(()=>{st.mode='deadline';calRender(key);},300);
     return;
   }else if(st.mode==='deadline'){
@@ -966,6 +989,7 @@ function calClick(key,s){
     /* 마감일: 클릭 즉시 적용 */
     const d=document.getElementById('ev-deadline');if(d)d.value=s;
     calUpdateChips(key);
+    if(key.startsWith('edit-')){const gId=key.replace('edit-','');saveDateChip(gId,'deadline','마감',s);}
     setTimeout(()=>{st.mode='period';calRender(key);},300);
     return;
   }
@@ -1067,10 +1091,9 @@ function calUpdateChips(key){
     const hid=document.getElementById('ev-deadline');if(hid)hid.value=st.deadlineDate;
   }
 }
-window.saveDateChip=function(grpId,field,prefix){
-  const inp=document.getElementById('date-'+field+'-'+grpId);
-  if(!inp?.value)return;
-  const val=inp.value;
+window.saveDateChip=function(grpId,field,prefix,directVal){
+  const val=directVal||(document.getElementById('date-'+field+'-'+grpId)?.value);
+  if(!val)return;
   const d=new Date(val);
   const mm=String(d.getMonth()+1).padStart(2,'0');
   const dd=String(d.getDate()).padStart(2,'0');
@@ -1398,7 +1421,7 @@ window.submitProposal=async function(){
   const errs=[];
   for(const p of productsCopy){
     const pid=(eventSID+'_'+(p.skuCode||'')).replace(/\s/g,'');
-    const data={eventSID,skuCode:p.skuCode,skuNick:p.skuNick,productName:p.productName,
+    const data={eventSID,eventName:evName,eventType:typeCode,skuCode:p.skuCode,skuNick:p.skuNick,productName:p.productName,
       priceNormal:p.priceNormal,priceBase:p.priceBase,priceEvent:p.priceEvent,
       priceAlim:p.priceAlim,priceMax:p.priceMax,ship:p.ship,isMain:p.isMain,
       status:'제안중',createdAt:new Date().toISOString()};
@@ -1580,15 +1603,19 @@ function buildGroupHtml(eName,grp,tabNum){
     grpActions=`
       <select style="${stSelStyle};font-size:11px;border-radius:6px;padding:2px 8px;height:26px;font-weight:600;width:80px"
         onchange="markGroupStatus(this.closest('.egrp').querySelector('.egrpname').textContent.trim(),this.value);applySelectStyle(this,this.value)">${stOpts}</select>
-      <button class="btn btn-sm" style="width:28px;padding:0;background:rgba(58,58,240,.07);color:var(--ac);border-color:rgba(58,58,240,.25);display:inline-flex;align-items:center;justify-content:center" title="수정" onclick="toggleSelEdit('${grpId}')">
+      <button id="btn-pencil-${grpId}" class="btn btn-sm" style="width:28px;padding:0;background:rgba(58,58,240,.07);color:var(--ac);border-color:rgba(58,58,240,.25);display:inline-flex;align-items:center;justify-content:center" title="수정" onclick="toggleSelEdit('${grpId}')">
         <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style="vertical-align:middle"><path d="M9.5 2.5l2 2-7 7H2.5v-2l7-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 4l2 2" stroke="currentColor" stroke-width="1.4"/></svg>
       </button>
+      <button id="btn-save-${grpId}" class="btn btn-sm btn-p" style="display:none" onclick="saveSelEdit('${grpId}',2)">Firebase 저장</button>
+      <button id="btn-close-${grpId}" class="btn btn-sm btn-gh" style="display:none" onclick="toggleSelEdit('${grpId}')">✕ 닫기</button>
       <button class="btn btn-sm" style="color:var(--rd);border-color:rgba(212,32,32,.25)" onclick="deleteEvent('${evId}','${eName}')">🗑 삭제</button>`;
   }
   if(tabNum===3){
-    grpActions=`<button class="btn btn-sm" style="width:28px;padding:0;background:rgba(58,58,240,.07);color:var(--ac);border-color:rgba(58,58,240,.3);display:inline-flex;align-items:center;justify-content:center" title="수정" onclick="toggleSelEdit('${grpId}')">
+    grpActions=`<button id="btn-pencil-${grpId}" class="btn btn-sm" style="width:28px;padding:0;background:rgba(58,58,240,.07);color:var(--ac);border-color:rgba(58,58,240,.3);display:inline-flex;align-items:center;justify-content:center" title="수정" onclick="toggleSelEdit('${grpId}')">
         <svg width="13" height="13" viewBox="0 0 14 14" fill="none" style="vertical-align:middle"><path d="M9.5 2.5l2 2-7 7H2.5v-2l7-7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M8 4l2 2" stroke="currentColor" stroke-width="1.4"/></svg>
       </button>
+      <button id="btn-save-${grpId}" class="btn btn-sm btn-p" style="display:none" onclick="saveSelEdit('${grpId}',3)">Firebase 저장</button>
+      <button id="btn-close-${grpId}" class="btn btn-sm btn-gh" style="display:none" onclick="toggleSelEdit('${grpId}')">✕ 닫기</button>
       <button class="btn btn-sm" style="color:var(--or);border-color:rgba(196,90,16,.3);background:rgba(196,90,16,.06)" onclick="cancelSelection('${eName}','${evId}')">선정취소</button>
       ${!grpEnded?`<button class="btn btn-sm btn-d" onclick="closeByEventName('${eName}')">종료 처리</button>`:''}`;
   }
@@ -1636,27 +1663,15 @@ function buildGroupHtml(eName,grp,tabNum){
     <div class="egrpbody${allDone&&tabNum===2?' done-state':''}" id="${grpId}-body">
       <div class="date-chip-row">
         <span style="font-size:10.5px;color:var(--t3);margin-right:2px">제안 일정</span>
-        <span id="chip-upload-${grpId}" class="${(ev?.proposalUploadedAt||m.proposalUploadedAt)?'date-chip chip-filled':'date-chip'}" onclick="toggleDateChip('expand-upload-${grpId}')">
+        <span id="chip-upload-${grpId}" class="${(ev?.proposalUploadedAt||m.proposalUploadedAt)?'date-chip chip-filled':'date-chip'}" onclick="switchCalMode('${grpId}','upload')">
           📅 <span id="lbl-upload-${grpId}">${(ev?.proposalUploadedAt||m.proposalUploadedAt)?'업로드 '+(ev?.proposalUploadedAt||m.proposalUploadedAt).substring(5).replace('-','/'):'업로드 미입력'}</span>
         </span>
-        <span id="chip-deadline-${grpId}" class="${(ev?.proposalDeadline||m.proposalDeadline)?'date-chip chip-filled':'date-chip'}" onclick="toggleDateChip('expand-deadline-${grpId}')">
+        <span id="chip-deadline-${grpId}" class="${(ev?.proposalDeadline||m.proposalDeadline)?'date-chip chip-filled':'date-chip'}" onclick="switchCalMode('${grpId}','deadline')">
           📅 <span id="lbl-deadline-${grpId}">${(ev?.proposalDeadline||m.proposalDeadline)?'마감 '+(ev?.proposalDeadline||m.proposalDeadline).substring(5).replace('-','/'):'마감 미입력'}</span>
         </span>
         <span id="chip-propdate-${grpId}" class="${m.proposalMyDate?'date-chip chip-filled':'date-chip'}" onclick="toggleDateChip('expand-propdate-${grpId}')">
           📅 <span id="lbl-propdate-${grpId}">${m.proposalMyDate?'제안일 '+m.proposalMyDate.substring(5).replace('-','/'):'제안일 미입력'}</span>
         </span>
-      </div>
-      <div class="date-chip-expand" id="expand-upload-${grpId}">
-        <span class="dce-lbl">업로드일</span>
-        <input type="date" id="date-upload-${grpId}" value="${ev?.proposalUploadedAt||m.proposalUploadedAt||''}">
-        <button class="btn btn-sm btn-fw-apply" onclick="saveDateChip('${grpId}','upload','업로드')">적용</button>
-        <button class="btn btn-sm btn-fw-close" onclick="closeDateChip('expand-upload-${grpId}')">닫기</button>
-      </div>
-      <div class="date-chip-expand" id="expand-deadline-${grpId}">
-        <span class="dce-lbl">마감일</span>
-        <input type="date" id="date-deadline-${grpId}" value="${ev?.proposalDeadline||m.proposalDeadline||''}">
-        <button class="btn btn-sm btn-fw-apply" onclick="saveDateChip('${grpId}','deadline','마감')">적용</button>
-        <button class="btn btn-sm btn-fw-close" onclick="closeDateChip('expand-deadline-${grpId}')">닫기</button>
       </div>
       <div class="date-chip-expand" id="expand-propdate-${grpId}">
         <span class="dce-lbl">제안일</span>
@@ -1794,10 +1809,6 @@ function buildSelGroupEditBlock(eName,evId,grpId,grpItems,ev,lbl,tabNum){
         <div class="panel" style="margin-bottom:0">
           <div class="ptitle" style="margin-bottom:6px">상품 목록
             <span style="font-size:10px;font-weight:400;color:var(--t3)">🔒 수정불가 · 빨간칸 = 제안행사가</span>
-            <div style="display:flex;gap:7px;margin-left:auto">
-              <button class="btn btn-sm btn-p" onclick="saveSelEdit('${grpId}',${tabNum})">Firebase 저장</button>
-              <button class="btn btn-sm btn-gh" onclick="toggleSelEdit('${grpId}')">닫기</button>
-            </div>
           </div>
           <table class="tbl" style="font-size:11.5px">
             <thead><tr>
@@ -1846,12 +1857,31 @@ window.editRemoveProd=function(grpId,idx){
 window.toggleSelEdit=function(grpId){
   const el=document.getElementById('seledit-'+grpId);
   if(!el)return;
-  el.classList.toggle('open');
-  if(el.classList.contains('open')){
-    /* 달력 렌더링 (행사등록과 동일한 모드탭) */
-    const calKey='edit-'+grpId;
-    calRender(calKey);
+  const isOpen=el.classList.contains('open');
+  el.classList.toggle('open',!isOpen);
+  const pencil=document.getElementById('btn-pencil-'+grpId);
+  const savebtn=document.getElementById('btn-save-'+grpId);
+  const closebtn=document.getElementById('btn-close-'+grpId);
+  if(!isOpen){
+    if(pencil)pencil.style.display='none';
+    if(savebtn)savebtn.style.display='';
+    if(closebtn)closebtn.style.display='';
+    calRender('edit-'+grpId);
+  }else{
+    if(pencil)pencil.style.display='';
+    if(savebtn)savebtn.style.display='none';
+    if(closebtn)closebtn.style.display='none';
   }
+};
+window.switchCalMode=function(grpId,mode){
+  /* 수정폼 닫혀있으면 먼저 열기 */
+  const editEl=document.getElementById('seledit-'+grpId);
+  if(editEl&&!editEl.classList.contains('open'))toggleSelEdit(grpId);
+  /* 달력 탭 전환 */
+  const calKey='edit-'+grpId;
+  if(CAL_STATE[calKey]){CAL_STATE[calKey].mode=mode;calRender(calKey);}
+  /* 달력 위치로 스크롤 */
+  setTimeout(()=>{const w=document.getElementById('cal-wrap-'+calKey);if(w)w.scrollIntoView({behavior:'smooth',block:'nearest'});},80);
 };
 
 window.selEditProd=function(grpId,idx,field,val){
@@ -1864,13 +1894,13 @@ window.saveSelEdit=async function(grpId,tabNum){
   const se=SEL_EDIT[grpId];if(!se){toast('수정 데이터 없음','err');return;}
   const {evId,eName}=se;
   const name=document.getElementById('se-name-'+grpId)?.value||eName;
-  const start=document.getElementById('se-start-'+grpId)?.value||'';
-  const end=document.getElementById('se-end-'+grpId)?.value||'';
+  /* 날짜: CAL_STATE 우선 → hidden input fallback */
+  const calSt=CAL_STATE['edit-'+grpId];
+  const start=calSt?.selS||document.getElementById('se-start-'+grpId)?.value||'';
+  const end=calSt?.selE||document.getElementById('se-end-'+grpId)?.value||'';
   const {startTime,endTime}=getCalTime('edit-'+grpId);
   const page=document.getElementById('se-page-'+grpId)?.value||'';
   const adddisc=document.getElementById('se-adddisc-'+grpId)?.value||'';
-  /* cal state에서 upload/deadline 읽기 */
-  const calSt=CAL_STATE['edit-'+grpId];
   const uploadDate=calSt?.uploadDate||null;
   const deadlineDate=calSt?.deadlineDate||null;
   const fields={eventName:name,startDate:start||null,startTime,endDate:end||null,endTime,pageType:page,additionalDiscount:adddisc,products:se.products,
@@ -1886,7 +1916,7 @@ window.saveSelEdit=async function(grpId,tabNum){
     const p=PROPOSALS.find(x=>x._id===sp._id||(x.eventName===eName&&x.skuCode===sp.skuCode));
     if(p){Object.assign(p,{priceAlim:sp.priceAlim,priceMax:sp.priceMax,isMain:sp.isMain,ship:sp.ship});markDirty('proposalItems',p._id,{priceAlim:sp.priceAlim,priceMax:sp.priceMax,isMain:sp.isMain,ship:sp.ship});}
   });
-  /* 상단 Firebase 저장 버튼과 동일하게 즉시 저장 */
+  /* 즉시 Firebase 저장 */
   const ok_ids=[];
   for(const[id,{col,fields}]of DIRTY.entries()){
     try{
@@ -1897,6 +1927,14 @@ window.saveSelEdit=async function(grpId,tabNum){
   ok_ids.forEach(id=>{DIRTY.delete(id);SNAPSHOTS.delete(id);});
   refreshSaveUI();
   toast('✅ 수정 저장 완료');
+  /* 카드 헤더 즉시 업데이트 (행사명 + 기간 칩) */
+  const hd=document.getElementById(grpId+'-hd');
+  if(hd){
+    const nameEl=hd.querySelector('.egrpname');
+    if(nameEl)nameEl.textContent=name;
+    const chipRow=hd.querySelector('.egrphd > div:nth-child(2)');
+    if(chipRow)chipRow.innerHTML=buildDateChips(start,startTime,end,endTime,uploadDate,deadlineDate);
+  }
   renderPropList(tabNum);
 };
 
@@ -2365,7 +2403,7 @@ function buildSelEditBlock(ev,grpId){
     <div class="ptitle" style="margin-bottom:10px;font-size:12.5px">
       ✏️ 행사 수정 — <b>${ev.eventName}</b>
       <div style="display:flex;gap:7px">
-        <button class="btn btn-sm btn-p" onclick="saveSelEvEdit('${evId}','${grpId}')">Firebase 저장</button>
+        <button class="btn btn-sm btn-p" onclick="saveSelEvEdit('${evId}','${grpId}')">적용 (저장 필요)</button>
         <button class="btn btn-sm btn-gh" onclick="toggleSelEditBlock('${grpId}')">닫기</button>
       </div>
     </div>

@@ -55,7 +55,7 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
 
 /* ── TABLE CARD ── */
 /* overflow 절대 쓰지 않음 — sticky 작동의 핵심 */
-.tbl-card{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:12px}
+.tbl-card{background:#fff;border:1px solid var(--glass-border-s);border-radius:12px}
 .sticky-header{
   flex-shrink:0;
   padding:0 24px;
@@ -131,7 +131,7 @@ thead th{
 }
 thead th.r{text-align:right}
 thead th.c-act{text-align:center}
-tbody td{padding:7px 10px;border-bottom:1px solid rgba(0,0,0,.035);font-size:12px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+tbody td{padding:7px 10px;border-bottom:1px solid rgba(0,0,0,.035);font-size:12px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#fff}
 tbody td.r{text-align:right;font-variant-numeric:tabular-nums}
 tbody td.c-act{text-align:center}
 tbody tr:last-child td{border-bottom:none}
@@ -140,8 +140,24 @@ tbody tr:not(.new-row):not(.editing-row):hover td{background:rgba(0,0,0,.012)}
 tr.is-pending td{background:rgba(180,120,0,.03)}
 tr.is-pending:hover td{background:rgba(180,120,0,.06)}
 /* edit/new */
-tr.editing-row td{background:rgba(26,138,74,.04);padding:5px 6px}
-tr.new-row td{background:rgba(58,58,240,.04);padding:5px 6px}
+/* ── 편집 행 — 시안 B 인라인 밑줄 ── */
+tr.editing-row td{background:#fff;padding:0 6px;height:34px;border-top:1.5px solid #3a3af0;vertical-align:middle}
+tr.new-row td{background:#fff;padding:0 6px;height:34px;border-top:1.5px solid rgba(26,86,200,.4);vertical-align:middle}
+tr.editing-row td.fix{background:#fff}
+tr.new-row td.fix{background:#fff}
+/* 인풋 밑줄 스타일 */
+.e-input{width:100%;height:22px;padding:0 4px;border:none;border-bottom:1.5px solid #c8ccd8;border-radius:0;font-size:11.5px;font-family:inherit;background:transparent;color:var(--tx);outline:none;line-height:22px;transition:border-color .1s}
+.e-input:focus{border-bottom-color:#3a3af0}
+.e-input.r{text-align:right}
+.e-input::-webkit-outer-spin-button,.e-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.e-input[inputmode=numeric]{-moz-appearance:textfield}
+.e-select{width:100%;height:22px;padding:0 3px;border:none;border-bottom:1.5px solid #c8ccd8;border-radius:0;font-size:11.5px;font-family:inherit;background:transparent;color:var(--tx);outline:none;cursor:pointer;transition:border-color .1s}
+.e-select:focus{border-bottom-color:#3a3af0}
+.e-actions{display:flex;gap:3px;justify-content:center;align-items:center}
+.btn-stage{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:5px;border:none;background:#3a3af0;color:#fff;cursor:pointer;flex-shrink:0}
+.btn-stage:hover{background:#2828d8}
+.btn-stage svg{pointer-events:none}
+.btn-cancel{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:4px;font-size:10px;font-family:inherit;border:none;background:rgba(0,0,0,.06);color:var(--t2);cursor:pointer}
 
 /* ── 틀고정 sticky 컬럼 ── */
 /* 스크롤 컨테이너(.tbl-scroll)가 바로 부모 → sticky left 정상 작동 */
@@ -154,7 +170,7 @@ th.fix{z-index:5;background:var(--header-bg)}
 tr.is-pending th.fix,tr.is-pending td.fix{background:rgba(250,244,220,0.97)}
 tr.editing-row td.fix{background:rgba(232,248,238,0.97)}
 tr.new-row td.fix{background:rgba(232,236,254,0.97)}
-tr:not(.new-row):not(.editing-row):hover td.fix{background:rgba(243,244,248,0.97)}
+tr:not(.new-row):not(.editing-row):hover td.fix{background:#f5f6f9}
 /* 마지막 fix 컬럼 우측에 구분선 */
 th.fix-last,td.fix-last{box-shadow:2px 0 6px -1px rgba(0,0,0,0.08)}
 
@@ -186,19 +202,22 @@ th.fix-last,td.fix-last{box-shadow:2px 0 6px -1px rgba(0,0,0,0.08)}
 .icon-btn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;transition:all .1s;flex-shrink:0}
 .icon-btn:hover{border-color:rgba(26,138,74,.4);background:var(--ac-l)}.icon-btn:hover svg{stroke:var(--green)}
 .icon-btn svg{stroke:var(--t3);transition:stroke .1s;pointer-events:none}.icon-btn:disabled{opacity:.25;cursor:default;pointer-events:none}
-.e-input{width:100%;padding:4px 7px;border:1px solid rgba(0,0,0,.12);border-radius:6px;font-size:12px;font-family:inherit;background:#fff;color:var(--tx);outline:none;transition:border .1s}
-.e-input:focus{border-color:var(--green);box-shadow:0 0 0 2px var(--ac-l)}
-.e-input.r{text-align:right}
-.e-input::-webkit-outer-spin-button,.e-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-.e-input[inputmode=numeric]{-moz-appearance:textfield}
-.e-select{width:100%;padding:4px 5px;border:1px solid rgba(0,0,0,.12);border-radius:6px;font-size:11.5px;font-family:inherit;background:#fff;color:var(--tx);outline:none;cursor:pointer}
-.e-select:focus{border-color:var(--green);box-shadow:0 0 0 2px var(--ac-l)}
-.e-actions{display:flex;gap:4px;justify-content:center}
-.btn-stage{padding:4px 9px;border-radius:6px;font-size:11px;font-weight:600;font-family:inherit;border:none;background:var(--green);color:#fff;cursor:pointer}.btn-stage:hover{background:#157a3e}
-.btn-cancel{padding:4px 7px;border-radius:6px;font-size:11px;font-family:inherit;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);color:var(--t2);cursor:pointer}
 code{font-family:monospace;font-size:11px;background:rgba(0,0,0,.05);padding:1px 5px;border-radius:4px}
 /* 옵션 수 뱃지 */
-.opt-cnt{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:20px;padding:0 6px;border-radius:10px;font-size:11px;font-weight:600;cursor:pointer;user-select:none;transition:all .1s}
+.copy-toggle{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:7px;font-size:11.5px;font-weight:500;font-family:inherit;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);color:var(--t3);transition:all .12s;user-select:none}
+.copy-toggle.on{background:rgba(26,138,74,.08);border-color:rgba(26,138,74,.3);color:var(--green)}
+.copy-toggle .dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
+.pi{padding:2px 9px;border-radius:20px;font-size:11.5px;cursor:pointer;user-select:none;transition:all .1s;font-weight:600;display:inline-block}
+.pi.cat-요거트{background:rgba(219,234,254,0.5);border:1px solid rgba(30,64,175,.18);color:#3060b8}
+.pi.cat-요거트:hover,.pi.cat-요거트.on{background:#1e40af;border-color:#1e40af;color:#fff}
+.pi.cat-마시는{background:rgba(224,242,254,0.5);border:1px solid rgba(7,89,133,.18);color:#2878a0}
+.pi.cat-마시는:hover,.pi.cat-마시는.on{background:#075985;border-color:#075985;color:#fff}
+.pi.cat-토핑{background:rgba(252,231,243,0.5);border:1px solid rgba(157,23,77,.18);color:#a03070}
+.pi.cat-토핑:hover,.pi.cat-토핑.on{background:#9d174d;border-color:#9d174d;color:#fff}
+.pi.cat-굿즈{background:rgba(241,245,249,0.6);border:1px solid rgba(71,85,105,.2);color:#6080a0}
+.pi.cat-굿즈:hover,.pi.cat-굿즈.on{background:#475569;border-color:#475569;color:#fff}
+.pi.cat-off{background:rgba(235,235,235,0.6);border:1px solid rgba(100,100,100,.18);color:#999}
+.pi.cat-off:hover,.pi.cat-off.on{background:#888;border-color:#888;color:#fff}align-items:center;justify-content:center;min-width:22px;height:20px;padding:0 6px;border-radius:10px;font-size:11px;font-weight:600;cursor:pointer;user-select:none;transition:all .1s}
 .opt-cnt.one{background:rgba(0,0,0,.05);color:var(--t3);cursor:default}
 .opt-cnt.many{background:var(--fc-l);color:var(--accent)}
 .opt-cnt.many:hover{background:var(--fc-m)}
@@ -264,6 +283,7 @@ tr.opt-row.opt-last td{border-bottom:1px solid rgba(58,58,240,.12)}
         <input class="search-box" placeholder="닉네임 · 코드 · 품목명 검색" oninput="renderItemTable(this.value)">
         <span class="cnt" id="itemCnt"></span>
         <span class="cnt" id="itemPendLbl" style="color:var(--amber);display:none"></span>
+        <span class="copy-toggle" id="itemCopyToggle" onclick="toggleCopy('item')"><span class="dot"></span>복사 OFF</span>
       </div>
       <div class="toolbar-row"><span class="filter-lbl">상태</span><span class="fp on" onclick="setFp(this)">전체</span><span class="fp" onclick="setFp(this)" data-v="상시">상시</span><span class="fp" onclick="setFp(this)" data-v="비운영">비운영</span><span class="fp" onclick="setFp(this)" data-v="단종예정">단종예정</span><span class="fp" onclick="setFp(this)" data-v="런칭예정">런칭예정</span><span class="fp" onclick="setFp(this)" data-v="단종">단종</span></div>
       <div class="toolbar-row"><span class="filter-lbl">분류</span><span class="fp on" onclick="setFp(this)">전체</span><span class="fp" onclick="setFp(this)" data-v="요거트">요거트</span><span class="fp" onclick="setFp(this)" data-v="마시는">마시는</span><span class="fp" onclick="setFp(this)" data-v="토핑">토핑</span><span class="fp" onclick="setFp(this)" data-v="굿즈">굿즈</span></div>
@@ -277,7 +297,7 @@ tr.opt-row.opt-last td{border-bottom:1px solid rgba(58,58,240,.12)}
         <colgroup>
           <col style="width:24px"><col style="width:44px"><col style="width:100px"><col style="width:68px">
           <col style="width:200px"><col style="width:130px"><col style="width:88px">
-          <col style="width:150px"><col style="width:88px"><col style="width:92px">
+          <col style="width:150px"><col style="width:92px"><col style="width:88px">
         </colgroup>
         <thead><tr>
           <th class="fix" style="left:0px"></th>
@@ -288,8 +308,8 @@ tr.opt-row.opt-last td{border-bottom:1px solid rgba(58,58,240,.12)}
           <th>분류</th>
           <th>운영상태</th>
           <th>메모</th>
+          <th class="c-act" style="width:92px">수정</th>
           <th>수정일</th>
-          <th class="c-act" style="width:184px">수정</th>
         </tr></thead>
         <tbody id="itemTbody">
           <tr><td colspan="11" style="padding:28px;text-align:center;color:var(--t4);font-size:12px">⏳ Firebase에서 불러오는 중...</td></tr>
@@ -333,9 +353,11 @@ tr.opt-row.opt-last td{border-bottom:1px solid rgba(58,58,240,.12)}
         <input class="search-box" placeholder="닉네임 · 상품코드 · 상품명 검색" oninput="renderSkuTable(this.value)">
         <span class="cnt" id="skuCnt"></span>
         <span class="cnt" id="skuPendLbl" style="color:var(--amber);display:none"></span>
+        <span class="copy-toggle" id="skuCopyToggle" onclick="toggleCopy('sku')"><span class="dot"></span>복사 OFF</span>
       </div>
       <div class="toolbar-row"><span class="filter-lbl">상태</span><span class="fp on" onclick="setFp(this)">전체</span><span class="fp" onclick="setFp(this)" data-v="상시">상시</span><span class="fp" onclick="setFp(this)" data-v="단종예정">단종예정</span><span class="fp" onclick="setFp(this)" data-v="런칭예정">런칭예정</span><span class="fp" onclick="setFp(this)" data-v="단종">단종</span></div>
       <div class="toolbar-row"><span class="filter-lbl">유형</span><span class="fp on" onclick="setFp(this)">전체</span><span class="fp" onclick="setFp(this)" data-v="상시운영">상시운영</span><span class="fp" onclick="setFp(this)" data-v="슈퍼적립">슈퍼적립</span><span class="fp" onclick="setFp(this)" data-v="행사운영">행사운영</span><span class="fp" onclick="setFp(this)" data-v="행사제안불가">행사제안불가</span></div>
+      <div class="toolbar-row" id="skuItemFilterRow"><span class="filter-lbl">품목</span><span class="fp on" onclick="setSkuItemFilter(this,'전체')">전체</span></div>
       <div class="toolbar-row"><span class="filter-lbl">정렬</span><span class="fp on" onclick="setFp(this)">No순</span><span class="fp" onclick="setFp(this)">유형순</span><span class="fp" onclick="setFp(this)">상태순</span><span class="fp" onclick="setFp(this)">최신수정</span></div>
     </div><!-- /tbl-toolbar -->
   </div><!-- /sticky-header -->
@@ -347,7 +369,7 @@ tr.opt-row.opt-last td{border-bottom:1px solid rgba(58,58,240,.12)}
           <col style="width:24px"><col style="width:44px"><col style="width:124px"><col style="width:100px">
           <col style="width:360px"><col style="width:110px"><col style="width:88px">
           <col style="width:82px"><col style="width:82px"><col style="width:82px">
-          <col style="width:100px"><col style="width:140px"><col style="width:88px"><col style="width:52px"><col style="width:92px">
+          <col style="width:100px"><col style="width:140px"><col style="width:52px"><col style="width:92px"><col style="width:88px">
         </colgroup>
         <thead><tr>
           <th class="fix" style="left:0px"></th>
@@ -362,9 +384,9 @@ tr.opt-row.opt-last td{border-bottom:1px solid rgba(58,58,240,.12)}
           <th class="r">최대할인가</th>
           <th>배송조건</th>
           <th>메모</th>
-          <th>수정일</th>
           <th class="c-act">옵션</th>
           <th class="c-act">수정</th>
+          <th>수정일</th>
         </tr></thead>
         <tbody id="skuTbody">
           <tr><td colspan="15" style="padding:28px;text-align:center;color:var(--t4);font-size:12px">⏳ Firebase에서 불러오는 중...</td></tr>
@@ -399,7 +421,44 @@ function sw(id,el){
 }
 function toggleUpload(tab){document.getElementById(tab+'UpSec').classList.toggle('open');}
 const IF={status:'전체',cat:'전체',sort:'No순'};
-const SF={status:'전체',type:'전체',sort:'No순'};
+const SF={status:'전체',type:'전체',sort:'No순',item:'전체'};
+
+/* 품목 필터 카테고리 매핑 */
+const ITEM_CAT_MAP={
+  '그릭요거트 본품':'cat-요거트','마시는 그릭요거트':'cat-마시는',
+  '토핑':'cat-토핑','굿즈/기타':'cat-굿즈'
+};
+const OFF_STATUS=['비운영','단종','단종예정'];
+
+function renderSkuItemFilters(){
+  const row=document.getElementById('skuItemFilterRow');
+  if(!row)return;
+  let html=`<span class="filter-lbl">품목</span><span class="fp ${SF.item==='전체'?'on':''}" onclick="setSkuItemFilter(this,'전체')">전체</span>`;
+  const groups=[
+    {label:'요거트',cat:'그릭요거트 본품'},
+    {label:'마시는',cat:'마시는 그릭요거트'},
+    {label:'토핑',cat:'토핑'},
+    {label:'굿즈',cat:'굿즈/기타'},
+  ];
+  groups.forEach(g=>{
+    const items=ITEMS.filter(x=>x.category===g.cat);
+    if(!items.length)return;
+    html+=`<span style="font-size:9.5px;color:var(--t4);font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin:0 2px">${g.label}</span>`;
+    items.forEach(it=>{
+      const catCls=ITEM_CAT_MAP[it.category]||'cat-굿즈';
+      const offCls=OFF_STATUS.includes(it.status)?'cat-off':catCls;
+      const isOn=SF.item===it.nick?'on':'';
+      html+=`<span class="pi ${offCls} ${isOn}" title="${it.name}" onclick="setSkuItemFilter(this,'${it.nick}')">${it.nick}</span>`;
+    });
+  });
+  row.innerHTML=html;
+}
+
+function setSkuItemFilter(el,nick){
+  SF.item=nick;
+  renderSkuItemFilters();
+  renderSkuTable(document.querySelector('#t-sku .search-box')?.value);
+}
 
 function setFp(el){
   el.closest('.toolbar-row').querySelectorAll('.fp').forEach(f=>f.classList.remove('on'));
@@ -428,7 +487,16 @@ function toast(msg,type){
   t.style.color='#fff';t.style.opacity='1';t.textContent=msg;
   clearTimeout(t._tid);t._tid=setTimeout(()=>t.style.opacity='0',1600);
 }
-window.copyToClip=function(text,el){
+const copyState={item:false,sku:false};
+function toggleCopy(tab){
+  copyState[tab]=!copyState[tab];
+  const el=document.getElementById(tab+'CopyToggle');
+  el.classList.toggle('on',copyState[tab]);
+  el.innerHTML=`<span class="dot"></span>복사 ${copyState[tab]?'ON':'OFF'}`;
+}
+window.copyToClip=function(text,el,tab){
+  const t=tab||'item';
+  if(!copyState[t])return;
   if(text==null||text==='')return;
   navigator.clipboard.writeText(String(text)).then(()=>{
     if(el){const o=el.style.background;el.style.background='rgba(152,152,168,.18)';setTimeout(()=>el.style.background=o,600);}
@@ -529,7 +597,7 @@ function stageItemEdit(code){
   it.category=document.getElementById('ei-cat').value;
   it.status=document.getElementById('ei-status').value;
   it.memo=document.getElementById('ei-memo').value;
-  it.pending=true;itemEditCode=null;renderItemTable();updatePendBar();
+  it.pending=true;itemEditCode=null;renderItemTable();renderSkuItemFilters();updatePendBar();
 }
 
 function renderItemTable(q){
@@ -557,8 +625,8 @@ function renderItemTable(q){
       <td><select class="e-select" id="ni-cat"><option value="">선택</option><option>그릭요거트 본품</option><option>마시는 그릭요거트</option><option>토핑</option><option>굿즈/기타</option></select></td>
       <td><select class="e-select" id="ni-status"><option>상시</option><option>비운영</option><option>단종예정</option><option>런칭예정</option><option>단종</option></select></td>
       <td><input class="e-input" id="ni-memo" placeholder="메모 (선택)"></td>
-      <td style="color:var(--t4);font-size:11px">—</td>
       <td class="c-act"><div class="e-actions"><button class="btn-stage" onclick="stageItemNew()"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 9 6 13 14 3"/></svg></button><button class="btn-cancel" onclick="toggleNewRow('item')">✕</button></div></td>
+      <td style="color:var(--t4);font-size:11px">—</td>
     </tr>`;
   }
   rows.forEach(it=>{
@@ -574,21 +642,21 @@ function renderItemTable(q){
         <td><select class="e-select" id="ei-cat">${sel(['그릭요거트 본품','마시는 그릭요거트','토핑','굿즈/기타'],it.category)}</select></td>
         <td><select class="e-select" id="ei-status">${sel(['상시','비운영','단종예정','런칭예정','단종'],it.status)}</select></td>
         <td><input class="e-input" id="ei-memo" value="${it.memo||''}" placeholder="—"></td>
-        <td style="font-size:11px;color:var(--t4)">${(it.updatedAt||'').slice(0,10)}</td>
         <td class="c-act"><div class="e-actions"><button class="btn-stage" onclick="stageItemEdit('${it.code}')"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 9 6 13 14 3"/></svg></button><button class="btn-cancel" onclick="cancelItemEdit()">✕</button></div></td>
+        <td style="font-size:11px;color:var(--t4)">${(it.updatedAt||'').slice(0,10)}</td>
       </tr>`;
     }else{
       html+=`<tr class="${pCls}">
         <td class="fix" style="left:0px;text-align:center;padding:7px 4px">${dot(it.pending)}</td>
-        <td class="fix" style="left:24px;color:var(--t3);font-size:11px;cursor:pointer" onclick="copyToClip('${it.no}',this)">${it.no}</td>
-        <td class="fix" style="left:68px;cursor:pointer" onclick="copyToClip('${it.code}',this)"><span class="code-val">${it.code}</span></td>
-        <td class="fix fix-last" style="left:168px;cursor:pointer" onclick="copyToClip('${it.nick}',this)"><span class="nick${isOff?' off':''}">${it.nick}</span></td>
-        <td style="font-weight:500;color:var(--tx);cursor:pointer" onclick="copyToClip('${it.name}',this)">${it.name}</td>
-        <td style="cursor:pointer" onclick="copyToClip('${it.category||''}',this)"><span class="badge b-cat ${it.category==='그릭요거트 본품'?'b-cat-요거트':it.category==='마시는 그릭요거트'?'b-cat-마시는':it.category==='토핑'?'b-cat-토핑':'b-cat-굿즈'}">${it.category||'—'}</span></td>
-        <td style="cursor:pointer" onclick="copyToClip('${it.status}',this)"><span class="badge b-${it.status}">${it.status}</span></td>
+        <td class="fix" style="left:24px;color:var(--t3);font-size:11px;cursor:pointer" onclick="copyToClip('${it.no}',this,'item')">${it.no}</td>
+        <td class="fix" style="left:68px;cursor:pointer" onclick="copyToClip('${it.code}',this,'item')"><span class="code-val">${it.code}</span></td>
+        <td class="fix fix-last" style="left:168px;cursor:pointer" onclick="copyToClip('${it.nick}',this,'item')"><span class="nick${isOff?' off':''}">${it.nick}</span></td>
+        <td style="font-weight:500;color:var(--tx);cursor:pointer" onclick="copyToClip('${it.name}',this,'item')">${it.name}</td>
+        <td style="cursor:pointer" onclick="copyToClip('${it.category||''}',this,'item')"><span class="badge b-cat ${it.category==='그릭요거트 본품'?'b-cat-요거트':it.category==='마시는 그릭요거트'?'b-cat-마시는':it.category==='토핑'?'b-cat-토핑':'b-cat-굿즈'}">${it.category||'—'}</span></td>
+        <td style="cursor:pointer" onclick="copyToClip('${it.status}',this,'item')"><span class="badge b-${it.status}">${it.status}</span></td>
         <td style="color:var(--t3);cursor:pointer" onclick="copyToClip('${(it.memo||'').replace(/'/g,"\\'")}',this)">${dash(it.memo)}</td>
-        <td style="color:var(--t4);font-size:11px;cursor:pointer" onclick="copyToClip('${(it.updatedAt||'').slice(0,10)}',this)">${(it.updatedAt||'').slice(0,10)}</td>
         <td class="c-act"><button class="icon-btn" onclick="startItemEdit('${it.code}')" title="수정" ${itemEditCode?'disabled':''}>${ICO_EDIT}</button></td>
+        <td style="color:var(--t4);font-size:11px;cursor:pointer" onclick="copyToClip('${(it.updatedAt||'').slice(0,10)}',this,'item')">${(it.updatedAt||'').slice(0,10)}</td>
       </tr>`;
     }
   });
@@ -722,6 +790,14 @@ function renderSkuTable(q){
     if(q&&!(x.code+x.nick+x.name).toLowerCase().includes(q)) return false;
     if(SF.status!=='전체'&&x.status!==SF.status) return false;
     if(SF.type!=='전체'&&x.type!==SF.type) return false;
+    if(SF.item!=='전체'){
+      const opts=x.options||[];
+      const match=opts.some(opt=>
+        (opt.nick||'').includes(SF.item)||
+        (opt.name||'').includes(SF.item)
+      );
+      if(!match) return false;
+    }
     return true;
   });
   if(SF.sort==='No순') rows.sort((a,b)=>(Number(a.no)||99)-(Number(b.no)||99));
@@ -745,9 +821,9 @@ function renderSkuTable(q){
       <td><input class="e-input r" id="ns-pm" inputmode="numeric" placeholder="19500"></td>
       <td><select class="e-select" id="ns-ship"><option value="">—</option><option>무료</option><option>조건부무료</option></select></td>
       <td><input class="e-input" id="ns-memo" placeholder="메모 (선택)"></td>
-      <td style="color:var(--t4);font-size:11px">—</td>
       <td class="c-act"></td>
       <td class="c-act"><div class="e-actions"><button class="btn-stage" onclick="stageSkuNew()"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 9 6 13 14 3"/></svg></button><button class="btn-cancel" onclick="toggleNewRow('sku')">✕</button></div></td>
+      <td style="color:var(--t4);font-size:11px">—</td>
     </tr>`;
   }
   rows.forEach(sk=>{
@@ -768,9 +844,9 @@ function renderSkuTable(q){
         <td><input class="e-input r" id="es-pm" inputmode="numeric" value="${sk.priceMax||''}" placeholder="—"></td>
         <td><select class="e-select" id="es-ship">${sel(['','무료','조건부무료'],sk.ship||'')}</select></td>
         <td><input class="e-input" id="es-memo" value="${sk.memo||''}" placeholder="—"></td>
-        <td style="font-size:11px;color:var(--t4)">${(sk.updatedAt||'').slice(0,10)}</td>
         <td class="c-act"></td>
         <td class="c-act"><div class="e-actions"><button class="btn-stage" onclick="stageSkuEdit('${sk.code}')"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 9 6 13 14 3"/></svg></button><button class="btn-cancel" onclick="cancelSkuEdit()">✕</button></div></td>
+        <td style="font-size:11px;color:var(--t4)">${(sk.updatedAt||'').slice(0,10)}</td>
       </tr>`;
       /* 기존 옵션 편집 행 */
       opts.forEach((opt,oi)=>{
@@ -815,18 +891,17 @@ function renderSkuTable(q){
     }else{
       html+=`<tr class="${pCls}">
         <td class="fix" style="left:0px;text-align:center;padding:7px 4px">${dot(sk.pending)}</td>
-        <td class="fix" style="left:24px;color:var(--t3);font-size:11px;cursor:pointer" onclick="copyToClip('${sk.no}',this)">${sk.no}</td>
-        <td class="fix" style="left:68px;cursor:pointer" onclick="copyToClip('${sk.code}',this)"><span class="code-val">${sk.code}</span></td>
-        <td class="fix fix-last" style="left:192px;cursor:pointer" onclick="copyToClip('${sk.nick}',this)"><span class="nick${isOff?' off':''}">${sk.nick}</span></td>
-        <td style="font-weight:500;color:var(--tx);cursor:pointer" onclick="copyToClip('${sk.name}',this)">${sk.name}</td>
-        <td style="cursor:pointer" onclick="copyToClip('${sk.type}',this)"><span class="badge b-${sk.type}">${sk.type}</span></td>
-        <td style="cursor:pointer" onclick="copyToClip('${sk.status}',this)"><span class="badge b-${sk.status}">${sk.status}</span></td>
-        <td class="r" style="cursor:pointer" onclick="copyToClip('${sk.priceNormal||''}',this)">${fmtP(sk.priceNormal)}</td>
-        <td class="r" style="cursor:pointer" onclick="copyToClip('${sk.priceDisc||''}',this)">${fmtP(sk.priceDisc)}</td>
-        <td class="r" style="cursor:pointer" onclick="copyToClip('${sk.priceMax||''}',this)">${fmtP(sk.priceMax)}</td>
-        <td style="cursor:pointer" onclick="copyToClip('${sk.ship||''}',this)">${dash(sk.ship)}</td>
+        <td class="fix" style="left:24px;color:var(--t3);font-size:11px;cursor:pointer" onclick="copyToClip('${sk.no}',this,'sku')">${sk.no}</td>
+        <td class="fix" style="left:68px;cursor:pointer" onclick="copyToClip('${sk.code}',this,'sku')"><span class="code-val">${sk.code}</span></td>
+        <td class="fix fix-last" style="left:192px;cursor:pointer" onclick="copyToClip('${sk.nick}',this,'sku')"><span class="nick${isOff?' off':''}">${sk.nick}</span></td>
+        <td style="font-weight:500;color:var(--tx);cursor:pointer" onclick="copyToClip('${sk.name}',this,'sku')">${sk.name}</td>
+        <td style="cursor:pointer" onclick="copyToClip('${sk.type}',this,'sku')"><span class="badge b-${sk.type}">${sk.type}</span></td>
+        <td style="cursor:pointer" onclick="copyToClip('${sk.status}',this,'sku')"><span class="badge b-${sk.status}">${sk.status}</span></td>
+        <td class="r" style="cursor:pointer" onclick="copyToClip('${sk.priceNormal||''}',this,'sku')">${fmtP(sk.priceNormal)}</td>
+        <td class="r" style="cursor:pointer" onclick="copyToClip('${sk.priceDisc||''}',this,'sku')">${fmtP(sk.priceDisc)}</td>
+        <td class="r" style="cursor:pointer" onclick="copyToClip('${sk.priceMax||''}',this,'sku')">${fmtP(sk.priceMax)}</td>
+        <td style="cursor:pointer" onclick="copyToClip('${sk.ship||''}',this,'sku')">${dash(sk.ship)}</td>
         <td style="color:var(--t3);cursor:pointer" onclick="copyToClip('${(sk.memo||'').replace(/'/g,"\\'")}',this)">${dash(sk.memo)}</td>
-        <td style="color:var(--t4);font-size:11px;cursor:pointer" onclick="copyToClip('${(sk.updatedAt||'').slice(0,10)}',this)">${(sk.updatedAt||'').slice(0,10)}</td>
         <td class="c-act">${(()=>{
           const opts=sk.options||[];
           const isOpen=skuOpenSet.has(sk.code);
@@ -834,6 +909,7 @@ function renderSkuTable(q){
           return `<span class="opt-cnt ${opts.length>1?(isOpen?'open':'many'):'one'}" ${opts.length>1?`onclick="toggleSkuOpts('${sk.code}')"` : ''}>${opts.length}</span>`;
         })()}</td>
         <td class="c-act"><button class="icon-btn" onclick="startSkuEdit('${sk.code}')" title="수정" ${skuEditCode?'disabled':''}>${ICO_EDIT}</button></td>
+        <td style="color:var(--t4);font-size:11px;cursor:pointer" onclick="copyToClip('${(sk.updatedAt||'').slice(0,10)}',this,'sku')">${(sk.updatedAt||'').slice(0,10)}</td>
       </tr>`;
       /* 옵션 행 */
       if(skuOpenSet.has(sk.code)&&sk.options?.length){
@@ -845,7 +921,7 @@ function renderSkuTable(q){
             <td><span class="opt-nick">${opt.nick||''}</span></td>
             <td style="font-size:11.5px">${opt.name||''}</td>
             <td></td>
-            <td style="cursor:pointer" onclick="copyToClip('${opt.status||''}',this)"><span class="badge b-${opt.status||'상시'}">${opt.status||'상시'}</span></td>
+            <td style="cursor:pointer" onclick="copyToClip('${opt.status||''}',this,'item')"><span class="badge b-${opt.status||'상시'}">${opt.status||'상시'}</span></td>
             <td class="r">${fmtP(opt.priceNormal)}</td>
             <td class="r" style="color:var(--green)">${fmtP(opt.priceDisc)}</td>
             <td class="r" style="color:var(--green)">${fmtP(opt.priceMax)}</td>
@@ -915,7 +991,7 @@ window.loadAll=async function(){
     SKUS.length=0;
     sSnap.forEach(d=>{const dt=d.data();SKUS.push({...dt,code:d.id,no:dt.no!=null?Number(dt.no):99,pending:false,options:dt.options||[]});});
     SKUS.sort((a,b)=>(Number(a.no)||99)-(Number(b.no)||99));
-    renderItemTable();renderSkuTable();
+    renderItemTable();renderSkuTable();renderSkuItemFilters();
     setStatus(true,`연결됨 · items ${ITEMS.length}개 · skus ${SKUS.length}개`);
   }catch(e){setStatus(false,'연결 실패: '+e.message);console.error('[Firebase]',e);}
 };

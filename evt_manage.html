@@ -434,7 +434,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   <div class="fbar">
     <input id="prop-search" placeholder="행사명 / 닉네임 검색" oninput="renderPropList(2)">
     <select id="prop-mf" onchange="renderPropList(2)"><option value="">전체 월</option></select>
-    <span style="margin-left:auto;font-size:11px;color:var(--t3)">최신순 ↓</span>
+    <button id="sort-toggle-2" style="margin-left:auto;font-size:11px;color:var(--t3);border:none;background:none;cursor:pointer;padding:2px 4px;border-radius:4px;transition:all .15s" onclick="toggleSort(2)" title="정렬 변경">최신순 ↓</button>
   </div>
   <div id="warn-banner-2" style="display:none;padding:8px 13px;background:rgba(196,90,16,.08);border:1px solid rgba(196,90,16,.25);border-radius:8px;margin-bottom:10px;font-size:12px;font-weight:600;color:var(--or)"></div>
   <div id="prop-list-2"><div class="loading"><span class="spin">⟳</span> 불러오는 중...</div></div>
@@ -1486,7 +1486,11 @@ window.submitProposal=async function(){
   const errs=[];
   for(const p of productsCopy){
     const pid=(eventSID+'_'+(p.skuCode||'')).replace(/\s/g,'');
-    const data={eventSID,eventName:evName,eventType:typeCode,skuCode:p.skuCode,skuNick:p.skuNick,productName:p.productName,
+    const data={eventSID,eventName:evName,eventType:typeCode,
+      startDate:start||null,endDate:end||null,startTime:startTime||null,endTime:endTime||null,
+      proposalUploadedAt:$('ev-upload-date')?.value||null,
+      proposalDeadline:$('ev-deadline')?.value||null,
+      skuCode:p.skuCode,skuNick:p.skuNick,productName:p.productName,
       priceNormal:p.priceNormal,priceBase:p.priceBase,priceEvent:p.priceEvent,
       priceAlim:p.priceAlim,priceMax:p.priceMax,ship:p.ship,isMain:p.isMain,
       status:'제안중',createdAt:new Date().toISOString()};
@@ -1556,7 +1560,7 @@ async function doSaveEvent(){
   if(!name)throw new Error('행사명 필요');
   const isDN=(type==='DN');
   const docId=name.replace(/\s/g,'')+'_'+(start||'None').replace(/-/g,'')+'_'+(end||'None').replace(/-/g,'');
-  const data={eventName:name,startDate:start||null,startTime:startTime,endDate:end||null,endTime:endTime,pageType:$('ev-pagetype').value||null,isNotice:isDN,isClosed:false,additionalDiscount:$('ev-adddisc').value||null,proposalUploadedAt:$('ev-upload-date')?.value||null,proposalDeadline:$('ev-deadline')?.value||null,
+  const data={eventName:name,eventType:type||null,startDate:start||null,startTime:startTime,endDate:end||null,endTime:endTime,pageType:$('ev-pagetype').value||null,isNotice:isDN,isClosed:false,additionalDiscount:$('ev-adddisc').value||null,proposalUploadedAt:$('ev-upload-date')?.value||null,proposalDeadline:$('ev-deadline')?.value||null,
     products:isDN?[]:regProducts.map((p,i)=>({no:i+1,subNo:null,isMain:p.isMain,isCancelled:false,skuCode:p.skuCode,productName:p.productName,link:'https://brand.naver.com/yozmkorea/products/'+p.skuCode,priceNormal:p.priceNormal||null,priceBase:p.priceBase||null,priceEvent:p.priceEvent||null,priceAlim:p.priceAlim||null,priceMax:p.priceMax||null,ship:p.ship||null,options:[]})),
     updatedAt:new Date().toISOString()};
   await setDoc(doc(db,'events',docId),data);
@@ -1576,6 +1580,15 @@ window.saveEventAndGo=async function(){
     if(tabEl)sw(tabIdx,tabEl);
     renderPropList(tabIdx);
   }catch(e){toast('실패: '+e.message,'err');}
+};
+
+/* ══ 정렬 상태 ══ */
+const sortOrder={2:'desc',3:'desc',5:'desc'};
+window.toggleSort=function(tabNum){
+  sortOrder[tabNum]=sortOrder[tabNum]==='desc'?'asc':'desc';
+  const btn=document.getElementById('sort-toggle-'+tabNum);
+  if(btn)btn.textContent=sortOrder[tabNum]==='desc'?'최신순 ↓':'오래된순 ↑';
+  renderPropList(tabNum);
 };
 
 /* ══ 제안/선정/종료 렌더 ══ */
@@ -1609,10 +1622,16 @@ window.renderPropList=function(tabNum){
     if(!groups[key])groups[key]={items:[],meta:p};
     groups[key].items.push(p);
   });
-  /* tab3는 renderPropList 직접 처리 */
+  /* 정렬 적용: 그룹 대표 startDate 기준 */
+  const isAsc=(sortOrder[tabNum]||'desc')==='asc';
+  const sortedEntries=Object.entries(groups).sort(([,a],[,b])=>{
+    const da=(EVENTS.find(e=>e._id===(a.meta.eventSID||a.meta.eventName))?.startDate||a.meta.startDate||a.meta.createdAt||'');
+    const db2=(EVENTS.find(e=>e._id===(b.meta.eventSID||b.meta.eventName))?.startDate||b.meta.startDate||b.meta.createdAt||'');
+    return isAsc?da.localeCompare(db2):db2.localeCompare(da);
+  });
   const el=document.getElementById('prop-list-'+tabNum);
-  if(!Object.keys(groups).length){el.innerHTML='<div style="text-align:center;padding:28px;color:var(--t3)">해당하는 항목이 없습니다</div>';return;}
-  el.innerHTML=Object.entries(groups).map(([eName,grp])=>buildGroupHtml(eName,grp,tabNum)).join('');
+  if(!sortedEntries.length){el.innerHTML='<div style="text-align:center;padding:28px;color:var(--t3)">해당하는 항목이 없습니다</div>';return;}
+  el.innerHTML=sortedEntries.map(([eName,grp])=>buildGroupHtml(eName,grp,tabNum)).join('');
   /* 확인필요 배너 */
   if(tabNum===2){
     const wCnt=PROPOSALS.filter(p=>!p._deleted&&p.status==='확인필요').length;
@@ -2280,9 +2299,17 @@ window.sw=function(i,el){document.querySelectorAll('.tab').forEach(t=>t.classLis
 window.tog=function(id){$(id)?.classList.toggle('open');};
 window.tfClick=function(el,cls,tab){
   const pane=$('p'+tab);
+  const isOn=el.classList.contains('on');
   if(pane)pane.querySelectorAll('.tfb').forEach(b=>b.classList.remove('on'));
-  el.classList.add('on');
-  propTypeFilter[tab]=TYPE_FILTER_MAP[cls]||[];
+  if(isOn&&cls!=='tc-all'){
+    /* 이미 활성화된 버튼 다시 누름 → 전체로 리셋 */
+    const allBtn=pane?.querySelector('.tfb.tc-all');
+    if(allBtn)allBtn.classList.add('on');
+    propTypeFilter[tab]=[];
+  }else{
+    el.classList.add('on');
+    propTypeFilter[tab]=TYPE_FILTER_MAP[cls]||[];
+  }
   renderPropList(tab);
 };
 window.sfClick=function(el,statusVal,tab){el.classList.toggle('on');if(!statusFilter[tab])statusFilter[tab]=new Set();if(el.classList.contains('on'))statusFilter[tab].add(statusVal);else statusFilter[tab].delete(statusVal);renderPropList(tab);};

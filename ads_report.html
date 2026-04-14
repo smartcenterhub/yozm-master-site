@@ -711,7 +711,7 @@ function zgBuild() {
     </div>`;
     ZG_ROWS.forEach(r => {
       const fnameRaw = r.pf ? r.pf + short + '.' + r.ext : short + '.' + r.ext;
-      const fname = fnameRaw.replace(/\.[^.]+$/, ''); // 확장자 제거 (표시명은 fnameRaw 유지)
+      const fname = fnameRaw.split('.').slice(0, -1).join('.'); // 확장자 제거
       const copied = _zgCopied[ds].has(r.key);
       html += `<div id="zgRow_${ds}_${r.key}" style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:7px;border:1px solid ${r.border};background:${copied ? r.border : r.bg};margin-bottom:3px">
         <div><span style="font-size:11px;color:${r.lc};margin-right:8px;min-width:60px;display:inline-block;font-weight:500">${r.lbl}</span><span style="font-size:12px;font-family:monospace;color:${r.nc}">${fname}</span></div>

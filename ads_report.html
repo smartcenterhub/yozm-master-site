@@ -91,7 +91,7 @@ tfoot td[onclick]:hover{background:rgba(58,58,240,0.04);cursor:pointer}
 .tr-copyable:hover td{background:rgba(58,58,240,0.03)}
 .tr-flash td{background:rgba(29,158,117,0.12)!important;transition:background .1s}
 /* ── 행 복사 버튼 (숨김 - 행 클릭으로 대체) ── */
-.row-copy-btn{display:none}
+.row-copy-btn{display:inline-flex;align-items:center;padding:2px 8px;border-radius:5px;font-size:11px;cursor:pointer;border:0.5px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-family:inherit;white-space:nowrap}
 
 /* ── 파일 배지 & 날짜 칩 ── */
 .file-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(58,58,240,0.06);color:var(--accent);border-radius:20px;padding:4px 12px;font-size:11.5px;font-weight:500}
@@ -491,7 +491,14 @@ tr.empty-group{opacity:.35}
         <div class="card mail-inactive" id="mailCardBk">
           <div class="card-title" style="justify-content:space-between">
             <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--accent)"></div>* 브랜드검색</span>
-            <button class="btn btn-ghost btn-sm" onclick="mailApplyCard('bk')" title="이 카드만 미리보기 반영">↙ 적용</button>
+            <div style="display:flex;gap:5px;align-items:center">
+              <div style="display:flex;gap:3px" id="bkModeGroup">
+                <button class="btn btn-ghost btn-sm" onclick="setBkMode('total')" id="bkModeTotal" style="font-size:11px;padding:3px 8px;background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2)">합계만</button>
+                <button class="btn btn-ghost btn-sm" onclick="setBkMode('daily')" id="bkModeDaily" style="font-size:11px;padding:3px 8px">일별</button>
+                <button class="btn btn-ghost btn-sm" onclick="setBkMode('all')"   id="bkModeAll"   style="font-size:11px;padding:3px 8px">전체</button>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="mailApplyCard('bk')" title="이 카드만 미리보기 반영">↙ 적용</button>
+            </div>
           </div>
           <div id="mailBkAuto" style="font-size:12px;color:var(--t3);background:var(--glass-bg);border-radius:8px;padding:10px 12px;line-height:1.9">브검 파일 업로드 시 자동 채워짐</div>
         </div>
@@ -511,9 +518,11 @@ tr.empty-group{opacity:.35}
             <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--blue)"></div>전일 상위성과소재 이미지</span>
             <div style="display:flex;gap:6px;align-items:center">
               <span style="font-size:10.5px;color:var(--t3)">GFA 소재 업로드 시 자동</span>
+              <button class="btn btn-ghost btn-sm" id="mailGfaEmptyBtn" onclick="toggleMailGfaEmpty()" style="display:none;font-size:11px;background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2)">전환 0 숨김</button>
               <button class="btn btn-ghost btn-sm" id="mailGfaImgBtn" onclick="mailCopyGfaImage()" style="display:none">🖼 이미지 복사</button>
             </div>
           </div>
+          <div id="mailGfaImgDateTabs" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px"></div>
           <div id="mailGfaImgContent">
             <div style="font-size:12px;color:var(--t3);padding:12px 0;text-align:center">GFA 소재 파일 업로드 후 자동으로 채워집니다</div>
           </div>
@@ -524,7 +533,14 @@ tr.empty-group{opacity:.35}
         <div class="card mail-inactive" id="mailCardAdv">
           <div class="card-title" style="justify-content:space-between">
             <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--green)"></div>* ADVoost</span>
-            <button class="btn btn-ghost btn-sm" onclick="mailApplyCard('adv')" title="이 카드만 미리보기 반영">↙ 적용</button>
+            <div style="display:flex;gap:5px;align-items:center">
+              <div style="display:flex;gap:3px" id="advModeGroup">
+                <button class="btn btn-ghost btn-sm" onclick="setAdvMode('total')" id="advModeTotal" style="font-size:11px;padding:3px 8px;background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2)">합계만</button>
+                <button class="btn btn-ghost btn-sm" onclick="setAdvMode('daily')" id="advModeDaily" style="font-size:11px;padding:3px 8px">일별</button>
+                <button class="btn btn-ghost btn-sm" onclick="setAdvMode('all')"   id="advModeAll"   style="font-size:11px;padding:3px 8px">전체</button>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="mailApplyCard('adv')" title="이 카드만 미리보기 반영">↙ 적용</button>
+            </div>
           </div>
           <div id="mailAdvAuto" style="font-size:12px;color:var(--t3);background:var(--glass-bg);border-radius:8px;padding:10px 12px;line-height:1.9">ADV 파일 업로드 시 자동 채워짐</div>
         </div>
@@ -694,7 +710,8 @@ function zgBuild() {
       <span style="font-size:11px;color:var(--t3)" id="zgCnt_${ds}">${_zgCopied[ds].size} / ${ZG_TOTAL} 복사됨</span>
     </div>`;
     ZG_ROWS.forEach(r => {
-      const fname = r.pf ? r.pf + short + '.' + r.ext : short + '.' + r.ext;
+      const fnameRaw = r.pf ? r.pf + short + '.' + r.ext : short + '.' + r.ext;
+      const fname = fnameRaw.replace(/\.[^.]+$/, ''); // 확장자 제거 (표시명은 fnameRaw 유지)
       const copied = _zgCopied[ds].has(r.key);
       html += `<div id="zgRow_${ds}_${r.key}" style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:7px;border:1px solid ${r.border};background:${copied ? r.border : r.bg};margin-bottom:3px">
         <div><span style="font-size:11px;color:${r.lc};margin-right:8px;min-width:60px;display:inline-block;font-weight:500">${r.lbl}</span><span style="font-size:12px;font-family:monospace;color:${r.nc}">${fname}</span></div>
@@ -1055,111 +1072,290 @@ const MAIL_LOG_KEY = 'yozm_mail_log_v1';
 // 각 카드의 콘텐츠를 자동 텍스트로 업데이트하는 함수 (타 탭에서 호출)
 function mailUpdateBk(moTotal, moKeywords, pcTotal, pcKeywords, date) {
   _mailData.date = date || _mailData.date;
-  // 전체 날짜 합산 MO/PC 전환수
-  let moTotAll = 0, pcTotAll = 0;
-  for (const [, d] of _bkByDate) {
-    moTotAll += Math.round(d.moTot || 0);
-    pcTotAll += Math.round(d.pcTot || 0);
+  const { allDks, moTotalText, pcTotalText } = _aggregateBkKeywords();
+  const dayLines = _getBkDayLines(allDks);
+
+  // _mailData.bkAuto → mailBuildHtml 에서 사용
+  const textLines = [];
+  if (_bkMailMode === 'daily' || _bkMailMode === 'all') {
+    dayLines.forEach(({ dk, moLine, pcLine }) => {
+      const lbl = perfDateDisplay(dk);
+      if (moLine) textLines.push(`    ${lbl} → MO: ${moLine}`);
+      if (pcLine) textLines.push(`              PC: ${pcLine}`);
+    });
   }
-  const moText = `Total(${moTotAll})`;
-  const pcText = `Total(${pcTotAll})`;
-  _mailData.bkAuto = `광고그룹 전환\n    → MO: ${moText}\n    → PC: ${pcText}`;
+  if (_bkMailMode === 'all' && dayLines.length > 0) textLines.push('    ───');
+  if (_bkMailMode === 'total' || _bkMailMode === 'all') {
+    textLines.push(`    → MO: ${moTotalText}`);
+    textLines.push(`       PC: ${pcTotalText}`);
+  }
+  _mailData.bkAuto = textLines.join('\n');
+
+  // 카드 HTML 렌더링
   const el = document.getElementById('mailBkAuto');
   if (!el) return;
-  // 날짜별 집계 표시
-  const dates = Object.keys(_perfStore.bk).sort();
-  let dateHtml = '';
-  if (dates.length > 1) {
-    dateHtml = dates.map(dk => {
-      const d = _perfStore.bk[dk];
-      return `<div style="font-size:11px;color:var(--t3)">${perfDateDisplay(dk)}: 전환 ${Math.round(d.conv||0)}건</div>`;
-    }).join('');
-    const totConv = Math.round(Object.values(_perfStore.bk).reduce((s,v) => s+(v.conv||0), 0));
-    dateHtml += `<div style="font-size:11px;font-weight:600;color:var(--tx);margin-top:3px">합계 전환: ${totConv}건</div>`;
+  const D = 'var(--glass-border-s)', T = 'var(--t3)', TX = 'var(--tx)';
+  const badge = `<span style="font-size:10px;background:rgba(58,58,240,0.08);color:var(--accent);border-radius:4px;padding:1px 6px;margin-right:6px">자동</span>`;
+  let html = badge + `광고그룹 전환<div style="margin-left:12px;margin-top:4px;font-size:12px;color:${TX};line-height:2">`;
+
+  if (_bkMailMode === 'daily' || _bkMailMode === 'all') {
+    dayLines.forEach(({ dk, moLine, pcLine }, i) => {
+      const lbl = perfDateDisplay(dk);
+      if (i > 0) html += `<div style="border-top:0.5px solid ${D};margin:1px 0"></div>`;
+      if (moLine) html += `<div><span style="font-size:11px;color:${T};margin-right:5px">${lbl}</span>→ MO: ${moLine}</div>`;
+      if (pcLine) html += `<div style="margin-left:4.6em">PC: ${pcLine}</div>`;
+    });
   }
-  el.innerHTML = `<span style="font-size:10px;background:rgba(58,58,240,0.08);color:var(--accent);border-radius:4px;padding:1px 6px;margin-right:6px">자동</span>MO: ${moText}<br>PC: ${pcText}${dateHtml ? '<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--glass-border-s)">' + dateHtml + '</div>' : ''}`;
-  document.getElementById('mailCardBk')?.classList.remove('mail-inactive'); document.getElementById('mailCardBk')?.classList.add('mail-active');
+  if (_bkMailMode === 'all' && dayLines.length > 0) {
+    html += `<div style="border-top:1px solid var(--glass-border-s);margin:3px 0"></div>`;
+  }
+  if (_bkMailMode === 'total' || _bkMailMode === 'all') {
+    html += `<div>→ MO: ${moTotalText}</div><div style="margin-left:2.8em">PC: ${pcTotalText}</div>`;
+  }
+  html += '</div>';
+  el.innerHTML = html;
+  document.getElementById('mailCardBk')?.classList.remove('mail-inactive');
+  document.getElementById('mailCardBk')?.classList.add('mail-active');
 }
 
 function mailUpdateGfa(groups) {
   _mailData.gfaGroups = groups;
-  const count = groups.split('+').length;
+  renderGfaMailCard();
+}
+
+function toggleGfaGroup(shortName) {
+  if (_gfaSelectedGroups.has(shortName)) _gfaSelectedGroups.delete(shortName);
+  else _gfaSelectedGroups.add(shortName);
+  renderGfaMailCard();
+}
+
+function renderGfaMailCard() {
   const el = document.getElementById('mailGfaAuto');
   if (!el) return;
-  // 전체 기간 기준 그룹 합산
-  let groupSummary = '';
-  if (_gfaData && _gfaData.length > 0) {
-    const allGroups = [...new Set(_gfaData.map(r=>r.group).filter(Boolean))];
-    const convGroups = allGroups.filter(g => _gfaData.filter(r=>r.group===g).reduce((s,r)=>s+r.conv,0) > 0);
-    groupSummary = convGroups.length > 0
-      ? convGroups.map(g => `${gcShortName(g)}(1그룹)`).join(' + ') + ` → ${convGroups.length}캠페인`
-      : `${groups} → ${count}캠페인`;
-  } else {
-    groupSummary = `${groups} → ${count}캠페인`;
+
+  // 전체 그룹 목록 (GFA 성과 데이터 기준)
+  const allGroups = _gfaData?.length
+    ? [...new Set(_gfaData.map(r=>r.group).filter(Boolean))].map(g => gcShortName(g))
+    : (_mailData.gfaGroups ? _mailData.gfaGroups.split('+').map(s=>s.trim()).filter(Boolean) : []);
+
+  // 처음 렌더 시 전체 선택
+  if (_gfaSelectedGroups.size === 0 && allGroups.length) {
+    allGroups.forEach(g => _gfaSelectedGroups.add(g));
   }
-  // 날짜별 집계 표시
+
+  // 버튼 HTML
+  const btnHtml = allGroups.map(g => {
+    const on = _gfaSelectedGroups.has(g);
+    const onStyle  = 'background:rgba(83,74,183,0.1);color:#534AB7;border-color:rgba(83,74,183,0.4);font-weight:500';
+    const offStyle = 'background:var(--glass-bg);color:var(--t2);border-color:var(--glass-border-s)';
+    return `<button onclick="toggleGfaGroup('${g.replace(/'/g,"\'")}');return false"
+      style="padding:3px 10px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid;
+      font-family:inherit;transition:all .12s;${on ? onStyle : offStyle}">${g}</button>`;
+  }).join('');
+
+  // 선택된 그룹으로 미리보기 텍스트
+  const selected = [..._gfaSelectedGroups];
+  const previewText = selected.length
+    ? `지난 기간, ${selected.join(' + ')} → ${selected.length}캠페인 운영 진행.`
+    : '선택된 그룹 없음';
+
+  // 날짜별 전환
   const dates = Object.keys(_perfStore.gfa).sort();
   let dateHtml = '';
-  if (dates.length > 1) {
+  if (dates.length > 0) {
     dateHtml = dates.map(dk => {
       const d = _perfStore.gfa[dk];
       return `<div style="font-size:11px;color:var(--t3)">${perfDateDisplay(dk)}: 전환 ${Math.round(d.conv||0)}건</div>`;
     }).join('');
     const totConv = Math.round(Object.values(_perfStore.gfa).reduce((s,v) => s+(v.conv||0), 0));
-    dateHtml += `<div style="font-size:11px;font-weight:600;color:var(--tx);margin-top:3px">합계 전환: ${totConv}건</div>`;
+    if (dates.length > 1) dateHtml += `<div style="font-size:11px;font-weight:600;color:var(--tx);margin-top:2px">합계 전환: ${totConv}건</div>`;
   }
-  el.innerHTML = `<span style="font-size:10px;background:rgba(58,58,240,0.08);color:var(--accent);border-radius:4px;padding:1px 6px;margin-right:6px">자동</span>현재, ${groupSummary} 운영 중.<br>전일 상위성과소재 이미지 (GFA 소재 탭 참조)${dateHtml ? '<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--glass-border-s)">' + dateHtml + '</div>' : ''}`;
-  document.getElementById('mailCardGfa')?.classList.remove('mail-inactive'); document.getElementById('mailCardGfa')?.classList.add('mail-active');
+
+  el.innerHTML =
+    `<span style="font-size:10px;background:rgba(58,58,240,0.08);color:var(--accent);border-radius:4px;padding:1px 6px;margin-right:6px">자동</span>운영 중인 그룹 선택` +
+    `<div style="display:flex;gap:5px;flex-wrap:wrap;margin:8px 0">${btnHtml}</div>` +
+    `<div style="border-top:0.5px solid var(--glass-border-s);padding-top:7px;font-size:12px;color:var(--tx)">${previewText}</div>` +
+    (dateHtml ? `<div style="border-top:0.5px solid var(--glass-border-s);margin-top:7px;padding-top:6px">${dateHtml}</div>` : '');
+
+  document.getElementById('mailCardGfa')?.classList.remove('mail-inactive');
+  document.getElementById('mailCardGfa')?.classList.add('mail-active');
 }
 
-async function mailUpdateGfaImg(groupMap, images) {
-  const content = document.getElementById('mailGfaImgContent');
-  const imageArea = document.getElementById('mailGfaImageArea');
-  const imgBtn = document.getElementById('mailGfaImgBtn');
-  if (!content) return;
-
-  const sortedGroups = [...GFA_ORDER.filter(k => groupMap.has(k)),
-    ...[...groupMap.keys()].filter(k => !GFA_ORDER.includes(k))];
-
-  const thStyle = `background:#EEF2FF;color:#3D5A99;padding:6px 8px;text-align:center;font-weight:700;font-size:11.5px;white-space:nowrap;border:1px solid #C8D4F0;width:120px;min-width:120px`;
-  const thLStyle = `background:#EEF2FF;color:#3D5A99;padding:6px 10px;text-align:left;font-weight:700;font-size:11px;border:1px solid #C8D4F0;width:56px`;
-
-  let html = `<table style="border-collapse:collapse;font-family:'Malgun Gothic',sans-serif;background:#fff">
-    <thead><tr><th style="${thLStyle}"></th>`;
-  for (const gName of sortedGroups) {
-    const groupTotal = [...groupMap.get(gName).values()].reduce((s,c)=>s+c.conv,0);
-    html += `<th style="${thStyle}">${gcShortName(gName)}<div style="font-size:10.5px;color:${groupTotal>0?'#185FA5':'#aaa'};font-weight:500;margin-top:2px">전환 ${Math.round(groupTotal)}건</div></th>`;
+// 날짜별 이미지 테이블 1개 빌드 헬퍼
+// globalSg: 전체 날짜 통합 그룹 순서 (모든 테이블 열 통일용)
+function _buildGfaImgTbl(dateRows, images, globalSg, hideEmpty=true) {
+  // 이 날짜의 데이터만 집계
+  const gm = new Map();
+  for (const r of dateRows) {
+    if (!r.group || !r.creative) continue;
+    if (!gm.has(r.group)) gm.set(r.group, new Map());
+    const cm = gm.get(r.group);
+    if (!cm.has(r.creative)) cm.set(r.creative, { name:r.creative, code:r.code||'', conv:0, imp:0 });
+    const cv = cm.get(r.creative); cv.conv+=r.conv; cv.imp+=r.imp;
   }
-  html += `</tr></thead><tbody>`;
+  // 열 순서: globalSg 기준으로 정렬 (hideEmpty=true면 데이터 없는 열 숨김)
+  const base = globalSg || [...GFA_ORDER.filter(k=>gm.has(k)), ...[...gm.keys()].filter(k=>!GFA_ORDER.includes(k))];
+  const sg = (hideEmpty && globalSg) ? base.filter(k => gm.has(k)) : base;
+  if (!sg.length) return '';
 
-  for (let rank = 0; rank < 2; rank++) {
-    html += `<tr><td style="padding:6px 10px;font-size:11px;font-weight:500;color:var(--t2);border:1px solid #E8EDF8;background:#F7F9FF;white-space:nowrap">${rank===0?'1순위':'2순위'}</td>`;
-    for (const gName of sortedGroups) {
-      const creativeMap = groupMap.get(gName);
-      const top2 = [...creativeMap.values()].sort((a,b)=>b.conv-a.conv).slice(0,2);
-      const c = top2[rank];
-      html += `<td style="padding:8px;text-align:center;border:1px solid #E8EDF8;width:120px;height:120px;vertical-align:middle">`;
-      if (c) {
-        const imgEntry = images[c.code] || Object.values(images).find(v=>v.name===c.name);
-        const imgData = imgEntry?.img || null;
-        if (imgData) {
-          html += `<img src="${imgData}" style="width:108px;height:108px;object-fit:contain;object-position:center;border-radius:6px;border:1px solid #E8EDF8;display:block;margin:0 auto;flex-shrink:0">`;
-        } else {
-          html += `<div style="width:108px;height:108px;background:#f5f5f5;border-radius:6px;border:1px dashed #ddd;margin:0 auto"></div>`;
-        }
+  const thS = `background:#EEF2FF;color:#3D5A99;padding:5px 8px;text-align:center;font-weight:500;font-size:11.5px;white-space:nowrap;border:1px solid #C8D4F0;width:120px;min-width:120px`;
+  const thL = `background:#EEF2FF;color:#3D5A99;padding:5px 10px;text-align:left;font-weight:500;font-size:11px;border:1px solid #C8D4F0;width:56px`;
+  const tblWidth = 56 + sg.length * 120;
+  let h = `<table style="border-collapse:collapse;table-layout:fixed;width:${tblWidth}px;font-family:'Malgun Gothic',sans-serif;background:#fff">` +
+    `<colgroup><col style="width:56px">${sg.map(()=>'<col style="width:120px">').join('')}</colgroup>` +
+    `<thead><tr><th style="${thL}"></th>`;
+
+  sg.forEach(g => {
+    const creativeMap = gm.get(g);
+    const tot = creativeMap ? [...creativeMap.values()].reduce((s,v)=>s+v.conv,0) : 0;
+    h += `<th style="${thS}">${gcShortName(g)}<div style="font-size:10.5px;color:${tot>0?'#185FA5':'#aaa'};font-weight:500;margin-top:2px">전환 ${Math.round(tot)}건</div></th>`;
+  });
+  h += `</tr></thead><tbody>`;
+
+  for (let rank=0; rank<2; rank++) {
+    h += `<tr><td style="padding:5px 10px;font-size:11px;color:#666;border:1px solid #E8EDF8;background:#F7F9FF;white-space:nowrap">${rank===0?'1순위':'2순위'}</td>`;
+    sg.forEach(g => {
+      const creativeMap = gm.get(g);
+      const top2 = creativeMap ? [...creativeMap.values()].sort((a,b)=>b.conv-a.conv).slice(0,2) : [];
+      const cv = top2[rank];
+      h += `<td style="padding:6px;text-align:center;border:1px solid #E8EDF8;width:120px;height:112px;vertical-align:middle">`;
+      if (cv) {
+        const ie = images[cv.code] || Object.values(images).find(v=>v.name===cv.name);
+        if (ie?.img) h += `<img src="${ie.img}" style="max-width:106px;max-height:100px;width:auto;height:auto;border-radius:5px;border:1px solid #E8EDF8;display:block;margin:0 auto">`;
+        else h += `<div style="width:106px;height:100px;background:#f5f5f5;border-radius:5px;border:1px dashed #ddd;margin:0 auto"></div>`;
       } else {
-        html += `<div style="width:108px;height:108px;background:#f9f9f9;border-radius:6px;margin:0 auto"></div>`;
+        h += `<div style="width:106px;height:100px;background:#f9f9f9;border-radius:5px;margin:0 auto"></div>`;
       }
-      html += `</td>`;
-    }
-    html += `</tr>`;
+      h += `</td>`;
+    });
+    h += `</tr>`;
   }
-  html += `</tbody></table>`;
+  return h + `</tbody></table>`;
+}
 
-  content.innerHTML = html;
-  if (imageArea) imageArea.innerHTML = html;
-  if (imgBtn) imgBtn.style.display = '';
-  document.getElementById('mailCardGfaImg')?.classList.remove('mail-inactive'); document.getElementById('mailCardGfaImg')?.classList.add('mail-active');
+let _mailGfaHideEmpty = true; // 전환 0 그룹 숨김 여부
+
+function toggleMailGfaEmpty() {
+  _mailGfaHideEmpty = !_mailGfaHideEmpty;
+  const btn = document.getElementById('mailGfaEmptyBtn');
+  if (btn) {
+    btn.textContent = _mailGfaHideEmpty ? '전환 0 숨김' : '전환 0 표시';
+    btn.style.background = _mailGfaHideEmpty ? 'rgba(58,58,240,0.08)' : '';
+    btn.style.color      = _mailGfaHideEmpty ? 'var(--accent)' : '';
+    btn.style.borderColor= _mailGfaHideEmpty ? 'rgba(58,58,240,0.2)' : '';
+  }
+  updateMailGfaImgCard();
+}
+
+async function updateMailGfaImgCard() {
+  const content = document.getElementById('mailGfaImgContent');
+  const tabsEl = document.getElementById('mailGfaImgDateTabs');
+  const imgBtn = document.getElementById('mailGfaImgBtn');
+  if (!content || !_gcAllData.length) return;
+
+  const images = await getGcImages();
+  const allDates = [...new Set(_gcAllData.map(r=>r.date).filter(Boolean))].sort();
+  // 토글 버튼 표시
+  const emptyBtn = document.getElementById('mailGfaEmptyBtn');
+  if (emptyBtn) emptyBtn.style.display = '';
+
+  // 날짜 탭 버튼 렌더
+  const onS  = 'background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2);font-weight:500';
+  const offS = 'background:var(--glass-bg);color:var(--t2);border-color:var(--glass-border-s)';
+  const btnBase = 'padding:3px 10px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid;font-family:inherit;transition:all .12s;';
+  if (tabsEl) {
+    tabsEl.innerHTML =
+      `<button style="${btnBase+offS}" onclick="filterMailGfaImg('all',this)">전체</button>` +
+      allDates.map(d => `<button style="${btnBase+offS}" onclick="filterMailGfaImg('${d}',this)">${perfDateDisplay(normalizeDateKey(d)||d)}</button>`).join('') +
+      (allDates.length > 1 ? `<button style="${btnBase+onS}" onclick="filterMailGfaImg('total',this)">합계</button>` : `<button style="${btnBase+onS}" onclick="filterMailGfaImg('all',this)">전체</button>`);
+  }
+
+  // ── 전체 날짜 통합 그룹 순서 계산 (모든 테이블 열 통일) ──
+  const globalGm = new Map();
+  for (const r of _gcAllData) {
+    if (r.group) globalGm.set(r.group, true);
+  }
+  const globalSg = [...GFA_ORDER.filter(k=>globalGm.has(k)), ...[...globalGm.keys()].filter(k=>!GFA_ORDER.includes(k))];
+
+  // 날짜별 섹션 빌드 (각 섹션에 개별 복사 버튼)
+  const capBtnStyle = 'font-size:11.5px;padding:3px 10px;border-radius:6px;border:0.5px solid var(--glass-border-s);background:var(--glass-bg);cursor:pointer;color:var(--t2);font-family:inherit';
+  let sectHtml = '';
+  let sectIdx = 0;
+  for (const d of allDates) {
+    const tbl = _buildGfaImgTbl(_gcAllData.filter(r=>r.date===d), images, globalSg, _mailGfaHideEmpty);
+    if (!tbl) continue;
+    const lbl = perfDateDisplay(normalizeDateKey(d)||d);
+    const tblId = `mailGfaImgTbl_${sectIdx++}`;
+    sectHtml += `<div class="mail-gfa-sec" data-date="${d}" style="margin-bottom:12px;display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;padding-bottom:5px;border-bottom:0.5px solid var(--glass-border-s)">
+        <span style="font-size:12px;font-weight:500;color:var(--tx)">📅 ${lbl}</span>
+        <button style="${capBtnStyle}" onclick="captureMailGfaSection('${tblId}')">🖼 이미지 복사</button>
+      </div>
+      <div style="overflow-x:auto"><div id="${tblId}">${tbl}</div></div></div>`;
+  }
+  // 합계 섹션
+  if (allDates.length > 1) {
+    const totalTbl = _buildGfaImgTbl(_gcAllData, images, globalSg, _mailGfaHideEmpty);
+    if (totalTbl) {
+      const tblId = `mailGfaImgTbl_total`;
+      sectHtml += `<div class="mail-gfa-sec" data-date="total" style="margin-bottom:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;padding-bottom:5px;border-bottom:0.5px solid var(--glass-border-s)">
+          <span style="font-size:12px;font-weight:500;color:var(--tx)">📊 합계 (전기간)</span>
+          <button style="${capBtnStyle}" onclick="captureMailGfaSection('${tblId}')">🖼 이미지 복사</button>
+        </div>
+        <div style="overflow-x:auto"><div id="${tblId}">${totalTbl}</div></div></div>`;
+    }
+  }
+  content.innerHTML = sectHtml || '<div style="font-size:12px;color:var(--t3);text-align:center;padding:16px">데이터 없음</div>';
+  // 개별 복사 버튼으로 대체됨 — 기존 버튼 숨김 유지
+  document.getElementById('mailCardGfaImg')?.classList.remove('mail-inactive');
+  document.getElementById('mailCardGfaImg')?.classList.add('mail-active');
+}
+
+function filterMailGfaImg(selDate, btn) {
+  const tabsEl = document.getElementById('mailGfaImgDateTabs');
+  if (tabsEl) {
+    const onS = 'background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2);font-weight:500';
+    const offS = 'background:var(--glass-bg);color:var(--t2);border-color:var(--glass-border-s)';
+    tabsEl.querySelectorAll('button').forEach(b => { b.style.cssText = b.style.cssText.replace(/background[^;]+;|color[^;]+;|border-color[^;]+;|font-weight[^;]+;/g,''); });
+    btn.style.background='rgba(58,58,240,0.08)'; btn.style.color='var(--accent)'; btn.style.borderColor='rgba(58,58,240,0.2)'; btn.style.fontWeight='500';
+  }
+  document.querySelectorAll('.mail-gfa-sec').forEach(s => {
+    if (selDate === 'all')    s.style.display = s.dataset.date === 'total' ? 'none' : '';
+    else if (selDate === 'total') s.style.display = s.dataset.date === 'total' ? '' : 'none';
+    else s.style.display = s.dataset.date === selDate ? '' : 'none';
+  });
+}
+
+// 구 함수 (하위호환 유지)
+async function mailUpdateGfaImg(groupMap, images) { await updateMailGfaImgCard(); }
+
+async function captureMailGfaSection(tblId) {
+  const wrap = document.getElementById(tblId);
+  if (!wrap) { showToast('⚠️ 테이블을 찾을 수 없습니다'); return; }
+  const hiddenAncestors = [];
+  let el = wrap.parentElement;
+  while (el && el !== document.body) {
+    if (getComputedStyle(el).display === 'none') {
+      hiddenAncestors.push({el, prev: el.style.display});
+      el.style.display = 'block';
+    }
+    el = el.parentElement;
+  }
+  showToast('📷 이미지 생성 중...');
+  try {
+    const canvas = await html2canvas(wrap, { backgroundColor:'#ffffff', scale:2, useCORS:true, logging:false, allowTaint:true });
+    canvas.toBlob(blob => {
+      if (!blob) { showToast('❌ 이미지 생성 실패'); return; }
+      navigator.clipboard.write([new ClipboardItem({'image/png': blob})])
+        .then(() => showToast('✅ 이미지 복사됨 — 메일에 Ctrl+V'))
+        .catch(() => showToast('❌ 클립보드 접근 실패'));
+    }, 'image/png');
+  } catch(e) {
+    showToast('❌ 이미지 생성 실패'); console.error(e);
+  } finally {
+    hiddenAncestors.forEach(({el, prev}) => el.style.display = prev);
+  }
 }
 
 async function mailCopyGfaImage() {
@@ -1203,24 +1399,51 @@ async function mailCopyGfaImage() {
 }
 
 function mailUpdateAdv(daConv, saConv) {
-  // _perfStore에서 전체 날짜 합산 (파라미터 대신 직접 계산)
   const daTot = Math.round(Object.values(_perfStore.da).reduce((s,v) => s+(v.conv||0), 0));
   const saTot = Math.round(Object.values(_perfStore.sa).reduce((s,v) => s+(v.conv||0), 0));
-  _mailData.advConv = `DA (${daTot}건) / SA (${saTot}건)`;
+  const dates = [...new Set([...Object.keys(_perfStore.da), ...Object.keys(_perfStore.sa)])].sort();
+  const dayLines = dates.map(dk => ({
+    dk,
+    da: Math.round(_perfStore.da[dk]?.conv||0),
+    sa: Math.round(_perfStore.sa[dk]?.conv||0),
+  }));
+
+  // _mailData.advConv → mailBuildHtml 에서 사용
+  const textLines = [];
+  if (_advMailMode === 'daily' || _advMailMode === 'all') {
+    dayLines.forEach(({ dk, da, sa }) => {
+      textLines.push(`    ${perfDateDisplay(dk)} → DA (${da}건) / SA (${sa}건)`);
+    });
+  }
+  if (_advMailMode === 'all' && dayLines.length > 0) textLines.push('    ───');
+  if (_advMailMode === 'total' || _advMailMode === 'all') {
+    textLines.push(`DA (${daTot}건) / SA (${saTot}건)`);
+  }
+  _mailData.advConv = textLines.join('\n');
+
+  // 카드 HTML 렌더링
   const el = document.getElementById('mailAdvAuto');
   if (!el) return;
-  const dates = [...new Set([...Object.keys(_perfStore.da), ...Object.keys(_perfStore.sa)])].sort();
-  let dateHtml = '';
-  if (dates.length > 1) {
-    dateHtml = dates.map(dk => {
-      const da = _perfStore.da[dk]?.conv || 0;
-      const sa = _perfStore.sa[dk]?.conv || 0;
-      return `<div style="font-size:11px;color:var(--t3)">${perfDateDisplay(dk)}: DA ${Math.round(da)}건 / SA ${Math.round(sa)}건</div>`;
-    }).join('');
-    dateHtml += `<div style="font-size:11px;font-weight:600;color:var(--tx);margin-top:3px">합계: DA ${daTot}건 / SA ${saTot}건</div>`;
+  const D = 'var(--glass-border-s)', T = 'var(--t3)', TX = 'var(--tx)';
+  const badge = `<span style="font-size:10px;background:rgba(58,58,240,0.08);color:var(--accent);border-radius:4px;padding:1px 6px;margin-right:6px">자동</span>`;
+  let html = badge + `광고계정 전환<div style="margin-left:12px;margin-top:4px;font-size:12px;color:${TX};line-height:2">`;
+
+  if (_advMailMode === 'daily' || _advMailMode === 'all') {
+    dayLines.forEach(({ dk, da, sa }, i) => {
+      if (i > 0) html += `<div style="border-top:0.5px solid ${D};margin:1px 0"></div>`;
+      html += `<div><span style="font-size:11px;color:${T};margin-right:5px">${perfDateDisplay(dk)}</span>→ DA (${da}건) / SA (${sa}건)</div>`;
+    });
   }
-  el.innerHTML = `<span style="font-size:10px;background:rgba(58,58,240,0.08);color:var(--accent);border-radius:4px;padding:1px 6px;margin-right:6px">자동</span>광고계정 전환: DA <b>${daTot}건</b> / SA <b>${saTot}건</b>${dateHtml ? '<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--glass-border-s)">' + dateHtml + '</div>' : ''}`;
-  document.getElementById('mailCardAdv')?.classList.remove('mail-inactive'); document.getElementById('mailCardAdv')?.classList.add('mail-active');
+  if (_advMailMode === 'all' && dayLines.length > 0) {
+    html += `<div style="border-top:1px solid var(--glass-border-s);margin:3px 0"></div>`;
+  }
+  if (_advMailMode === 'total' || _advMailMode === 'all') {
+    html += `<div>→ DA (${daTot}건) / SA (${saTot}건)</div>`;
+  }
+  html += '</div>';
+  el.innerHTML = html;
+  document.getElementById('mailCardAdv')?.classList.remove('mail-inactive');
+  document.getElementById('mailCardAdv')?.classList.add('mail-active');
 }
 
 // 날짜별 성과 전역 저장소
@@ -1433,31 +1656,17 @@ function mailBuildHtml() {
     }
   }
 
-  // ── 브랜드검색: 전체 날짜 합산 ──
-  let moTotAll = 0, pcTotAll = 0;
-  for (const [, d] of _bkByDate) {
-    moTotAll += Math.round(d.moTot || 0);
-    pcTotAll += Math.round(d.pcTot || 0);
-  }
-  const moLine = `Total(${moTotAll})`;
-  const pcLine = `Total(${pcTotAll})`;
-
   // ── GFA: 전체 데이터에서 unique 그룹 추출 ──
   let gfaLine = '';
-  if (_gfaData && _gfaData.length) {
-    const groups = [...new Set(_gfaData.map(r => r.group).filter(Boolean))];
-    if (groups.length) {
-      gfaLine = `현재, ${groups.map(g => `${g}(1그룹)`).join(' + ')} 운영 중.`;
-    }
+  const _selGrps = [..._gfaSelectedGroups];
+  if (_selGrps.length) {
+    gfaLine = `지난 기간, ${_selGrps.join(' + ')} → ${_selGrps.length}캠페인 운영 진행.`;
+  } else if (_gfaData?.length) {
+    const _allGrps = [...new Set(_gfaData.map(r=>r.group).filter(Boolean))].map(g=>gcShortName(g));
+    if (_allGrps.length) gfaLine = `지난 기간, ${_allGrps.join(' + ')} → ${_allGrps.length}캠페인 운영 진행.`;
   } else if (_mailData.gfaGroups) {
-    gfaLine = `현재, ${_mailData.gfaGroups} 운영 중.`;
+    gfaLine = `지난 기간, ${_mailData.gfaGroups} 운영 진행.`;
   }
-
-  // ── ADV: 전체 날짜 합산 ──
-  let daTot = 0, saTot = 0;
-  for (const dk of Object.keys(_perfStore.da || {})) daTot += (_perfStore.da[dk]?.conv || 0);
-  for (const dk of Object.keys(_perfStore.sa || {})) saTot += (_perfStore.sa[dk]?.conv || 0);
-  const advLine = (daTot || saTot) ? `DA (${Math.round(daTot)}건) / SA (${Math.round(saTot)}건)` : (_mailData.advConv || '');
 
   return `<div>.</div>
 <p></p>
@@ -1468,8 +1677,8 @@ function mailBuildHtml() {
 <div>올리브파트너스 김규빈입니다.<br>.</div>
 <div>.</div>
 <div>.</div>
-<div>광고 실적 보고 드립니다.<br><br><b>${dateLabel}</b><br><br><br><b>* 브랜드검색</b><br><b>&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp; 키워드 소재 (전환)</b><br>&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; → MO: ${moLine}<br>&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;→ PC: ${pcLine}
-<div><b>&nbsp;&nbsp;&nbsp;&nbsp;- 이미지 소재</b><br><br><br><b>* 성과형DA(GFA)</b><br>- ${gfaLine}<br><b>&nbsp; &nbsp; → 전일 상위성과소재 이미지<br></b><br><br><b>* ADVoost<br>- 광고계정 전환 :</b> ${advLine}<br>.<br>.<br>.</div>
+<div>광고 실적 보고 드립니다.<br><br><b>${dateLabel}</b><br><br><br><b>* 브랜드검색</b><br><b>&nbsp;&nbsp;&nbsp;&nbsp;-&nbsp; 키워드 소재 (전환)</b><br>${_mailData.bkAuto.split('\n').map(l=>l.replace(/ /g,'&nbsp;')).join('<br>')}
+<div><b>&nbsp;&nbsp;&nbsp;&nbsp;- 이미지 소재</b><br><br><br><b>* 성과형DA(GFA)</b><br>- ${gfaLine}<br><b>&nbsp; &nbsp; → 전일 상위성과소재 이미지<br></b><br><br><b>* ADVoost<br>- 광고계정 전환 :</b><br>${_mailData.advConv.split('\n').map(l=>l.replace(/ /g,'&nbsp;')).join('<br>')}<br>.<br>.<br>.</div>
 <div><br>자세한 사항은 첨부 파일 확인 요청 드립니다.<br><br></div>
 <div>감사합니다.<br>김규빈 드림.<br><br></div>
 <div><br></div>
@@ -1489,6 +1698,75 @@ function mailBuildText() {
     .replace(/<[^>]+>/g, '')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
+}
+
+/* ══════════════════════════
+   BK / ADV 메일 모드 (합계만/일별/전체)
+══════════════════════════ */
+function _modeBtn(prefix, mode) {
+  ['Total','Daily','All'].forEach(m => {
+    const btn = document.getElementById(prefix + 'Mode' + m);
+    if (!btn) return;
+    const active = mode === m.toLowerCase();
+    btn.style.background    = active ? 'rgba(58,58,240,0.08)' : '';
+    btn.style.color         = active ? 'var(--accent)' : '';
+    btn.style.borderColor   = active ? 'rgba(58,58,240,0.2)' : '';
+    btn.style.fontWeight    = active ? '500' : '';
+  });
+}
+function setBkMode(mode) {
+  _bkMailMode = mode;
+  _modeBtn('bk', mode);
+  mailUpdateBk(0,'',0,'','');
+}
+function setAdvMode(mode) {
+  _advMailMode = mode;
+  _modeBtn('adv', mode);
+  mailUpdateAdv(0, 0);
+}
+
+// 전체 날짜 합산 + 키워드 집계 헬퍼
+function _aggregateBkKeywords() {
+  const dkSet = new Set([..._bkByDate.keys()]);
+  [..._kwByDate.keys()].forEach(k => dkSet.add(k.replace(/_MO$|_PC$/, '')));
+  const allDks = [...dkSet].sort();
+  let moTotAll = 0, pcTotAll = 0;
+  const moKwCounts = {}, pcKwCounts = {};
+  allDks.forEach(dk => {
+    const bk = _bkByDate.get(dk);
+    if (bk) { moTotAll += Math.round(bk.moTot||0); pcTotAll += Math.round(bk.pcTot||0); }
+    const parseKw = (summaryText, map) => {
+      const slash = summaryText ? summaryText.indexOf(' / ') : -1;
+      if (slash < 0) return;
+      summaryText.slice(slash + 3).split(', ').forEach(kw => {
+        const m = kw.match(/^(.+)\((\d+)\)$/);
+        if (m) map[m[1]] = (map[m[1]]||0) + parseInt(m[2]);
+      });
+    };
+    parseKw(_kwByDate.get(dk+'_MO')?.summaryText, moKwCounts);
+    parseKw(_kwByDate.get(dk+'_PC')?.summaryText, pcKwCounts);
+  });
+  const kwStr = map => Object.entries(map).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k}(${v})`).join(', ');
+  const moKwStr = kwStr(moKwCounts), pcKwStr = kwStr(pcKwCounts);
+  return {
+    allDks,
+    moTotalText: `Total(${moTotAll})${moKwStr ? ' / '+moKwStr : ''}`,
+    pcTotalText: `Total(${pcTotAll})${pcKwStr ? ' / '+pcKwStr : ''}`,
+  };
+}
+
+// 날짜별 MO/PC 요약 라인 반환
+function _getBkDayLines(allDks) {
+  return allDks.map(dk => {
+    const moKwData = _kwByDate.get(dk+'_MO');
+    const pcKwData = _kwByDate.get(dk+'_PC');
+    const bk = _bkByDate.get(dk);
+    const moLine = moKwData?.summaryText
+      || (bk?.moTot > 0 ? `Total(${Math.round(bk.moTot)})${bk.moKw ? ' / '+bk.moKw : ''}` : null);
+    const pcLine = pcKwData?.summaryText
+      || (bk?.pcTot > 0 ? `Total(${Math.round(bk.pcTot)})${bk.pcKw ? ' / '+bk.pcKw : ''}` : null);
+    return { dk, moLine, pcLine };
+  }).filter(d => d.moLine || d.pcLine);
 }
 
 function mailApplyCard(card) {
@@ -2303,6 +2581,11 @@ function buildDateTabs(containerId, dates, currentVal, onSelect) {
   });
 }
 
+let _gfaData = [];        // GFA 성과 원본 데이터
+let _gfaSelectedGroups = new Set(); // 선택된 운영 그룹
+let _gfaHideEmpty = true; // 값 없는 그룹 숨김 여부
+let _bkMailMode  = 'total'; // 'total' | 'daily' | 'all'
+let _advMailMode = 'total'; // 'total' | 'daily' | 'all'
 let _gfaCurDate = 'all';
 let _gcCurDate = 'all';
 
@@ -2336,7 +2619,7 @@ function refreshGfaDateTable() {
   fi.addEventListener('change', e => { if(e.target.files[0]) processGfa(e.target.files[0]); });
   document.getElementById('gfaReset').onclick = () => {
     document.getElementById('gfaResults').style.display = 'none';
-    uz.style.display = ''; fi.value = ''; _gfaData = []; _gfaHideEmpty = true;
+    uz.style.display = ''; fi.value = ''; _gfaData = []; _gfaHideEmpty = true; _gfaSelectedGroups = new Set();
     document.getElementById('gfaDateTabs').innerHTML = '';
     _gfaCurDate = 'all';
     document.getElementById('gfaToggleEmpty').textContent = '👁️ 값 없는 그룹 보기';
@@ -2404,6 +2687,7 @@ async function processGfa(file) {
   document.getElementById('gfaUpload').style.display = 'none';
   document.getElementById('mainTabGfa')?.classList.add('done');
   document.getElementById('innerTabGfaPerf')?.classList.add('done');
+  renderGfaMailCard(); // GFA 성과 업로드 시 메일 카드 즉시 반영
 }
 
 async function renderGfaGroup(selDate) {
@@ -2474,6 +2758,8 @@ async function renderGfaGroup(selDate) {
    ADVoost 리포트
 ══════════════════════════ */
 const ADV_NAMES = {1:'DA 매체', 2:'SA 매체'};
+let _advData = {1:[], 2:[]};       // 날짜별 원본 행
+let _advCurDate = {1:'all', 2:'all'}; // 패널별 선택 날짜
 function setupAdvPanel(num) {
   const uz = document.getElementById(`advUpload${num}`);
   const fi = document.getElementById(`advInput${num}`);
@@ -2491,9 +2777,61 @@ setupAdvPanel(2);
   else { setTimeout(waitForFs, 100); }
 })();
 
+/* ══════════════════════════
+   ADVoost 날짜별 렌더링
+══════════════════════════ */
+function renderAdvPanel(num, selDate) {
+  const content = document.getElementById(`advContent${num}`);
+  if (!content || !_advData[num].length) return;
+  const rows = selDate === 'all' ? _advData[num] : _advData[num].filter(r => r.date === selDate);
+
+  const dateMap = new Map(), groupMap = new Map();
+  rows.forEach(r => {
+    if (r.date) {
+      if (!dateMap.has(r.date)) dateMap.set(r.date, {imp:0,clk:0,cost:0,conv:0,rev:0});
+      const d = dateMap.get(r.date); d.imp+=r.imp; d.clk+=r.clk; d.cost+=r.cost; d.conv+=r.conv; d.rev+=r.rev;
+    }
+    if (r.group) {
+      if (!groupMap.has(r.group)) groupMap.set(r.group, {imp:0,clk:0,cost:0,conv:0,rev:0});
+      const g = groupMap.get(r.group); g.imp+=r.imp; g.clk+=r.clk; g.cost+=r.cost; g.conv+=r.conv; g.rev+=r.rev;
+    }
+  });
+  const dateSorted  = [...dateMap.entries()].sort((a,b) => a[0].localeCompare(b[0]));
+  const groupSorted = [...groupMap.entries()].sort((a,b) => b[1].imp-a[1].imp);
+
+  function makeTblCard(rows, firstColLabel) {
+    const card = document.createElement('div'); card.className = 'tbl-card';
+    const scroll = document.createElement('div'); scroll.className = 'tbl-scroll'; scroll.style.maxHeight = '320px';
+    const table = document.createElement('table');
+    table.innerHTML = `<thead><tr><th>${firstColLabel}</th><th>노출</th><th>클릭</th><th>비용</th><th>전환</th><th>매출</th></tr></thead>`;
+    const tbody = document.createElement('tbody'), tfoot = document.createElement('tfoot');
+    buildTableRows(tbody, rows, null); buildTfoot(tfoot, rows);
+    table.appendChild(tbody); table.appendChild(tfoot); scroll.appendChild(table); card.appendChild(scroll);
+    return {card, tbody};
+  }
+
+  const {card:dateCard, tbody:dateTbody} = makeTblCard(dateSorted, '날짜');
+  const copyWrap = document.createElement('div'); copyWrap.className = 'copy-row'; copyWrap.style.marginTop = '8px';
+  const copyBtn = document.createElement('button'); copyBtn.className = 'btn btn-primary btn-sm'; copyBtn.textContent = '📋 전체 복사';
+  copyBtn.onclick = () => {
+    const r2 = [...dateTbody.querySelectorAll('tr')].map(tr => [tr.children[0].textContent, ...[...tr.querySelectorAll('td[data-val]')].map(td=>td.dataset.val)]);
+    navigator.clipboard.writeText(r2.map(r=>r.join('\t')).join('\n')).then(() => showToast('✅ 전체 복사 완료'));
+  };
+  copyWrap.appendChild(copyBtn);
+
+  const groupLbl = document.createElement('div'); groupLbl.className = 'sec-label-divider';
+  groupLbl.textContent = selDate === 'all' ? '📂 그룹별 전기간 성과' : `📂 그룹별 성과 (${perfDateDisplay(normalizeDateKey(selDate)||selDate)})`;
+  const {card:groupCard} = makeTblCard(groupSorted, '그룹명');
+
+  content.innerHTML = '';
+  content.appendChild(dateCard); content.appendChild(copyWrap);
+  content.appendChild(groupLbl); content.appendChild(groupCard);
+  content.style.display = 'flex';
+  bindCellCopy(content);
+}
+
 async function processAdv(file, num) {
   const uz = document.getElementById(`advUpload${num}`);
-  const content = document.getElementById(`advContent${num}`);
   const panel = document.getElementById(`advPanel${num}`);
   const zip = await JSZip.loadAsync(file);
   let csvText = null;
@@ -2509,17 +2847,36 @@ async function processAdv(file, num) {
     imp:headers.indexOf('노출수'), clk:headers.indexOf('클릭수'),
     cost:headers.indexOf('총비용'), conv:headers.indexOf('총 전환수'), rev:headers.indexOf('총 전환매출액'),
   };
-  const dateMap = new Map(), groupMap = new Map();
+
+  // 새 파일의 날짜 파악 → 해당 날짜만 교체, 나머지 유지
+  const newRows = [];
   for (let i = 1; i < lines.length; i++) {
     if (!lines[i].trim()) continue;
-    const c = parseCSVLine(lines[i]);
-    const d = (c[idx.date]||'').trim(), g = (c[idx.group]||'').trim();
-    const imp=parseNum(c[idx.imp]), clk=parseNum(c[idx.clk]), cost=parseNum(c[idx.cost]), conv=parseNum(c[idx.conv]), rev=parseNum(c[idx.rev]);
-    if (d) { if(!dateMap.has(d)) dateMap.set(d,{imp:0,clk:0,cost:0,conv:0,rev:0}); const dr=dateMap.get(d); dr.imp+=imp; dr.clk+=clk; dr.cost+=cost; dr.conv+=conv; dr.rev+=rev; }
-    if (g) { if(!groupMap.has(g)) groupMap.set(g,{imp:0,clk:0,cost:0,conv:0,rev:0}); const gr=groupMap.get(g); gr.imp+=imp; gr.clk+=clk; gr.cost+=cost; gr.conv+=conv; gr.rev+=rev; }
+    const cv = parseCSVLine(lines[i]);
+    newRows.push({
+      date: (cv[idx.date]||'').trim(), group: (cv[idx.group]||'').trim(),
+      imp:parseNum(cv[idx.imp]), clk:parseNum(cv[idx.clk]),
+      cost:parseNum(cv[idx.cost]), conv:parseNum(cv[idx.conv]), rev:parseNum(cv[idx.rev]),
+    });
   }
-  const dateSorted = [...dateMap.entries()].sort((a,b) => a[0].localeCompare(b[0]));
-  const groupSorted = [...groupMap.entries()].sort((a,b) => b[1].imp-a[1].imp);
+  const newDates = new Set(newRows.map(r => r.date));
+  _advData[num] = _advData[num].filter(r => !newDates.has(r.date)).concat(newRows);
+
+  // 날짜 탭 업데이트
+  const allDates = [...new Set(_advData[num].map(r => r.date).filter(Boolean))].sort();
+  _advCurDate[num] = 'all';
+  const tabsId = `advDateTabs${num}`;
+  let tabsEl = document.getElementById(tabsId);
+  if (!tabsEl) {
+    tabsEl = document.createElement('div');
+    tabsEl.id = tabsId;
+    tabsEl.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;padding:6px 0 2px';
+    panel.insertBefore(tabsEl, document.getElementById(`advUpload${num}`));
+  }
+  buildDateTabs(tabsId, allDates, 'all', (d) => {
+    _advCurDate[num] = d;
+    renderAdvPanel(num, d);
+  });
 
   // 패널 헤더
   const dotColor = num === 1 ? 'var(--accent)' : 'var(--blue)';
@@ -2530,53 +2887,23 @@ async function processAdv(file, num) {
     </div>
     <button class="btn btn-ghost btn-sm" onclick="resetAdvPanel(${num})">↩ 재업로드</button>`;
 
-  function makeTblCard(rows, firstColLabel) {
-    const card = document.createElement('div'); card.className = 'tbl-card';
-    const scroll = document.createElement('div'); scroll.className = 'tbl-scroll'; scroll.style.maxHeight = '320px';
-    const table = document.createElement('table');
-    table.innerHTML = `<thead><tr>
-      <th>${firstColLabel}</th><th>노출</th><th>클릭</th><th>비용</th><th>전환</th><th>매출</th>
-    </tr></thead>`;
-    const tbody = document.createElement('tbody'), tfoot = document.createElement('tfoot');
-    buildTableRows(tbody, rows, null); buildTfoot(tfoot, rows);
-    table.appendChild(tbody); table.appendChild(tfoot);
-    scroll.appendChild(table); card.appendChild(scroll);
-    return {card, tbody};
-  }
-
-  const {card:dateCard, tbody:dateTbody} = makeTblCard(dateSorted, '날짜');
-  const dateCopyWrap = document.createElement('div');
-  dateCopyWrap.className = 'copy-row'; dateCopyWrap.style.marginTop = '8px';
-  const dateCopyBtn = document.createElement('button');
-  dateCopyBtn.className = 'btn btn-primary btn-sm'; dateCopyBtn.textContent = '📋 전체 복사';
-  dateCopyBtn.onclick = () => {
-    const r2 = [...dateTbody.querySelectorAll('tr')].map(tr => [tr.children[0].textContent, ...[...tr.querySelectorAll('td[data-val]')].map(td=>td.dataset.val)]);
-    navigator.clipboard.writeText(r2.map(r=>r.join('\t')).join('\n')).then(() => showToast('✅ 전체 복사 완료'));
-  };
-  dateCopyWrap.appendChild(dateCopyBtn);
-
-  const groupLbl = document.createElement('div'); groupLbl.className = 'sec-label-divider'; groupLbl.textContent = '📂 그룹별 전기간 성과';
-  const {card:groupCard} = makeTblCard(groupSorted, '그룹명');
-
-  content.innerHTML = '';
-  content.appendChild(dateCard);
-  content.appendChild(dateCopyWrap);
-  content.appendChild(groupLbl);
-  content.appendChild(groupCard);
-  content.style.display = 'flex';
   uz.style.display = 'none';
-  bindCellCopy(content);
+  renderAdvPanel(num, 'all');
 
-  // 메일쓰기 탭 자동 연동
-  const totalConv = dateSorted.reduce((s,[,v])=>s+v.conv,0);
+  // 메일쓰기 + 성과 저장소 업데이트
+  const store = num === 1 ? _perfStore.da : _perfStore.sa;
+  const allDateMap = new Map();
+  _advData[num].forEach(r => {
+    if (!r.date) return;
+    if (!allDateMap.has(r.date)) allDateMap.set(r.date, {imp:0,clk:0,cost:0,conv:0,rev:0});
+    const d = allDateMap.get(r.date); d.imp+=r.imp; d.clk+=r.clk; d.cost+=r.cost; d.conv+=r.conv; d.rev+=r.rev;
+  });
+  allDateMap.forEach((v, dk) => { store[normalizeDateKey(dk)] = {...v}; });
+  const totalConv = [...allDateMap.values()].reduce((s,v) => s+v.conv, 0);
   if (num === 1) window._advDaConv = Math.round(totalConv);
   if (num === 2) window._advSaConv = Math.round(totalConv);
   mailUpdateAdv(window._advDaConv||0, window._advSaConv||0);
   document.getElementById('mainTabAdv')?.classList.add('done');
-
-  // 성과 저장소 업데이트 (날짜별 머지 — 기존 날짜 데이터 유지)
-  const store = num === 1 ? _perfStore.da : _perfStore.sa;
-  dateSorted.forEach(([dk, v]) => { store[normalizeDateKey(dk)] = {...v}; });
   mailRefreshPerf();
 }
 
@@ -2585,6 +2912,9 @@ function resetAdvPanel(num) {
   const content = document.getElementById(`advContent${num}`);
   content.innerHTML = ''; content.style.display = 'none';
   document.getElementById(`advUpload${num}`).style.display = '';
+  const tabsEl = document.getElementById(`advDateTabs${num}`);
+  if (tabsEl) tabsEl.remove();
+  _advData[num] = []; _advCurDate[num] = 'all';
   const dotColor = num === 1 ? 'var(--accent)' : 'var(--blue)';
   document.getElementById(`advPanel${num}`).querySelector('.panel-header').innerHTML =
     `<div class="panel-title"><div class="panel-title-dot" style="background:${dotColor}"></div>${ADV_NAMES[num]}</div>`;
@@ -2688,11 +3018,12 @@ async function processGc(file) {
 
   if (iGroup < 0 || iCreative < 0) { showToast('❌ 소재 성과 CSV 형식이 아닙니다'); return; }
 
-  _gcAllData = [];
+  // 이 파일에 포함된 날짜 파악 → 해당 날짜만 교체, 나머지 날짜는 유지 (gfa와 동일)
+  const newRows = [];
   for (let i = 1; i < lines.length; i++) {
     if (!lines[i].trim()) continue;
     const c = parseCSVLine(lines[i]);
-    _gcAllData.push({
+    newRows.push({
       group:    (c[iGroup]    || '').trim(),
       creative: (c[iCreative] || '').trim(),
       code:     (c[iCode]     || '').trim(),
@@ -2701,18 +3032,21 @@ async function processGc(file) {
       imp:      parseNum(c[iImp]),
     });
   }
+  const newDates = new Set(newRows.map(r => r.date));
+  _gcAllData = _gcAllData.filter(r => !newDates.has(r.date)).concat(newRows);
 
   // 날짜 탭
   const dates = [...new Set(_gcAllData.map(r => r.date).filter(Boolean))].sort();
   _gcCurDate = 'all';
   buildDateTabs('gcDateTabs', dates, 'all', async (d) => { _gcCurDate = d; await renderGcCards(d); });
 
-  await renderGcCards('all');
+  // UI 먼저 처리 (renderGcCards 실패해도 화면은 유지)
   document.getElementById('gcBadge').textContent = '📄 ' + file.name;
   document.getElementById('gcResults').style.display = 'block';
+  document.getElementById('gcUpload').style.display = 'none';
   document.getElementById('mainTabGfa')?.classList.add('done');
   document.getElementById('innerTabGfaSojai')?.classList.add('done');
-  document.getElementById('gcUpload').style.display = 'none';
+  await renderGcCards('all');
 
   // 메일쓰기 탭 자동 연동 - 운영 중인 캠페인 그룹 추출
   const groups = [...new Set(_gcAllData.map(r=>r.group).filter(Boolean))];
@@ -2720,8 +3054,9 @@ async function processGc(file) {
     const tot = _gcAllData.filter(r=>r.group===g).reduce((s,r)=>s+r.conv,0);
     return tot > 0;
   });
-  const groupLabel = convGroups.map(g=>gcShortName(g)+'(1그룹)').join(' + ');
+  const groupLabel = convGroups.map(g=>gcShortName(g)).join(' + ');
   mailUpdateGfa(groupLabel || groups.map(gcShortName).join(' + '));
+  await updateMailGfaImgCard();
 }
 
 async function renderGcCards(selDate) {
@@ -2779,7 +3114,7 @@ async function renderGcCards(selDate) {
       th.style.cssText = 'width:120px;min-width:120px;padding:8px 0 6px;text-align:center;font-size:12px;font-weight:500;color:var(--tx);border-bottom:1px solid var(--glass-border-s);background:var(--glass-bg)';
       th.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:3px">
         <span>${gcShortName(gName)}</span>
-        <span style="font-size:11px;font-weight:500;color:${groupTotal>0?'var(--accent)':'var(--t4)'}"">전환 ${Math.round(groupTotal)}건</span>
+        <span style="font-size:11px;font-weight:500;color:${groupTotal>0?'var(--accent)':'var(--t4)'}">전환 ${Math.round(groupTotal)}건</span>
       </div>`;
       hRow.appendChild(th);
     }
@@ -2868,18 +3203,8 @@ async function renderGcCards(selDate) {
     tbl.appendChild(tbody);
     container.appendChild(tbl);
 
-    // 메일쓰기 전일 상위성과소재 카드에 동일한 표 주입 (소재 이름 OFF 고정)
-    const mailContent = document.getElementById('mailGfaImgContent');
-    const mailImageArea = document.getElementById('mailGfaImageArea');
-    const mailImgBtn = document.getElementById('mailGfaImgBtn');
-    if (mailContent) {
-      const clone = tbl.cloneNode(true);
-      clone.style.cssText = 'width:auto;table-layout:fixed;border-collapse:collapse;font-family:\'Malgun Gothic\',sans-serif;background:#fff';
-      // 소재 이름 라벨 숨김 고정
-      clone.querySelectorAll('.gc-name-label').forEach(el => el.style.display = 'none');
-      mailContent.innerHTML = '';
-      mailContent.appendChild(clone);
-    }
+   // 메일쓰기 전일 상위성과소재 카드 → 날짜별 섹션으로 별도 업데이트
+    updateMailGfaImgCard();
     if (mailImageArea) {
       const clone2 = tbl.cloneNode(true);
       clone2.style.cssText = 'width:auto;table-layout:fixed;border-collapse:collapse;font-family:\'Malgun Gothic\',sans-serif;background:#fff';

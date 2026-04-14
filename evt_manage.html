@@ -287,6 +287,13 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   <div style="margin-left:auto;display:flex;align-items:center;gap:4px;padding:0 8px">
     <button id="top-undo" onclick="discardAll()" title="변경 취소" style="width:30px;height:28px;border:1px solid var(--bd);border-radius:7px;background:var(--gs);color:var(--t3);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;opacity:.45;transition:all .15s" disabled>↩</button>
     <button id="top-redo" onclick="redoAll()" title="되돌리기 복원" style="width:30px;height:28px;border:1px solid var(--bd);border-radius:7px;background:var(--gs);color:var(--t3);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;opacity:.45;transition:all .15s" disabled>↪</button>
+    <!-- Firebase 연동 상태 버튼 -->
+    <div id="fb-status-wrap" style="display:flex;align-items:center;gap:4px;padding:0 6px;border-left:1px solid var(--bd);border-right:1px solid var(--bd);margin:0 2px;flex-shrink:0">
+      <span id="fb-dot" style="width:7px;height:7px;border-radius:50%;background:var(--t4);flex-shrink:0;transition:background .3s"></span>
+      <span id="fb-label" style="font-size:11px;color:var(--t3);white-space:nowrap">연결 중...</span>
+      <button id="fb-sync-btn" onclick="fbSync()" title="Firebase 데이터 새로고침" style="width:24px;height:24px;border:1px solid var(--bd);border-radius:6px;background:var(--gs);color:var(--t3);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s" disabled>↺</button>
+      <button id="fb-toggle-btn" onclick="fbToggle()" title="Firebase 연결 토글" style="padding:2px 8px;height:24px;border:1px solid var(--bd);border-radius:6px;background:var(--gs);color:var(--t3);cursor:pointer;font-size:10.5px;font-weight:600;transition:all .15s">끊기</button>
+    </div>
     <button id="top-save" onclick="saveAll()" title="전체 저장" style="height:28px;padding:0 14px;border:none;border-radius:7px;background:var(--ac);color:#fff;cursor:pointer;font-size:12px;font-weight:600;opacity:.45;transition:all .15s" disabled>Firebase 저장</button>
   </div>
 </div>
@@ -747,7 +754,8 @@ function calInit(key,opts){
 
 /* calRender: inline onclick 없이 addEventListener만 사용 */
 function calRender(key){
-  const st=CAL_STATE[key];if(!st)return;
+  const st=CAL_STATE[key];
+  if(!st)return;
   const wrap=document.getElementById('cal-wrap-'+key);if(!wrap)return;
   const fd=new Date(st.vY,st.vM,1).getDay();
   const dim=new Date(st.vY,st.vM+1,0).getDate();
@@ -833,9 +841,6 @@ function calRender(key){
     const chipDiv=document.getElementById(gId+'-period-chips');
     if(chipDiv){
       chipDiv.innerHTML=buildDateChips(st.selS,st._sh+':'+st._sm,st.selE,st._eh+':'+st._em,st.uploadDate,st.deadlineDate);
-      toast('✅ 기간 칩 업데이트됨');
-    }else{
-      toast('❌ 칩 요소 못찾음: '+gId,'err');
     }
   }
 
@@ -872,12 +877,12 @@ function calRender(key){
           if(key==='reg'){
             const si=document.getElementById('ev-start');if(si)si.value=st.selS;
             const ei=document.getElementById('ev-end');if(ei)ei.value=st.selE;
+            if(typeof renderRegProds==='function')renderRegProds();
           }
           if(key.startsWith('edit-')){
             const gId=key.replace('edit-','');
             const si=document.getElementById('se-start-'+gId);if(si)si.value=st.selS;
             const ei=document.getElementById('se-end-'+gId);if(ei)ei.value=st.selE;
-            /* 카드 헤더 기간 칩 즉시 업데이트 */
             const cpDiv=document.getElementById(gId+'-period-chips');
             if(cpDiv)cpDiv.innerHTML=buildDateChips(st.selS,st._sh+':'+st._sm,st.selE,st._eh+':'+st._em,st.uploadDate,st.deadlineDate);
           }
@@ -1166,19 +1171,72 @@ async function loadAll(){
     buildMonthFilters();
     renderPropList(2);renderPropList(3);renderTimeline();renderPropList(5);renderPerf();buildTypeInfo();
     autoEvName();
-    // reg 달력 초기화
     (function(){
   const t=new Date();
   const nextM=t.getMonth()+1>=12?0:t.getMonth()+1;
   const nextY=t.getMonth()+1>=12?t.getFullYear()+1:t.getFullYear();
   calInit('reg',{startId:'ev-start',endId:'ev-end',_initY:nextY,_initM:nextM});
 })();
-    /* 칩 클릭 이벤트 위임 (onclick 대신) */
-  document.getElementById('reg-chip-upload')?.addEventListener('click',()=>{calSetMode('reg','upload');toggleDateChip('reg-expand-upload');});
+    document.getElementById('reg-chip-upload')?.addEventListener('click',()=>{calSetMode('reg','upload');toggleDateChip('reg-expand-upload');});
   document.getElementById('reg-chip-deadline')?.addEventListener('click',()=>{calSetMode('reg','deadline');toggleDateChip('reg-expand-deadline');});
   calRender('reg');
-  }catch(e){toast('로드 실패: '+e.message,'err');}
+  /* Firebase 연결 상태 업데이트 */
+  fbSetStatus('connected');
+  }catch(e){toast('로드 실패: '+e.message,'err');fbSetStatus('error');}
 }
+
+/* ── Firebase 연동 버튼 기능 ── */
+let FB_CONNECTED=true;
+function fbSetStatus(status){
+  const dot=document.getElementById('fb-dot');
+  const lbl=document.getElementById('fb-label');
+  const syncBtn=document.getElementById('fb-sync-btn');
+  const toggleBtn=document.getElementById('fb-toggle-btn');
+  if(!dot)return;
+  if(status==='connected'){
+    dot.style.background='var(--gr)';
+    lbl.textContent='Firebase 연결됨';lbl.style.color='var(--gr)';
+    syncBtn.disabled=false;syncBtn.style.opacity='1';syncBtn.style.color='var(--ac)';syncBtn.style.borderColor='rgba(58,58,240,.25)';
+    toggleBtn.textContent='끊기';toggleBtn.style.color='var(--rd)';toggleBtn.style.borderColor='rgba(212,32,32,.25)';
+    FB_CONNECTED=true;
+  }else if(status==='disconnected'){
+    dot.style.background='var(--t4)';
+    lbl.textContent='Firebase 연결 끊김';lbl.style.color='var(--t3)';
+    syncBtn.disabled=true;syncBtn.style.opacity='.4';
+    toggleBtn.textContent='연결';toggleBtn.style.color='var(--gr)';toggleBtn.style.borderColor='rgba(26,138,74,.25)';
+    FB_CONNECTED=false;
+  }else if(status==='loading'){
+    dot.style.background='var(--or)';
+    lbl.textContent='동기화 중...';lbl.style.color='var(--or)';
+    syncBtn.disabled=true;syncBtn.style.opacity='.4';
+  }else if(status==='error'){
+    dot.style.background='var(--rd)';
+    lbl.textContent='연결 오류';lbl.style.color='var(--rd)';
+    syncBtn.disabled=false;syncBtn.style.opacity='1';
+  }
+}
+window.fbSync=async function(){
+  if(!FB_CONNECTED)return;
+  fbSetStatus('loading');
+  const btn=document.getElementById('fb-sync-btn');
+  if(btn){btn.style.animation='spin .7s linear infinite';}
+  await loadAll();
+  if(btn){btn.style.animation='';}
+  toast('✅ Firebase 동기화 완료','ok');
+};
+window.fbToggle=function(){
+  if(FB_CONNECTED){
+    if(!confirm('Firebase 연결을 끊으면 저장/로드가 비활성화됩니다. 계속하시겠습니까?'))return;
+    fbSetStatus('disconnected');
+    toast('Firebase 연결 끊김 — 저장 버튼 비활성화','err');
+    document.getElementById('top-save').disabled=true;
+    document.getElementById('top-save').style.opacity='.3';
+  }else{
+    fbSetStatus('loading');
+    loadAll();
+    toast('Firebase 재연결 중...','ok');
+  }
+};
 function autoCloseExpired(){
   const today=new Date().toISOString().substring(0,10);let cnt=0;
   EVENTS.forEach(e=>{if(!e.isClosed&&e.endDate&&e.endDate<today){e.isClosed=true;markDirty('events',e._id,{isClosed:true,closedAt:new Date().toISOString()});cnt++;}});
@@ -1443,6 +1501,8 @@ window.submitProposal=async function(){
   }
   if(errs.length)toast('일부 저장 실패: '+errs.join(', '),'err');
   toast('✅ '+cnt+'개 제안 완료 → 제안 탭으로 이동');
+  /* Firebase에서 전체 재로드 후 제안 탭 이동 */
+  await loadAll();
   const tabEl=document.querySelector('.tab-bar .tab[onclick*="sw(2,"]');
   if(tabEl){showBadge('badge-2');sw(2,tabEl);clearBadge('badge-2');}
   renderPropList(2);
@@ -1830,7 +1890,7 @@ function buildSelGroupEditBlock(eName,evId,grpId,grpItems,ev,lbl,tabNum){
         </div>
       </div>
       <!-- 우: 달력 -->
-      <div class="cal-inline" id="cal-wrap-${calKey}"></div>
+<div class="cal-inline" id="cal-wrap-${calKey}"></div>
     </div>
   </div>`;
 }

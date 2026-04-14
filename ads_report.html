@@ -151,24 +151,7 @@ tr.empty-group{opacity:.35}
 .inner-tab:hover{color:var(--tx);background:var(--glass-bg-strong)}
 .inner-tab.active{background:rgba(26,86,200,0.08);color:var(--blue);font-weight:600;border-color:rgba(26,86,200,0.18)}
 .inner-content{display:none}.inner-content.active{display:block}
-/* ── 리포트 양식 모달 ── */
-.rpt-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
-.rpt-modal{background:var(--glass-bg-strong);border-radius:16px;width:680px;max-height:82vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.22);border:1px solid var(--glass-border-s)}
-.rpt-head{padding:16px 20px 14px;border-bottom:1px solid var(--glass-border-s);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.rpt-head-title{font-size:14px;font-weight:700;color:var(--tx)}
-.rpt-head-close{width:26px;height:26px;border-radius:6px;border:none;background:none;cursor:pointer;font-size:16px;color:var(--t3);display:flex;align-items:center;justify-content:center;transition:all .12s}
-.rpt-head-close:hover{background:rgba(0,0,0,0.06);color:var(--tx)}
-.rpt-toolbar{padding:7px 16px;border-bottom:1px solid var(--glass-border-s);display:flex;gap:5px;align-items:center;flex-shrink:0}
-.rpt-tool-btn{padding:3px 10px;border-radius:5px;border:1px solid var(--glass-border-s);background:var(--glass-bg);font-size:11.5px;cursor:pointer;color:var(--t2);font-family:inherit;transition:all .12s}
-.rpt-tool-btn:hover{background:var(--glass-bg-strong);color:var(--tx)}
-.rpt-tool-btn.active{background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2)}
-.rpt-tool-sep{width:1px;height:16px;background:var(--glass-border-s);margin:0 3px}
-.rpt-editor{padding:18px 22px;flex:1;overflow-y:auto;outline:none;font-family:'Inter',-apple-system,sans-serif;font-size:13px;line-height:2;color:var(--tx);white-space:pre-wrap}
-.rpt-editor:focus{outline:none}
-.rpt-foot{padding:12px 20px;border-top:1px solid var(--glass-border-s);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.rpt-foot-hint{font-size:11px;color:var(--t4)}
-.rpt-foot-btns{display:flex;gap:7px}
-.btn-teal{background:rgba(10,120,100,0.08);border:1px solid rgba(10,120,100,0.18);color:#0a7864}.btn-teal:hover{background:rgba(10,120,100,0.14)}
+
 
 /* ── 메일쓰기 ── */
 .mail-textarea{width:100%;border:1px solid var(--glass-border-s);border-radius:7px;padding:7px 10px;font-size:12px;color:var(--tx);resize:vertical;min-height:52px;background:var(--glass-bg-strong);font-family:'Malgun Gothic',sans-serif;line-height:1.7;outline:none}
@@ -197,7 +180,6 @@ tr.empty-group{opacity:.35}
     </div>
     <div class="pg-actions" style="position:relative">
       <button class="btn btn-ghost btn-sm" id="zipGuideBtn" onclick="toggleZipGuide()" style="font-size:11.5px">📦 ZIP 올리기</button>
-      <button class="btn btn-ghost" onclick="openRptModal()">📝 리포트 양식</button>
 
       <!-- ZIP 팝업 -->
       <div id="zipGuidePopup" style="display:none;position:absolute;top:calc(100% + 8px);right:0;z-index:999;background:var(--glass-bg-strong);border:1px solid var(--glass-border-s);border-radius:14px;width:450px;box-shadow:0 4px 20px rgba(0,0,0,0.12);overflow:hidden">
@@ -219,31 +201,7 @@ tr.empty-group{opacity:.35}
     </div>
   </div>
 
-  <!-- 리포트 양식 모달 -->
-  <div class="rpt-overlay" id="rptOverlay" style="display:none" onclick="if(event.target===this)closeRptModal()">
-    <div class="rpt-modal">
-      <div class="rpt-head">
-        <div class="rpt-head-title">📝 리포트 텍스트 양식</div>
-        <button class="rpt-head-close" onclick="closeRptModal()">✕</button>
-      </div>
-      <div class="rpt-toolbar">
-        <button class="rpt-tool-btn" id="rptBoldBtn" onclick="rptExec('bold')" title="굵게 (Ctrl+B)"><b>B</b></button>
-        <div class="rpt-tool-sep"></div>
-        <button class="rpt-tool-btn" onclick="rptReset()" title="초기화">↩ 초기화</button>
-        <span style="font-size:11px;color:var(--t4);margin-left:6px">텍스트 선택 후 B 클릭으로 볼드 적용</span>
-      </div>
-      <div class="rpt-editor" id="rptEditor" contenteditable="true" spellcheck="false"></div>
-      <div class="rpt-foot">
-        <span class="rpt-foot-hint">수정 내용은 자동 저장됩니다</span>
-        <div class="rpt-foot-btns">
-          <button class="btn btn-ghost btn-sm" onclick="closeRptModal()">닫기</button>
-          <button class="btn btn-teal btn-sm" id="rptCopyBtn" onclick="rptCopy()">📋 전체 복사</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 날짜 바 -->
+  <!-- 날짜 바  <!-- 날짜 바 -->
   <div style="margin-bottom:12px;position:relative">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <span style="font-size:12px;font-weight:500;color:var(--t2);white-space:nowrap">📅 리포트 날짜</span>
@@ -545,6 +503,42 @@ tr.empty-group{opacity:.35}
           <div id="mailAdvAuto" style="font-size:12px;color:var(--t3);background:var(--glass-bg);border-radius:8px;padding:10px 12px;line-height:1.9">ADV 파일 업로드 시 자동 채워짐</div>
         </div>
 
+        <!-- 리포트 양식 블럭 에디터 -->
+        <div class="card" id="mailCardRpt">
+          <div class="card-title" style="justify-content:space-between;margin-bottom:12px">
+            <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--t2)"></div>리포트 양식</span>
+            <button class="btn btn-ghost btn-sm" onclick="rptAddBlock()" style="font-size:11px;padding:3px 10px">+ 블럭 추가</button>
+          </div>
+          <div id="rptBlocks"></div>
+          <div onclick="rptAddBlock()" style="display:flex;align-items:center;gap:6px;padding:8px 0 2px;cursor:pointer;opacity:.4" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=.4">
+            <div style="flex:1;height:0.5px;background:var(--glass-border-s)"></div>
+            <span style="font-size:12px;color:var(--t2);padding:0 4px;white-space:nowrap">+ 블럭 추가</span>
+            <div style="flex:1;height:0.5px;background:var(--glass-border-s)"></div>
+          </div>
+          <div style="height:0.5px;background:var(--glass-border-s);margin:12px 0 10px"></div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+            <button class="btn btn-ghost btn-sm" onclick="rptSave()" style="font-size:11.5px;border-color:rgba(26,138,74,.3);color:#1a8a4a;background:rgba(26,138,74,.06)">💾 저장하기</button>
+            <button class="btn btn-ghost btn-sm" onclick="rptApplyAll()" style="font-size:11.5px;background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2)">⚡ 전체 적용하기</button>
+            <button class="btn btn-ghost btn-sm" onclick="rptApplyOnce()" style="font-size:11.5px;border-color:rgba(186,117,23,.3);color:#854F0B;background:rgba(186,117,23,.06)">↙ 이번만 적용하기</button>
+            <button class="btn btn-ghost btn-sm" onclick="rptCopyBlocks()" style="font-size:11.5px">📋 복사하기</button>
+            <span id="rptSavedAt" style="font-size:11px;color:var(--t3);margin-left:auto"></span>
+          </div>
+          <!-- 가이드 토글 -->
+          <div onclick="rptToggleGuide()" style="display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;padding:4px 0">
+            <span id="rptGuideArrow" style="font-size:11px;color:var(--t3);transition:transform .18s;display:inline-block">▶</span>
+            <span style="font-size:12px;color:var(--t3)">사용 가이드</span>
+          </div>
+          <div id="rptGuideBody" style="display:none;font-size:12px;color:var(--t2);line-height:1.9;background:var(--glass-bg);border-radius:8px;padding:10px 14px;margin-top:6px">
+            <div>· 블럭 클릭 → 텍스트 수정</div>
+            <div>· <b>B</b> — 볼드 &nbsp;|&nbsp; <b>← →</b> — 들여쓰기 &nbsp;|&nbsp; <b>✕</b> — 삭제</div>
+            <div>· <b>⠿</b> 드래그 — 순서 변경 &nbsp;|&nbsp; 빈 블럭 추가 — 공란 처리</div>
+            <div style="margin-top:4px">· <b style="color:#1a8a4a">저장하기</b> — Firebase 저장 (다음에도 유지)</div>
+            <div>· <b style="color:var(--accent)">전체 적용하기</b> — 저장 + 미리보기 즉시 반영</div>
+            <div>· <b style="color:#854F0B">이번만 적용하기</b> — 저장 없이 현재 미리보기만 반영</div>
+            <div>· <b>복사하기</b> — 현재 양식 클립보드 복사</div>
+          </div>
+        </div>
+
       </div>
 
       <!-- 오른쪽: 미리보기 + 변경 로그 -->
@@ -778,7 +772,9 @@ async function zgUpload(e, ds) {
     lbl.style.borderStyle='solid'; lbl.style.borderColor='#97C459';
     lbl.style.background='rgba(63,160,68,0.08)'; lbl.style.color='#3B6D11';
     lbl.querySelector('input').disabled=true;
-    lbl.childNodes[lbl.childNodes.length-1].textContent = '✅ '+perfDateDisplay(dateKey)+' 업로드 완료';
+    // 텍스트 노드 안전하게 업데이트
+    const txtNodes = [...lbl.childNodes].filter(n => n.nodeType === 3 && n.textContent.trim());
+    if (txtNodes.length) txtNodes[txtNodes.length-1].textContent = ' ✅ '+perfDateDisplay(dateKey)+' 업로드 완료';
   }
   document.querySelectorAll('#zgDateTabs div').forEach(t => {
     if (t.dataset.ds === ds) { t.style.background='rgba(63,160,68,0.12)'; t.style.color='#3B6D11'; t.style.borderColor='#97C459'; }
@@ -841,6 +837,18 @@ async function processDailyZip(zipFile, forceDateKey) {
   let msg = uniqueDone.length ? `✅ ${perfDateDisplay(dateKey)} — ${uniqueDone.join(', ')} 완료` : '⚠️ 매칭 파일 없음 — prefix 확인';
   if (fail.length) msg += ` ❌ 실패: ${[...new Set(fail)].join(', ')}`;
   showToast(msg);
+
+  // 서브탭 자동 표시 (날짜 적용 전 ZIP 올려도 탭 보이게)
+  const subWrap = document.getElementById('subTabsWrap');
+  const guide   = document.getElementById('noDateGuide');
+  if (subWrap) subWrap.style.display = '';
+  if (guide)   guide.style.display   = 'none';
+  if (!document.querySelector('.sub-content.active')) {
+    const firstContent = document.getElementById('s-bk');
+    const firstTab     = document.querySelector('#mainTabBk');
+    if (firstContent) firstContent.classList.add('active');
+    if (firstTab)     firstTab.classList.add('active');
+  }
 }
 
 /* ══════════════════════════
@@ -1805,6 +1813,239 @@ async function mailCopy() {
   }
 }
 
+/* ══════════════════════════
+   리포트 양식 블럭 에디터
+══════════════════════════ */
+const RPT_BLOCKS_KEY = 'yozm_rpt_blocks_v1';
+
+const RPT_BLOCKS_DEFAULT = [
+  {text:'안녕하세요.', bold:false, indent:0},
+  {text:'올리브파트너스 김규빈입니다.', bold:false, indent:0},
+  {text:'.', bold:false, indent:0},
+  {text:'광고 실적 보고 드립니다.', bold:false, indent:0},
+  {text:'.', bold:false, indent:0},
+  {text:'* 브랜드검색', bold:true, indent:0},
+  {text:'-  광고그룹 전환', bold:false, indent:1},
+  {text:'→ 운영 중인 광고그룹/ 전환발생 키워드소재_노출순', bold:false, indent:2},
+  {text:'- MO:', bold:false, indent:3},
+  {text:'- PC:', bold:false, indent:3},
+  {text:'→ 금일 운영 이미지소재', bold:false, indent:2},
+  {text:'.', bold:false, indent:0},
+  {text:'* 성과형DA(GFA)', bold:true, indent:0},
+  {text:'- 지난 기간,  매출상시 + 플레인상시 → 2캠페인 운영 진행.', bold:false, indent:1},
+  {text:'→ 전일 상위성과소재 이미지', bold:false, indent:2},
+  {text:'.', bold:false, indent:0},
+  {text:'* ADVoost', bold:true, indent:0},
+  {text:'- 광고계정 전환 : DA (건) / SA (건)', bold:false, indent:1},
+  {text:'.', bold:false, indent:0},
+  {text:'.', bold:false, indent:0},
+  {text:'* 브랜드 콘텐츠 NEWS', bold:false, indent:0},
+  {text:'* 프로모션 제안', bold:false, indent:0},
+  {text:'.', bold:false, indent:0},
+  {text:'자세한 사항은 첨부 파일 확인 요청 드립니다.', bold:false, indent:0},
+  {text:'.', bold:false, indent:0},
+  {text:'감사합니다.', bold:false, indent:0},
+  {text:'김규빈 드림.', bold:false, indent:0},
+  {text:'.', bold:false, indent:0},
+];
+
+let _rptDragSrc = null;
+
+function rptRenderBlocks(blocks) {
+  const container = document.getElementById('rptBlocks');
+  if (!container) return;
+  container.innerHTML = '';
+  blocks.forEach((blk, idx) => {
+    const row = rptMakeRow(blk);
+    container.appendChild(row);
+  });
+}
+
+function rptMakeRow(blk) {
+  const indentPx = [0, 20, 40, 60][blk.indent || 0];
+  const row = document.createElement('div');
+  row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:2px 0';
+  row.draggable = true;
+  row.addEventListener('dragstart', e => { _rptDragSrc = row; e.dataTransfer.effectAllowed = 'move'; });
+  row.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; row.style.borderTop = '2px solid var(--accent)'; });
+  row.addEventListener('dragleave', () => row.style.borderTop = '');
+  row.addEventListener('drop', e => {
+    e.preventDefault(); row.style.borderTop = '';
+    if (_rptDragSrc && _rptDragSrc !== row) {
+      const parent = row.parentNode;
+      parent.insertBefore(_rptDragSrc, row);
+    }
+  });
+  row.addEventListener('dragend', () => { if(_rptDragSrc) _rptDragSrc = null; document.querySelectorAll('#rptBlocks > div').forEach(r => r.style.borderTop = ''); });
+
+  const handle = document.createElement('span');
+  handle.textContent = '⠿';
+  handle.style.cssText = 'font-size:13px;color:var(--t3);cursor:grab;padding:0 2px;opacity:.3;user-select:none;flex-shrink:0';
+
+  const textEl = document.createElement('div');
+  textEl.contentEditable = 'true';
+  textEl.style.cssText = `flex:1;font-size:13px;padding:3px 7px;padding-left:${7 + indentPx}px;border-radius:5px;border:1px solid transparent;cursor:text;line-height:1.6;font-family:inherit;min-height:26px;word-break:break-all;color:var(--tx);font-weight:${blk.bold?'600':'400'}`;
+  textEl.setAttribute('spellcheck', 'false');
+  textEl.textContent = blk.text;
+  textEl.dataset.indent = blk.indent || 0;
+  textEl.dataset.bold = blk.bold ? '1' : '0';
+  textEl.addEventListener('mouseenter', () => textEl.style.background = 'var(--glass-bg)');
+  textEl.addEventListener('mouseleave', () => { if (document.activeElement !== textEl) textEl.style.background = ''; });
+  textEl.addEventListener('focus', () => { textEl.style.background = 'var(--glass-bg-strong)'; textEl.style.borderColor = 'var(--glass-border-s)'; });
+  textEl.addEventListener('blur',  () => { textEl.style.background = ''; textEl.style.borderColor = 'transparent'; });
+
+  const actions = document.createElement('div');
+  actions.style.cssText = 'display:flex;gap:3px;opacity:0;transition:opacity .12s;flex-shrink:0';
+  row.addEventListener('mouseenter', () => actions.style.opacity = '1');
+  row.addEventListener('mouseleave', () => actions.style.opacity = '0');
+
+  const makeActBtn = (label, fn, extra) => {
+    const btn = document.createElement('button');
+    btn.textContent = label;
+    btn.style.cssText = `padding:2px 7px;border-radius:4px;border:0.5px solid var(--glass-border-s);background:var(--glass-bg);font-size:11px;cursor:pointer;color:var(--t2);white-space:nowrap;${extra||''}`;
+    btn.onclick = () => fn(btn, textEl, row);
+    return btn;
+  };
+
+  const boldBtn = makeActBtn('B', (btn, el) => {
+    const on = el.dataset.bold === '1';
+    el.dataset.bold = on ? '0' : '1';
+    el.style.fontWeight = on ? '400' : '600';
+    btn.style.fontWeight = on ? '' : '600';
+    btn.style.color = on ? '' : 'var(--accent)';
+  }, blk.bold ? 'font-weight:600;color:var(--accent)' : '');
+
+  const indLeft = makeActBtn('←', (btn, el, r) => {
+    const cur = parseInt(el.dataset.indent || 0);
+    const next = Math.max(0, cur - 1);
+    el.dataset.indent = next;
+    el.style.paddingLeft = (7 + [0,20,40,60][next]) + 'px';
+  });
+  const indRight = makeActBtn('→', (btn, el, r) => {
+    const cur = parseInt(el.dataset.indent || 0);
+    const next = Math.min(3, cur + 1);
+    el.dataset.indent = next;
+    el.style.paddingLeft = (7 + [0,20,40,60][next]) + 'px';
+  });
+  const delBtn = makeActBtn('✕', (btn, el, r) => r.remove());
+  delBtn.addEventListener('mouseenter', () => { delBtn.style.color='#d42020'; delBtn.style.borderColor='rgba(212,32,32,.3)'; });
+  delBtn.addEventListener('mouseleave', () => { delBtn.style.color='var(--t2)'; delBtn.style.borderColor='var(--glass-border-s)'; });
+
+  [boldBtn, indLeft, indRight, delBtn].forEach(b => actions.appendChild(b));
+  [handle, textEl, actions].forEach(el => row.appendChild(el));
+  return row;
+}
+
+function rptAddBlock() {
+  const container = document.getElementById('rptBlocks');
+  if (!container) return;
+  const row = rptMakeRow({text:'', bold:false, indent:0});
+  container.appendChild(row);
+  row.querySelector('[contenteditable]').focus();
+}
+
+function rptGetBlocks() {
+  const rows = document.querySelectorAll('#rptBlocks > div');
+  return [...rows].map(row => {
+    const el = row.querySelector('[contenteditable]');
+    return {
+      text: el ? el.textContent : '',
+      bold: el ? el.dataset.bold === '1' : false,
+      indent: el ? parseInt(el.dataset.indent || 0) : 0,
+    };
+  });
+}
+
+function rptBlocksToHtml(blocks) {
+  return blocks.map(blk => {
+    const sp = '&nbsp;'.repeat((blk.indent || 0) * 4);
+    const text = blk.text.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    return blk.bold ? `<b>${sp}${text}</b>` : `${sp}${text}`;
+  }).join('<br>');
+}
+
+function rptBlocksToText(blocks) {
+  return blocks.map(blk => {
+    const sp = '    '.repeat(blk.indent || 0);
+    return sp + blk.text;
+  }).join('\n');
+}
+
+async function rptSave() {
+  const blocks = rptGetBlocks();
+  try { localStorage.setItem(RPT_BLOCKS_KEY, JSON.stringify(blocks)); } catch {}
+  if (window._adsFs) {
+    try {
+      await window._adsFs.saveTemplate(JSON.stringify(blocks));
+      showToast('💾 Firebase에 저장됨');
+    } catch { showToast('💾 로컬 저장됨'); }
+  } else {
+    showToast('💾 저장됨');
+  }
+  const el = document.getElementById('rptSavedAt');
+  if (el) el.textContent = '방금 저장됨';
+}
+
+function rptApplyOnce() {
+  const blocks = rptGetBlocks();
+  const preview = document.getElementById('mailPreview');
+  if (preview) { preview.style.whiteSpace = 'normal'; preview.innerHTML = rptBlocksToHtml(blocks); }
+  showToast('↙ 미리보기에 반영됨');
+}
+
+async function rptApplyAll() {
+  await rptSave();
+  rptApplyOnce();
+  showToast('⚡ 저장 + 미리보기 반영 완료');
+}
+
+async function rptCopyBlocks() {
+  const blocks = rptGetBlocks();
+  const html = rptBlocksToHtml(blocks);
+  const plain = rptBlocksToText(blocks);
+  try {
+    await navigator.clipboard.write([new ClipboardItem({
+      'text/html':  new Blob([html],  {type:'text/html'}),
+      'text/plain': new Blob([plain], {type:'text/plain'}),
+    })]);
+    showToast('📋 복사됨 — 메일에 Ctrl+V');
+  } catch {
+    await navigator.clipboard.writeText(plain).catch(()=>{});
+    showToast('📋 텍스트로 복사됨');
+  }
+}
+
+function rptToggleGuide() {
+  const body = document.getElementById('rptGuideBody');
+  const arrow = document.getElementById('rptGuideArrow');
+  if (!body) return;
+  const open = body.style.display === 'block';
+  body.style.display = open ? 'none' : 'block';
+  if (arrow) arrow.style.transform = open ? '' : 'rotate(90deg)';
+}
+
+// 초기 로드
+(function rptInit() {
+  function load() {
+    // Firebase 우선
+    if (window._adsFs) {
+      window._adsFs.loadTemplate().then(saved => {
+        let blocks = RPT_BLOCKS_DEFAULT;
+        if (saved) { try { blocks = JSON.parse(saved); } catch {} }
+        else { try { const ls = localStorage.getItem(RPT_BLOCKS_KEY); if(ls) blocks = JSON.parse(ls); } catch {} }
+        rptRenderBlocks(blocks);
+      }).catch(() => {
+        let blocks = RPT_BLOCKS_DEFAULT;
+        try { const ls = localStorage.getItem(RPT_BLOCKS_KEY); if(ls) blocks = JSON.parse(ls); } catch {}
+        rptRenderBlocks(blocks);
+      });
+    } else {
+      setTimeout(load, 200);
+    }
+  }
+  load();
+})();
+
 // 변경 로그
 function mailSaveLog() {
   const memo = (document.getElementById('mailLogMemo')?.value||'').trim();
@@ -1840,250 +2081,6 @@ function mailShowLog() {
 
 // 페이지 로드 시 로그 렌더
 mailRenderLog();
-
-const RPT_KEY = 'yozm_rpt_template_v1';
-const RPT_DEFAULT = `안녕하세요.\n올리브파트너스 김규빈입니다.\n광고 실적 보고 드립니다.\n* 브랜드검색\n-  광고그룹 전환\n    → 운영 중인 광고그룹/ 전환발생 키워드소재_노출순 \n        - MO:\n        - PC:\n    → 금일 운영 이미지소재\n* 성과형DA(GFA)\n- 현재,  매출상시(1그룹) + 플레인상시(1그룹) + 말차상시(1그룹) + 마시는상시(1그룹) → 4 캠페인 운영 중.\n    → 전일 상위성과소재 이미지\n* ADVoost \n- 광고계정 전환 : DA (건) / SA (건)\n.\n.\n.\n* 브랜드 콘텐츠 NEWS \n* 프로모션 제안 \n자세한 사항은 첨부 파일 확인 요청 드립니다.\n감사합니다.\n김규빈 드림.\n.`;
-
-function rptTextToHtml(text) {
-  return text.split('\n').map((line, i, arr) => {
-    const spaces = (line.match(/^( +)/) || ['',''])[1].length;
-    const rest = line.slice(spaces);
-    const nbsp = '&nbsp;'.repeat(spaces);
-    return nbsp + (rest || '') + (i < arr.length - 1 ? '<br>' : '');
-  }).join('\n');
-}
-
-function rptHtmlToText(html) {
-  return html
-    .replace(/<b>([\s\S]*?)<\/b>/gi, '$1')
-    .replace(/<strong>([\s\S]*?)<\/strong>/gi, '$1')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/<br\s*\/?>/gi, '\n')          // <br> → \n
-    .replace(/<div><br\s*\/?><\/div>/gi, '\n') // <div><br></div> → \n
-    .replace(/<\/div>\s*<div>/gi, '\n')     // </div><div> → \n
-    .replace(/<div>/gi, '\n')               // <div> → \n
-    .replace(/<\/div>/gi, '')               // </div> 제거
-    .replace(/<[^>]+>/g, '')               // 나머지 태그 제거
-    .replace(/\n{3,}/g, '\n\n')            // 3줄 이상 공백 → 2줄로 정리
-    .trim();
-}
-
-function rptLoad() {
-  // localStorage fallback (Firestore는 async로 별도 처리)
-  try { const s = localStorage.getItem(RPT_KEY); if (s) return s; } catch {}
-  return rptTextToHtml(RPT_DEFAULT);
-}
-
-function rptSave() {
-  const html = document.getElementById('rptEditor').innerHTML;
-  // localStorage 동시 저장 (오프라인 fallback)
-  try { localStorage.setItem(RPT_KEY, html); } catch {}
-  // Firestore 저장
-  if (window._adsFs) {
-    window._adsFs.saveTemplate(html).catch(() => {});
-  }
-}
-
-async function openRptModal() {
-  const ed = document.getElementById('rptEditor');
-  const overlay = document.getElementById('rptOverlay');
-  overlay.style.display = 'flex';
-
-  // 먼저 로컬 데이터로 빠르게 표시
-  ed.innerHTML = rptLoad();
-  setTimeout(() => ed.focus(), 80);
-
-  // 이후 Firestore에서 최신 버전 fetch
-  if (window._adsFs) {
-    try {
-      const cloudHtml = await window._adsFs.loadTemplate();
-      if (cloudHtml) {
-        ed.innerHTML = cloudHtml;
-        // 로컬에도 업데이트
-        try { localStorage.setItem(RPT_KEY, cloudHtml); } catch {}
-      }
-    } catch {}
-  }
-}
-
-function closeRptModal() {
-  rptSave();
-  document.getElementById('rptOverlay').style.display = 'none';
-}
-
-function rptExec(cmd) {
-  document.getElementById('rptEditor').focus();
-  document.execCommand(cmd, false, null);
-}
-
-function rptReset() {
-  if (!confirm('양식을 기본값으로 초기화할까요?')) return;
-  document.getElementById('rptEditor').innerHTML = rptTextToHtml(RPT_DEFAULT);
-  rptSave();
-}
-
-async function rptCopy() {
-  const text = rptHtmlToText(document.getElementById('rptEditor').innerHTML);
-  try {
-    await navigator.clipboard.writeText(text);
-    const btn = document.getElementById('rptCopyBtn');
-    const orig = btn.textContent;
-    btn.textContent = '✅ 복사됨!';
-    setTimeout(() => { btn.textContent = orig; }, 1600);
-  } catch { showToast('❌ 복사 실패'); }
-}
-
-document.addEventListener('keydown', e => {
-  if (document.getElementById('rptOverlay')?.style.display !== 'none') {
-    if (e.key === 'Escape') closeRptModal();
-  }
-});
-
-/* ── 메인 탭 ── */
-function sw(id, el) {
-  document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('t-' + id).classList.add('active');
-}
-const _mh = location.hash.replace('#','');
-if (_mh === 'monthly') { const el = document.querySelector(".tab[onclick*='monthly']"); if(el) sw('monthly',el); }
-
-/* ── 서브 탭 ── */
-function swSub(id, el) {
-  document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('s-' + id).classList.add('active');
-}
-
-/* ── 브검 내부 탭 (브검 성과 / 브검 키워드) ── */
-function swBkInner(id, el) {
-  ['bkPerf','bkKw'].forEach(p => { const el2=document.getElementById(p); if(el2) el2.style.display='none'; });
-  el.closest('.inner-tabs').querySelectorAll('.inner-tab').forEach(t => {
-    t.classList.remove('active');
-    t.style.borderBottomColor = 'transparent';
-    t.style.color = 'var(--t2)';
-  });
-  el.classList.add('active');
-  el.style.borderBottomColor = 'var(--accent)';
-  el.style.color = 'var(--accent)';
-  const target = document.getElementById(id);
-  if (target) target.style.display = '';
-}
-
-/* ── GFA 내부 탭 (GFA 성과 / GFA 소재) ── */
-function swGfaInner(id, el) {
-  ['gfaPerf','gfaSojai'].forEach(p => { const el2=document.getElementById(p); if(el2) el2.style.display='none'; });
-  el.closest('.inner-tabs').querySelectorAll('.inner-tab').forEach(t => {
-    t.classList.remove('active');
-    t.style.borderBottomColor = 'transparent';
-    t.style.color = 'var(--t2)';
-  });
-  el.classList.add('active');
-  el.style.borderBottomColor = 'var(--accent)'; el.style.color = 'var(--accent)';
-  const target = document.getElementById(id);
-  if (target) target.style.display = '';
-}
-
-/* ── 내부 탭 (GFA 소재 내 소재성과/이미지관리) ── */
-function swInner(id, el) {
-  const parent = document.getElementById('gfaSojai');
-  if (parent) {
-    parent.querySelectorAll('.inner-tab').forEach(t => t.classList.remove('active'));
-    parent.querySelectorAll('.inner-content').forEach(c => c.classList.remove('active'));
-  }
-  el.classList.add('active');
-  const target = document.getElementById(id);
-  if (target) target.classList.add('active');
-}
-
-function markTabDone(tabId) {
-  const tab = document.getElementById(tabId);
-  if (tab) tab.classList.add('done');
-}
-function markInnerTabDone(el) {
-  if (el) el.classList.add('done');
-}
-
-let _toastTimer;
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  if (!t) return;
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout(_toastTimer);
-  const dur = msg.includes('❌') || msg.includes('⚠️') ? 3500 : 1800;
-  _toastTimer = setTimeout(() => t.classList.remove('show'), dur);
-}
-
-function parseCSVLine(line) {
-  const cols = []; let cur = '', inQ = false;
-  for (let i = 0; i < line.length; i++) {
-    const c = line[i];
-    if (c === '"') { if (inQ && line[i+1] === '"') { cur += '"'; i++; } else inQ = !inQ; }
-    else if (c === ',' && !inQ) { cols.push(cur); cur = ''; }
-    else cur += c;
-  }
-  cols.push(cur); return cols;
-}
-function parseNum(v) {
-  if (v === null || v === undefined) return 0;
-  return parseFloat(String(v).replace(/[^0-9.\-]/g,'')) || 0;
-}
-const fmt = n => Math.round(n).toLocaleString('ko-KR');
-const raw = n => String(Math.round(n));
-
-window.copyToClip = function(text, el) {
-  navigator.clipboard.writeText(String(text)).then(() => {
-    if (el) {
-      const o = el.style.background;
-      el.style.background = 'rgba(29,158,117,0.15)';
-      setTimeout(() => el.style.background = o, 600);
-    }
-    showToast('✅ ' + String(text).substring(0, 25));
-  }).catch(() => showToast('❌ 복사 실패'));
-};
-
-function bindCellCopy(scope) {
-  // 행 클릭 → 숨겨진 버튼의 data-row 복사 + 플래시
-  scope.querySelectorAll('tr.tr-copyable').forEach(tr => {
-    tr.onclick = e => {
-      if (e.target.tagName === 'TD' && e.target.hasAttribute('onclick')) return;
-      const btn = tr.querySelector('.row-copy-btn');
-      if (!btn) return;
-      navigator.clipboard.writeText(btn.dataset.row).then(() => {
-        tr.classList.add('tr-flash');
-        showToast('✅ 행 복사 완료');
-        setTimeout(() => tr.classList.remove('tr-flash'), 700);
-      });
-    };
-  });
-}
-
-function buildTableRows(tbody, rows, firstColFn) {
-  tbody.innerHTML = '';
-  rows.forEach(([label, v]) => {
-    const vals = [v.imp, v.clk, v.cost, v.conv, v.rev];
-    const tr = document.createElement('tr');
-    tr.className = 'tr-copyable';
-    tr.innerHTML =
-      `<td style="cursor:default">${firstColFn ? firstColFn(label) : label}</td>` +
-      vals.map(n => `<td data-val="${raw(n)}" onclick="copyToClip(${raw(n)},this)">${fmt(n)}</td>`).join('') +
-      `<td><button class="row-copy-btn" data-row="${vals.map(raw).join('\t')}">복사</button></td>`;
-    tbody.appendChild(tr);
-  });
-}
-
-function buildTfoot(tfoot, rows) {
-  const tot = {imp:0,clk:0,cost:0,conv:0,rev:0};
-  rows.forEach(([,v]) => { tot.imp+=v.imp; tot.clk+=v.clk; tot.cost+=v.cost; tot.conv+=v.conv; tot.rev+=v.rev; });
-  const tv = [tot.imp,tot.clk,tot.cost,tot.conv,tot.rev];
-  tfoot.innerHTML =
-    `<tr class="tr-copyable"><td>합계</td>` +
-    tv.map(n => `<td data-val="${raw(n)}" onclick="copyToClip(${raw(n)},this)">${fmt(n)}</td>`).join('') +
-    `<td><button class="row-copy-btn" data-row="${tv.map(raw).join('\t')}">복사</button></td></tr>`;
-  return tot;
-}
 
 /* ══════════════════════════
    브검 리포트 (날짜별 다중)

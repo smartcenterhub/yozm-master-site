@@ -827,58 +827,62 @@ function calRender(key){
       `}
     </div>`;
 
-  /* ── 이벤트 위임: innerHTML 교체 후 한 번만 등록 ── */
-  /* 날짜 클릭 */
-  const grid=wrap.querySelector('.cal-grid');
-  if(grid){
-    grid.addEventListener('click',e=>{
-      const cell=e.target.closest('[data-date]');
-      if(cell)calClick(key,cell.dataset.date);
-    });
+  /* edit- 키: 행사기간 날짜 선택 시 카드 헤더 기간 칩 즉시 동기화 */
+  if(key.startsWith('edit-')&&isPeriod&&st.selS&&st.selE){
+    const gId=key.replace('edit-','');
+    const chipDiv=document.getElementById(gId+'-period-chips');
+    if(chipDiv){
+      chipDiv.innerHTML=buildDateChips(st.selS,st._sh+':'+st._sm,st.selE,st._eh+':'+st._em,st.uploadDate,st.deadlineDate);
+      toast('✅ 기간 칩 업데이트됨');
+    }else{
+      toast('❌ 칩 요소 못찾음: '+gId,'err');
+    }
   }
-  /* 네비게이션 버튼 */
-  wrap.querySelectorAll('.cal-i-nav').forEach(btn=>{
-    btn.addEventListener('click',()=>calNav(key,+btn.dataset.dir));
-  });
-  /* 빠른 선택 */
-  wrap.querySelectorAll('.cal-qb').forEach(btn=>{
-    btn.addEventListener('click',()=>calQuick(key,btn.dataset.quick));
-  });
-  /* 시간 입력 */
-  wrap.querySelectorAll('.cal-ti').forEach(inp=>{
-    inp.addEventListener('input',()=>calTimeChg(key,inp.dataset.calT,inp.value));
-  });
-  /* 모드 탭 클릭 위임 */
-  const modeTabRow=wrap.querySelector('[data-calmode]')?.parentElement;
-  if(modeTabRow){
-    modeTabRow.addEventListener('click',e=>{
-      const t=e.target.closest('[data-calmode]');
-      if(t){
-        const nextMode=t.dataset.calmode;
-        const st=CAL_STATE[key];
-        /* 현재 모드 자동 적용 */
+
+  /* ── 이벤트 위임: wrap에 단 한 번만 등록 (innerHTML 교체해도 살아있음) ── */
+  if(!wrap._evtBound){
+    wrap._evtBound=true;
+
+    wrap.addEventListener('click',e=>{
+      const st=CAL_STATE[key];if(!st)return;
+
+      /* 날짜 셀 */
+      const cell=e.target.closest('[data-date]');
+      if(cell){calClick(key,cell.dataset.date);return;}
+
+      /* 네비게이션 */
+      const nav=e.target.closest('.cal-i-nav');
+      if(nav){calNav(key,+nav.dataset.dir);return;}
+
+      /* 빠른 선택 */
+      const qb=e.target.closest('.cal-qb');
+      if(qb){calQuick(key,qb.dataset.quick);return;}
+
+      /* 모드 탭 */
+      const modeTab=e.target.closest('[data-calmode]');
+      if(modeTab){
+        const nextMode=modeTab.dataset.calmode;
         if(st.mode==='upload'&&st.uploadDate){
           const u=document.getElementById('ev-upload-date');if(u)u.value=st.uploadDate;
-          /* edit 키: saveSelEdit에서 calSt로 읽으므로 별도 처리 불필요 */
           calUpdateChips(key);
         }else if(st.mode==='deadline'&&st.deadlineDate){
           const d=document.getElementById('ev-deadline');if(d)d.value=st.deadlineDate;
           calUpdateChips(key);
         }else if(st.mode==='period'&&st.selS&&st.selE){
-          /* reg 키: hidden input 업데이트 */
           if(key==='reg'){
             const si=document.getElementById('ev-start');if(si)si.value=st.selS;
             const ei=document.getElementById('ev-end');if(ei)ei.value=st.selE;
           }
-          /* edit 키: hidden input 업데이트 */
           if(key.startsWith('edit-')){
             const gId=key.replace('edit-','');
             const si=document.getElementById('se-start-'+gId);if(si)si.value=st.selS;
             const ei=document.getElementById('se-end-'+gId);if(ei)ei.value=st.selE;
+            /* 카드 헤더 기간 칩 즉시 업데이트 */
+            const cpDiv=document.getElementById(gId+'-period-chips');
+            if(cpDiv)cpDiv.innerHTML=buildDateChips(st.selS,st._sh+':'+st._sm,st.selE,st._eh+':'+st._em,st.uploadDate,st.deadlineDate);
           }
           calUpdateChips(key);
         }
-        /* 업로드일·마감일 탭은 이번달로, 행사기간은 다음달로 */
         if(nextMode==='upload'||nextMode==='deadline'){
           const now=new Date();st.vY=now.getFullYear();st.vM=now.getMonth();
         }else if(nextMode==='period'){
@@ -887,58 +891,56 @@ function calRender(key){
           st.vY=now.getMonth()+1>11?now.getFullYear()+1:now.getFullYear();
         }
         st.mode=nextMode;calRender(key);
+        return;
+      }
+
+      /* ✓ 적용 버튼 */
+      const confirmBtn=e.target.closest('[data-confirm]');
+      if(confirmBtn){
+        if(st.mode==='upload'){
+          if(!st.uploadDate){confirmBtn.textContent='날짜 선택 필요';setTimeout(()=>{confirmBtn.textContent='✓ 적용';},1400);return;}
+          const u=document.getElementById('ev-upload-date');if(u)u.value=st.uploadDate;
+          calUpdateChips(key);
+          if(key.startsWith('edit-')){const gId=key.replace('edit-','');saveDateChip(gId,'upload','업로드',st.uploadDate);}
+          confirmBtn.textContent='✓';confirmBtn.style.background='var(--gr)';
+          setTimeout(()=>{confirmBtn.textContent='✓ 적용';confirmBtn.style.background='var(--gr)';st.mode='deadline';calRender(key);},900);
+          return;
+        }
+        if(st.mode==='deadline'){
+          if(!st.deadlineDate){confirmBtn.textContent='날짜 선택 필요';setTimeout(()=>{confirmBtn.textContent='✓ 적용';},1400);return;}
+          const d=document.getElementById('ev-deadline');if(d)d.value=st.deadlineDate;
+          calUpdateChips(key);
+          if(key.startsWith('edit-')){const gId=key.replace('edit-','');saveDateChip(gId,'deadline','마감',st.deadlineDate);}
+          confirmBtn.textContent='✓';confirmBtn.style.background='var(--gr)';
+          setTimeout(()=>{confirmBtn.textContent='✓ 적용';confirmBtn.style.background='var(--gr)';st.mode='period';calRender(key);},900);
+          return;
+        }
+        /* period */
+        if(!st.selS||!st.selE){
+          confirmBtn.textContent='날짜 선택 필요';
+          setTimeout(()=>{confirmBtn.textContent='✓ 적용';},1500);
+          return;
+        }
+        if(key==='reg'&&typeof renderRegProds==='function')renderRegProds();
+        if(key.startsWith('edit-')){
+          const gId=key.replace('edit-','');
+          if(st.selS){const si=document.getElementById('se-start-'+gId);if(si)si.value=st.selS;}
+          if(st.selE){const ei=document.getElementById('se-end-'+gId);if(ei)ei.value=st.selE;}
+          const cpDiv=document.getElementById(gId+'-period-chips');
+          if(cpDiv)cpDiv.innerHTML=buildDateChips(st.selS,st._sh+':'+st._sm,st.selE,st._eh+':'+st._em,st.uploadDate,st.deadlineDate);
+        }
+        calUpdateChips(key);
+        confirmBtn.textContent='✓ 적용됨';
+        confirmBtn.style.background='var(--gr)';
+        setTimeout(()=>{confirmBtn.textContent='✓ 적용';confirmBtn.style.background='var(--ac)';},1800);
+        return;
       }
     });
-  }
 
-  /* ✓ 적용 버튼 */
-  const confirmBtn=wrap.querySelector('[data-confirm="1"]');
-  if(confirmBtn){
-    confirmBtn.addEventListener('click',()=>{
-      const st=CAL_STATE[key];
-      if(st.mode==='upload'){
-        if(!st.uploadDate){confirmBtn.textContent='날짜 선택 필요';setTimeout(()=>{confirmBtn.textContent='✓ 적용';},1400);return;}
-        const u=document.getElementById('ev-upload-date');if(u)u.value=st.uploadDate;
-        calUpdateChips(key);
-        confirmBtn.textContent='✓';confirmBtn.style.background='var(--gr)';
-        setTimeout(()=>{confirmBtn.textContent='✓ 적용';confirmBtn.style.background='var(--gr)';st.mode='deadline';calRender(key);},900);
-        return;
-      }
-      if(st.mode==='deadline'){
-        if(!st.deadlineDate){confirmBtn.textContent='날짜 선택 필요';setTimeout(()=>{confirmBtn.textContent='✓ 적용';},1400);return;}
-        const d=document.getElementById('ev-deadline');if(d)d.value=st.deadlineDate;
-        calUpdateChips(key);
-        confirmBtn.textContent='✓';confirmBtn.style.background='var(--gr)';
-        setTimeout(()=>{confirmBtn.textContent='✓ 적용';confirmBtn.style.background='var(--gr)';st.mode='period';calRender(key);},900);
-        return;
-      }
-      /* period */
-      if(!st.selS||!st.selE){
-        confirmBtn.textContent='날짜 선택 필요';
-        setTimeout(()=>{confirmBtn.textContent='✓ 적용';},1500);
-        return;
-      }
-      if(key==='reg'&&typeof renderRegProds==='function')renderRegProds();
-      if(key.startsWith('edit-')){
-        const gId=key.replace('edit-','');
-        /* 수정폼 내 날짜 hidden input 업데이트 */
-        const st2=CAL_STATE[key];
-        if(st2?.selS){const si=document.getElementById('se-start-'+gId);if(si)si.value=st2.selS;}
-        if(st2?.selE){const ei=document.getElementById('se-end-'+gId);if(ei)ei.value=st2.selE;}
-        /* 카드 헤더 기간 칩 즉시 업데이트 */
-        const hd=document.getElementById(gId+'-hd');
-        if(hd){
-          const chipRow=hd.querySelector('.egrphd > div:nth-child(2)');
-          if(chipRow&&typeof buildDateChips==='function'){
-            const cs=CAL_STATE[key];
-            chipRow.innerHTML=buildDateChips(cs.selS,cs._sh+':'+cs._sm,cs.selE,cs._eh+':'+cs._em,cs.uploadDate,cs.deadlineDate);
-          }
-        }
-      }
-      calUpdateChips(key);
-      confirmBtn.textContent='✓ 적용됨';
-      confirmBtn.style.background='var(--gr)';
-      setTimeout(()=>{confirmBtn.textContent='✓ 적용';confirmBtn.style.background='var(--ac)';},1800);
+    /* 시간 입력 */
+    wrap.addEventListener('input',e=>{
+      const ti=e.target.closest('.cal-ti');
+      if(ti)calTimeChg(key,ti.dataset.calT,ti.value);
     });
   }
 
@@ -976,6 +978,12 @@ function calClick(key,s){
     else{if(s<st.selS){st.selE=st.selS;st.selS=s;}else st.selE=s;st.clicking='start';}
     if(st.startId)document.getElementById(st.startId).value=st.selS||'';
     if(st.endId)document.getElementById(st.endId).value=st.selE||'';
+    /* 두 날짜 모두 선택되면 카드 헤더 기간 칩 즉시 업데이트 */
+    if(key.startsWith('edit-')&&st.selS&&st.selE){
+      const gId=key.replace('edit-','');
+      const cpDiv=document.getElementById(gId+'-period-chips');
+      if(cpDiv)cpDiv.innerHTML=buildDateChips(st.selS,st._sh+':'+st._sm,st.selE,st._eh+':'+st._em,st.uploadDate,st.deadlineDate);
+    }
   }else if(st.mode==='upload'){
     st.uploadDate=s;
     /* 업로드일: 클릭 즉시 적용 */
@@ -1259,7 +1267,6 @@ window.updateAlimRow=function(inp,minP,pn){
 function renderRegProds(){
   $('reg-cnt').textContent=`(${regProducts.length}개)`;
   const el=$('reg-prod-list');
-  if(!regProducts.length){el.innerHTML='<div style="text-align:center;padding:16px;color:var(--t3);font-size:12px">상품을 추가하세요</div>';return;}
   const typeCode=$('ev-type')?.value||'FF';
   const evName=$('ev-name')?.value||'행사명 입력 필요';
   const pageType=$('ev-pagetype')?.value||'';
@@ -1390,7 +1397,7 @@ function renderRegProds(){
           <th style="text-align:center;color:var(--bl);width:52px;${vl}">최대할인율</th>
           <th style="text-align:center;${vl}">배송</th><th></th>`;})()}
         </tr></thead>
-        <tbody>${rows}</tbody>
+        <tbody>${rows||'<tr><td colspan="15" style="text-align:center;padding:16px;color:var(--t3);font-size:12px">SKU 버튼 또는 코드로 상품을 추가하세요</td></tr>'}</tbody>
       </table>
     </div>
   </div>`;
@@ -1656,7 +1663,7 @@ function buildGroupHtml(eName,grp,tabNum){
         ${grpActions?`<span style="margin-left:auto;display:flex;gap:6px">${grpActions}</span>`:''}
       </div>
       <!-- 2행: 기간+일정 칩 -->
-      <div style="display:flex;align-items:center;gap:5px;margin-top:5px;width:100%;flex-wrap:wrap">
+      <div id="${grpId}-period-chips" style="display:flex;align-items:center;gap:5px;margin-top:5px;width:100%;flex-wrap:wrap">
         ${buildDateChips(ev?.startDate,ev?.startTime,ev?.endDate,ev?.endTime,m?.proposalUploadedAt,m?.proposalDeadline)}
       </div>
     </div>
@@ -1932,8 +1939,8 @@ window.saveSelEdit=async function(grpId,tabNum){
   if(hd){
     const nameEl=hd.querySelector('.egrpname');
     if(nameEl)nameEl.textContent=name;
-    const chipRow=hd.querySelector('.egrphd > div:nth-child(2)');
-    if(chipRow)chipRow.innerHTML=buildDateChips(start,startTime,end,endTime,uploadDate,deadlineDate);
+    const cpDiv=document.getElementById(grpId+'-period-chips');
+    if(cpDiv)cpDiv.innerHTML=buildDateChips(start,startTime,end,endTime,uploadDate,deadlineDate);
   }
   renderPropList(tabNum);
 };
@@ -2575,6 +2582,8 @@ loadAll();
 // 달력 즉시 초기화 (Firebase 로드와 무관하게)
 calInit('reg',(function(){const _t=new Date();const _nM=_t.getMonth()+1>=12?0:_t.getMonth()+1;const _nY=_t.getMonth()+1>=12?_t.getFullYear()+1:_t.getFullYear();return {startId:'ev-start',endId:'ev-end',_initY:_nY,_initM:_nM};})());
 calRender('reg');
+// 행사 제안 샘플 기본 표시
+setTimeout(()=>renderRegProds(),100);
 </script>
 </body>
 </html>

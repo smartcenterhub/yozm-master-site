@@ -402,8 +402,82 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   </div><!-- p0 end -->
 <!-- ═══ 탭1: 행사 셀렉 ═══ -->
 <div class="pane" id="p1">
-  <div class="pg-hd"><div><div class="pg-title">행사 셀렉</div><div class="pg-desc">추후 개발 예정</div></div></div>
-  <div style="text-align:center;padding:60px;color:var(--t3);background:var(--gb);border:1px solid var(--bd);border-radius:var(--rl)">🔧 개발 예정</div>
+  <div class="pg-hd">
+    <div><div class="pg-title">행사 일괄 등록</div><div class="pg-desc">엑셀 파일로 여러 행사를 한 번에 Firebase에 등록</div></div>
+    <div class="rbtn">
+      <button class="btn btn-sm btn-gh" onclick="toggleBulkGuide()">📋 가이드</button>
+      <button class="btn btn-sm btn-p" onclick="downloadBulkTemplate()">⬇ 양식 다운로드</button>
+    </div>
+  </div>
+
+  <!-- 가이드 토글 -->
+  <div id="bulk-guide" style="display:none;margin-bottom:12px;border:1px solid rgba(58,58,240,.18);border-radius:var(--rl);overflow:hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 14px;background:rgba(58,58,240,.04);cursor:pointer;font-size:12.5px;font-weight:600;color:var(--ac)" onclick="toggleBulkGuide()">
+      입력 규칙 안내 <span>▴</span>
+    </div>
+    <div style="padding:12px 14px;background:var(--gs)">
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr>
+          <th style="text-align:left;padding:5px 8px;color:var(--t3);border-bottom:1px solid var(--bd);font-size:11px">항목</th>
+          <th style="text-align:left;padding:5px 8px;color:var(--t3);border-bottom:1px solid var(--bd);font-size:11px">형식</th>
+          <th style="text-align:left;padding:5px 8px;color:var(--t3);border-bottom:1px solid var(--bd);font-size:11px">설명</th>
+        </tr></thead>
+        <tbody>
+          <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">행사명</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">텍스트</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">★ 필수</td></tr>
+          <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">행사유형</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">FF/TD/SP/HB/CB/SA/OD/YL/YE/AL/DN</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">★ 필수 — 드롭다운 선택</td></tr>
+          <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">시작일/종료일</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">YYYY-MM-DD</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">★ 필수 — 예) 2026-05-04</td></tr>
+          <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">시작/종료시간</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">HH:MM</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택 — 미입력 시 00:00/23:59</td></tr>
+          <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">랜딩페이지</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">쇼핑스토리+카테고리 등</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택 — 드롭다운 4종</td></tr>
+          <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">업로드일/제안마감일</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">YYYY-MM-DD</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택</td></tr>
+          <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">상품코드1~20</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">숫자 코드</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">★ 1개 이상 필수 — 스마트스토어 상품번호</td></tr>
+          <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">배송1~20</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">무료배송 / 조건부무료 / 유료배송</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택 — 미입력 시 무료배송</td></tr>
+          <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">정상가1~20</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">숫자 (원단위)</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택 — 예) 35200</td></tr>
+          <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">최대혜택가1~20</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">숫자 (원단위)</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택 — 예) 25900</td></tr>
+          <tr><td style="padding:5px 8px;font-weight:600;color:var(--bl)">중복 처리</td><td style="padding:5px 8px;color:var(--t2)">병합(merge)</td><td style="padding:5px 8px;color:var(--t3)">동일 행사 존재 시 엑셀 입력 필드만 업데이트, 기존 필드 유지</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 업로드 존 -->
+  <div id="bulk-drop-zone" class="panel" style="text-align:center;padding:32px 20px;border:2px dashed var(--bd);background:var(--gb);cursor:pointer;transition:border-color .15s"
+    ondragover="event.preventDefault();this.style.borderColor='var(--ac)'"
+    ondragleave="this.style.borderColor=''"
+    ondrop="event.preventDefault();this.style.borderColor='';handleBulkDrop(event)">
+    <div style="font-size:32px;margin-bottom:8px;color:var(--t3)">📂</div>
+    <div style="font-size:13px;font-weight:600;margin-bottom:4px">엑셀 파일을 여기에 드래그하거나</div>
+    <div style="font-size:12px;color:var(--t3);margin-bottom:14px">.xlsx 파일만 지원 · 시트명: 행사_일괄등록</div>
+    <button class="btn btn-sm btn-p" onclick="document.getElementById('bulk-file-input').click()">파일 선택</button>
+    <input type="file" id="bulk-file-input" accept=".xlsx" style="display:none" onchange="handleBulkFile(this.files[0])">
+  </div>
+
+  <!-- 미리보기 & 결과 -->
+  <div id="bulk-preview" style="display:none;margin-top:12px">
+    <div class="panel" style="padding:10px 14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:13px;font-weight:600">미리보기 · 검증 결과</div>
+        <div id="bulk-summary" style="font-size:12px;color:var(--t3)"></div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="tbl" id="bulk-preview-table" style="font-size:12px;min-width:700px"></table>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn btn-sm btn-gh" onclick="resetBulk()">✕ 취소</button>
+        <button class="btn btn-sm btn-p" id="bulk-upload-btn" onclick="doBulkUpload()">Firebase 등록</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 진행률 -->
+  <div id="bulk-progress" style="display:none;margin-top:12px">
+    <div class="panel" style="padding:14px 16px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:10px">등록 중...</div>
+      <div style="background:var(--bd);border-radius:4px;height:6px;overflow:hidden;margin-bottom:8px">
+        <div id="bulk-progress-bar" style="height:100%;background:var(--ac);width:0%;transition:width .3s"></div>
+      </div>
+      <div id="bulk-progress-text" style="font-size:12px;color:var(--t3)"></div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══ 탭2: 행사 제안 ═══ -->
@@ -635,6 +709,148 @@ function computeStatus(p){
   return p.status||'제안중';
 }
 const STATUS_ST={'제안중':'s-gray','제안완료':'s-sel','확인필요':'s-warn','선정':'s-done','미선정':'s-rej','진행중':'s-run','종료':'s-end'};
+
+/* ══ 행사 일괄 등록 (엑셀) ══ */
+let BULK_ROWS=[];
+window.toggleBulkGuide=function(){
+  const el=document.getElementById('bulk-guide');
+  if(el)el.style.display=el.style.display==='none'?'block':'none';
+};
+window.downloadBulkTemplate=function(){
+  const a=document.createElement('a');
+  a.href='/mnt/user-data/outputs/요즘_행사_일괄등록_양식.xlsx';
+  a.download='요즘_행사_일괄등록_양식.xlsx';
+  a.click();
+};
+window.handleBulkDrop=function(e){
+  const file=e.dataTransfer.files[0];
+  if(file)handleBulkFile(file);
+};
+window.handleBulkFile=async function(file){
+  if(!file||!file.name.endsWith('.xlsx')){toast('xlsx 파일만 지원합니다','err');return;}
+  /* SheetJS 동적 로드 */
+  if(!window.XLSX){
+    await new Promise((res,rej)=>{
+      const s=document.createElement('script');
+      s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+      s.onload=res;s.onerror=rej;
+      document.head.appendChild(s);
+    });
+  }
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const wb=XLSX.read(e.target.result,{type:'array'});
+      const ws=wb.Sheets['행사_일괄등록']||wb.Sheets[wb.SheetNames[0]];
+      const data=XLSX.utils.sheet_to_json(ws,{defval:''});
+      parseBulkRows(data);
+    }catch(err){toast('파일 파싱 오류: '+err.message,'err');}
+  };
+  reader.readAsArrayBuffer(file);
+};
+function parseBulkRows(data){
+  function get(row,candidates){
+    for(const k of candidates){const v=row[k];if(v!==undefined&&v!=='')return String(v).trim();}
+    return '';
+  }
+  BULK_ROWS=data.map((row,i)=>{
+    const name=get(row,['행사명','★ 행사명']);
+    const type=get(row,['행사유형\n(드롭다운)','행사유형','★ 행사유형\n(드롭다운)']);
+    const start=get(row,['시작일\nYYYY-MM-DD','★ 시작일\nYYYY-MM-DD','시작일']);
+    const end=get(row,['종료일\nYYYY-MM-DD','★ 종료일\nYYYY-MM-DD','종료일']);
+    const st=get(row,['시작시간\nHH:MM','시작시간'])||'00:00';
+    const et=get(row,['종료시간\nHH:MM','종료시간'])||'23:59';
+    const page=get(row,['랜딩페이지\n(드롭다운)','랜딩페이지'])||'쇼핑스토리+카테고리';
+    const adddisc=get(row,['추가할인/적립','추가할인']);
+    const upload=get(row,['업로드일\nYYYY-MM-DD','업로드일']);
+    const deadline=get(row,['제안마감일\nYYYY-MM-DD','제안마감일']);
+    /* 상품 1~20: 코드/배송/정상가/최대혜택가 */
+    const products=[];
+    for(let n=1;n<=20;n++){
+      const code=get(row,[`★ 상품코드${n}`,`상품코드${n}`]);
+      if(!code)continue;
+      const ship=get(row,[`배송${n}\n드롭다운`,`배송${n}`])||'무료배송';
+      const priceNormal=parseFloat(get(row,[`정상가${n}`]))||null;
+      const priceMax=parseFloat(get(row,[`최대혜택가${n}`]))||null;
+      products.push({code:String(code).replace(/\.0$/,''),ship,priceNormal,priceMax});
+    }
+    const errs=[];
+    if(!name)errs.push('행사명 없음');
+    if(!type)errs.push('유형 없음');
+    if(!start)errs.push('시작일 없음');
+    if(!end)errs.push('종료일 없음');
+    if(!products.length)errs.push('상품코드 없음');
+    return{idx:i+1,name,type,start,end,st,et,page,adddisc,upload,deadline,products,errs,ok:errs.length===0};
+  }).filter(r=>r.name||r.type||r.products.length);
+  renderBulkPreview();
+}
+function renderBulkPreview(){
+  const ok=BULK_ROWS.filter(r=>r.ok).length;
+  const err=BULK_ROWS.filter(r=>!r.ok).length;
+  const sum=document.getElementById('bulk-summary');
+  if(sum)sum.innerHTML=`<span style="color:var(--gr);font-weight:600">✓ ${ok}행 정상</span>${err?` &nbsp;<span style="color:var(--rd);font-weight:600">✗ ${err}행 오류</span>`:''}`;
+  const btn=document.getElementById('bulk-upload-btn');
+  if(btn)btn.textContent=`Firebase 등록 (${ok}행)`;
+  const tbl=document.getElementById('bulk-preview-table');
+  if(!tbl)return;
+  tbl.innerHTML=`<thead><tr>
+    <th>#</th><th>행사명</th><th>유형</th><th>시작일</th><th>종료일</th><th>상품수</th><th>상태</th>
+  </tr></thead><tbody>${BULK_ROWS.map(r=>`<tr>
+    <td>${r.idx}</td>
+    <td style="font-weight:600">${r.name||'—'}</td>
+    <td><span class="st" style="background:rgba(0,0,0,.05);color:var(--t2);font-size:10px">${r.type||'—'}</span></td>
+    <td style="font-size:11.5px">${r.start||'—'}</td>
+    <td style="font-size:11.5px">${r.end||'—'}</td>
+    <td style="text-align:center">${r.products.length}개</td>
+    <td>${r.ok?'<span class="st s-sel" style="font-size:10px">정상</span>':'<span class="st s-rej" style="font-size:10px" title="'+r.errs.join(', ')+'">'+r.errs[0]+'</span>'}</td>
+  </tr>`).join('')}</tbody>`;
+  document.getElementById('bulk-drop-zone').style.display='none';
+  document.getElementById('bulk-preview').style.display='block';
+}
+window.resetBulk=function(){
+  BULK_ROWS=[];
+  document.getElementById('bulk-drop-zone').style.display='block';
+  document.getElementById('bulk-preview').style.display='none';
+  document.getElementById('bulk-progress').style.display='none';
+  document.getElementById('bulk-file-input').value='';
+};
+window.doBulkUpload=async function(){
+  const rows=BULK_ROWS.filter(r=>r.ok);
+  if(!rows.length){toast('등록할 정상 행이 없습니다','err');return;}
+  document.getElementById('bulk-preview').style.display='none';
+  document.getElementById('bulk-progress').style.display='block';
+  const bar=document.getElementById('bulk-progress-bar');
+  const txt=document.getElementById('bulk-progress-text');
+  let done=0;const total=rows.length;
+  for(const r of rows){
+    txt.textContent=`(${done+1}/${total}) ${r.name} 저장 중...`;
+    bar.style.width=Math.round(done/total*100)+'%';
+    const docId=r.name.replace(/\s/g,'')+'_'+(r.start||'None').replace(/-/g,'')+'_'+(r.end||'None').replace(/-/g,'');
+    const evData={eventName:r.name,eventType:r.type||null,startDate:r.start||null,startTime:r.st,endDate:r.end||null,endTime:r.et,pageType:r.page||null,isClosed:false,isNotice:r.type==='DN',additionalDiscount:r.adddisc||null,proposalUploadedAt:r.upload||null,proposalDeadline:r.deadline||null,
+      products:r.products.map((p,i)=>{const sku=SKUS.find(s=>s._id===p.code)||{};const obj={no:i+1,subNo:null,isMain:skuGroup(sku.nick||sku.name||'')==='main'?'메인':'서브',isCancelled:false,skuCode:p.code,productName:sku.name||'',link:'https://brand.naver.com/yozmkorea/products/'+p.code,priceNormal:p.priceNormal||sku.priceNormal||null,priceBase:null,priceEvent:sku.priceDisc||sku.priceEvent||null,priceAlim:sku.priceDisc||sku.priceEvent||null,priceMax:p.priceMax||null,ship:p.ship||'무료배송',options:[]};return obj;}),
+      updatedAt:new Date().toISOString()};
+    try{
+      await setDoc(doc(db,'events',docId),evData,{merge:true});
+      const exEv=EVENTS.findIndex(e=>e._id===docId);
+      if(exEv>=0)Object.assign(EVENTS[exEv],evData);else EVENTS.unshift({_id:docId,...evData});
+      for(const p of r.products){
+        const pid=(docId+'_'+p.code).replace(/\s/g,'');
+        const sku=SKUS.find(s=>s._id===p.code)||{};
+        const pData={eventSID:docId,eventName:r.name,eventType:r.type||null,startDate:r.start||null,endDate:r.end||null,startTime:r.st,endTime:r.et,proposalUploadedAt:r.upload||null,proposalDeadline:r.deadline||null,skuCode:p.code,skuNick:sku.nick||sku.name||p.code,productName:sku.name||'',isMain:skuGroup(sku.nick||sku.name||'')==='main'?'메인':'서브',priceNormal:p.priceNormal||sku.priceNormal||null,priceBase:null,priceEvent:sku.priceDisc||sku.priceEvent||null,priceAlim:sku.priceDisc||sku.priceEvent||null,priceMax:p.priceMax||null,ship:p.ship||'무료배송',status:'제안중',createdAt:new Date().toISOString()};
+        await setDoc(doc(db,'proposalItems',pid),pData,{merge:true});
+        const exP=PROPOSALS.findIndex(x=>x._id===pid);
+        if(exP>=0)Object.assign(PROPOSALS[exP],pData);else PROPOSALS.unshift({_id:pid,...pData});
+      }
+      done++;
+    }catch(e){toast(`${r.name} 저장 실패: `+e.message,'err');}
+  }
+  bar.style.width='100%';
+  txt.textContent=`✅ ${done}개 행사 등록 완료`;
+  toast(`✅ ${done}개 행사 일괄 등록 완료`);
+  buildMonthFilters();
+  [2,3,5].forEach(t=>renderPropList(t));
+  setTimeout(resetBulk,2000);
+};
 
 /* ══ 저장 관리 ══ */
 function markDirty(col,id,fields){

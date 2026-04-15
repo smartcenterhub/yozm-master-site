@@ -241,8 +241,12 @@ tr.opt-row.opt-last td{border-bottom:1px solid rgba(58,58,240,.12)}
 .btn-fb-discard{padding:8px 13px;border-radius:30px;font-size:12px;font-family:inherit;border:1px solid var(--glass-border-s);background:none;color:var(--t2);cursor:pointer}
 .btn-fb-discard:hover{color:var(--red);border-color:rgba(212,32,32,.3)}
 .pend-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;border-radius:9px;background:rgba(255,255,255,.25);font-size:10px;font-weight:700;padding:0 5px}
+/* 열 숨기기 토글 */
+th.col-toggle{cursor:pointer;user-select:none}
+th.col-toggle:hover{background:#a8b8cc}
+th.col-hidden-th{background:#cad0db !important;color:transparent !important;min-width:18px;max-width:18px;cursor:pointer}
+th.col-hidden-th::after{content:'▸';font-size:9px;color:#3a3af0;display:flex;justify-content:center}
 </style>
-</head>
 <body>
 
 <div class="tabs">
@@ -304,12 +308,12 @@ tr.opt-row.opt-last td{border-bottom:1px solid rgba(58,58,240,.12)}
           <th class="fix" style="left:24px">No</th>
           <th class="fix" style="left:68px;">품목코드</th>
           <th class="fix fix-last" style="left:168px;">닉네임</th>
-          <th>품목명</th>
-          <th>분류</th>
-          <th>운영상태</th>
-          <th>메모</th>
-          <th class="c-act" style="width:92px">수정</th>
-          <th>수정일</th>
+          <th class="col-toggle" onclick="toggleCol('item',4)">품목명</th>
+          <th class="col-toggle" onclick="toggleCol('item',5)">분류</th>
+          <th class="col-toggle" onclick="toggleCol('item',6)">운영상태</th>
+          <th class="col-toggle" onclick="toggleCol('item',7)">메모</th>
+          <th class="col-toggle c-act" style="width:92px" onclick="toggleCol('item',8)">수정</th>
+          <th class="col-toggle" onclick="toggleCol('item',9)">수정일</th>
         </tr></thead>
         <tbody id="itemTbody">
           <tr><td colspan="11" style="padding:28px;text-align:center;color:var(--t4);font-size:12px">⏳ Firebase에서 불러오는 중...</td></tr>
@@ -377,17 +381,17 @@ tr.opt-row.opt-last td{border-bottom:1px solid rgba(58,58,240,.12)}
           <th class="fix" style="left:24px">No</th>
           <th class="fix" style="left:68px;">네이버 상품코드</th>
           <th class="fix fix-last" style="left:192px;">닉네임</th>
-          <th>상품명</th>
-          <th>유형</th>
-          <th>운영상태</th>
-          <th class="r">정상가</th>
-          <th class="r">상시할인가</th>
-          <th class="r">최대할인가</th>
-          <th>배송조건</th>
-          <th>메모</th>
-          <th class="c-act">옵션</th>
-          <th class="c-act">수정</th>
-          <th>수정일</th>
+          <th class="col-toggle" onclick="toggleCol('sku',4)">상품명</th>
+          <th class="col-toggle" onclick="toggleCol('sku',5)">유형</th>
+          <th class="col-toggle" onclick="toggleCol('sku',6)">운영상태</th>
+          <th class="col-toggle r" onclick="toggleCol('sku',7)">정상가</th>
+          <th class="col-toggle r" onclick="toggleCol('sku',8)">상시할인가</th>
+          <th class="col-toggle r" onclick="toggleCol('sku',9)">최대할인가</th>
+          <th class="col-toggle" onclick="toggleCol('sku',10)">배송조건</th>
+          <th class="col-toggle" onclick="toggleCol('sku',11)">메모</th>
+          <th class="col-toggle c-act" onclick="toggleCol('sku',12)">옵션</th>
+          <th class="col-toggle c-act" onclick="toggleCol('sku',13)">수정</th>
+          <th class="col-toggle" onclick="toggleCol('sku',14)">수정일</th>
         </tr></thead>
         <tbody id="skuTbody">
           <tr><td colspan="15" style="padding:28px;text-align:center;color:var(--t4);font-size:12px">⏳ Firebase에서 불러오는 중...</td></tr>
@@ -663,11 +667,50 @@ function renderItemTable(q){
   });
   document.getElementById('itemTbody').innerHTML=html||'<tr><td colspan="11" style="padding:20px;text-align:center;color:var(--t4)">데이터 없음</td></tr>';
   updatePendBar();
+  applyHiddenCols('item');
 }
 
 /* ════ SKUS ════ */
 let skuNewOpen=false,skuEditCode=null;
 const skuOpenSet=new Set();
+
+const hiddenCols={item:new Set(),sku:new Set()};
+
+function toggleCol(tab,idx){
+  const set=hiddenCols[tab];
+  if(set.has(idx)) set.delete(idx); else set.add(idx);
+  applyHiddenCols(tab);
+}
+
+function applyHiddenCols(tab){
+  const tblId=tab==='item'?'t-item':'t-sku';
+  const tbl=document.querySelector(`#${tblId} table`);
+  if(!tbl)return;
+  const set=hiddenCols[tab];
+  /* tbody td만 숨기고, thead th는 항상 보이게 유지 */
+  tbl.querySelectorAll('tbody tr').forEach(tr=>{
+    Array.from(tr.children).forEach((cell,i)=>{
+      cell.style.display=set.has(i)?'none':'';
+    });
+  });
+  /* th: 숨긴 열은 좁게 + 스타일 표시, 클릭은 항상 가능 */
+  tbl.querySelectorAll('thead th').forEach((th,i)=>{
+    if(!th.classList.contains('col-toggle'))return;
+    if(set.has(i)){
+      th.classList.add('col-hidden-th');
+      th.style.width='18px';
+      th.style.padding='0';
+      th.style.overflow='hidden';
+      th.style.whiteSpace='nowrap';
+    } else {
+      th.classList.remove('col-hidden-th');
+      th.style.width='';
+      th.style.padding='';
+      th.style.overflow='';
+      th.style.whiteSpace='';
+    }
+  });
+}
 
 let skuPriceVisible=true;
 function toggleSkuPrice(){
@@ -675,16 +718,11 @@ function toggleSkuPrice(){
   const btn=document.getElementById('skuPriceToggle');
   btn.textContent=skuPriceVisible?'가격 접기':'가격 펼치기';
   btn.classList.toggle('on',!skuPriceVisible);
-  /* th/td nth-child: 정상가=7, 상시할인가=8, 최대할인가=9 */
-  const tbl=document.querySelector('#t-sku table');
-  if(!tbl)return;
-  const disp=skuPriceVisible?'':'none';
-  tbl.querySelectorAll('tr').forEach(tr=>{
-    [7,8,9].forEach(n=>{
-      const cell=tr.children[n-1];
-      if(cell) cell.style.display=disp;
-    });
+  [7,8,9].forEach(idx=>{
+    if(skuPriceVisible) hiddenCols.sku.delete(idx);
+    else hiddenCols.sku.add(idx);
   });
+  applyHiddenCols('sku');
 }
 
 function stageSkuNew(){
@@ -954,12 +992,7 @@ function renderSkuTable(q){
   });
   document.getElementById('skuTbody').innerHTML=html||'<tr><td colspan="15" style="padding:20px;text-align:center;color:var(--t4)">데이터 없음</td></tr>';
   updatePendBar();
-  if(!skuPriceVisible){
-    const tbl=document.querySelector('#t-sku table');
-    if(tbl) tbl.querySelectorAll('tr').forEach(tr=>{
-      [7,8,9].forEach(n=>{const c=tr.children[n-1];if(c)c.style.display='none';});
-    });
-  }
+  applyHiddenCols('sku');
 }
 
 function toggleSkuOpts(code){

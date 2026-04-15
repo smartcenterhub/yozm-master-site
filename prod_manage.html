@@ -72,7 +72,13 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
   border-radius:12px 12px 0 0;margin-bottom:0;border-bottom:none;
 }
 .tbl-card{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:0 0 12px 12px;flex:1;display:flex;flex-direction:column;overflow:hidden;margin:0 24px 16px}
-.toolbar-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.toolbar-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:3px 0}
+.filter-body{display:flex;flex-direction:column;gap:0;overflow:hidden;transition:max-height .2s ease}
+.filter-body.closed{max-height:0 !important}
+.filter-toggle{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:7px;font-size:11px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);color:var(--t3);cursor:pointer;user-select:none;transition:all .12s;flex-shrink:0}
+.filter-toggle:hover{color:var(--t2)}
+.filter-toggle svg{transition:transform .2s}
+.filter-toggle.closed svg{transform:rotate(-90deg)}
 .search-box{width:240px;padding:6px 10px;border:1px solid var(--glass-border-s);border-radius:7px;font-size:12px;font-family:inherit;background:var(--glass-bg-strong);color:var(--tx);outline:none}
 .search-box:focus{border-color:var(--green);box-shadow:0 0 0 3px var(--ac-l)}
 .cnt{font-size:11.5px;color:var(--t3)}
@@ -204,7 +210,9 @@ th.fix-last,td.fix-last{box-shadow:2px 0 6px -1px rgba(0,0,0,0.08)}
 .icon-btn svg{stroke:var(--t3);transition:stroke .1s;pointer-events:none}.icon-btn:disabled{opacity:.25;cursor:default;pointer-events:none}
 code{font-family:monospace;font-size:11px;background:rgba(0,0,0,.05);padding:1px 5px;border-radius:4px}
 /* 옵션 수 뱃지 */
-.copy-toggle{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:7px;font-size:11.5px;font-weight:500;font-family:inherit;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);color:var(--t3);transition:all .12s;user-select:none}
+.col-chip{display:inline-flex;align-items:center;height:20px;padding:0 9px;border-radius:10px;font-size:11px;cursor:pointer;user-select:none;border:1px solid rgba(0,0,0,.1);background:#fff;color:#4a4a5a;transition:all .1s}
+.col-chip.on{background:rgba(26,138,74,.08);border-color:rgba(26,138,74,.3);color:#1a8a4a}
+.col-chip:not(.on){background:#f0f0f0;color:#aaa;text-decoration:line-through}align-items:center;gap:5px;padding:4px 10px;border-radius:7px;font-size:11.5px;font-weight:500;font-family:inherit;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);color:var(--t3);transition:all .12s;user-select:none}
 .copy-toggle.on{background:rgba(26,138,74,.08);border-color:rgba(26,138,74,.3);color:var(--green)}
 .copy-toggle .dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
 .pi{padding:2px 9px;border-radius:20px;font-size:11.5px;cursor:pointer;user-select:none;transition:all .1s;font-weight:600;display:inline-block}
@@ -242,10 +250,6 @@ tr.opt-row.opt-last td{border-bottom:1px solid rgba(58,58,240,.12)}
 .btn-fb-discard:hover{color:var(--red);border-color:rgba(212,32,32,.3)}
 .pend-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;border-radius:9px;background:rgba(255,255,255,.25);font-size:10px;font-weight:700;padding:0 5px}
 /* 열 숨기기 토글 */
-th.col-toggle{cursor:pointer;user-select:none}
-th.col-toggle:hover{background:#a8b8cc}
-th.col-hidden-th{background:#cad0db !important;color:transparent !important;min-width:18px;max-width:18px;cursor:pointer}
-th.col-hidden-th::after{content:'▸';font-size:9px;color:#3a3af0;display:flex;justify-content:center}
 </style>
 <body>
 
@@ -288,10 +292,24 @@ th.col-hidden-th::after{content:'▸';font-size:9px;color:#3a3af0;display:flex;j
         <span class="cnt" id="itemCnt"></span>
         <span class="cnt" id="itemPendLbl" style="color:var(--amber);display:none"></span>
         <span class="copy-toggle" id="itemCopyToggle" onclick="toggleCopy('item')"><span class="dot"></span>복사 OFF</span>
+        <span class="filter-toggle" id="iFilterToggle" onclick="toggleFilterBody('item')">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="4 6 8 10 12 6"/></svg>필터
+        </span>
       </div>
-      <div class="toolbar-row"><span class="filter-lbl">상태</span><span class="fp on" onclick="setFp(this)">전체</span><span class="fp" onclick="setFp(this)" data-v="상시">상시</span><span class="fp" onclick="setFp(this)" data-v="비운영">비운영</span><span class="fp" onclick="setFp(this)" data-v="단종예정">단종예정</span><span class="fp" onclick="setFp(this)" data-v="런칭예정">런칭예정</span><span class="fp" onclick="setFp(this)" data-v="단종">단종</span></div>
-      <div class="toolbar-row"><span class="filter-lbl">분류</span><span class="fp on" onclick="setFp(this)">전체</span><span class="fp" onclick="setFp(this)" data-v="요거트">요거트</span><span class="fp" onclick="setFp(this)" data-v="마시는">마시는</span><span class="fp" onclick="setFp(this)" data-v="토핑">토핑</span><span class="fp" onclick="setFp(this)" data-v="굿즈">굿즈</span></div>
-      <div class="toolbar-row"><span class="filter-lbl">정렬</span><span class="fp on" onclick="setFp(this)">No순</span><span class="fp" onclick="setFp(this)">상태순</span><span class="fp" onclick="setFp(this)">최신수정</span></div>
+      <div class="filter-body" id="iFilterBody">
+        <div class="toolbar-row"><span class="filter-lbl">상태</span><span class="fp on" onclick="setFp(this)">전체</span><span class="fp" onclick="setFp(this)" data-v="상시">상시</span><span class="fp" onclick="setFp(this)" data-v="비운영">비운영</span><span class="fp" onclick="setFp(this)" data-v="단종예정">단종예정</span><span class="fp" onclick="setFp(this)" data-v="런칭예정">런칭예정</span><span class="fp" onclick="setFp(this)" data-v="단종">단종</span></div>
+        <div class="toolbar-row"><span class="filter-lbl">분류</span><span class="fp on" onclick="setFp(this)">전체</span><span class="fp" onclick="setFp(this)" data-v="요거트">요거트</span><span class="fp" onclick="setFp(this)" data-v="마시는">마시는</span><span class="fp" onclick="setFp(this)" data-v="토핑">토핑</span><span class="fp" onclick="setFp(this)" data-v="굿즈">굿즈</span></div>
+        <div class="toolbar-row"><span class="filter-lbl">정렬</span><span class="fp on" onclick="setFp(this)">No순</span><span class="fp" onclick="setFp(this)">상태순</span><span class="fp" onclick="setFp(this)">최신수정</span></div>
+        <div class="toolbar-row">
+          <span class="filter-lbl">열</span>
+          <span class="col-chip on" data-col="ic-name" onclick="toggleColChip(this)">품목명</span>
+          <span class="col-chip on" data-col="ic-cat" onclick="toggleColChip(this)">분류</span>
+          <span class="col-chip on" data-col="ic-status" onclick="toggleColChip(this)">운영상태</span>
+          <span class="col-chip on" data-col="ic-memo" onclick="toggleColChip(this)">메모</span>
+          <span class="col-chip on" data-col="ic-edit" onclick="toggleColChip(this)">수정</span>
+          <span class="col-chip on" data-col="ic-date" onclick="toggleColChip(this)">수정일</span>
+        </div>
+      </div>
     </div><!-- /tbl-toolbar -->
   </div><!-- /sticky-header -->
   <div class="tbl-card">
@@ -300,20 +318,20 @@ th.col-hidden-th::after{content:'▸';font-size:9px;color:#3a3af0;display:flex;j
         <!-- items: fix 컬럼 left값 — pend:0, No:24, 품목코드:68, 닉네임:168 -->
         <colgroup>
           <col style="width:24px"><col style="width:44px"><col style="width:100px"><col style="width:68px">
-          <col style="width:200px"><col style="width:130px"><col style="width:88px">
-          <col style="width:150px"><col style="width:92px"><col style="width:88px">
+          <col id="ic-name" style="width:200px"><col id="ic-cat" style="width:130px"><col id="ic-status" style="width:88px">
+          <col id="ic-memo" style="width:150px"><col id="ic-edit" style="width:92px"><col id="ic-date" style="width:88px">
         </colgroup>
         <thead><tr>
           <th class="fix" style="left:0px"></th>
           <th class="fix" style="left:24px">No</th>
           <th class="fix" style="left:68px;">품목코드</th>
           <th class="fix fix-last" style="left:168px;">닉네임</th>
-          <th class="col-toggle" onclick="toggleCol('item',4)">품목명</th>
-          <th class="col-toggle" onclick="toggleCol('item',5)">분류</th>
-          <th class="col-toggle" onclick="toggleCol('item',6)">운영상태</th>
-          <th class="col-toggle" onclick="toggleCol('item',7)">메모</th>
-          <th class="col-toggle c-act" style="width:92px" onclick="toggleCol('item',8)">수정</th>
-          <th class="col-toggle" onclick="toggleCol('item',9)">수정일</th>
+          <th>품목명</th>
+          <th>분류</th>
+          <th>운영상태</th>
+          <th>메모</th>
+          <th class="c-act" style="width:92px">수정</th>
+          <th>수정일</th>
         </tr></thead>
         <tbody id="itemTbody">
           <tr><td colspan="11" style="padding:28px;text-align:center;color:var(--t4);font-size:12px">⏳ Firebase에서 불러오는 중...</td></tr>
@@ -359,11 +377,30 @@ th.col-hidden-th::after{content:'▸';font-size:9px;color:#3a3af0;display:flex;j
         <span class="cnt" id="skuPendLbl" style="color:var(--amber);display:none"></span>
         <span class="copy-toggle" id="skuCopyToggle" onclick="toggleCopy('sku')"><span class="dot"></span>복사 OFF</span>
         <span class="copy-toggle" id="skuPriceToggle" onclick="toggleSkuPrice()" style="margin-left:4px">가격 접기</span>
+        <span class="filter-toggle" id="sFilterToggle" onclick="toggleFilterBody('sku')">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="4 6 8 10 12 6"/></svg>필터
+        </span>
       </div>
-      <div class="toolbar-row"><span class="filter-lbl">상태</span><span class="fp on" onclick="setFp(this)">전체</span><span class="fp" onclick="setFp(this)" data-v="상시">상시</span><span class="fp" onclick="setFp(this)" data-v="단종예정">단종예정</span><span class="fp" onclick="setFp(this)" data-v="런칭예정">런칭예정</span><span class="fp" onclick="setFp(this)" data-v="단종">단종</span></div>
-      <div class="toolbar-row"><span class="filter-lbl">유형</span><span class="fp on" onclick="setFp(this)">전체</span><span class="fp" onclick="setFp(this)" data-v="상시운영">상시운영</span><span class="fp" onclick="setFp(this)" data-v="슈퍼적립">슈퍼적립</span><span class="fp" onclick="setFp(this)" data-v="행사운영">행사운영</span><span class="fp" onclick="setFp(this)" data-v="행사제안불가">행사제안불가</span></div>
-      <div class="toolbar-row" id="skuItemFilterRow"><span class="filter-lbl">품목</span><span class="fp on" onclick="setSkuItemFilter(this,'전체')">전체</span></div>
-      <div class="toolbar-row"><span class="filter-lbl">정렬</span><span class="fp on" onclick="setFp(this)">No순</span><span class="fp" onclick="setFp(this)">유형순</span><span class="fp" onclick="setFp(this)">상태순</span><span class="fp" onclick="setFp(this)">최신수정</span></div>
+      <div class="filter-body" id="sFilterBody">
+        <div class="toolbar-row"><span class="filter-lbl">상태</span><span class="fp on" onclick="setFp(this)">전체</span><span class="fp" onclick="setFp(this)" data-v="상시">상시</span><span class="fp" onclick="setFp(this)" data-v="단종예정">단종예정</span><span class="fp" onclick="setFp(this)" data-v="런칭예정">런칭예정</span><span class="fp" onclick="setFp(this)" data-v="단종">단종</span></div>
+        <div class="toolbar-row"><span class="filter-lbl">유형</span><span class="fp on" onclick="setFp(this)">전체</span><span class="fp" onclick="setFp(this)" data-v="상시운영">상시운영</span><span class="fp" onclick="setFp(this)" data-v="슈퍼적립">슈퍼적립</span><span class="fp" onclick="setFp(this)" data-v="행사운영">행사운영</span><span class="fp" onclick="setFp(this)" data-v="행사제안불가">행사제안불가</span></div>
+        <div class="toolbar-row" id="skuItemFilterRow"><span class="filter-lbl">품목</span><span class="fp on" onclick="setSkuItemFilter(this,'전체')">전체</span></div>
+        <div class="toolbar-row"><span class="filter-lbl">정렬</span><span class="fp on" onclick="setFp(this)">No순</span><span class="fp" onclick="setFp(this)">유형순</span><span class="fp" onclick="setFp(this)">상태순</span><span class="fp" onclick="setFp(this)">최신수정</span></div>
+        <div class="toolbar-row">
+          <span class="filter-lbl">열</span>
+          <span class="col-chip on" data-col="sc-name" onclick="toggleColChip(this)">상품명</span>
+          <span class="col-chip on" data-col="sc-type" onclick="toggleColChip(this)">유형</span>
+          <span class="col-chip on" data-col="sc-status" onclick="toggleColChip(this)">운영상태</span>
+          <span class="col-chip on" data-col="sc-pn" onclick="toggleColChip(this)">정상가</span>
+          <span class="col-chip on" data-col="sc-pd" onclick="toggleColChip(this)">상시할인가</span>
+          <span class="col-chip on" data-col="sc-pm" onclick="toggleColChip(this)">최대할인가</span>
+          <span class="col-chip on" data-col="sc-ship" onclick="toggleColChip(this)">배송조건</span>
+          <span class="col-chip on" data-col="sc-memo" onclick="toggleColChip(this)">메모</span>
+          <span class="col-chip on" data-col="sc-opt" onclick="toggleColChip(this)">옵션</span>
+          <span class="col-chip on" data-col="sc-edit" onclick="toggleColChip(this)">수정</span>
+          <span class="col-chip on" data-col="sc-date" onclick="toggleColChip(this)">수정일</span>
+        </div>
+      </div>
     </div><!-- /tbl-toolbar -->
   </div><!-- /sticky-header -->
   <div class="tbl-card">
@@ -372,26 +409,26 @@ th.col-hidden-th::after{content:'▸';font-size:9px;color:#3a3af0;display:flex;j
         <!-- skus: fix 컬럼 left값 — pend:0, No:24, 네이버상품코드:68, 닉네임:192 -->
         <colgroup>
           <col style="width:24px"><col style="width:44px"><col style="width:124px"><col style="width:100px">
-          <col style="width:360px"><col style="width:110px"><col style="width:88px">
-          <col style="width:82px"><col style="width:82px"><col style="width:82px">
-          <col style="width:100px"><col style="width:140px"><col style="width:52px"><col style="width:92px"><col style="width:88px">
+          <col id="sc-name" style="width:360px"><col id="sc-type" style="width:110px"><col id="sc-status" style="width:88px">
+          <col id="sc-pn" style="width:82px"><col id="sc-pd" style="width:82px"><col id="sc-pm" style="width:82px">
+          <col id="sc-ship" style="width:100px"><col id="sc-memo" style="width:140px"><col id="sc-opt" style="width:52px"><col id="sc-edit" style="width:92px"><col id="sc-date" style="width:88px">
         </colgroup>
         <thead><tr>
           <th class="fix" style="left:0px"></th>
           <th class="fix" style="left:24px">No</th>
           <th class="fix" style="left:68px;">네이버 상품코드</th>
           <th class="fix fix-last" style="left:192px;">닉네임</th>
-          <th class="col-toggle" onclick="toggleCol('sku',4)">상품명</th>
-          <th class="col-toggle" onclick="toggleCol('sku',5)">유형</th>
-          <th class="col-toggle" onclick="toggleCol('sku',6)">운영상태</th>
-          <th class="col-toggle r" onclick="toggleCol('sku',7)">정상가</th>
-          <th class="col-toggle r" onclick="toggleCol('sku',8)">상시할인가</th>
-          <th class="col-toggle r" onclick="toggleCol('sku',9)">최대할인가</th>
-          <th class="col-toggle" onclick="toggleCol('sku',10)">배송조건</th>
-          <th class="col-toggle" onclick="toggleCol('sku',11)">메모</th>
-          <th class="col-toggle c-act" onclick="toggleCol('sku',12)">옵션</th>
-          <th class="col-toggle c-act" onclick="toggleCol('sku',13)">수정</th>
-          <th class="col-toggle" onclick="toggleCol('sku',14)">수정일</th>
+          <th>상품명</th>
+          <th>유형</th>
+          <th>운영상태</th>
+          <th class="r">정상가</th>
+          <th class="r">상시할인가</th>
+          <th class="r">최대할인가</th>
+          <th>배송조건</th>
+          <th>메모</th>
+          <th class="c-act">옵션</th>
+          <th class="c-act">수정</th>
+          <th>수정일</th>
         </tr></thead>
         <tbody id="skuTbody">
           <tr><td colspan="15" style="padding:28px;text-align:center;color:var(--t4);font-size:12px">⏳ Firebase에서 불러오는 중...</td></tr>
@@ -667,49 +704,43 @@ function renderItemTable(q){
   });
   document.getElementById('itemTbody').innerHTML=html||'<tr><td colspan="11" style="padding:20px;text-align:center;color:var(--t4)">데이터 없음</td></tr>';
   updatePendBar();
-  applyHiddenCols('item');
 }
 
 /* ════ SKUS ════ */
 let skuNewOpen=false,skuEditCode=null;
 const skuOpenSet=new Set();
 
-const hiddenCols={item:new Set(),sku:new Set()};
-
-function toggleCol(tab,idx){
-  const set=hiddenCols[tab];
-  if(set.has(idx)) set.delete(idx); else set.add(idx);
-  applyHiddenCols(tab);
+function toggleFilterBody(tab){
+  const bodyId=tab==='item'?'iFilterBody':'sFilterBody';
+  const btnId=tab==='item'?'iFilterToggle':'sFilterToggle';
+  const body=document.getElementById(bodyId);
+  const btn=document.getElementById(btnId);
+  if(!body)return;
+  if(body.classList.contains('closed')){
+    body.style.maxHeight=body.scrollHeight+'px';
+    body.classList.remove('closed');
+    btn.classList.remove('closed');
+  } else {
+    body.style.maxHeight=body.scrollHeight+'px';
+    requestAnimationFrame(()=>{body.style.maxHeight='0px';});
+    body.classList.add('closed');
+    btn.classList.add('closed');
+  }
 }
 
-function applyHiddenCols(tab){
-  const tblId=tab==='item'?'t-item':'t-sku';
-  const tbl=document.querySelector(`#${tblId} table`);
-  if(!tbl)return;
-  const set=hiddenCols[tab];
-  /* tbody td만 숨기고, thead th는 항상 보이게 유지 */
-  tbl.querySelectorAll('tbody tr').forEach(tr=>{
-    Array.from(tr.children).forEach((cell,i)=>{
-      cell.style.display=set.has(i)?'none':'';
-    });
+function initFilterBodies(){
+  ['iFilterBody','sFilterBody'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.maxHeight=el.scrollHeight+'px';
   });
-  /* th: 숨긴 열은 좁게 + 스타일 표시, 클릭은 항상 가능 */
-  tbl.querySelectorAll('thead th').forEach((th,i)=>{
-    if(!th.classList.contains('col-toggle'))return;
-    if(set.has(i)){
-      th.classList.add('col-hidden-th');
-      th.style.width='18px';
-      th.style.padding='0';
-      th.style.overflow='hidden';
-      th.style.whiteSpace='nowrap';
-    } else {
-      th.classList.remove('col-hidden-th');
-      th.style.width='';
-      th.style.padding='';
-      th.style.overflow='';
-      th.style.whiteSpace='';
-    }
-  });
+}
+
+function toggleColChip(el){
+  const colId=el.dataset.col;
+  const col=document.getElementById(colId);
+  if(!col)return;
+  const isOn=el.classList.toggle('on');
+  col.style.visibility=isOn?'':'collapse';
 }
 
 let skuPriceVisible=true;
@@ -718,11 +749,12 @@ function toggleSkuPrice(){
   const btn=document.getElementById('skuPriceToggle');
   btn.textContent=skuPriceVisible?'가격 접기':'가격 펼치기';
   btn.classList.toggle('on',!skuPriceVisible);
-  [7,8,9].forEach(idx=>{
-    if(skuPriceVisible) hiddenCols.sku.delete(idx);
-    else hiddenCols.sku.add(idx);
+  ['sc-pn','sc-pd','sc-pm'].forEach(id=>{
+    const col=document.getElementById(id);
+    if(col) col.style.visibility=skuPriceVisible?'':'collapse';
+    const chip=document.querySelector(`[data-col="${id}"]`);
+    if(chip) chip.classList.toggle('on',skuPriceVisible);
   });
-  applyHiddenCols('sku');
 }
 
 function stageSkuNew(){
@@ -992,7 +1024,6 @@ function renderSkuTable(q){
   });
   document.getElementById('skuTbody').innerHTML=html||'<tr><td colspan="15" style="padding:20px;text-align:center;color:var(--t4)">데이터 없음</td></tr>';
   updatePendBar();
-  applyHiddenCols('sku');
 }
 
 function toggleSkuOpts(code){
@@ -1054,6 +1085,7 @@ window.loadAll=async function(){
   }catch(e){setStatus(false,'연결 실패: '+e.message);console.error('[Firebase]',e);}
 };
 loadAll();
+window.addEventListener('load',initFilterBodies);
 </script>
 </body>
 </html>

@@ -1066,7 +1066,7 @@ function calRender(key){
     const gId=key.replace('edit-','');
     const chipDiv=document.getElementById(gId+'-period-chips');
     if(chipDiv){
-      chipDiv.innerHTML=buildDateChips(st.selS,st._sh+':'+st._sm,st.selE,st._eh+':'+st._em,st.uploadDate,st.deadlineDate);
+      chipDiv.innerHTML=buildDateChips(st.selS,st._sh+':'+st._sm,st.selE,st._eh+':'+st._em,st.uploadDate,st.deadlineDate,st.addDisc||null);
     }
   }
 
@@ -1110,7 +1110,7 @@ function calRender(key){
             const si=document.getElementById('se-start-'+gId);if(si)si.value=st.selS;
             const ei=document.getElementById('se-end-'+gId);if(ei)ei.value=st.selE;
             const cpDiv=document.getElementById(gId+'-period-chips');
-            if(cpDiv)cpDiv.innerHTML=buildDateChips(st.selS,st._sh+':'+st._sm,st.selE,st._eh+':'+st._em,st.uploadDate,st.deadlineDate);
+            if(cpDiv)cpDiv.innerHTML=buildDateChips(st.selS,st._sh+':'+st._sm,st.selE,st._eh+':'+st._em,st.uploadDate,st.deadlineDate,st.addDisc||null);
           }
           calUpdateChips(key);
         }
@@ -1158,7 +1158,7 @@ function calRender(key){
           if(st.selS){const si=document.getElementById('se-start-'+gId);if(si)si.value=st.selS;}
           if(st.selE){const ei=document.getElementById('se-end-'+gId);if(ei)ei.value=st.selE;}
           const cpDiv=document.getElementById(gId+'-period-chips');
-          if(cpDiv)cpDiv.innerHTML=buildDateChips(st.selS,st._sh+':'+st._sm,st.selE,st._eh+':'+st._em,st.uploadDate,st.deadlineDate);
+          if(cpDiv)cpDiv.innerHTML=buildDateChips(st.selS,st._sh+':'+st._sm,st.selE,st._eh+':'+st._em,st.uploadDate,st.deadlineDate,st.addDisc||null);
         }
         calUpdateChips(key);
         confirmBtn.textContent='✓ 적용됨';
@@ -1213,7 +1213,7 @@ function calClick(key,s){
     if(key.startsWith('edit-')&&st.selS&&st.selE){
       const gId=key.replace('edit-','');
       const cpDiv=document.getElementById(gId+'-period-chips');
-      if(cpDiv)cpDiv.innerHTML=buildDateChips(st.selS,st._sh+':'+st._sm,st.selE,st._eh+':'+st._em,st.uploadDate,st.deadlineDate);
+      if(cpDiv)cpDiv.innerHTML=buildDateChips(st.selS,st._sh+':'+st._sm,st.selE,st._eh+':'+st._em,st.uploadDate,st.deadlineDate,st.addDisc||null);
     }
   }else if(st.mode==='upload'){
     st.uploadDate=s;
@@ -1561,12 +1561,16 @@ function renderRegProds(){
   const dateLabel=fmtRange(start,startTime,end,endTime);
   /* 기간 칩 HTML */
   const dur=calDur(start,end);
+  const regAddDisc=$('ev-adddisc')?.value||null;
+  const adChipReg=regAddDisc?`<span style="display:inline-flex;align-items:center;margin-left:auto;padding:2px 9px;font-size:10.5px;border:0.5px solid rgba(186,117,23,.4);border-radius:20px;background:rgba(186,117,23,.1);color:var(--or);font-weight:600;white-space:nowrap;flex-shrink:0">${regAddDisc}</span>`:'';
   const dateChipsHtml=start?(
+    (getWeekLabel(start)?`<span style="display:inline-flex;align-items:center;padding:2px 9px;font-size:10.5px;border:0.5px solid rgba(152,152,168,.35);border-radius:20px;background:rgba(152,152,168,.1);color:var(--t2);font-weight:600;white-space:nowrap">${getWeekLabel(start)}</span>`:'') +
     `<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(26,86,200,.3);border-radius:20px;background:rgba(26,86,200,.07);color:var(--bl);font-weight:500;white-space:nowrap">${fmtDate(start,startTime)}</span>`+
     `<span style="font-size:10px;color:var(--t3)">→</span>`+
     `<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(196,90,16,.3);border-radius:20px;background:rgba(196,90,16,.07);color:var(--or);font-weight:500;white-space:nowrap">${fmtDate(end,endTime)}</span>`+
-    (dur?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(152,152,168,.3);border-radius:20px;background:rgba(152,152,168,.08);color:var(--t2);font-weight:500">[${dur}일 간]</span>`:'')
-  ):`<span style="font-size:10.5px;color:var(--t3)">기간 미설정</span>`;
+    (dur?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(152,152,168,.3);border-radius:20px;background:rgba(152,152,168,.08);color:var(--t2);font-weight:500">[${dur}일 간]</span>`:'')+
+    adChipReg
+  ):`<span style="font-size:10.5px;color:var(--t3)">기간 미설정</span>`+(adChipReg?` ${adChipReg}`:'');
 
   /* SKU no 기준 정렬 */
   const sorted=[...regProducts].sort((a,b)=>{
@@ -1896,7 +1900,26 @@ window.renderPropList=function(tabNum){
 };
 
 /* 기간 칩 HTML 빌더 */
-function buildDateChips(startDate,startTime,endDate,endTime,uploadDate,deadline){
+/* 주차 계산: 시작일 기준, 해당 월 1일 포함된 주=1주차, 이전=0주차 */
+function getWeekLabel(dateStr){
+  if(!dateStr)return'';
+  const d=new Date(dateStr+'T00:00:00');
+  const mon=d.getMonth()+1;
+  const yr=d.getFullYear();
+  /* 해당 월 1일 */
+  const first=new Date(yr,d.getMonth(),1);
+  /* 1일이 포함된 주의 월요일 (1일의 요일: 0=일,1=월,...,6=토) */
+  const firstDow=first.getDay(); /* 0=일 */
+  /* 월요일 기준: 일=6, 월=0, 화=1, ... */
+  const offsetToMon=firstDow===0?6:firstDow-1;
+  const week1Mon=new Date(first); week1Mon.setDate(1-offsetToMon);
+  /* date < week1Mon → 0주차 */
+  const diffMs=d-week1Mon;
+  if(diffMs<0)return mon+'월 0주차';
+  const week=Math.floor(diffMs/604800000)+1;
+  return mon+'월 '+week+'주차';
+}
+function buildDateChips(startDate,startTime,endDate,endTime,uploadDate,deadline,addDisc){
   const DOW=['일','월','화','수','목','금','토'];
   function fmtChip(s,t){
     if(!s)return'';
@@ -1907,6 +1930,8 @@ function buildDateChips(startDate,startTime,endDate,endTime,uploadDate,deadline)
     return mm+'/'+dd+' ('+dow+')'+(t?' '+t:'');
   }
   const dur=calDur(startDate,endDate);
+  const weekLabel=startDate?getWeekLabel(startDate):'';
+  const wChip=weekLabel?`<span style="display:inline-flex;align-items:center;padding:2px 9px;font-size:10.5px;border:0.5px solid rgba(152,152,168,.35);border-radius:20px;background:rgba(152,152,168,.1);color:var(--t2);font-weight:600;white-space:nowrap">${weekLabel}</span>`:'';
   const sChip=startDate?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(26,86,200,.3);border-radius:20px;background:rgba(26,86,200,.07);color:var(--bl);font-weight:500;white-space:nowrap">${fmtChip(startDate,startTime)}</span>`:'';
   const arrow=startDate&&endDate?`<span style="font-size:10px;color:var(--t3)">→</span>`:'';
   const eChip=endDate?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(196,90,16,.3);border-radius:20px;background:rgba(196,90,16,.07);color:var(--or);font-weight:500;white-space:nowrap">${fmtChip(endDate,endTime)}</span>`:'';
@@ -1915,8 +1940,9 @@ function buildDateChips(startDate,startTime,endDate,endTime,uploadDate,deadline)
   const lbl=(uploadDate||deadline)?`<span style="font-size:10px;color:var(--t3)">일정</span>`:'';
   const uChip=uploadDate?`<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;font-size:10px;border:1px solid rgba(58,58,240,.25);border-radius:20px;background:rgba(58,58,240,.05);color:var(--ac);font-weight:500;white-space:nowrap">📅 업로드 ${fmtChip(uploadDate,'')}</span>`:'';
   const dline=deadline?`<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;font-size:10px;border:1px solid rgba(26,138,74,.25);border-radius:20px;background:rgba(26,138,74,.05);color:var(--gr);font-weight:500;white-space:nowrap">📅 마감 ${fmtChip(deadline,'')}</span>`:'';
-  if(!startDate)return`<span style="font-size:10.5px;color:var(--t3)">기간 미설정</span>`;
-  return[sChip,arrow,eChip,dChip,sep,lbl,uChip,dline].filter(Boolean).join('');
+  const adChip=addDisc?`<span style="display:inline-flex;align-items:center;margin-left:auto;padding:2px 9px;font-size:10.5px;border:0.5px solid rgba(186,117,23,.4);border-radius:20px;background:rgba(186,117,23,.1);color:var(--or);font-weight:600;white-space:nowrap;flex-shrink:0">${addDisc}</span>`:'';
+  if(!startDate)return`<span style="font-size:10.5px;color:var(--t3)">기간 미설정</span>`+(adChip?` ${adChip}`:'');
+  return[wChip,sChip,arrow,eChip,dChip,sep,lbl,uChip,dline,adChip].filter(Boolean).join('');
 }
 function buildGroupHtml(eName,grp,tabNum){
   const m=grp.meta;
@@ -1998,7 +2024,7 @@ function buildGroupHtml(eName,grp,tabNum){
       </div>
       <!-- 2행: 기간+일정 칩 -->
       <div id="${grpId}-period-chips" style="display:flex;align-items:center;gap:5px;margin-top:5px;width:100%;flex-wrap:wrap">
-        ${buildDateChips(ev?.startDate,ev?.startTime,ev?.endDate,ev?.endTime,m?.proposalUploadedAt,m?.proposalDeadline)}
+        ${buildDateChips(ev?.startDate,ev?.startTime,ev?.endDate,ev?.endTime,m?.proposalUploadedAt,m?.proposalDeadline,ev?.additionalDiscount||null)}
       </div>
     </div>
     <div class="egrpbody${allDone&&tabNum===2?' done-state':''}" id="${grpId}-body">
@@ -2274,7 +2300,7 @@ window.saveSelEdit=async function(grpId,tabNum){
     const nameEl=hd.querySelector('.egrpname');
     if(nameEl)nameEl.textContent=name;
     const cpDiv=document.getElementById(grpId+'-period-chips');
-    if(cpDiv)cpDiv.innerHTML=buildDateChips(start,startTime,end,endTime,uploadDate,deadlineDate);
+    if(cpDiv)cpDiv.innerHTML=buildDateChips(start,startTime,end,endTime,uploadDate,deadlineDate,adddisc||null);
   }
   renderPropList(tabNum);
 };
@@ -2675,7 +2701,7 @@ function buildSelCard(ev){
       </div>
       <!-- 2행: 기간+일정 칩 -->
       <div style="display:flex;align-items:center;gap:5px;margin-top:5px;width:100%;flex-wrap:wrap">
-        ${buildDateChips(ev.startDate,ev.startTime,ev.endDate,ev.endTime,ev.proposalUploadedAt,ev.proposalDeadline)}
+        ${buildDateChips(ev.startDate,ev.startTime,ev.endDate,ev.endTime,ev.proposalUploadedAt,ev.proposalDeadline,ev.additionalDiscount||null)}
       </div>
     </div>
     <div class="egrpbody" id="${grpId}-body">

@@ -533,6 +533,8 @@ tr.empty-group{opacity:.35}
             </div>
           </div>
           <div id="mailCardRptBody">
+          <!-- 데이터 연동 상태 -->
+          <div id="rptDataStatus" style="background:var(--glass-bg);border-radius:7px;padding:7px 10px;margin-bottom:10px;border:0.5px solid var(--glass-border-s)"></div>
           <div id="rptBlocks"></div>
           <div onclick="rptAddBlock()" style="display:flex;align-items:center;gap:6px;padding:8px 0 2px;cursor:pointer;opacity:.4" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=.4">
             <div style="flex:1;height:0.5px;background:var(--glass-border-s)"></div>
@@ -540,9 +542,8 @@ tr.empty-group{opacity:.35}
             <div style="flex:1;height:0.5px;background:var(--glass-border-s)"></div>
           </div>
           <div style="height:0.5px;background:var(--glass-border-s);margin:12px 0 10px"></div>
-          <!-- 데이터 연동 상태 -->
-          <div id="rptDataStatus" style="background:var(--glass-bg);border-radius:7px;padding:7px 10px;margin-bottom:10px;border:0.5px solid var(--glass-border-s)"></div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+            <button class="btn btn-ghost btn-sm" onclick="rptRefreshAutoBlocks()" style="font-size:11.5px">🔄 데이터 새로고침</button>
             <button class="btn btn-ghost btn-sm" onclick="rptSave()" style="font-size:11.5px;border-color:rgba(26,138,74,.3);color:#1a8a4a;background:rgba(26,138,74,.06)">💾 저장하기</button>
             <button class="btn btn-ghost btn-sm" onclick="rptApplyAll()" style="font-size:11.5px;background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2)">⚡ 전체 적용하기</button>
             <button class="btn btn-ghost btn-sm" onclick="rptApplyOnce()" style="font-size:11.5px;border-color:rgba(186,117,23,.3);color:#854F0B;background:rgba(186,117,23,.06)">↙ 이번만 적용하기</button>
@@ -581,6 +582,14 @@ tr.empty-group{opacity:.35}
               <button class="btn btn-ghost btn-sm" onclick="mailApplyAll()" title="전체 카드 한 번에 반영">⚡ 전체 적용</button>
               <button class="btn btn-primary btn-sm" onclick="mailCopy()">📋 메일 본문 복사</button>
             </div>
+          </div>
+          <!-- 메일 제목 -->
+          <div style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--glass-bg);border-radius:8px;border:0.5px solid var(--glass-border-s)" id="mailSubjectRow">
+            <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:rgba(58,58,240,0.08);color:var(--accent);border:0.5px solid rgba(58,58,240,0.2);white-space:nowrap;flex-shrink:0">제목</span>
+            <span id="mailSubjectText" style="flex:1;font-size:12px;color:var(--tx);font-family:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer" title="클릭해서 복사" onclick="mailCopySubject()"></span>
+            <input id="mailSubjectInput" style="flex:1;font-size:12px;color:var(--tx);font-family:inherit;border:none;outline:none;background:transparent;display:none;min-width:0">
+            <button class="btn btn-ghost btn-sm" id="mailSubjectEditBtn" onclick="mailToggleSubjectEdit()" style="font-size:11px;padding:2px 8px;flex-shrink:0">✏️ 수정</button>
+            <button class="btn btn-ghost btn-sm" onclick="mailCopySubject()" style="font-size:11px;padding:2px 8px;flex-shrink:0;background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2)" id="mailSubjectCopyBtn">복사</button>
           </div>
           <div id="mailPreview" style="background:var(--glass-bg);border-radius:8px;padding:14px 16px;font-size:12px;line-height:2;color:var(--tx);min-height:320px;max-height:520px;overflow-y:auto;font-family:'Malgun Gothic',sans-serif">안녕하세요.<br>올리브파트너스 김규빈입니다.<br>광고 실적 보고 드립니다.</div>
         </div>
@@ -1064,6 +1073,11 @@ function dateApply() {
   }
 
   showToast(`✅ ${txt} 적용됨`);
+  // 메일 제목 자동 갱신
+  setTimeout(() => {
+    const el = document.getElementById('mailSubjectText');
+    if (el && !_mailSubjectEditing) el.textContent = mailBuildSubject();
+  }, 0);
 }
 
 (function initCal() {
@@ -1763,6 +1777,7 @@ function swSub(id, el) {
   document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('s-' + id).classList.add('active');
+  if (id === 'mail') setTimeout(mailInitSubject, 0);
 }
 
 function swBkInner(id, el) {
@@ -1983,6 +1998,67 @@ function mailCollapseAll() {
   });
 }
 
+
+/* ── 메일 제목 ── */
+let _mailSubjectEditing = false;
+
+function mailBuildSubject() {
+  // 날짜 적용된 경우 자동 생성
+  if (_appliedStart) {
+    const dk = dateToKey(_appliedStart);
+    const d = new Date(_appliedStart + 'T00:00:00');
+    const m = d.getMonth() + 1;
+    const day = d.getDate();
+    const dow = ['일','월','화','수','목','금','토'][d.getDay()];
+    const yy = String(d.getFullYear()).slice(2);
+    const mm = String(m).padStart(2,'0');
+    const dd = String(day).padStart(2,'0');
+    return `[올리브파트너스] YOZM ${m}월 데일리리포트 _${yy}.${mm}.${dd}(${dow}) 광고실적`;
+  }
+  return '[올리브파트너스] YOZM 데일리리포트 광고실적';
+}
+
+function mailInitSubject() {
+  const el = document.getElementById('mailSubjectText');
+  if (el && !el.textContent) el.textContent = mailBuildSubject();
+}
+
+function mailToggleSubjectEdit() {
+  _mailSubjectEditing = !_mailSubjectEditing;
+  const txt = document.getElementById('mailSubjectText');
+  const inp = document.getElementById('mailSubjectInput');
+  const btn = document.getElementById('mailSubjectEditBtn');
+  if (_mailSubjectEditing) {
+    inp.value = txt.textContent;
+    txt.style.display = 'none';
+    inp.style.display = 'block';
+    inp.focus(); inp.select();
+    btn.textContent = '✓ 완료';
+    btn.style.color = 'var(--green)';
+    btn.style.borderColor = 'rgba(26,138,74,.3)';
+    inp.onkeydown = e => { if (e.key === 'Enter') mailToggleSubjectEdit(); };
+  } else {
+    txt.textContent = inp.value || mailBuildSubject();
+    txt.style.display = '';
+    inp.style.display = 'none';
+    btn.textContent = '✏️ 수정';
+    btn.style.color = '';
+    btn.style.borderColor = '';
+  }
+}
+
+function mailCopySubject() {
+  const el = _mailSubjectEditing
+    ? document.getElementById('mailSubjectInput')
+    : document.getElementById('mailSubjectText');
+  const text = _mailSubjectEditing ? el.value : el.textContent;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('mailSubjectCopyBtn');
+    if (btn) { btn.textContent = '✓ 복사됨'; setTimeout(() => btn.textContent = '복사', 1500); }
+  }).catch(() => {});
+}
+
 function mailToggleCard(bodyId, chkId) {
   const body = document.getElementById(bodyId);
   const chk  = document.getElementById(chkId);
@@ -2079,74 +2155,43 @@ function rptGetBlockValue(blk) {
   if (type === 'text') return blk.text;
   try {
     if (type === 'bk_mo') {
-      const dates = Object.keys(_bkByDate||{}).sort();
-      if (!dates.length) return '- MO: (브검 미업로드)';
-      const dk = dates[dates.length-1];
-      const d = _bkByDate[dk];
-      const moConv = Math.round(d?.mo?.conv||0);
-      const disp = perfDateDisplay(dk);
-      const kwData = window._bkKwCache?.[dk]?.mo;
-      const kwStr = kwData ? ` | ${kwData.summaryText||''}` : '';
-      return `- MO: ${disp} 전환 ${moConv}건${kwStr}`;
+      const raw = _mailData?.bkAuto || '';
+      if (!raw) return '- MO: (브검 미업로드)';
+      const moLine = raw.split('\n').find(l => l.includes('MO'));
+      return moLine ? moLine.trim() : raw.split('\n')[0].trim();
     }
     if (type === 'bk_pc') {
-      const dates = Object.keys(_bkByDate||{}).sort();
-      if (!dates.length) return '- PC: (브검 미업로드)';
-      const dk = dates[dates.length-1];
-      const d = _bkByDate[dk];
-      const pcConv = Math.round(d?.pc?.conv||0);
-      const disp = perfDateDisplay(dk);
-      const kwData = window._bkKwCache?.[dk]?.pc;
-      const kwStr = kwData ? ` | ${kwData.summaryText||''}` : '';
-      return `- PC: ${disp} 전환 ${pcConv}건${kwStr}`;
+      const raw = _mailData?.bkAuto || '';
+      if (!raw) return '- PC: (브검 미업로드)';
+      const pcLine = raw.split('\n').find(l => l.includes('PC'));
+      return pcLine ? pcLine.trim() : '- PC: (브검 데이터 없음)';
     }
     if (type === 'gfa') {
-      const groups = [...(_gfaSelectedGroups.size ? _gfaSelectedGroups : new Set((_gfaData||[]).map(r=>r.group).filter(Boolean)))];
-      if (!groups.length) return '- (GFA 미업로드)';
-      const names = groups.map(gcShortName);
+      const groups = _mailData?.gfaGroups;
+      if (!groups) return '- (GFA 미업로드)';
+      const selected = [..._gfaSelectedGroups];
+      const names = selected.length
+        ? selected.map(gcShortName)
+        : groups.split('+').map(s => s.trim()).filter(Boolean);
+      if (!names.length) return '- (GFA 미업로드)';
       return `지난 기간, ${names.join(' + ')} → ${names.length}캠페인 운영 진행.`;
     }
     if (type === 'adv') {
-      const da = Math.round(Object.values(_perfStore.da||{}).reduce((s,v)=>s+(v.conv||0),0));
-      const sa = Math.round(Object.values(_perfStore.sa||{}).reduce((s,v)=>s+(v.conv||0),0));
-      const daStr = da > 0 ? `DA (${da}건)` : 'DA (미업로드)';
-      const saStr = sa > 0 ? `SA (${sa}건)` : 'SA (미업로드)';
-      return `- 광고계정 전환 : ${daStr} / ${saStr}`;
+      const raw = _mailData?.advConv || '';
+      if (!raw) return '- 광고계정 전환 : DA (미업로드) / SA (미업로드)';
+      const lines = raw.split('\n').filter(l => l.trim());
+      return lines.length ? lines[lines.length-1].trim() : raw.trim();
     }
   } catch(e) { return `(${type} 데이터 대기 중)`; }
   return blk.text;
 }
 
-function rptRenderStatus() {
-  const el = document.getElementById('rptDataStatus');
-  if (!el) return;
-  try {
-  const bkDates = Object.keys(_bkByDate||{}).sort();
-  const bkOk = bkDates.length > 0;
-  const gfaOk = (_gfaData||[]).length > 0;
-  const daOk = Object.keys((_perfStore.da)||{}).length > 0;
-  const saOk = Object.keys((_perfStore.sa)||{}).length > 0;
-  const dot = (ok) => `<span style="width:6px;height:6px;border-radius:50%;background:${ok?'var(--green)':'var(--t4)'};display:inline-block;margin-right:4px;flex-shrink:0"></span>`;
-  const bkVal = bkOk ? `${perfDateDisplay(bkDates[bkDates.length-1])} MO/PC 연동` : '미업로드';
-  const gfaVal = gfaOk ? `${[...new Set((_gfaData).map(r=>r.group).filter(Boolean))].map(gcShortName).join('+')} 연동` : '미업로드';
-  const advVal = (daOk||saOk) ? `DA${daOk?'✓':'✗'} SA${saOk?'✓':'✗'}` : '미업로드';
-  el.innerHTML = `
-    <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">${dot(bkOk)}<span style="font-size:11px;color:var(--t2);min-width:52px">BK</span><span style="font-size:11px;color:${bkOk?'var(--tx)':'var(--t3)'}">${bkVal}</span></div>
-    <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">${dot(gfaOk)}<span style="font-size:11px;color:var(--t2);min-width:52px">GFA</span><span style="font-size:11px;color:${gfaOk?'var(--tx)':'var(--t3)'}">${gfaVal}</span></div>
-    <div style="display:flex;align-items:center;gap:4px">${dot(daOk||saOk)}<span style="font-size:11px;color:var(--t2);min-width:52px">ADV</span><span style="font-size:11px;color:${(daOk||saOk)?'var(--tx)':'var(--t3)'}">${advVal}</span></div>`;
-  } catch(e) { el.innerHTML = '<span style="font-size:11px;color:var(--t3)">데이터 대기 중...</span>'; }
-}
-
-let _rptDragSrc = null;
 
 function rptRenderBlocks(blocks) {
   const container = document.getElementById('rptBlocks');
   if (!container) return;
   container.innerHTML = '';
-  blocks.forEach((blk, idx) => {
-    const row = rptMakeRow(blk);
-    container.appendChild(row);
-  });
+  blocks.forEach(blk => { container.appendChild(rptMakeRow(blk)); });
 }
 
 function rptMakeRow(blk) {
@@ -2162,44 +2207,35 @@ function rptMakeRow(blk) {
   row.addEventListener('dragleave', () => row.style.borderTop = '');
   row.addEventListener('drop', e => {
     e.preventDefault(); row.style.borderTop = '';
-    if (_rptDragSrc && _rptDragSrc !== row) {
-      const parent = row.parentNode;
-      parent.insertBefore(_rptDragSrc, row);
-    }
+    if (_rptDragSrc && _rptDragSrc !== row) row.parentNode.insertBefore(_rptDragSrc, row);
   });
-  row.addEventListener('dragend', () => { if(_rptDragSrc) _rptDragSrc = null; document.querySelectorAll('#rptBlocks > div').forEach(r => r.style.borderTop = ''); });
+  row.addEventListener('dragend', () => { _rptDragSrc = null; document.querySelectorAll('#rptBlocks > div').forEach(r => r.style.borderTop = ''); });
 
   const handle = document.createElement('span');
   handle.textContent = '⠿';
   handle.style.cssText = 'font-size:13px;color:var(--t3);cursor:grab;padding:0 2px;opacity:.3;user-select:none;flex-shrink:0';
 
   const textEl = document.createElement('div');
-  textEl.contentEditable = 'true';
-  textEl.style.cssText = `flex:1;font-size:13px;padding:3px 7px;padding-left:${7 + indentPx}px;border-radius:5px;border:1px solid transparent;cursor:text;line-height:1.6;font-family:inherit;min-height:26px;word-break:break-all;color:var(--tx);font-weight:${blk.bold?'600':'400'}`;
-  textEl.setAttribute('spellcheck', 'false');
+  textEl.contentEditable = isAuto ? 'false' : 'true';
+  textEl.style.cssText = `flex:1;font-size:13px;padding:3px 7px;padding-left:${7+indentPx}px;border-radius:5px;border:1px solid ${isAuto?tc.border:'transparent'};cursor:${isAuto?'default':'text'};line-height:1.6;font-family:inherit;min-height:26px;word-break:break-all;color:${isAuto?tc.color:'var(--tx)'};font-weight:${blk.bold?'600':'400'};background:${isAuto?tc.bg:''};opacity:${isAuto?'0.85':'1'}`;
+  textEl.setAttribute('spellcheck','false');
   textEl.textContent = isAuto ? (rptGetBlockValue(blk)||'') : blk.text;
   textEl.dataset.indent = blk.indent || 0;
   textEl.dataset.bold = blk.bold ? '1' : '0';
   textEl.dataset.type = type;
-  if (isAuto) {
-    textEl.contentEditable = 'false';
-    textEl.style.color = tc.color;
-    textEl.style.background = tc.bg;
-    textEl.style.borderColor = tc.border;
-    textEl.style.cursor = 'default';
-    textEl.style.opacity = '0.85';
+  if (!isAuto) {
+    textEl.addEventListener('mouseenter', () => textEl.style.background = 'var(--glass-bg)');
+    textEl.addEventListener('mouseleave', () => { if (document.activeElement !== textEl) textEl.style.background = ''; });
+    textEl.addEventListener('focus', () => { textEl.style.background = 'var(--glass-bg-strong)'; textEl.style.borderColor = 'var(--glass-border-s)'; });
+    textEl.addEventListener('blur',  () => { textEl.style.background = ''; textEl.style.borderColor = 'transparent'; });
   }
-  textEl.addEventListener('mouseenter', () => textEl.style.background = 'var(--glass-bg)');
-  textEl.addEventListener('mouseleave', () => { if (document.activeElement !== textEl) textEl.style.background = ''; });
-  textEl.addEventListener('focus', () => { textEl.style.background = 'var(--glass-bg-strong)'; textEl.style.borderColor = 'var(--glass-border-s)'; });
-  textEl.addEventListener('blur',  () => { textEl.style.background = ''; textEl.style.borderColor = 'transparent'; });
 
   const actions = document.createElement('div');
   actions.style.cssText = 'display:flex;gap:3px;opacity:0;transition:opacity .12s;flex-shrink:0';
   row.addEventListener('mouseenter', () => actions.style.opacity = '1');
   row.addEventListener('mouseleave', () => actions.style.opacity = '0');
 
-  const makeActBtn = (label, fn, extra) => {
+  const makeBtn = (label, fn, extra) => {
     const btn = document.createElement('button');
     btn.textContent = label;
     btn.style.cssText = `padding:2px 7px;border-radius:4px;border:0.5px solid var(--glass-border-s);background:var(--glass-bg);font-size:11px;cursor:pointer;color:var(--t2);white-space:nowrap;${extra||''}`;
@@ -2207,7 +2243,7 @@ function rptMakeRow(blk) {
     return btn;
   };
 
-  const boldBtn = makeActBtn('B', (btn, el) => {
+  const boldBtn = makeBtn('B', (btn, el) => {
     const on = el.dataset.bold === '1';
     el.dataset.bold = on ? '0' : '1';
     el.style.fontWeight = on ? '400' : '600';
@@ -2215,26 +2251,20 @@ function rptMakeRow(blk) {
     btn.style.color = on ? '' : 'var(--accent)';
   }, blk.bold ? 'font-weight:600;color:var(--accent)' : '');
 
-  const indLeft = makeActBtn('←', (btn, el, r) => {
-    const cur = parseInt(el.dataset.indent || 0);
-    const next = Math.max(0, cur - 1);
-    el.dataset.indent = next;
-    el.style.paddingLeft = (7 + [0,20,40,60][next]) + 'px';
+  const indLeft = makeBtn('←', (btn, el) => {
+    const cur = parseInt(el.dataset.indent||0);
+    const next = Math.max(0, cur-1);
+    el.dataset.indent = next; el.style.paddingLeft = (7+[0,20,40,60][next])+'px';
   });
-  const indRight = makeActBtn('→', (btn, el, r) => {
-    const cur = parseInt(el.dataset.indent || 0);
-    const next = Math.min(3, cur + 1);
-    el.dataset.indent = next;
-    el.style.paddingLeft = (7 + [0,20,40,60][next]) + 'px';
+  const indRight = makeBtn('→', (btn, el) => {
+    const cur = parseInt(el.dataset.indent||0);
+    const next = Math.min(3, cur+1);
+    el.dataset.indent = next; el.style.paddingLeft = (7+[0,20,40,60][next])+'px';
   });
-  const delBtn = makeActBtn('✕', (btn, el, r) => r.remove());
+  const delBtn = makeBtn('✕', (btn, el, r) => r.remove());
   delBtn.addEventListener('mouseenter', () => { delBtn.style.color='#d42020'; delBtn.style.borderColor='rgba(212,32,32,.3)'; });
   delBtn.addEventListener('mouseleave', () => { delBtn.style.color='var(--t2)'; delBtn.style.borderColor='var(--glass-border-s)'; });
 
-  if (!isAuto) [boldBtn, indLeft, indRight, delBtn].forEach(b => actions.appendChild(b));
-  else actions.appendChild(delBtn);
-
-  // 타입 뱃지 (클릭으로 타입 변경)
   const typeBadge = document.createElement('span');
   typeBadge.textContent = tc.label;
   typeBadge.title = '클릭해서 타입 변경';
@@ -2242,14 +2272,12 @@ function rptMakeRow(blk) {
   typeBadge.addEventListener('click', () => {
     const curType = textEl.dataset.type || 'text';
     const idx = RPT_TYPE_ORDER.indexOf(curType);
-    const nextType = RPT_TYPE_ORDER[(idx + 1) % RPT_TYPE_ORDER.length];
+    const nextType = RPT_TYPE_ORDER[(idx+1) % RPT_TYPE_ORDER.length];
     const ntc = RPT_TYPES[nextType];
     const ntIsAuto = nextType !== 'text';
     textEl.dataset.type = nextType;
     typeBadge.textContent = ntc.label;
-    typeBadge.style.background = ntc.bg;
-    typeBadge.style.color = ntc.color;
-    typeBadge.style.borderColor = ntc.border;
+    typeBadge.style.background = ntc.bg; typeBadge.style.color = ntc.color; typeBadge.style.borderColor = ntc.border;
     textEl.contentEditable = ntIsAuto ? 'false' : 'true';
     textEl.style.cursor = ntIsAuto ? 'default' : 'text';
     textEl.style.color = ntIsAuto ? ntc.color : 'var(--tx)';
@@ -2257,10 +2285,11 @@ function rptMakeRow(blk) {
     textEl.style.borderColor = ntIsAuto ? ntc.border : 'transparent';
     textEl.style.opacity = ntIsAuto ? '0.85' : '1';
     if (ntIsAuto) textEl.textContent = rptGetBlockValue({type:nextType, indent:parseInt(textEl.dataset.indent||0)});
-    // 버튼 토글
     [boldBtn, indLeft, indRight].forEach(b => { b.style.display = ntIsAuto ? 'none' : ''; });
   });
 
+  if (!isAuto) [boldBtn, indLeft, indRight, delBtn].forEach(b => actions.appendChild(b));
+  else actions.appendChild(delBtn);
   [boldBtn, indLeft, indRight].forEach(b => { b.style.display = isAuto ? 'none' : ''; });
   [handle, textEl, typeBadge, actions].forEach(el => row.appendChild(el));
   return row;
@@ -2269,28 +2298,26 @@ function rptMakeRow(blk) {
 function rptAddBlock() {
   const container = document.getElementById('rptBlocks');
   if (!container) return;
-  const row = rptMakeRow({text:'', bold:false, indent:0});
+  const row = rptMakeRow({text:'', bold:false, indent:0, type:'text'});
   container.appendChild(row);
-  row.querySelector('[contenteditable]').focus();
+  row.querySelector('[contenteditable="true"]')?.focus();
 }
 
 function rptGetBlocks() {
-  const rows = document.querySelectorAll('#rptBlocks > div');
-  return [...rows].map(row => {
+  return [...document.querySelectorAll('#rptBlocks > div')].map(row => {
     const el = row.querySelector('[data-indent]');
-    const type = el ? (el.dataset.type || 'text') : 'text';
     return {
       text:   el ? el.textContent : '',
       bold:   el ? el.dataset.bold === '1' : false,
-      indent: el ? parseInt(el.dataset.indent || 0) : 0,
-      type,
+      indent: el ? parseInt(el.dataset.indent||0) : 0,
+      type:   el ? (el.dataset.type||'text') : 'text',
     };
   });
 }
 
 function rptBlocksToHtml(blocks, resolve=true) {
   return blocks.map(blk => {
-    const sp = '&nbsp;'.repeat((blk.indent || 0) * 4);
+    const sp = '&nbsp;'.repeat((blk.indent||0)*4);
     const raw = resolve ? rptGetBlockValue(blk) : blk.text;
     const text = raw.replace(/&/g,'&amp;').replace(/</g,'&lt;');
     return blk.bold ? `<b>${sp}${text}</b>` : `${sp}${text}`;
@@ -2299,39 +2326,33 @@ function rptBlocksToHtml(blocks, resolve=true) {
 
 function rptBlocksToText(blocks, resolve=true) {
   return blocks.map(blk => {
-    const sp = '    '.repeat(blk.indent || 0);
+    const sp = '    '.repeat(blk.indent||0);
     return sp + (resolve ? rptGetBlockValue(blk) : blk.text);
   }).join('\n');
 }
 
 async function rptSave() {
-  const blocks = rptGetBlocks().map(blk =>
-    (blk.type && blk.type !== 'text') ? {...blk, text:''} : blk
-  );
+  const blocks = rptGetBlocks().map(blk => (blk.type && blk.type !== 'text') ? {...blk, text:''} : blk);
   try { localStorage.setItem(RPT_BLOCKS_KEY, JSON.stringify(blocks)); } catch {}
   if (window._adsFs) {
-    try {
-      await window._adsFs.saveTemplate(JSON.stringify(blocks));
-      showToast('💾 Firebase에 저장됨');
-    } catch { showToast('💾 로컬 저장됨'); }
-  } else {
-    showToast('💾 저장됨');
-  }
+    try { await window._adsFs.saveTemplate(JSON.stringify(blocks)); showToast('💾 Firebase에 저장됨'); }
+    catch { showToast('💾 로컬 저장됨'); }
+  } else { showToast('💾 저장됨'); }
   const el = document.getElementById('rptSavedAt');
   if (el) el.textContent = '방금 저장됨';
 }
 
 function rptApplyOnce() {
+  // 카드가 접혀있으면 body를 잠깐 펼쳐서 블럭 읽기
+  const body = document.getElementById('mailCardRptBody');
+  const wasHidden = body && body.style.display === 'none';
+  if (wasHidden) body.style.display = '';
+  rptRefreshAutoBlocks();
   const blocks = rptGetBlocks();
-  // 자동 블럭 텍스트 새로고침
-  document.querySelectorAll('#rptBlocks > div').forEach(row => {
-    const el = row.querySelector('[data-indent]');
-    if (!el || (el.dataset.type||'text') === 'text') return;
-    el.textContent = rptGetBlockValue({type: el.dataset.type, indent: parseInt(el.dataset.indent||0)});
-  });
+  if (wasHidden) body.style.display = 'none';
+  if (!blocks.length) { showToast('⚠️ 리포트 양식 블럭이 없습니다'); return; }
   const preview = document.getElementById('mailPreview');
   if (preview) { preview.style.whiteSpace = 'normal'; preview.innerHTML = rptBlocksToHtml(blocks); }
-  rptRenderStatus();
   showToast('↙ 미리보기에 반영됨');
 }
 
@@ -2366,32 +2387,34 @@ function rptToggleGuide() {
   if (arrow) arrow.style.transform = open ? '' : 'rotate(90deg)';
 }
 
-// 초기 로드
 (function rptInit() {
-  // 먼저 localStorage로 즉시 렌더링
   let blocks = RPT_BLOCKS_DEFAULT;
   try { const ls = localStorage.getItem(RPT_BLOCKS_KEY); if(ls) blocks = JSON.parse(ls); } catch {}
   rptRenderBlocks(blocks);
   setTimeout(() => { try { rptRenderStatus(); } catch(e) {} }, 0);
-  // Firebase 준비되면 덮어쓰기 (선택적)
   function tryFirebase() {
     if (window._adsFs) {
       window._adsFs.loadTemplate().then(saved => {
         if (!saved) return;
-        try {
-          const fb = JSON.parse(saved);
-          if (Array.isArray(fb)) rptRenderBlocks(fb);
-        } catch {}
+        try { const fb = JSON.parse(saved); if (Array.isArray(fb)) rptRenderBlocks(fb); } catch {}
       }).catch(() => {});
-    } else {
-      setTimeout(tryFirebase, 500);
-    }
+    } else { setTimeout(tryFirebase, 500); }
   }
   tryFirebase();
 })();
 
 
-// sticky 높이 동적 계산
+function rptRefreshAutoBlocks() {
+  document.querySelectorAll('#rptBlocks > div').forEach(row => {
+    const el = row.querySelector('[data-indent]');
+    if (!el || (el.dataset.type||'text') === 'text') return;
+    try {
+      const val = rptGetBlockValue({type: el.dataset.type, indent: parseInt(el.dataset.indent||0)});
+      el.textContent = val;
+    } catch(e) {}
+  });
+  rptRenderStatus();
+}// 초기 로드// sticky 높이 동적 계산
 (function() {
   function updateStickyTop() {
     const wrapper = document.querySelector('[style*="position:sticky"][style*="z-index:100"]');
@@ -2465,6 +2488,7 @@ function renderBkSlots() {
   }
 
   renderBkAll();
+  setTimeout(rptRefreshAutoBlocks, 0);
   rptRenderStatus();
 }
 
@@ -2989,6 +3013,7 @@ function refreshGfaDateTable() {
     _gfaHideEmpty = !_gfaHideEmpty;
     document.getElementById('gfaToggleEmpty').textContent = _gfaHideEmpty ? '👁️ 값 없는 그룹 보기' : '🙈 값 없는 그룹 숨기기';
     renderGfaGroup(_gfaCurDate);
+  setTimeout(rptRefreshAutoBlocks, 0);
   };
 })();
 
@@ -3142,6 +3167,7 @@ setupAdvPanel(2);
    ADVoost 날짜별 렌더링
 ══════════════════════════ */
 function renderAdvPanel(num, selDate) {
+  setTimeout(rptRefreshAutoBlocks, 0);
   rptRenderStatus();
   const content = document.getElementById(`advContent${num}`);
   if (!content || !_advData[num].length) return;
@@ -3409,6 +3435,7 @@ async function processGc(file) {
   document.getElementById('mainTabGfa')?.classList.add('done');
   document.getElementById('innerTabGfaSojai')?.classList.add('done');
   await renderGcCards('all');
+  setTimeout(rptRefreshAutoBlocks, 0);
 
   // 메일쓰기 탭 자동 연동 - 운영 중인 캠페인 그룹 추출
   const groups = [...new Set(_gcAllData.map(r=>r.group).filter(Boolean))];
@@ -3567,6 +3594,8 @@ async function renderGcCards(selDate) {
 
    // 메일쓰기 전일 상위성과소재 카드 → 날짜별 섹션으로 별도 업데이트
     updateMailGfaImgCard();
+    const mailImageArea = document.getElementById('mailGfaImageArea');
+    const mailImgBtn = document.getElementById('mailGfaImgBtn');
     if (mailImageArea) {
       const clone2 = tbl.cloneNode(true);
       clone2.style.cssText = 'width:auto;table-layout:fixed;border-collapse:collapse;font-family:\'Malgun Gothic\',sans-serif;background:#fff';

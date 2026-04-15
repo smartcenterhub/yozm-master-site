@@ -2077,52 +2077,55 @@ const RPT_TYPE_ORDER = ['text','bk_mo','bk_pc','gfa','adv'];
 function rptGetBlockValue(blk) {
   const type = blk.type || 'text';
   if (type === 'text') return blk.text;
-  if (type === 'bk_mo') {
-    const dates = Object.keys(_bkByDate||{}).sort();
-    if (!dates.length) return '- MO: (브검 미업로드)';
-    const dk = dates[dates.length-1];
-    const d = _bkByDate[dk];
-    const moConv = Math.round(d?.mo?.conv||0);
-    const disp = perfDateDisplay(dk);
-    const kwData = window._bkKwCache?.[dk]?.mo;
-    const kwStr = kwData ? ` | ${kwData.summaryText||''}` : '';
-    return `- MO: ${disp} 전환 ${moConv}건${kwStr}`;
-  }
-  if (type === 'bk_pc') {
-    const dates = Object.keys(_bkByDate||{}).sort();
-    if (!dates.length) return '- PC: (브검 미업로드)';
-    const dk = dates[dates.length-1];
-    const d = _bkByDate[dk];
-    const pcConv = Math.round(d?.pc?.conv||0);
-    const disp = perfDateDisplay(dk);
-    const kwData = window._bkKwCache?.[dk]?.pc;
-    const kwStr = kwData ? ` | ${kwData.summaryText||''}` : '';
-    return `- PC: ${disp} 전환 ${pcConv}건${kwStr}`;
-  }
-  if (type === 'gfa') {
-    const groups = [...(_gfaSelectedGroups.size ? _gfaSelectedGroups : new Set((_gfaData||[]).map(r=>r.group).filter(Boolean)))];
-    if (!groups.length) return '- (GFA 미업로드)';
-    const names = groups.map(gcShortName);
-    return `지난 기간, ${names.join(' + ')} → ${names.length}캠페인 운영 진행.`;
-  }
-  if (type === 'adv') {
-    const da = Math.round(Object.values(_perfStore.da||{}).reduce((s,v)=>s+(v.conv||0),0));
-    const sa = Math.round(Object.values(_perfStore.sa||{}).reduce((s,v)=>s+(v.conv||0),0));
-    const daStr = da > 0 ? `DA (${da}건)` : 'DA (미업로드)';
-    const saStr = sa > 0 ? `SA (${sa}건)` : 'SA (미업로드)';
-    return `- 광고계정 전환 : ${daStr} / ${saStr}`;
-  }
+  try {
+    if (type === 'bk_mo') {
+      const dates = Object.keys(_bkByDate||{}).sort();
+      if (!dates.length) return '- MO: (브검 미업로드)';
+      const dk = dates[dates.length-1];
+      const d = _bkByDate[dk];
+      const moConv = Math.round(d?.mo?.conv||0);
+      const disp = perfDateDisplay(dk);
+      const kwData = window._bkKwCache?.[dk]?.mo;
+      const kwStr = kwData ? ` | ${kwData.summaryText||''}` : '';
+      return `- MO: ${disp} 전환 ${moConv}건${kwStr}`;
+    }
+    if (type === 'bk_pc') {
+      const dates = Object.keys(_bkByDate||{}).sort();
+      if (!dates.length) return '- PC: (브검 미업로드)';
+      const dk = dates[dates.length-1];
+      const d = _bkByDate[dk];
+      const pcConv = Math.round(d?.pc?.conv||0);
+      const disp = perfDateDisplay(dk);
+      const kwData = window._bkKwCache?.[dk]?.pc;
+      const kwStr = kwData ? ` | ${kwData.summaryText||''}` : '';
+      return `- PC: ${disp} 전환 ${pcConv}건${kwStr}`;
+    }
+    if (type === 'gfa') {
+      const groups = [...(_gfaSelectedGroups.size ? _gfaSelectedGroups : new Set((_gfaData||[]).map(r=>r.group).filter(Boolean)))];
+      if (!groups.length) return '- (GFA 미업로드)';
+      const names = groups.map(gcShortName);
+      return `지난 기간, ${names.join(' + ')} → ${names.length}캠페인 운영 진행.`;
+    }
+    if (type === 'adv') {
+      const da = Math.round(Object.values(_perfStore.da||{}).reduce((s,v)=>s+(v.conv||0),0));
+      const sa = Math.round(Object.values(_perfStore.sa||{}).reduce((s,v)=>s+(v.conv||0),0));
+      const daStr = da > 0 ? `DA (${da}건)` : 'DA (미업로드)';
+      const saStr = sa > 0 ? `SA (${sa}건)` : 'SA (미업로드)';
+      return `- 광고계정 전환 : ${daStr} / ${saStr}`;
+    }
+  } catch(e) { return `(${type} 데이터 대기 중)`; }
   return blk.text;
 }
 
 function rptRenderStatus() {
   const el = document.getElementById('rptDataStatus');
   if (!el) return;
+  try {
   const bkDates = Object.keys(_bkByDate||{}).sort();
   const bkOk = bkDates.length > 0;
   const gfaOk = (_gfaData||[]).length > 0;
-  const daOk = Object.keys(_perfStore.da||{}).length > 0;
-  const saOk = Object.keys(_perfStore.sa||{}).length > 0;
+  const daOk = Object.keys((_perfStore.da)||{}).length > 0;
+  const saOk = Object.keys((_perfStore.sa)||{}).length > 0;
   const dot = (ok) => `<span style="width:6px;height:6px;border-radius:50%;background:${ok?'var(--green)':'var(--t4)'};display:inline-block;margin-right:4px;flex-shrink:0"></span>`;
   const bkVal = bkOk ? `${perfDateDisplay(bkDates[bkDates.length-1])} MO/PC 연동` : '미업로드';
   const gfaVal = gfaOk ? `${[...new Set((_gfaData).map(r=>r.group).filter(Boolean))].map(gcShortName).join('+')} 연동` : '미업로드';
@@ -2131,6 +2134,7 @@ function rptRenderStatus() {
     <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">${dot(bkOk)}<span style="font-size:11px;color:var(--t2);min-width:52px">BK</span><span style="font-size:11px;color:${bkOk?'var(--tx)':'var(--t3)'}">${bkVal}</span></div>
     <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">${dot(gfaOk)}<span style="font-size:11px;color:var(--t2);min-width:52px">GFA</span><span style="font-size:11px;color:${gfaOk?'var(--tx)':'var(--t3)'}">${gfaVal}</span></div>
     <div style="display:flex;align-items:center;gap:4px">${dot(daOk||saOk)}<span style="font-size:11px;color:var(--t2);min-width:52px">ADV</span><span style="font-size:11px;color:${(daOk||saOk)?'var(--tx)':'var(--t3)'}">${advVal}</span></div>`;
+  } catch(e) { el.innerHTML = '<span style="font-size:11px;color:var(--t3)">데이터 대기 중...</span>'; }
 }
 
 let _rptDragSrc = null;
@@ -2368,7 +2372,7 @@ function rptToggleGuide() {
   let blocks = RPT_BLOCKS_DEFAULT;
   try { const ls = localStorage.getItem(RPT_BLOCKS_KEY); if(ls) blocks = JSON.parse(ls); } catch {}
   rptRenderBlocks(blocks);
-  rptRenderStatus();
+  setTimeout(() => { try { rptRenderStatus(); } catch(e) {} }, 0);
   // Firebase 준비되면 덮어쓰기 (선택적)
   function tryFirebase() {
     if (window._adsFs) {

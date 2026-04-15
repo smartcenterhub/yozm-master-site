@@ -1895,7 +1895,7 @@ window.renderPropList=function(tabNum){
   if(tabNum===2){
     const wCnt=PROPOSALS.filter(p=>!p._deleted&&p.status==='확인필요').length;
     const banner=document.getElementById('warn-banner-2');
-    if(banner){if(wCnt>0){banner.textContent='⚠️ 확인필요 항목이 '+wCnt+'건 있습니다';banner.style.display='block';}else banner.style.display='none';}
+    if(banner){if(wCnt>0){banner.innerHTML='⚠️ 확인필요 항목이 '+wCnt+'건 있습니다 <span style="font-size:11px;opacity:.7;text-decoration:underline;cursor:pointer">필터 보기</span>';banner.style.display='block';banner.style.cursor='pointer';banner.onclick=()=>{const btn=document.querySelector('.sfb.sf-warning');if(btn&&!btn.classList.contains('on'))btn.click();};}else banner.style.display='none';}
   }
 };
 

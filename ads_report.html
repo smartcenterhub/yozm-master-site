@@ -265,8 +265,9 @@ tr.empty-group{opacity:.35}
   <div class="sub-content" id="s-bk">
     <!-- 내부 탭 -->
     <div class="inner-tabs" id="bkInnerTabs" style="position:sticky;top:var(--sticky-top,88px);z-index:60;display:flex;gap:0;border-bottom:1.5px solid var(--glass-border-s);margin-bottom:0;background:var(--body-bg,#f0f2f8)">
-      <div class="inner-tab active" id="innerTabBkPerf" onclick="swBkInner('bkPerf',this)" style="padding:5px 16px;font-size:12.5px;color:var(--accent);cursor:pointer;border-bottom:2.5px solid var(--accent);margin-bottom:-1.5px">브검 성과</div>
-      <div class="inner-tab" id="innerTabBkKw" onclick="swBkInner('bkKw',this)" style="padding:5px 16px;font-size:12.5px;color:var(--t2);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px">브검 키워드</div>
+      <div class="inner-tab active" id="innerTabBkPerf" onclick="swBkInner('bkPerf',this)" style="padding:5px 16px;font-size:12.5px;color:var(--accent);cursor:pointer;border-bottom:2.5px solid var(--accent);margin-bottom:-1.5px">📊 브검 성과</div>
+      <div class="inner-tab" id="innerTabBkKw" onclick="swBkInner('bkKw',this)" style="padding:5px 16px;font-size:12.5px;color:var(--t2);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px">🔑 브검 키워드</div>
+      <div class="inner-tab" id="innerTabBkImg" onclick="swBkInner('bkImg',this)" style="padding:5px 16px;font-size:12.5px;color:var(--t2);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px">🖼 이미지 관리</div>
     </div>
 
     <!-- 일비용 -->
@@ -297,6 +298,10 @@ tr.empty-group{opacity:.35}
     </div>
     <div id="bkKw" style="display:none">
       <div id="kwDateList"></div>
+    </div>
+    <div id="bkImg" style="display:none">
+      <iframe id="bkImageFrame" src="bk_creative.html"
+        style="width:100%;height:700px;border:1px solid var(--glass-border-s);border-radius:12px;display:block;max-width:1132px"></iframe>
     </div>
   </div>
 
@@ -1781,7 +1786,7 @@ function swSub(id, el) {
 }
 
 function swBkInner(id, el) {
-  ['bkPerf','bkKw'].forEach(p => { const el2=document.getElementById(p); if(el2) el2.style.display='none'; });
+  ['bkPerf','bkKw','bkImg'].forEach(p => { const el2=document.getElementById(p); if(el2) el2.style.display='none'; });
   el.closest('.inner-tabs').querySelectorAll('.inner-tab').forEach(t => {
     t.classList.remove('active');
     t.style.borderBottomColor = 'transparent';
@@ -2387,6 +2392,19 @@ function rptToggleGuide() {
   if (arrow) arrow.style.transform = open ? '' : 'rotate(90deg)';
 }
 
+
+function rptRefreshAutoBlocks() {
+  document.querySelectorAll('#rptBlocks > div').forEach(row => {
+    const el = row.querySelector('[data-indent]');
+    if (!el || (el.dataset.type||'text') === 'text') return;
+    try {
+      const val = rptGetBlockValue({type: el.dataset.type, indent: parseInt(el.dataset.indent||0)});
+      el.textContent = val;
+    } catch(e) {}
+  });
+  rptRenderStatus();
+}
+
 (function rptInit() {
   let blocks = RPT_BLOCKS_DEFAULT;
   try { const ls = localStorage.getItem(RPT_BLOCKS_KEY); if(ls) blocks = JSON.parse(ls); } catch {}
@@ -2402,19 +2420,7 @@ function rptToggleGuide() {
   }
   tryFirebase();
 })();
-
-
-function rptRefreshAutoBlocks() {
-  document.querySelectorAll('#rptBlocks > div').forEach(row => {
-    const el = row.querySelector('[data-indent]');
-    if (!el || (el.dataset.type||'text') === 'text') return;
-    try {
-      const val = rptGetBlockValue({type: el.dataset.type, indent: parseInt(el.dataset.indent||0)});
-      el.textContent = val;
-    } catch(e) {}
-  });
-  rptRenderStatus();
-}// 초기 로드// sticky 높이 동적 계산
+// 초기 로드// sticky 높이 동적 계산
 (function() {
   function updateStickyTop() {
     const wrapper = document.querySelector('[style*="position:sticky"][style*="z-index:100"]');

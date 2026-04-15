@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440, initial-scale=1.0">
+<title>브검 소재 이미지 관리</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gb:rgba(255,255,255,0.74);--gbs:rgba(255,255,255,0.92);
+  --gbd:rgba(0,0,0,0.07);--tx:#0a0a0f;--t2:#4a4a5a;--t3:#9898a8;--t4:#c4c4d0;
+  --ac:#3a3af0;--gr:#1a8a4a;--rd:#d42020;--bl:#1a56c8;--or:#c45a10;
+}
+html{height:100%;background:linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#eef0f8 100%) fixed;}
+body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;line-height:1.5;color:var(--tx);padding:20px 24px 32px;}
+.pg-title{font-size:15px;font-weight:700;margin-bottom:4px}
+.pg-desc{font-size:11.5px;color:var(--t3);margin-bottom:16px}
+.bk-tabs{display:flex;gap:0;border-bottom:1.5px solid var(--gbd);margin-bottom:16px}
+.bk-tab{padding:7px 18px;font-size:12.5px;color:var(--t2);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;transition:all .12s;user-select:none}
+.bk-tab:hover{color:var(--tx)}
+.bk-tab.active{color:var(--ac);border-bottom-color:var(--ac);font-weight:600}
+.bk-pane{display:none}.bk-pane.active{display:block}
+.card{background:var(--gb);border:1px solid var(--gbd);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+.card-title{font-size:12.5px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.cdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.cbadge{background:rgba(58,58,240,0.08);color:var(--ac);border-radius:10px;padding:2px 9px;font-size:11.5px;font-weight:500;margin-left:4px}
+.form-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fl{font-size:11.5px;font-weight:500;color:var(--t2)}
+.inp{border:1px solid var(--gbd);border-radius:7px;padding:7px 12px;font-size:12.5px;color:var(--tx);background:var(--gbs);font-family:inherit;outline:none}
+.inp:focus{border-color:rgba(58,58,240,0.3);box-shadow:0 0 0 3px rgba(58,58,240,0.06)}
+.inp::placeholder{color:var(--t4)}
+.fdrop{border:1.5px dashed rgba(58,58,240,0.2);border-radius:8px;padding:8px 12px;text-align:center;cursor:pointer;transition:all .15s;background:rgba(58,58,240,0.02);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:160px;height:60px}
+.fdrop:hover,.fdrop.drag-over{border-color:rgba(58,58,240,0.4);background:rgba(58,58,240,0.04)}
+.fdrop-t{font-size:11px;color:var(--t3)}
+.fdrop-n{font-size:11px;font-weight:600;color:var(--ac);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:7px;font-size:12px;cursor:pointer;font-family:inherit;border:none;transition:all .12s}
+.btn-p{background:var(--ac);color:#fff;font-weight:500}.btn-p:hover{background:#2a2ad8}
+.btn-g{background:var(--gbs);border:1px solid var(--gbd);color:var(--t2)}.btn-g:hover{color:var(--tx)}
+.btn-r{background:rgba(212,32,32,0.06);border:1px solid rgba(212,32,32,0.14);color:var(--rd)}.btn-r:hover{background:rgba(212,32,32,0.1)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.pcb{background:rgba(26,86,200,0.1);color:var(--bl);border-radius:4px;padding:1px 6px;font-size:10px;font-weight:600}
+.mob{background:rgba(196,90,16,0.1);color:var(--or);border-radius:4px;padding:1px 6px;font-size:10px;font-weight:600}
+.urow{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-end}
+.ublock{display:flex;flex-direction:column;gap:5px}
+.utitle{font-size:11.5px;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:6px}
+/* 소재 현황 */
+.today-strip{background:var(--gb);border:1px solid var(--gbd);border-radius:10px;padding:12px 16px;margin-bottom:14px}
+.today-lbl{font-size:11px;color:var(--t3);margin-bottom:8px}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pill{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:6px;font-size:11px;border:1px solid var(--gbd);background:var(--gbs)}
+.pdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.pname{font-weight:500}
+.ptime{color:var(--t3)}
+.cal-layout{display:flex;gap:14px;align-items:flex-start}
+.cal-main{flex:1;min-width:0;overflow-x:auto}
+.cal-detail{width:268px;flex-shrink:0;background:var(--gbs);border:1px solid var(--gbd);border-radius:10px;padding:14px;position:sticky;top:20px;max-height:82vh;overflow-y:auto}
+.cal-nav{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.cnbtn{background:var(--gbs);border:1px solid var(--gbd);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--t2);font-family:inherit}
+.cnbtn:hover{color:var(--tx)}
+.cntitle{font-size:13px;font-weight:600;min-width:120px;text-align:center}
+.cvtog{display:flex;border:1px solid var(--gbd);border-radius:7px;overflow:hidden;margin-left:auto}
+.cvbtn{padding:4px 12px;font-size:11.5px;cursor:pointer;background:var(--gb);color:var(--t2);border:none;font-family:inherit;transition:all .12s}
+.cvbtn.active{background:rgba(58,58,240,0.08);color:var(--ac);font-weight:500}
+.legend{display:flex;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.litem{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2)}
+.ldot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.cal-table{border-collapse:collapse;min-width:100%}
+.cal-table th{background:#EEF2FF;color:#3D5A99;font-size:10.5px;font-weight:500;padding:5px 6px;border:0.5px solid var(--gbd);text-align:center;white-space:nowrap;min-width:72px}
+.cal-table th.tcol{background:rgba(58,58,240,0.18);color:var(--ac);font-weight:700}
+.cal-table th.time-hdr{text-align:left;min-width:100px;position:sticky;left:0;z-index:2;background:#EEF2FF}
+.cal-table td.time-cell{font-size:10.5px;padding:0 8px;border:0.5px solid var(--gbd);white-space:nowrap;color:var(--t2);background:var(--gbs);width:100px;height:22px;vertical-align:middle;position:sticky;left:0;z-index:1}
+.cal-table td.day-cell{border:0.5px solid var(--gbd);height:22px;padding:0;overflow:hidden;vertical-align:middle;min-width:72px;cursor:pointer}
+.cal-table td.day-cell.tcol{background:rgba(58,58,240,0.04)}
+.cal-table td.day-cell:hover{filter:brightness(0.92)}
+.cell-inner{display:flex;height:100%;width:100%}
+.cseg{height:100%;flex:1;opacity:.72}
+.detail-empty{text-align:center;padding:24px 0;color:var(--t3);font-size:12px;line-height:1.8}
+.d-name{font-size:13px;font-weight:600;margin-bottom:3px}
+.d-sub{font-size:10.5px;color:var(--t3);margin-bottom:8px;line-height:1.7}
+.d-period{font-size:11.5px;color:var(--t2);background:rgba(58,58,240,0.05);border-radius:6px;padding:6px 10px;margin-bottom:12px;line-height:1.8}
+.d-iblk{display:flex;flex-direction:column;gap:3px;margin-bottom:10px}
+.d-ilbl{font-size:10.5px;font-weight:600;color:var(--t2);display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.d-img{max-width:100%;max-height:120px;object-fit:contain;border-radius:6px;border:1px solid var(--gbd);background:#fff;cursor:pointer;display:block}
+.d-img:hover{opacity:.85}
+.d-btns{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--gbd)}
+/* 소재 이력 테이블 */
+.hist-table{width:100%;border-collapse:collapse}
+.hist-table th{background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:8px 10px;border:0.5px solid var(--gbd);text-align:left;white-space:nowrap}
+.hist-table td{border:0.5px solid var(--gbd);padding:8px 10px;font-size:12px;vertical-align:middle}
+.hist-table tr:hover td{background:rgba(58,58,240,0.02)}
+.status-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10.5px;font-weight:500}
+.sb-active{background:rgba(26,138,74,0.1);color:var(--gr)}
+.sb-done{background:rgba(152,152,168,0.15);color:var(--t3)}
+.sb-future{background:rgba(58,58,240,0.08);color:var(--ac)}
+.empty-state{text-align:center;padding:32px;color:var(--t3)}
+.empty-icon{font-size:22px;opacity:.4;margin-bottom:6px}
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(60px);background:rgba(10,10,15,0.88);color:#fff;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:500;transition:transform .2s ease;z-index:9999;pointer-events:none;backdrop-filter:blur(8px)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="pg-title">🔍 브검 소재 이미지 관리</div>
+<div class="pg-desc">소재 ID 기준으로 PC/MO 이미지를 등록하고 기간별 운영 현황을 확인합니다</div>
+
+<div class="bk-tabs">
+  <div class="bk-tab active" id="bkTab1" onclick="swTab(1)">➕ 소재 등록</div>
+  <div class="bk-tab" id="bkTab2" onclick="swTab(2)">📊 소재 현황</div>
+  <div class="bk-tab" id="bkTab3" onclick="swTab(3)">📋 소재 이력</div>
+</div>
+
+<!-- ── 탭1: 소재 등록 ── -->
+<div class="bk-pane active" id="bkPane1">
+<div class="card">
+  <div class="card-title"><div class="cdot" style="background:var(--ac)"></div>소재 등록</div>
+  <div class="form-row">
+    <div class="fg">
+      <div class="fl">소재명</div>
+      <input type="text" id="nameInput" class="inp" placeholder="예) 요즘상시6+3_이벤트문구_0401-0410" style="width:320px">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="fg">
+      <div class="fl">시작 일시 <span style="font-size:10.5px;color:var(--t3);font-weight:400">— YYYY-MM-DD-HHMM 또는 달력 선택</span></div>
+      <input type="text" id="startRaw" class="inp" placeholder="2026-04-07-1100" style="width:180px" oninput="parseShortDt(this,'startInput')">
+      <input type="datetime-local" id="startInput" class="inp" style="width:190px;margin-top:5px">
+    </div>
+    <div class="fg">
+      <div class="fl">종료 일시 <span style="font-size:10.5px;color:var(--t3);font-weight:400">— YYYY-MM-DD-HHMM 또는 달력 선택</span></div>
+      <input type="text" id="endRaw" class="inp" placeholder="2026-04-10-2359" style="width:180px" oninput="parseShortDt(this,'endInput')">
+      <input type="datetime-local" id="endInput" class="inp" style="width:190px;margin-top:5px">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="fg">
+      <div class="fl"><span class="pcb">PC</span> 소재 ID</div>
+      <input type="text" id="pcIdInput" class="inp" placeholder="nad-a001-04-..." style="width:240px">
+    </div>
+    <div class="fg">
+      <div class="fl"><span class="mob">MO</span> 소재 ID</div>
+      <input type="text" id="moIdInput" class="inp" placeholder="nad-a001-04-..." style="width:240px">
+    </div>
+  </div>
+  <div class="urow">
+    <div class="ublock">
+      <div class="utitle"><span class="pcb">PC</span> 이미지 <span style="font-size:10px;color:var(--t3);font-weight:400">(최대 2MB)</span></div>
+      <label class="fdrop" id="pcFileDrop"><div id="pcDropText" class="fdrop-t">클릭 또는 드래그</div><input type="file" id="pcFileInput" accept="image/*" style="display:none"></label>
+    </div>
+    <div class="ublock">
+      <div class="utitle"><span class="mob">MO</span> 이미지 <span style="font-size:10px;color:var(--t3);font-weight:400">(최대 2MB)</span></div>
+      <label class="fdrop" id="moFileDrop"><div id="moDropText" class="fdrop-t">클릭 또는 드래그</div><input type="file" id="moFileInput" accept="image/*" style="display:none"></label>
+    </div>
+    <div class="ublock" style="justify-content:flex-end">
+      <button class="btn btn-p" id="addBtn" style="height:60px;padding:0 24px;align-self:flex-end">＋ 등록</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ── 탭2: 소재 현황 ── -->
+<div class="bk-pane" id="bkPane2">
+  <div class="today-strip">
+    <div class="today-lbl" id="todayLbl">오늘 활성 소재</div>
+    <div class="pills" id="todayPills"><span style="font-size:12px;color:var(--t3)">불러오는 중...</span></div>
+  </div>
+  <div class="cal-nav">
+    <button class="cnbtn" id="calPrev">◀ 이전</button>
+    <div class="cntitle" id="calTitle">—</div>
+    <button class="cnbtn" id="calNext">다음 ▶</button>
+    <div class="cvtog">
+      <button class="cvbtn active" id="cvWeek" onclick="setCalView('week')">주</button>
+      <button class="cvbtn" id="cvMonth" onclick="setCalView('month')">월</button>
+    </div>
+  </div>
+  <div class="legend" id="calLegend"></div>
+  <div class="cal-layout">
+    <div class="cal-main"><div id="calGrid"></div></div>
+    <div class="cal-detail" id="calDetail"><div class="detail-empty">시간대 셀을 클릭하면<br>소재 정보가 표시됩니다</div></div>
+  </div>
+</div>
+
+<!-- ── 탭3: 소재 이력 ── -->
+<div class="bk-pane" id="bkPane3">
+<div class="card">
+  <div class="card-title"><div class="cdot" style="background:var(--bl)"></div>등록된 소재 전체</div>
+  <div id="histTable"><div class="empty-state"><div class="empty-icon">📋</div><div>등록된 소재가 없습니다</div></div></div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, doc, getDocs, setDoc, deleteDoc }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+const _app = initializeApp({
+  apiKey:'AIzaSyCEP7E_VJ6JkE_AZ5udN4aZfa3wUlLYr4I',
+  authDomain:'daily-report-naver-ad-2026.firebaseapp.com',
+  projectId:'daily-report-naver-ad-2026',
+  appId:'1:649512750747:web:6597ebc08040f413be003e'
+},'bkCreative');
+const _db = getFirestore(_app);
+const COL = 'bkImages';
+window._bkFs = {
+  async loadAll() {
+    const snap = await getDocs(collection(_db, COL));
+    const r = {};
+    snap.forEach(d => { r[d.id] = d.data(); });
+    return r;
+  },
+  async save(id, data) { await setDoc(doc(_db, COL, id), data); },
+  async remove(id) { await deleteDoc(doc(_db, COL, id)); }
+};
+document.dispatchEvent(new Event('bkFsReady'));
+</script>
+
+<script>
+'use strict';
+const DOW = ['일','월','화','수','목','금','토'];
+const HOURS = Array.from({length:24}, function(_, i) {
+  return String(i).padStart(2,'0') + ':00 ~ ' + String(i+1).padStart(2,'0') + ':00';
+});
+const COLORS = ['#3a3af0','#e67e22','#1a8a4a','#c0392b','#8e44ad','#16a085','#d35400','#2980b9'];
+
+let _cr = {};
+let _calView = 'week';
+let _calY = new Date().getFullYear();
+let _calM = new Date().getMonth();
+let _calW = 1;
+let _selId = null;
+let _pendingPc = null, _pendingMo = null;
+let _toastTmr;
+
+/* ── 단축 날짜 파서 ── */
+function parseShortDt(el, targetId) {
+  const v = el.value.trim();
+  const m = v.match(/^(\d{4})[-.]?(\d{2})[-.]?(\d{2})[-T]?(\d{2})(\d{2})$/);
+  if (!m) return;
+  const dt = m[1] + '-' + m[2] + '-' + m[3] + 'T' + m[4] + ':' + m[5];
+  document.getElementById(targetId).value = dt;
+  el.style.borderColor = 'rgba(26,138,74,0.5)';
+  setTimeout(function() { el.style.borderColor = ''; }, 1200);
+}
+
+/* ── 유틸 ── */
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTmr);
+  _toastTmr = setTimeout(function() { el.classList.remove('show'); }, 2500);
+}
+function dateOnly(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+function addDays(d, n) { const r = new Date(d); r.setDate(r.getDate() + n); return r; }
+function fmtDt(s) {
+  if (!s) return '';
+  const d = new Date(s);
+  return (d.getMonth()+1) + '/' + String(d.getDate()).padStart(2,'0') + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+function fmtDateHdr(d) {
+  return (d.getMonth()+1) + '/' + String(d.getDate()).padStart(2,'0') + '<br><span style="font-size:9px;font-weight:400">' + DOW[d.getDay()] + '</span>';
+}
+function getColor(id) {
+  const keys = Object.keys(_cr);
+  return COLORS[keys.indexOf(id) % COLORS.length];
+}
+
+/* ── 주차 계산 ── */
+function getWeekNum(date, y, m) {
+  const f = new Date(y, m, 1);
+  const dow = f.getDay();
+  const dtm = dow === 0 ? -6 : 1 - dow;
+  const w1s = new Date(y, m, 1 + dtm);
+  const d = dateOnly(date);
+  if (d < dateOnly(w1s)) return 0;
+  return Math.floor((d - dateOnly(w1s)) / 864e5 / 7) + 1;
+}
+function getWeekStart(y, m, w) {
+  const f = new Date(y, m, 1);
+  const dow = f.getDay();
+  const dtm = dow === 0 ? -6 : 1 - dow;
+  const w1s = new Date(y, m, 1 + dtm);
+  if (w === 0) return new Date(w1s.getFullYear(), w1s.getMonth(), w1s.getDate() - 7);
+  return new Date(w1s.getFullYear(), w1s.getMonth(), w1s.getDate() + (w - 1) * 7);
+}
+function maxWeek(y, m) { return getWeekNum(new Date(y, m + 1, 0), y, m); }
+
+/* ── 달력 범위 ── */
+function getCalDays() {
+  if (_calView === 'week') {
+    const mon = getWeekStart(_calY, _calM, _calW);
+    return Array.from({length:7}, function(_, i) { return addDays(mon, i); });
+  }
+  const last = new Date(_calY, _calM + 1, 0).getDate();
+  return Array.from({length:last}, function(_, i) { return new Date(_calY, _calM, i + 1); });
+}
+function calNavigate(dir) {
+  if (_calView === 'week') {
+    let w = _calW + dir, y = _calY, m = _calM;
+    if (w < 0) { m--; if (m < 0) { m = 11; y--; } w = maxWeek(y, m); }
+    else if (w > maxWeek(y, m)) { m++; if (m > 11) { m = 0; y++; } w = 1; }
+    _calY = y; _calM = m; _calW = w;
+  } else {
+    let m = _calM + dir, y = _calY;
+    if (m < 0) { m = 11; y--; } else if (m > 11) { m = 0; y++; }
+    _calY = y; _calM = m;
+  }
+  renderCal();
+}
+function setCalView(v) {
+  _calView = v;
+  document.getElementById('cvWeek').classList.toggle('active', v === 'week');
+  document.getElementById('cvMonth').classList.toggle('active', v === 'month');
+  renderCal();
+}
+
+/* ── 파일 드롭 ── */
+function setupDrop(dropId, inputId, textId, which) {
+  const drop = document.getElementById(dropId);
+  const input = document.getElementById(inputId);
+  const textEl = document.getElementById(textId);
+  drop.addEventListener('click', function() { input.click(); });
+  drop.addEventListener('dragover', function(e) { e.preventDefault(); drop.classList.add('drag-over'); });
+  drop.addEventListener('dragleave', function() { drop.classList.remove('drag-over'); });
+  drop.addEventListener('drop', function(e) {
+    e.preventDefault(); drop.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (f && f.type.startsWith('image/')) setDropFile(f, textEl, which);
+  });
+  input.addEventListener('change', function(e) { if (e.target.files[0]) setDropFile(e.target.files[0], textEl, which); });
+}
+function setDropFile(file, textEl, which) {
+  if (which === 'pc') _pendingPc = file; else _pendingMo = file;
+  textEl.textContent = file.name; textEl.className = 'fdrop-n';
+}
+function resetForm() {
+  ['pcIdInput','moIdInput','nameInput','startInput','endInput','startRaw','endRaw'].forEach(function(id) { document.getElementById(id).value = ''; });
+  document.getElementById('pcDropText').textContent = '클릭 또는 드래그'; document.getElementById('pcDropText').className = 'fdrop-t';
+  document.getElementById('moDropText').textContent = '클릭 또는 드래그'; document.getElementById('moDropText').className = 'fdrop-t';
+  document.getElementById('pcFileInput').value = ''; document.getElementById('moFileInput').value = '';
+  _pendingPc = null; _pendingMo = null;
+}
+function compressFile(file) {
+  return new Promise(function(res) {
+    if (!file) { res(null); return; }
+    if (file.size > 2 * 1024 * 1024) { showToast('⚠️ 2MB 초과'); res(null); return; }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const MAX = 300; let w = img.width, h = img.height;
+        if (w > MAX || h > MAX) { if (w > h) { h = Math.round(h * MAX / w); w = MAX; } else { w = Math.round(w * MAX / h); h = MAX; } }
+        const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        res(cv.toDataURL('image/webp', 0.75));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function copyImgData(dataURL) {
+  if (!dataURL) { showToast('⚠️ 이미지 없음'); return; }
+  const img = new Image();
+  img.onload = function() {
+    const cv = document.createElement('canvas'); cv.width = img.width; cv.height = img.height;
+    cv.getContext('2d').drawImage(img, 0, 0);
+    cv.toBlob(function(blob) {
+      navigator.clipboard.write([new ClipboardItem({'image/png': blob})])
+        .then(function() { showToast('✅ 이미지 복사됨'); })
+        .catch(function() { showToast('❌ 복사 실패 (브라우저 권한 필요)'); });
+    }, 'image/png');
+  };
+  img.src = dataURL;
+}
+
+/* ── 등록 ── */
+document.getElementById('addBtn').onclick = async function() {
+  const pcId = document.getElementById('pcIdInput').value.trim();
+  const moId = document.getElementById('moIdInput').value.trim();
+  const name = document.getElementById('nameInput').value.trim();
+  const startAt = document.getElementById('startInput').value;
+  const endAt = document.getElementById('endInput').value;
+  if (!pcId && !moId) { showToast('⚠️ PC 또는 MO 소재 ID를 입력해주세요'); return; }
+  if (!name) { showToast('⚠️ 소재명을 입력해주세요'); return; }
+  if (!startAt || !endAt) { showToast('⚠️ 시작/종료 일시를 입력해주세요'); return; }
+  if (new Date(startAt) >= new Date(endAt)) { showToast('⚠️ 종료 일시가 시작보다 늦어야 합니다'); return; }
+  const rawKey = pcId || moId;
+  const docId = rawKey.replace(/[^a-zA-Z0-9\-_]/g, '_');
+  try {
+    const pcImg = await compressFile(_pendingPc);
+    const moImg = await compressFile(_pendingMo);
+    const isUpd = !!_cr[docId];
+    const ex = isUpd ? _cr[docId] : {};
+    const data = {
+      pcId: pcId, moId: moId, name: name, startAt: startAt, endAt: endAt,
+      pcImg: pcImg !== null ? pcImg : (ex.pcImg || null),
+      moImg: moImg !== null ? moImg : (ex.moImg || null),
+      createdAt: isUpd ? (ex.createdAt || new Date().toISOString()) : new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    await window._bkFs.save(docId, data);
+    _cr[docId] = data;
+    resetForm();
+    showToast(isUpd ? '✏️ 수정됨: ' + name : '✅ 등록 완료: ' + name);
+    renderAll();
+  } catch(e) { showToast('❌ 저장 실패'); console.error(e); }
+};
+
+/* ── 탭2: 오늘 활성 ── */
+function renderToday() {
+  const now = new Date();
+  const lbl = (now.getMonth()+1) + '/' + now.getDate() + '(' + DOW[now.getDay()] + ') ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ' 현재 활성 소재';
+  document.getElementById('todayLbl').textContent = lbl;
+  const active = Object.entries(_cr).filter(function(e) {
+    return new Date(e[1].startAt) <= now && now <= new Date(e[1].endAt);
+  });
+  const pills = document.getElementById('todayPills');
+  if (!active.length) { pills.innerHTML = '<span style="font-size:12px;color:var(--t3)">현재 활성 소재가 없습니다</span>'; return; }
+  pills.innerHTML = '';
+  active.forEach(function(e) {
+    const id = e[0], c = e[1];
+    const pill = document.createElement('div');
+    pill.className = 'pill';
+    pill.style.cursor = 'pointer';
+    pill.innerHTML = '<div class="pdot" style="background:' + getColor(id) + '"></div><span class="pname">' + c.name + '</span><span class="ptime">' + fmtDt(c.startAt) + ' ~ ' + fmtDt(c.endAt) + '</span>';
+    pill.onclick = function() { _selId = id; renderDetail(); };
+    pills.appendChild(pill);
+  });
+}
+
+/* ── 탭2: 달력 ── */
+function isActiveOnHour(c, day, hour) {
+  const s = new Date(c.startAt), e = new Date(c.endAt);
+  const cellStart = new Date(day.getFullYear(), day.getMonth(), day.getDate(), hour, 0, 0);
+  const cellEnd   = new Date(day.getFullYear(), day.getMonth(), day.getDate(), hour, 59, 59);
+  return s <= cellEnd && e >= cellStart;
+}
+
+function renderCal() {
+  const days = getCalDays();
+  const todayMs = dateOnly(new Date()).getTime();
+  const now = new Date();
+  const viewStart = new Date(dateOnly(days[0]).getFullYear(), dateOnly(days[0]).getMonth(), dateOnly(days[0]).getDate(), 0, 0, 0);
+  const viewEnd   = new Date(dateOnly(days[days.length-1]).getFullYear(), dateOnly(days[days.length-1]).getMonth(), dateOnly(days[days.length-1]).getDate(), 23, 59, 59);
+  const visibleCrs = Object.entries(_cr).filter(function(e) {
+    return new Date(e[1].startAt) <= viewEnd && new Date(e[1].endAt) >= viewStart;
+  });
+
+  const title = _calView === 'week'
+    ? _calY + '년 ' + (_calM+1) + '월 ' + _calW + '주차'
+    : _calY + '년 ' + (_calM+1) + '월';
+  document.getElementById('calTitle').textContent = title;
+
+  const legend = document.getElementById('calLegend');
+  legend.innerHTML = '';
+  visibleCrs.forEach(function(e) {
+    const div = document.createElement('div'); div.className = 'litem';
+    div.innerHTML = '<div class="ldot" style="background:' + getColor(e[0]) + ';opacity:.75"></div>' + e[1].name;
+    legend.appendChild(div);
+  });
+
+  if (!visibleCrs.length) {
+    document.getElementById('calGrid').innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><div>이 기간에 등록된 소재가 없습니다</div></div>';
+    return;
+  }
+
+  let html = '<table class="cal-table"><thead><tr><th class="time-hdr">시간</th>';
+  days.forEach(function(d) {
+    const isT = dateOnly(d).getTime() === todayMs;
+    html += '<th' + (isT ? ' class="tcol"' : '') + '>' + fmtDateHdr(d) + '</th>';
+  });
+  html += '</tr></thead><tbody>';
+
+  HOURS.forEach(function(hLabel, hi) {
+    html += '<tr><td class="time-cell">' + hLabel + '</td>';
+    days.forEach(function(d) {
+      const isT = dateOnly(d).getTime() === todayMs;
+      const isNowHour = isT && now.getHours() === hi;
+      const activeCrs = visibleCrs.filter(function(e) { return isActiveOnHour(e[1], d, hi); });
+      let cls = 'day-cell' + (isT ? ' tcol' : '');
+      let inner = '';
+      if (activeCrs.length) {
+        inner = '<div class="cell-inner">';
+        activeCrs.forEach(function(e) {
+          inner += '<div class="cseg" style="background:' + getColor(e[0]) + (isNowHour ? ';opacity:.9' : '') + '" onclick="selHourCell(\'' + e[0] + '\',event)"></div>';
+        });
+        inner += '</div>';
+      }
+      html += '<td class="' + cls + '"' + (!activeCrs.length ? ' onclick="selHourCell(null,event)"' : '') + '>' + inner + '</td>';
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('calGrid').innerHTML = html;
+}
+
+function selHourCell(id, e) {
+  e.stopPropagation();
+  if (!id) return;
+  _selId = id;
+  renderDetail();
+}
+
+function renderDetail() {
+  const panel = document.getElementById('calDetail');
+  if (!_selId || !_cr[_selId]) {
+    panel.innerHTML = '<div class="detail-empty">시간대 셀을 클릭하면<br>소재 정보가 표시됩니다</div>';
+    return;
+  }
+  const c = _cr[_selId], id = _selId;
+  const col = getColor(id);
+  let html = '<div style="display:flex;align-items:center;gap:7px;margin-bottom:6px"><div style="width:10px;height:10px;border-radius:50%;background:' + col + ';flex-shrink:0"></div><div class="d-name">' + c.name + '</div></div>';
+  html += '<div class="d-sub">';
+  if (c.pcId) html += '<span class="pcb">PC</span> ' + c.pcId + '<br>';
+  if (c.moId) html += '<span class="mob">MO</span> ' + c.moId;
+  html += '</div>';
+  html += '<div class="d-period">▶ <b>' + fmtDt(c.startAt) + '</b><br>◀ <b>' + fmtDt(c.endAt) + '</b></div>';
+  if (c.pcImg) html += '<div class="d-iblk"><div class="d-ilbl"><span class="pcb">PC</span><button class="btn btn-g btn-sm" onclick="copyImgData(_cr[\'' + id + '\'].pcImg)">📋 복사</button></div><img class="d-img" src="' + c.pcImg + '" onclick="copyImgData(_cr[\'' + id + '\'].pcImg)"></div>';
+  if (c.moImg) html += '<div class="d-iblk"><div class="d-ilbl"><span class="mob">MO</span><button class="btn btn-g btn-sm" onclick="copyImgData(_cr[\'' + id + '\'].moImg)">📋 복사</button></div><img class="d-img" src="' + c.moImg + '" onclick="copyImgData(_cr[\'' + id + '\'].moImg)"></div>';
+  html += '<div class="d-btns"><button class="btn btn-g btn-sm" onclick="editCr(\'' + id + '\')">✏️ 수정</button><button class="btn btn-r btn-sm" onclick="deleteCr(\'' + id + '\')">🗑 삭제</button></div>';
+  panel.innerHTML = html;
+}
+
+function editCr(id) {
+  const c = _cr[id]; if (!c) return;
+  document.getElementById('pcIdInput').value = c.pcId || '';
+  document.getElementById('moIdInput').value = c.moId || '';
+  document.getElementById('nameInput').value = c.name || '';
+  document.getElementById('startInput').value = c.startAt || '';
+  document.getElementById('endInput').value = c.endAt || '';
+  document.getElementById('startRaw').value = '';
+  document.getElementById('endRaw').value = '';
+  document.getElementById('pcDropText').textContent = c.pcImg ? '(기존 유지)' : '클릭 또는 드래그';
+  document.getElementById('moDropText').textContent = c.moImg ? '(기존 유지)' : '클릭 또는 드래그';
+  _pendingPc = null; _pendingMo = null;
+  swTab(1);
+  window.scrollTo({top:0, behavior:'smooth'});
+  showToast('📝 수정 모드 — 변경 후 등록 버튼을 눌러주세요');
+}
+
+function deleteCr(id) {
+  const c = _cr[id]; if (!c) return;
+  if (!confirm('"' + c.name + '" 소재를 삭제할까요?')) return;
+  window._bkFs.remove(id).then(function() {
+    delete _cr[id];
+    if (_selId === id) _selId = null;
+    showToast('🗑 삭제됨: ' + c.name);
+    renderAll();
+  }).catch(function() { showToast('❌ 삭제 실패'); });
+}
+
+/* ── 탭3: 소재 이력 ── */
+function renderHist() {
+  const entries = Object.entries(_cr).sort(function(a, b) { return new Date(b[1].startAt) - new Date(a[1].startAt); });
+  
+  const wrap = document.getElementById('histTable');
+  if (!entries.length) {
+    wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div>등록된 소재가 없습니다</div></div>';
+    return;
+  }
+  const now = new Date();
+  let html = '<table class="hist-table"><thead><tr><th style="width:20px"></th><th>소재명</th><th>기간</th><th>PC 소재 ID</th><th>MO 소재 ID</th><th>이미지</th><th>상태</th><th style="width:100px">관리</th></tr></thead><tbody>';
+  entries.forEach(function(e) {
+    const id = e[0], c = e[1];
+    const col = getColor(id);
+    const s = new Date(c.startAt), en = new Date(c.endAt);
+    let statusHtml = '';
+    if (now < s) statusHtml = '<span class="status-badge sb-future">예정</span>';
+    else if (now > en) statusHtml = '<span class="status-badge sb-done">종료</span>';
+    else statusHtml = '<span class="status-badge sb-active">운영 중</span>';
+    const imgHtml = (c.pcImg ? '<span class="pcb">PC</span> ' : '') + (c.moImg ? '<span class="mob">MO</span>' : (!c.pcImg ? '<span style="font-size:11px;color:var(--t4)">없음</span>' : ''));
+    html += '<tr>';
+    html += '<td><div style="width:8px;height:8px;border-radius:50%;background:' + col + ';margin:auto"></div></td>';
+    html += '<td style="font-weight:500">' + c.name + '</td>';
+    html += '<td style="font-size:11.5px;color:var(--t2)">' + fmtDt(c.startAt) + '<br>' + fmtDt(c.endAt) + '</td>';
+    html += '<td style="font-size:11px;color:var(--t2)">' + (c.pcId || '—') + '</td>';
+    html += '<td style="font-size:11px;color:var(--t2)">' + (c.moId || '—') + '</td>';
+    html += '<td>' + imgHtml + '</td>';
+    html += '<td>' + statusHtml + '</td>';
+    html += '<td><div style="display:flex;gap:5px"><button class="btn btn-g btn-sm" onclick="editCr(\'' + id + '\')">✏️</button><button class="btn btn-r btn-sm" onclick="deleteCr(\'' + id + '\')">🗑</button></div></td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+/* ── 탭 전환 ── */
+function swTab(n) {
+  [1,2,3].forEach(function(i) {
+    document.getElementById('bkTab' + i).classList.toggle('active', i === n);
+    document.getElementById('bkPane' + i).classList.toggle('active', i === n);
+  });
+  if (n === 2) { renderToday(); renderCal(); renderDetail(); }
+  if (n === 3) renderHist();
+}
+
+/* ── 전체 렌더 ── */
+function renderAll() {
+  renderToday();
+  renderCal();
+  renderDetail();
+  renderHist();
+}
+
+/* ── 이벤트 ── */
+setupDrop('pcFileDrop','pcFileInput','pcDropText','pc');
+setupDrop('moFileDrop','moFileInput','moDropText','mo');
+document.getElementById('calPrev').onclick = function() { calNavigate(-1); };
+document.getElementById('calNext').onclick = function() { calNavigate(1); };
+
+/* ── 초기화 ── */
+const _now = new Date();
+_calY = _now.getFullYear(); _calM = _now.getMonth();
+_calW = getWeekNum(_now, _calY, _calM);
+
+document.addEventListener('bkFsReady', async function() {
+  try { _cr = await window._bkFs.loadAll(); }
+  catch(e) { _cr = {}; showToast('⚠️ Firestore 연결 실패'); }
+  renderAll();
+});
+</script>
+</body>
+</html>

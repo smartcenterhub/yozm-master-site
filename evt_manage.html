@@ -463,7 +463,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     <div style="font-size:13px;font-weight:600;margin-bottom:4px">엑셀 파일을 여기에 드래그하거나</div>
     <div style="font-size:12px;color:var(--t3);margin-bottom:14px">.xlsx 파일만 지원 · 시트명: 행사_일괄등록</div>
     <button class="btn btn-sm btn-p" onclick="document.getElementById('bulk-file-input').click()">파일 선택</button>
-    <input type="file" id="bulk-file-input" accept=".xlsx" style="display:none" onchange="handleBulkFile(this.files[0])">
+    <input type="file" id="bulk-file-input" accept=".xlsx" style="display:none">
   </div>
 
   <!-- 미리보기 & 결과 -->
@@ -747,6 +747,11 @@ const STATUS_ST={'제안중':'s-gray','제안완료':'s-sel','확인필요':'s-w
 
 /* ══ 행사 일괄 등록 (엑셀) ══ */
 let BULK_ROWS=[];
+/* bulk-file-input addEventListener */
+document.addEventListener('DOMContentLoaded',()=>{
+  const bfi=document.getElementById('bulk-file-input');
+  if(bfi)bfi.addEventListener('change',function(){if(this.files[0])handleBulkFile(this.files[0]);});
+});
 window.toggleBulkGuide=function(){
   const el=document.getElementById('bulk-guide');
   if(el)el.style.display=el.style.display==='none'?'block':'none';

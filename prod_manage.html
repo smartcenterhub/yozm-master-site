@@ -666,6 +666,9 @@ function renderItemTable(q){
 }
 
 /* ════ SKUS ════ */
+let skuNewOpen=false,skuEditCode=null;
+const skuOpenSet=new Set();
+
 let skuPriceVisible=true;
 function toggleSkuPrice(){
   skuPriceVisible=!skuPriceVisible;

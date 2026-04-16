@@ -240,8 +240,9 @@ code{font-family:monospace;font-size:11px;background:rgba(0,0,0,.05);padding:1px
 .pi.cat-굿즈{background:rgba(241,245,249,0.6);border:1px solid rgba(71,85,105,.2);color:#6080a0}
 .pi.cat-굿즈:hover,.pi.cat-굿즈.on{background:#475569;border-color:#475569;color:#fff}
 .pi.cat-off{background:rgba(235,235,235,0.6);border:1px solid rgba(100,100,100,.18);color:#999}
-.pi.cat-off:hover,.pi.cat-off.on{background:#888;border-color:#888;color:#fff}align-items:center;justify-content:center;min-width:22px;height:20px;padding:0 6px;border-radius:10px;font-size:11px;font-weight:600;cursor:pointer;user-select:none;transition:all .1s}
-.opt-cnt.one{background:rgba(0,0,0,.05);color:var(--t3);cursor:default}
+.pi.cat-off:hover,.pi.cat-off.on{background:#888;border-color:#888;color:#fff}
+.opt-cnt{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:20px;padding:0 6px;border-radius:10px;font-size:11px;font-weight:600;cursor:pointer;user-select:none;transition:all .1s;border:none;font-family:inherit}
+.opt-cnt.one{background:rgba(0,0,0,.05);color:var(--t3);cursor:default;pointer-events:none}
 .opt-cnt.many{background:var(--fc-l);color:var(--accent)}
 .opt-cnt.many:hover{background:var(--fc-m)}
 .opt-cnt.open{background:var(--accent);color:#fff}
@@ -392,6 +393,7 @@ tr.opt-row.opt-last td{border-bottom:1px solid rgba(58,58,240,.12)}
         <span class="cnt" id="skuPendLbl" style="color:var(--amber);display:none"></span>
         <span class="copy-toggle" id="skuCopyToggle" onclick="toggleCopy('sku')"><span class="dot"></span>복사 OFF</span>
         <span class="copy-toggle" id="skuPriceToggle" onclick="toggleSkuPrice()" style="margin-left:4px">가격 접기</span>
+        <span class="copy-toggle" id="skuOptToggle" onclick="toggleAllOpts()" style="margin-left:4px">옵션 전체 열기</span>
         <span class="filter-toggle" id="sFilterToggle" onclick="toggleFilterBody('sku')">
           <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="4 6 8 10 12 6"/></svg>필터
         </span>
@@ -407,8 +409,13 @@ tr.opt-row.opt-last td{border-bottom:1px solid rgba(58,58,240,.12)}
           <span class="col-chip on" data-col="sc-type" onclick="toggleColChip(this)">유형</span>
           <span class="col-chip on" data-col="sc-status" onclick="toggleColChip(this)">운영상태</span>
           <span class="col-chip on" data-col="sc-pn" onclick="toggleColChip(this)">정상가</span>
-          <span class="col-chip on" data-col="sc-pd" onclick="toggleColChip(this)">상시할인가</span>
-          <span class="col-chip on" data-col="sc-pm" onclick="toggleColChip(this)">최대할인가</span>
+          <span class="col-chip on" data-col="sc-pd" onclick="toggleColChip(this)">기본행사가</span>
+          <span class="col-chip on" data-col="sc-pm" onclick="toggleColChip(this)">제안행사가</span>
+          <span class="col-chip on" data-col="sc-pf" onclick="toggleColChip(this)">최대혜택가</span>
+          <span class="col-chip on" data-col="sc-da" onclick="toggleColChip(this)">행사할인금액</span>
+          <span class="col-chip on" data-col="sc-db" onclick="toggleColChip(this)">최대할인금액</span>
+          <span class="col-chip on" data-col="sc-ra" onclick="toggleColChip(this)">행사할인율</span>
+          <span class="col-chip on" data-col="sc-rb" onclick="toggleColChip(this)">최대할인율</span>
           <span class="col-chip on" data-col="sc-ship" onclick="toggleColChip(this)">배송조건</span>
           <span class="col-chip on" data-col="sc-memo" onclick="toggleColChip(this)">메모</span>
           <span class="col-chip on" data-col="sc-opt" onclick="toggleColChip(this)">옵션</span>
@@ -420,12 +427,12 @@ tr.opt-row.opt-last td{border-bottom:1px solid rgba(58,58,240,.12)}
   </div><!-- /sticky-header -->
   <div class="tbl-card">
     <div class="tbl-scroll" id="sScroll">
-      <table style="width:1480px">
+      <table style="width:1900px">
         <!-- skus: fix 컬럼 left값 — pend:0, No:24, 네이버상품코드:68, 닉네임:192 -->
         <colgroup>
           <col style="width:24px"><col style="width:44px"><col style="width:124px"><col style="width:100px">
           <col id="sc-name" style="width:360px"><col id="sc-type" style="width:110px"><col id="sc-status" style="width:88px">
-          <col id="sc-pn" style="width:82px"><col id="sc-pd" style="width:82px"><col id="sc-pm" style="width:82px">
+          <col id="sc-pn" style="width:74px"><col id="sc-pd" style="width:74px"><col id="sc-pm" style="width:74px"><col id="sc-pf" style="width:74px"><col id="sc-da" style="width:74px"><col id="sc-db" style="width:74px"><col id="sc-ra" style="width:62px"><col id="sc-rb" style="width:62px">
           <col id="sc-ship" style="width:100px"><col id="sc-memo" style="width:140px"><col id="sc-opt" style="width:52px"><col id="sc-edit" style="width:92px"><col id="sc-date" style="width:88px">
         </colgroup>
         <thead><tr>
@@ -437,8 +444,13 @@ tr.opt-row.opt-last td{border-bottom:1px solid rgba(58,58,240,.12)}
           <th>유형</th>
           <th>운영상태</th>
           <th class="r">정상가</th>
-          <th class="r">상시할인가</th>
-          <th class="r">최대할인가</th>
+          <th class="r">기본행사가</th>
+          <th class="r">제안행사가</th>
+          <th class="r">최대혜택가</th>
+          <th class="r" style="color:var(--t3)">행사할인금액</th>
+          <th class="r" style="color:var(--t3)">최대할인금액</th>
+          <th class="r" style="color:var(--t3)">행사할인율</th>
+          <th class="r" style="color:var(--t3)">최대할인율</th>
           <th>배송조건</th>
           <th>메모</th>
           <th class="c-act">옵션</th>
@@ -446,7 +458,7 @@ tr.opt-row.opt-last td{border-bottom:1px solid rgba(58,58,240,.12)}
           <th>수정일</th>
         </tr></thead>
         <tbody id="skuTbody">
-          <tr><td colspan="15" style="padding:28px;text-align:center;color:var(--t4);font-size:12px">⏳ Firebase에서 불러오는 중...</td></tr>
+          <tr><td colspan="18" style="padding:28px;text-align:center;color:var(--t4);font-size:12px">⏳ Firebase에서 불러오는 중...</td></tr>
         </tbody>
       </table>
     </div>
@@ -518,20 +530,48 @@ function setSkuItemFilter(el,nick){
 }
 
 function setFp(el){
-  el.closest('.toolbar-row').querySelectorAll('.fp').forEach(f=>f.classList.remove('on'));
-  el.classList.add('on');
-  const lbl=el.closest('.toolbar-row').querySelector('.filter-lbl')?.textContent;
-  const val=el.textContent;
+  const row=el.closest('.toolbar-row');
+  const lbl=row.querySelector('.filter-lbl')?.textContent;
+  const val=el.dataset.v||el.textContent;
   const inItem=el.closest('#t-item');
+  /* 정렬 행은 단일 선택 유지 */
+  if(lbl==='정렬'){
+    row.querySelectorAll('.fp').forEach(f=>f.classList.remove('on'));
+    el.classList.add('on');
+    if(inItem){IF.sort=val;renderItemTable(document.querySelector('#t-item .search-box')?.value);}
+    else{SF.sort=val;renderSkuTable(document.querySelector('#t-sku .search-box')?.value);}
+    return;
+  }
+  /* 전체 버튼: 전체만 on */
+  if(!el.dataset.v){
+    row.querySelectorAll('.fp').forEach(f=>f.classList.remove('on'));
+    el.classList.add('on');
+    if(inItem){
+      if(lbl==='상태') IF.status='전체';
+      else if(lbl==='분류') IF.cat='전체';
+      renderItemTable(document.querySelector('#t-item .search-box')?.value);
+    } else {
+      if(lbl==='상태') SF.status='전체';
+      else if(lbl==='유형') SF.type='전체';
+      renderSkuTable(document.querySelector('#t-sku .search-box')?.value);
+    }
+    return;
+  }
+  /* 값 버튼: 전체 off + 토글 */
+  row.querySelector('.fp:not([data-v])')?.classList.remove('on');
+  el.classList.toggle('on');
+  /* 하나도 안 선택되면 전체 on */
+  const anyOn=[...row.querySelectorAll('.fp[data-v]')].some(f=>f.classList.contains('on'));
+  if(!anyOn) row.querySelector('.fp:not([data-v])')?.classList.add('on');
+  /* 선택된 값 배열 수집 */
+  const vals=[...row.querySelectorAll('.fp[data-v].on')].map(f=>f.dataset.v);
   if(inItem){
-    if(lbl==='상태') IF.status=val;
-    else if(lbl==='분류') IF.cat=val;
-    else if(lbl==='정렬') IF.sort=val;
+    if(lbl==='상태') IF.status=vals.length?vals:'전체';
+    else if(lbl==='분류') IF.cat=vals.length?vals:'전체';
     renderItemTable(document.querySelector('#t-item .search-box')?.value);
   } else {
-    if(lbl==='상태') SF.status=val;
-    else if(lbl==='유형') SF.type=val;
-    else if(lbl==='정렬') SF.sort=val;
+    if(lbl==='상태') SF.status=vals.length?vals:'전체';
+    else if(lbl==='유형') SF.type=vals.length?vals:'전체';
     renderSkuTable(document.querySelector('#t-sku .search-box')?.value);
   }
 }
@@ -595,7 +635,7 @@ async function saveToFirebase(){
          category:it.category,status:it.status,memo:it.memo||null,updatedAt:new Date().toISOString()},{merge:true})),
       ...pS.map(sk=>window.fsSetDoc(window.fsDoc(window.db,'skus',sk.code),
         {code:sk.code,no:sk.no,nick:sk.nick,name:sk.name,type:sk.type,status:sk.status,
-         priceNormal:sk.priceNormal||null,priceDisc:sk.priceDisc||null,priceMax:sk.priceMax||null,
+         priceNormal:sk.priceNormal||null,priceDisc:sk.priceDisc||null,priceMax:sk.priceMax||null,priceFinal:sk.priceFinal||null,
          ship:sk.ship||null,memo:sk.memo||null,options:sk.options||[],updatedAt:new Date().toISOString()},{merge:true})
         .then(()=>{ if(sk._oldCode) return window.fsDeleteDoc(window.fsDoc(window.db,'skus',sk._oldCode)); }))
     ]);
@@ -662,8 +702,8 @@ function renderItemTable(q){
   const CAT_MAP={'요거트':'그릭요거트 본품','마시는':'마시는 그릭요거트','토핑':'토핑','굿즈':'굿즈/기타'};
   let rows=ITEMS.filter(x=>{
     if(q&&!(x.code+x.nick+x.name).toLowerCase().includes(q)) return false;
-    if(IF.status!=='전체'&&x.status!==IF.status) return false;
-    if(IF.cat!=='전체'&&x.category!==(CAT_MAP[IF.cat]||IF.cat)) return false;
+    const iSt=IF.status;if(iSt!=='전체'&&!(Array.isArray(iSt)?iSt.includes(x.status):x.status===iSt)) return false;
+    const iCt=IF.cat;if(iCt!=='전체'&&!(Array.isArray(iCt)?iCt.some(c=>x.category===(CAT_MAP[c]||c)):x.category===(CAT_MAP[iCt]||iCt))) return false;
     return true;
   });
   if(IF.sort==='No순') rows.sort((a,b)=>(Number(a.no)||99)-(Number(b.no)||99));
@@ -747,8 +787,8 @@ function initFilterBodies(){
   ['iFilterBody','sFilterBody'].forEach(id=>{
     const el=document.getElementById(id);
     const btn=document.getElementById(id==='iFilterBody'?'iFilterToggle':'sFilterToggle');
-    if(el){el.style.maxHeight='0px';el.classList.add('closed');}
-    if(btn) btn.classList.add('closed');
+    if(el) el.style.maxHeight=el.scrollHeight+'px';
+    if(btn) btn.classList.remove('closed');
   });
 }
 
@@ -761,12 +801,21 @@ function toggleColChip(el){
 }
 
 let skuPriceVisible=true;
+function copySkuPriceToOpt(code){
+  const sk=SKUS.find(x=>x.code===code);if(!sk)return;
+  const set=(id,v)=>{const el=document.getElementById(id);if(el&&v!=null)el.value=v;};
+  set('eo-pn-0',sk.priceNormal);
+  set('eo-pd-0',sk.priceDisc);
+  set('eo-pm-0',sk.priceMax);
+  set('eo-pf-0',sk.priceFinal);
+}
+
 function toggleSkuPrice(){
   skuPriceVisible=!skuPriceVisible;
   const btn=document.getElementById('skuPriceToggle');
   btn.textContent=skuPriceVisible?'가격 접기':'가격 펼치기';
   btn.classList.toggle('on',!skuPriceVisible);
-  ['sc-pn','sc-pd','sc-pm'].forEach(id=>{
+  ['sc-pn','sc-pd','sc-pm','sc-pf','sc-da','sc-db','sc-ra','sc-rb'].forEach(id=>{
     const col=document.getElementById(id);
     if(col) col.style.visibility=skuPriceVisible?'':'collapse';
     const chip=document.querySelector(`[data-col="${id}"]`);
@@ -782,7 +831,7 @@ function stageSkuNew(){
   if(SKUS.find(x=>x.code===code)){alert('이미 존재하는 코드: '+code);return;}
   SKUS.push({no:Number(document.getElementById('ns-no').value)||nextNo(SKUS),code,nick,name,
     type:document.getElementById('ns-type').value||'상시운영',status:document.getElementById('ns-status').value||'상시',
-    priceNormal:toNum('ns-pn'),priceDisc:toNum('ns-pd'),priceMax:toNum('ns-pm'),
+    priceNormal:toNum('ns-pn'),priceDisc:toNum('ns-pd'),priceMax:toNum('ns-pm'),priceFinal:toNum('ns-pf'),
     ship:document.getElementById('ns-ship').value,memo:document.getElementById('ns-memo').value,
     updatedAt:new Date().toISOString().slice(0,10),pending:true,_isNew:true});
   skuNewOpen=false;
@@ -803,7 +852,7 @@ function stageSkuEdit(code){
   sk.name=document.getElementById('es-name').value||sk.name;
   sk.type=document.getElementById('es-type').value;
   sk.status=document.getElementById('es-status').value;
-  sk.priceNormal=toNum('es-pn');sk.priceDisc=toNum('es-pd');sk.priceMax=toNum('es-pm');
+  sk.priceNormal=toNum('es-pn');sk.priceDisc=toNum('es-pd');sk.priceMax=toNum('es-pm');sk.priceFinal=toNum('es-pf');
   sk.ship=document.getElementById('es-ship').value;
   sk.memo=document.getElementById('es-memo').value;
   const opts=sk.options||[];
@@ -815,8 +864,9 @@ function stageSkuEdit(code){
     const pn=Number(document.getElementById(`eo-pn-${oi}`)?.value)||null;
     const pd=Number(document.getElementById(`eo-pd-${oi}`)?.value)||null;
     const pm=Number(document.getElementById(`eo-pm-${oi}`)?.value)||null;
+    const pf=Number(document.getElementById(`eo-pf-${oi}`)?.value)||null;
     const memo=document.getElementById(`eo-memo-${oi}`)?.value.trim()||null;
-    if(nick||name) saved.push({nick:nick||'',name:name||'',status,priceNormal:pn,priceDisc:pd,priceMax:pm,memo});
+    if(nick||name) saved.push({nick:nick||'',name:name||'',status:sk.status,priceNormal:pn,priceDisc:pd,priceMax:pm,priceFinal:pf,memo});
   });
   sk.options=saved;
   sk.pending=true;skuEditCode=null;renderSkuTable();updatePendBar();
@@ -830,6 +880,7 @@ function addSkuOpt(code){
   const pn=Number(document.getElementById('eo-new-pn')?.value)||null;
   const pd=Number(document.getElementById('eo-new-pd')?.value)||null;
   const pm=Number(document.getElementById('eo-new-pm')?.value)||null;
+  const pf=Number(document.getElementById('eo-new-pf')?.value)||null;
   const memo=document.getElementById('eo-new-memo')?.value.trim()||null;
   if(!nick&&!name){alert('닉네임 또는 구성 설명을 입력해주세요.');return;}
   const opts=sk.options||[];
@@ -842,9 +893,10 @@ function addSkuOpt(code){
     const opd=Number(document.getElementById(`eo-pd-${oi}`)?.value)||_.priceDisc||null;
     const opm=Number(document.getElementById(`eo-pm-${oi}`)?.value)||_.priceMax||null;
     const omemo=document.getElementById(`eo-memo-${oi}`)?.value.trim()||_.memo||null;
-    saved.push({nick:on,name:oname,status:ostatus,priceNormal:opn,priceDisc:opd,priceMax:opm,memo:omemo});
+    const opf=Number(document.getElementById(`eo-pf-${oi}`)?.value)||_.priceFinal||null;
+    saved.push({nick:on,name:oname,status:sk.status,priceNormal:opn,priceDisc:opd,priceMax:opm,priceFinal:opf,memo:omemo});
   });
-  saved.push({nick,name:name||'',status,priceNormal:pn,priceDisc:pd,priceMax:pm,memo});
+  saved.push({nick,name:name||'',status:sk.status,priceNormal:pn,priceDisc:pd,priceMax:pm,priceFinal:pf,memo});
   sk.options=saved;
   renderSkuTable();
 }
@@ -862,7 +914,8 @@ function removeSkuOpt(code,idx){
     const opd=Number(document.getElementById(`eo-pd-${oi}`)?.value)||_.priceDisc||null;
     const opm=Number(document.getElementById(`eo-pm-${oi}`)?.value)||_.priceMax||null;
     const omemo=document.getElementById(`eo-memo-${oi}`)?.value.trim()||_.memo||null;
-    saved.push({nick:on,name:oname,status:ostatus,priceNormal:opn,priceDisc:opd,priceMax:opm,memo:omemo});
+    const opf=Number(document.getElementById(`eo-pf-${oi}`)?.value)||_.priceFinal||null;
+    saved.push({nick:on,name:oname,status:sk.status,priceNormal:opn,priceDisc:opd,priceMax:opm,priceFinal:opf,memo:omemo});
   });
   sk.options=saved;
   renderSkuTable();
@@ -894,8 +947,8 @@ function renderSkuTable(q){
   q=(q||'').toLowerCase();
   let rows=SKUS.filter(x=>{
     if(q&&!(x.code+x.nick+x.name).toLowerCase().includes(q)) return false;
-    if(SF.status!=='전체'&&x.status!==SF.status) return false;
-    if(SF.type!=='전체'&&x.type!==SF.type) return false;
+    const sSt=SF.status;if(sSt!=='전체'&&!(Array.isArray(sSt)?sSt.includes(x.status):x.status===sSt)) return false;
+    const sTy=SF.type;if(sTy!=='전체'&&!(Array.isArray(sTy)?sTy.includes(x.type):x.type===sTy)) return false;
     if(SF.item!=='전체'){
       const opts=x.options||[];
       const match=opts.some(opt=>
@@ -925,6 +978,8 @@ function renderSkuTable(q){
       <td><input class="e-input r" id="ns-pn" inputmode="numeric" placeholder="24900"></td>
       <td><input class="e-input r" id="ns-pd" inputmode="numeric" placeholder="20500"></td>
       <td><input class="e-input r" id="ns-pm" inputmode="numeric" placeholder="19500"></td>
+      <td><input class="e-input r" id="ns-pf" inputmode="numeric" placeholder="18000"></td>
+      <td></td><td></td><td></td><td></td>
       <td><select class="e-select" id="ns-ship"><option value="">—</option><option>무료</option><option>조건부무료</option></select></td>
       <td><input class="e-input" id="ns-memo" placeholder="메모 (선택)"></td>
       <td class="c-act"></td>
@@ -948,6 +1003,11 @@ function renderSkuTable(q){
         <td><input class="e-input r" id="es-pn" inputmode="numeric" value="${sk.priceNormal||''}" placeholder="—"></td>
         <td><input class="e-input r" id="es-pd" inputmode="numeric" value="${sk.priceDisc||''}" placeholder="—"></td>
         <td><input class="e-input r" id="es-pm" inputmode="numeric" value="${sk.priceMax||''}" placeholder="—"></td>
+        <td><input class="e-input r" id="es-pf" inputmode="numeric" value="${sk.priceFinal||''}" placeholder="—"></td>
+        <td style="color:var(--t4);text-align:right;font-size:11px">계산</td>
+        <td style="color:var(--t4);text-align:right;font-size:11px">계산</td>
+        <td style="color:var(--t4);text-align:right;font-size:11px">계산</td>
+        <td style="color:var(--t4);text-align:right;font-size:11px">계산</td>
         <td><select class="e-select" id="es-ship">${sel(['','무료','조건부무료'],sk.ship||'')}</select></td>
         <td><input class="e-input" id="es-memo" value="${sk.memo||''}" placeholder="—"></td>
         <td class="c-act"></td>
@@ -956,6 +1016,7 @@ function renderSkuTable(q){
       </tr>`;
       /* 기존 옵션 편집 행 */
       opts.forEach((opt,oi)=>{
+        const isFirst=oi===0;
         html+=`<tr class="opt-row editing-row">
           <td style="text-align:center"><span class="opt-num">${oi+1}</span></td>
           <td></td>
@@ -965,11 +1026,14 @@ function renderSkuTable(q){
           <td colspan="2" style="padding:4px 6px">
             <input class="e-input" id="eo-name-${oi}" value="${opt.name||''}" placeholder="구성 설명" style="width:100%">
           </td>
-          <td style="padding:4px 6px"><select class="e-select" id="eo-status-${oi}">${sel(['상시','단종예정','런칭예정','단종','비운영'],opt.status||'상시')}</select></td>
-          <td style="padding:4px 6px"><input class="e-input r" id="eo-pn-${oi}" inputmode="numeric" value="${opt.priceNormal||''}" placeholder="정상가"></td>
-          <td style="padding:4px 6px"><input class="e-input r" id="eo-pd-${oi}" inputmode="numeric" value="${opt.priceDisc||''}" placeholder="상시할인"></td>
-          <td style="padding:4px 6px"><input class="e-input r" id="eo-pm-${oi}" inputmode="numeric" value="${opt.priceMax||''}" placeholder="최대할인"></td>
-          <td></td>
+          <td style="padding:4px 8px"><span class="badge b-${sk.status}">${sk.status}</span></td>
+          <td style="padding:4px 6px;position:relative">
+            <input class="e-input r" id="eo-pn-${oi}" inputmode="numeric" value="${opt.priceNormal||''}" placeholder="정상가">
+            ${isFirst?`<span title="SKU 기본가격 복사" onclick="copySkuPriceToOpt('${sk.code}')" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:10px;color:var(--accent);font-weight:700;user-select:none">↓</span>`:''}
+          </td>
+          <td style="padding:4px 6px"><input class="e-input r" id="eo-pd-${oi}" inputmode="numeric" value="${opt.priceDisc||''}" placeholder="기본행사가"></td>
+          <td style="padding:4px 6px"><input class="e-input r" id="eo-pm-${oi}" inputmode="numeric" value="${opt.priceMax||''}" placeholder="제안행사가"></td>
+          <td style="padding:4px 6px"><input class="e-input r" id="eo-pf-${oi}" inputmode="numeric" value="${opt.priceFinal||''}" placeholder="최대혜택가"></td>
           <td style="padding:4px 6px"><input class="e-input" id="eo-memo-${oi}" value="${opt.memo||''}" placeholder="메모"></td>
           <td></td>
           <td class="c-act" colspan="2">
@@ -983,15 +1047,15 @@ function renderSkuTable(q){
         <td></td>
         <td colspan="2" style="padding:4px 6px"><input class="e-input" id="eo-new-nick" placeholder="닉네임 (예: 플3+소3)"></td>
         <td colspan="2" style="padding:4px 6px"><input class="e-input" id="eo-new-name" placeholder="구성 설명"></td>
-        <td style="padding:4px 6px"><select class="e-select" id="eo-new-status"><option>상시</option><option>단종예정</option><option>런칭예정</option><option>단종</option><option>비운영</option></select></td>
+        <td style="padding:4px 8px"><span class="badge b-${sk.status}">${sk.status}</span></td>
         <td style="padding:4px 6px"><input class="e-input r" id="eo-new-pn" inputmode="numeric" placeholder="정상가"></td>
-        <td style="padding:4px 6px"><input class="e-input r" id="eo-new-pd" inputmode="numeric" placeholder="상시할인"></td>
-        <td style="padding:4px 6px"><input class="e-input r" id="eo-new-pm" inputmode="numeric" placeholder="최대할인"></td>
-        <td></td>
+        <td style="padding:4px 6px"><input class="e-input r" id="eo-new-pd" inputmode="numeric" placeholder="기본행사가"></td>
+        <td style="padding:4px 6px"><input class="e-input r" id="eo-new-pm" inputmode="numeric" placeholder="제안행사가"></td>
+        <td style="padding:4px 6px"><input class="e-input r" id="eo-new-pf" inputmode="numeric" placeholder="최대혜택가"></td>
         <td style="padding:4px 6px"><input class="e-input" id="eo-new-memo" placeholder="메모"></td>
         <td></td>
         <td class="c-act" colspan="2">
-          <button class="btn-stage" onclick="addSkuOpt('${sk.code}')" style="font-size:11px;padding:3px 8px">추가</button>
+          <button class="btn-stage" onclick="addSkuOpt('${sk.code}')"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="2 9 6 13 14 3"/></svg></button>
         </td>
       </tr>`;
     }else{
@@ -1006,13 +1070,18 @@ function renderSkuTable(q){
         <td class="r" style="cursor:pointer" onclick="copyToClip('${sk.priceNormal||''}',this,'sku')">${fmtP(sk.priceNormal)}</td>
         <td class="r" style="cursor:pointer" onclick="copyToClip('${sk.priceDisc||''}',this,'sku')">${fmtP(sk.priceDisc)}</td>
         <td class="r" style="cursor:pointer" onclick="copyToClip('${sk.priceMax||''}',this,'sku')">${fmtP(sk.priceMax)}</td>
+        <td class="r" style="cursor:pointer" onclick="copyToClip('${sk.priceFinal||''}',this,'sku')">${fmtP(sk.priceFinal)}</td>
+        <td class="r" style="color:var(--t3);font-size:11.5px">${sk.priceNormal&&sk.priceDisc?'▼'+(sk.priceNormal-sk.priceDisc).toLocaleString()+'원':'<span style="color:var(--t4)">—</span>'}</td>
+        <td class="r" style="color:var(--t3);font-size:11.5px">${sk.priceNormal&&sk.priceFinal?'▼'+(sk.priceNormal-sk.priceFinal).toLocaleString()+'원':'<span style="color:var(--t4)">—</span>'}</td>
+        <td class="r" style="color:var(--t3);font-size:11.5px">${sk.priceNormal&&sk.priceDisc?(((sk.priceNormal-sk.priceDisc)/sk.priceNormal*100).toFixed(1)+'%'):'<span style="color:var(--t4)">—</span>'}</td>
+        <td class="r" style="color:var(--t3);font-size:11.5px">${sk.priceNormal&&sk.priceFinal?(((sk.priceNormal-sk.priceFinal)/sk.priceNormal*100).toFixed(1)+'%'):'<span style="color:var(--t4)">—</span>'}</td>
         <td style="cursor:pointer" onclick="copyToClip('${sk.ship||''}',this,'sku')">${dash(sk.ship)}</td>
         <td class="memo-cell" style="color:var(--t3)" onclick="copyToClip('${(sk.memo||'').replace(/'/g,"\\'")}',this,'sku')">${dash(sk.memo)}${sk.memo?'<span class="memo-tip-data" style="display:none">'+sk.memo.replace(/</g,'&lt;')+'</span>':''}</td>
         <td class="c-act">${(()=>{
           const opts=sk.options||[];
           const isOpen=skuOpenSet.has(sk.code);
           if(!opts.length) return '<span class="opt-cnt one">—</span>';
-          return `<span class="opt-cnt ${opts.length>1?(isOpen?'open':'many'):'one'}" ${opts.length>1?`onclick="toggleSkuOpts('${sk.code}')"` : ''}>${opts.length}</span>`;
+          return `<button class="opt-cnt ${isOpen?'open':'many'}" onclick="toggleSkuOpts('${sk.code}')">${opts.length}</button>`;
         })()}</td>
         <td class="c-act"><button class="icon-btn" onclick="startSkuEdit('${sk.code}')" title="수정" ${skuEditCode?'disabled':''}>${ICO_EDIT}</button></td>
         <td style="color:var(--t4);font-size:11px;cursor:pointer" onclick="copyToClip('${(sk.updatedAt||'').slice(0,10)}',this,'sku')">${(sk.updatedAt||'').slice(0,10)}</td>
@@ -1024,13 +1093,23 @@ function renderSkuTable(q){
           html+=`<tr class="opt-row${isLast?' opt-last':''}">
             <td style="text-align:center"><span class="opt-num">${oi+1}</span></td>
             <td></td><td></td>
-            <td><span class="opt-nick">${opt.nick||''}</span></td>
+            <td class="fix fix-last" style="left:192px;cursor:pointer" onclick="copyToClip('${opt.nick||''}',this,'sku')"><span class="opt-nick">${opt.nick||''}</span></td>
             <td style="font-size:11.5px">${opt.name||''}</td>
             <td></td>
-            <td style="cursor:pointer" onclick="copyToClip('${opt.status||''}',this,'item')"><span class="badge b-${opt.status||'상시'}">${opt.status||'상시'}</span></td>
+            <td style="cursor:pointer" onclick="copyToClip('${opt.status||''}',this,'sku')">
+              <span class="badge b-${opt.status||'상시'}">${opt.status||'상시'}</span>
+              <span style="margin-left:4px;display:inline-flex;align-items:center;height:16px;padding:0 6px;border-radius:8px;font-size:10px;font-weight:600;${(opt.status||sk.status)===sk.status?'background:rgba(26,138,74,.1);color:#0d6b35':'background:#ebebeb;color:#888'}">
+                ${(opt.status||sk.status)===sk.status?'ON':'OFF'}
+              </span>
+            </td>
             <td class="r">${fmtP(opt.priceNormal)}</td>
             <td class="r" style="color:var(--green)">${fmtP(opt.priceDisc)}</td>
             <td class="r" style="color:var(--green)">${fmtP(opt.priceMax)}</td>
+            <td class="r" style="color:var(--green)">${fmtP(opt.priceFinal)}</td>
+            <td class="r" style="color:var(--t3);font-size:11.5px">${opt.priceNormal&&opt.priceDisc?'▼'+(opt.priceNormal-opt.priceDisc).toLocaleString()+'원':'—'}</td>
+            <td class="r" style="color:var(--t3);font-size:11.5px">${opt.priceNormal&&opt.priceFinal?'▼'+(opt.priceNormal-opt.priceFinal).toLocaleString()+'원':'—'}</td>
+            <td class="r" style="color:var(--t3);font-size:11.5px">${opt.priceNormal&&opt.priceDisc?(((opt.priceNormal-opt.priceDisc)/opt.priceNormal*100).toFixed(1)+'%'):'—'}</td>
+            <td class="r" style="color:var(--t3);font-size:11.5px">${opt.priceNormal&&opt.priceFinal?(((opt.priceNormal-opt.priceFinal)/opt.priceNormal*100).toFixed(1)+'%'):'—'}</td>
             <td></td>
             <td style="color:var(--t3);font-size:11.5px">${opt.memo||'<span style="color:var(--t4)">—</span>'}</td>
             <td></td><td></td><td></td>
@@ -1039,8 +1118,18 @@ function renderSkuTable(q){
       }
     }
   });
-  document.getElementById('skuTbody').innerHTML=html||'<tr><td colspan="15" style="padding:20px;text-align:center;color:var(--t4)">데이터 없음</td></tr>';
+  document.getElementById('skuTbody').innerHTML=html||'<tr><td colspan="18" style="padding:20px;text-align:center;color:var(--t4)">데이터 없음</td></tr>';
   updatePendBar();
+}
+
+function toggleAllOpts(){
+  const btn=document.getElementById('skuOptToggle');
+  const q=document.querySelector('#t-sku .search-box')?.value;
+  const visibleCodes=SKUS.filter(sk=>sk.options?.length>0).map(sk=>sk.code);
+  const allOpen=visibleCodes.every(c=>skuOpenSet.has(c));
+  if(allOpen){visibleCodes.forEach(c=>skuOpenSet.delete(c));btn.textContent='옵션 전체 열기';btn.classList.remove('on');}
+  else{visibleCodes.forEach(c=>skuOpenSet.add(c));btn.textContent='옵션 전체 닫기';btn.classList.add('on');}
+  renderSkuTable(q);
 }
 
 function toggleSkuOpts(code){
@@ -1095,7 +1184,7 @@ window.loadAll=async function(){
     iSnap.forEach(d=>{const dt=d.data();ITEMS.push({...dt,code:d.id,no:dt.no!=null?Number(dt.no):99,pending:false});});
     ITEMS.sort((a,b)=>(Number(a.no)||99)-(Number(b.no)||99));
     SKUS.length=0;
-    sSnap.forEach(d=>{const dt=d.data();SKUS.push({...dt,code:d.id,no:dt.no!=null?Number(dt.no):99,pending:false,options:dt.options||[]});});
+    sSnap.forEach(d=>{const dt=d.data();SKUS.push({...dt,code:d.id,no:dt.no!=null?Number(dt.no):99,pending:false,options:dt.options||[],priceFinal:dt.priceFinal||null});});
     SKUS.sort((a,b)=>(Number(a.no)||99)-(Number(b.no)||99));
     renderItemTable();renderSkuTable();renderSkuItemFilters();
     setStatus(true,`연결됨 · items ${ITEMS.length}개 · skus ${SKUS.length}개`);

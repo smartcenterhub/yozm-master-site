@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>행사 일괄 등록</title>
+<script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getFirestore,doc,setDoc}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const db=getFirestore(initializeApp({
+  apiKey:"AIzaSyBB3XxL4kJz5uGVRUn-eLPYirJsuwuiEIU",
+  authDomain:"data-hub-app-2026.firebaseapp.com",
+  projectId:"data-hub-app-2026",
+  appId:"1:127013070764:web:d10d5d24c5b14c31b13c09"
+}));
+
+function log(msg,color='#222'){
+  const el=document.getElementById('log');
+  el.innerHTML+=`<div style="color:${color};padding:2px 0;font-size:13px">${msg}</div>`;
+  el.scrollTop=el.scrollHeight;
+}
+
+document.getElementById('file').addEventListener('change',async function(){
+  const file=this.files[0];if(!file)return;
+  log('📂 파일 읽는 중...');
+  const buf=await file.arrayBuffer();
+  const wb=XLSX.read(buf,{type:'array'});
+  const ws=wb.Sheets['행사_일괄등록']||wb.Sheets[wb.SheetNames[0]];
+
+  // 2행을 헤더로, 3행부터 데이터로 읽기
+  const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+  const headers=raw[1]; // 2행 = index 1
+  const dataRows=raw.slice(2); // 3행부터
+  log(`✅ ${dataRows.length}행 파싱 완료`);
+  log('헤더 확인: '+headers.slice(0,5).map(h=>JSON.stringify(h)).join(', '),'#666');
+
+  function get(row,colName){
+    const idx=headers.indexOf(colName);
+    if(idx<0)return '';
+    const v=row[idx];
+    if(v===undefined||v===null||String(v).trim()==='')return '';
+    return String(v).trim();
+  }
+
+  let ok=0,skip=0,err=0;
+  for(const row of dataRows){
+    const name=get(row,'★ 행사명');
+    const typ=get(row,'★ 행사유형\n(드롭다운)');
+    const start=get(row,'★ 시작일\nYYYY-MM-DD');
+    const end=get(row,'★ 종료일\nYYYY-MM-DD');
+    if(!name||!typ||!start||!end){skip++;log('⏭ 건너뜀: name='+name+' type='+typ+' start='+start+' end='+end,'#888');continue;}
+
+    const st=get(row,'시작시간\nHH:MM')||'00:00';
+    const et=get(row,'종료시간\nHH:MM')||'23:59';
+    const page=get(row,'랜딩페이지\n(드롭다운)')||'쇼핑스토리+카테고리';
+    const add=get(row,'추가할인/적립')||null;
+    const upl=get(row,'업로드일\nYYYY-MM-DD')||null;
+    const dl=get(row,'제안마감일\nYYYY-MM-DD')||null;
+
+    const prods=[];
+    for(let n=1;n<=20;n++){
+      const codeKey=n===1?'★ 상품코드1':`상품코드${n}`;
+      const code=get(row,codeKey);
+      if(!code)continue;
+      const ship=get(row,`배송${n}\n드롭다운`)||'무료배송';
+      const pn=parseFloat(get(row,`정상가${n}`))||null;
+      const pm=parseFloat(get(row,`최대혜택가${n}`))||null;
+      prods.push({code,ship,priceNormal:pn,priceMax:pm});
+    }
+    if(!prods.length){skip++;log(`⚠️ 상품코드 없음: ${name}`,'#b45309');continue;}
+
+    const docId=name.replace(/\s/g,'')+'_'+start.replace(/-/g,'')+'_'+end.replace(/-/g,'');
+    try{
+      await setDoc(doc(db,'events',docId),{
+        eventName:name,eventType:typ,startDate:start,endDate:end,
+        startTime:st,endTime:et,pageType:page,additionalDiscount:add,
+        proposalUploadedAt:upl,proposalDeadline:dl,
+        isClosed:false,isNotice:false,
+        products:prods.map((p,i)=>({no:i+1,skuCode:p.code,ship:p.ship,
+          priceNormal:p.priceNormal,priceMax:p.priceMax,
+          isMain:'서브',isCancelled:false,options:[],
+          link:'https://brand.naver.com/yozmkorea/products/'+p.code})),
+        updatedAt:new Date().toISOString()
+      },{merge:true});
+
+      for(const p of prods){
+        const pid=(docId+'_'+p.code).replace(/\s/g,'');
+        await setDoc(doc(db,'proposalItems',pid),{
+          eventSID:docId,eventName:name,eventType:typ,
+          startDate:start,endDate:end,startTime:st,endTime:et,
+          proposalUploadedAt:upl,proposalDeadline:dl,
+          skuCode:p.code,skuNick:p.code,ship:p.ship,
+          priceNormal:p.priceNormal,priceMax:p.priceMax,
+          status:'제안중',isMain:'서브',
+          createdAt:new Date().toISOString()
+        },{merge:true});
+      }
+      ok++;
+      log(`✅ ${name} (${prods.length}개 상품)`,'#166534');
+    }catch(e){
+      err++;
+      log(`❌ ${name}: ${e.message}`,'#991b1b');
+    }
+  }
+  log(`<br><b>완료 — 성공 ${ok}건 / 건너뜀 ${skip}건 / 오류 ${err}건</b>`);
+});
+</script>
+<style>
+body{font-family:'Inter',sans-serif;max-width:700px;margin:40px auto;padding:20px}
+h2{font-size:18px;margin-bottom:8px}
+p{font-size:13px;color:#666;margin-bottom:16px}
+label{display:inline-block;padding:10px 24px;background:#3a3af0;color:#fff;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600}
+#log{margin-top:20px;padding:14px;background:#f8f8f8;border-radius:8px;height:400px;overflow-y:auto;border:1px solid #e5e5e5;font-family:monospace}
+</style>
+</head>
+<body>
+<h2>🚀 행사 일괄 등록 — Firebase 직접 업로드</h2>
+<p>엑셀 파일(행사_일괄등록 시트)을 선택하면 Firebase에 바로 등록됩니다.</p>
+<label>📂 엑셀 파일 선택<input type="file" id="file" accept=".xlsx" style="display:none"></label>
+<div id="log">대기 중...</div>
+</body>
+</html>

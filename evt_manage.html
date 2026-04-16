@@ -1625,10 +1625,10 @@ window.updateAlimRow=function(inp,minP,pn){
   upd('pmx',mx>0?mx.toLocaleString():'—');
   /* 제안할인금액/율 */
   upd('pda',pn&&v?'▼'+(pn-v).toLocaleString():'—');
-  upd('prate',pn&&v?((pn-v)/pn*100).toFixed(1)+'%':'—');
+  upd('prate',pn&&v?Math.round((pn-v)/pn*100)+'%':'—');
   /* 최대할인금액/율 */
   upd('mda',pn&&mx>0?'▼'+(pn-mx).toLocaleString():'—');
-  upd('mrate',pn&&mx>0?((pn-mx)/pn*100).toFixed(1)+'%':'—');
+  upd('mrate',pn&&mx>0?Math.round((pn-mx)/pn*100)+'%':'—');
 };
 
 function renderRegProds(){

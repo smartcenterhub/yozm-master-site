@@ -1099,14 +1099,14 @@ function renderSkuTable(q){
         <td class="r" style="color:var(--t2);cursor:pointer" onclick="copyToClip('${sk.priceNormal||''}',this,'sku')">${fmtP(sk.priceNormal)}</td>
         <td class="r" style="color:#1a8a4a;cursor:pointer" onclick="copyToClip('${sk.priceDisc||''}',this,'sku')">${fmtP(sk.priceDisc)}</td>
         <td class="r" style="color:#d42020;cursor:pointer" onclick="copyToClip('${sk.priceMax||''}',this,'sku')">${fmtP(sk.priceMax)}</td>
-        <td class="r" style="color:#e07000;cursor:pointer" onclick="copyToClip('${sk.priceAlim||sk.priceDisc||''}',this,'sku')">${(sk.priceAlim||sk.priceDisc||(sk.priceAlim||sk.priceDisc)===0)?(sk.priceAlim||sk.priceDisc).toLocaleString()+'원':'<span style="color:var(--t4)">—</span>'}</td>
-        <td class="r" style="color:#1a56c8">${(sk.priceAlim||sk.priceDisc)?((sk.priceAlim||sk.priceDisc)-1000).toLocaleString()+'원':'<span style="color:var(--t4)">—</span>'}</td>
+        <td class="r" style="color:#e07000;cursor:pointer" onclick="copyToClip('${sk.priceAlim||''}',this,'sku')">${sk.priceAlim?sk.priceAlim.toLocaleString()+'원':'<span style="color:var(--t4)">—</span>'}</td>
+        <td class="r" style="color:#1a56c8">${sk.priceAlim?(sk.priceAlim-1000).toLocaleString()+'원':'<span style="color:var(--t4)">—</span>'}</td>
         <td class="r" style="color:#1a8a4a;font-size:11.5px">${sk.priceNormal&&sk.priceDisc?'▼'+(sk.priceNormal-sk.priceDisc).toLocaleString()+'원':'<span style="color:var(--t4)">—</span>'}</td>
         <td class="r" style="color:#d42020;font-size:11.5px">${sk.priceNormal&&sk.priceMax?'▼'+(sk.priceNormal-sk.priceMax).toLocaleString()+'원':'<span style="color:var(--t4)">—</span>'}</td>
-        <td class="r" style="color:#1a56c8;font-size:11.5px">${(()=>{const pa=sk.priceAlim||sk.priceDisc;return sk.priceNormal&&pa?'▼'+(sk.priceNormal-(pa-1000)).toLocaleString()+'원':'<span style="color:var(--t4)">—</span>';})()}</td>
+        <td class="r" style="color:#1a56c8;font-size:11.5px">${sk.priceNormal&&sk.priceAlim?'▼'+(sk.priceNormal-(sk.priceAlim-1000)).toLocaleString()+'원':'<span style="color:var(--t4)">—</span>'}</td>
         <td class="r" style="color:#1a8a4a;font-size:11.5px">${sk.priceNormal&&sk.priceDisc?(((sk.priceNormal-sk.priceDisc)/sk.priceNormal*100).toFixed(1)+'%'):'<span style="color:var(--t4)">—</span>'}</td>
         <td class="r" style="color:#d42020;font-size:11.5px">${sk.priceNormal&&sk.priceMax?(((sk.priceNormal-sk.priceMax)/sk.priceNormal*100).toFixed(1)+'%'):'<span style="color:var(--t4)">—</span>'}</td>
-        <td class="r" style="color:#1a56c8;font-size:11.5px">${(()=>{const pa=sk.priceAlim||sk.priceDisc;return sk.priceNormal&&pa?(((sk.priceNormal-(pa-1000))/sk.priceNormal*100).toFixed(1)+'%'):'<span style="color:var(--t4)">—</span>';})()}</td>
+        <td class="r" style="color:#1a56c8;font-size:11.5px">${sk.priceNormal&&sk.priceAlim?(((sk.priceNormal-(sk.priceAlim-1000))/sk.priceNormal*100).toFixed(1)+'%'):'<span style="color:var(--t4)">—</span>'}</td>
         <td style="cursor:pointer" onclick="copyToClip('${sk.ship||''}',this,'sku')">${dash(sk.ship)}</td>
         <td class="memo-cell" style="color:var(--t3)" onclick="copyToClip('${(sk.memo||'').replace(/'/g,"\\'")}',this,'sku')">${dash(sk.memo)}${sk.memo?'<span class="memo-tip-data" style="display:none">'+sk.memo.replace(/</g,'&lt;')+'</span>':''}</td>
         <td class="c-act">${(()=>{
@@ -1137,14 +1137,14 @@ function renderSkuTable(q){
             <td class="r" style="color:var(--t2)">${fmtP(opt.priceNormal)}</td>
             <td class="r" style="color:#1a8a4a">${fmtP(opt.priceDisc)}</td>
             <td class="r" style="color:#d42020">${fmtP(opt.priceMax)}</td>
-            <td class="r" style="color:#e07000">${(opt.priceAlim||opt.priceDisc)?((opt.priceAlim||opt.priceDisc)).toLocaleString()+'원':'<span style="color:var(--t4)">—</span>'}</td>
-            <td class="r" style="color:#1a56c8">${(opt.priceAlim||opt.priceDisc)?((opt.priceAlim||opt.priceDisc)-1000).toLocaleString()+'원':'<span style="color:var(--t4)">—</span>'}</td>
+            <td class="r" style="color:#e07000">${opt.priceAlim?opt.priceAlim.toLocaleString()+'원':'<span style="color:var(--t4)">—</span>'}</td>
+            <td class="r" style="color:#1a56c8">${opt.priceAlim?(opt.priceAlim-1000).toLocaleString()+'원':'<span style="color:var(--t4)">—</span>'}</td>
             <td class="r" style="color:#1a8a4a;font-size:11.5px">${opt.priceNormal&&opt.priceDisc?'▼'+(opt.priceNormal-opt.priceDisc).toLocaleString()+'원':'—'}</td>
             <td class="r" style="color:#d42020;font-size:11.5px">${opt.priceNormal&&opt.priceMax?'▼'+(opt.priceNormal-opt.priceMax).toLocaleString()+'원':'—'}</td>
-            <td class="r" style="color:#1a56c8;font-size:11.5px">${(()=>{const pa=opt.priceAlim||opt.priceDisc;return opt.priceNormal&&pa?'▼'+(opt.priceNormal-(pa-1000)).toLocaleString()+'원':'—';})()}</td>
+            <td class="r" style="color:#1a56c8;font-size:11.5px">${opt.priceNormal&&opt.priceAlim?'▼'+(opt.priceNormal-(opt.priceAlim-1000)).toLocaleString()+'원':'—'}</td>
             <td class="r" style="color:#1a8a4a;font-size:11.5px">${opt.priceNormal&&opt.priceDisc?(((opt.priceNormal-opt.priceDisc)/opt.priceNormal*100).toFixed(1)+'%'):'—'}</td>
             <td class="r" style="color:#d42020;font-size:11.5px">${opt.priceNormal&&opt.priceMax?(((opt.priceNormal-opt.priceMax)/opt.priceNormal*100).toFixed(1)+'%'):'—'}</td>
-            <td class="r" style="color:#1a56c8;font-size:11.5px">${(()=>{const pa=opt.priceAlim||opt.priceDisc;return opt.priceNormal&&pa?(((opt.priceNormal-(pa-1000))/opt.priceNormal*100).toFixed(1)+'%'):'—';})()}</td>
+            <td class="r" style="color:#1a56c8;font-size:11.5px">${opt.priceNormal&&opt.priceAlim?(((opt.priceNormal-(opt.priceAlim-1000))/opt.priceNormal*100).toFixed(1)+'%'):'—'}</td>
             <td></td>
             <td style="color:var(--t3);font-size:11.5px">${opt.memo||'<span style="color:var(--t4)">—</span>'}</td>
             <td></td><td></td><td></td><td></td>

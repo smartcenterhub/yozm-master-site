@@ -700,7 +700,7 @@ const TYPE_FILTER_MAP={
 const $=id=>document.getElementById(id);
 const isoD=d=>d?(d+'').substring(0,10):'';
 const comma=n=>n==null?'—':Number(n).toLocaleString();
-const pct=(a,b)=>(a&&b)?((( a-b)/a)*100).toFixed(1)+'%':'—';
+const pct=(a,b)=>(a&&b)?(Math.round(((a-b)/a)*100))+'%':'—';
 const discAmt=(a,b)=>(a&&b)?comma(a-b):'—';
 function dateStr(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 function toast(msg,type='ok'){const el=$('toast');el.textContent=msg;el.className='show '+type;setTimeout(()=>el.className='',2400);}

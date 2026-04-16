@@ -99,6 +99,7 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 .toast.show{transform:translateX(-50%) translateY(0)}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
 
@@ -177,6 +178,10 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
       <label style="display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border:1px solid var(--gbd);border-radius:7px;cursor:pointer;background:var(--gbs);font-size:12px;color:var(--t2)">
         🖼 이미지 선택 (복수)
         <input type="file" id="bulkImgInput" accept="image/*" multiple style="display:none" onchange="parseBulkImages(this)">
+      </label>
+      <label style="display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border:1px solid var(--gbd);border-radius:7px;cursor:pointer;background:var(--gbs);font-size:12px;color:var(--t2)">
+        📦 ZIP 선택
+        <input type="file" id="bulkZipInput" accept=".zip" style="display:none" onchange="parseBulkZip(this)">
       </label>
       <span id="bulkImgName" style="font-size:11.5px;color:var(--t3)">선택된 파일 없음</span>
     </div>
@@ -825,6 +830,84 @@ async function bulkSaveToFirebase() {
   renderAll();
 }
 
+function parseBulkZip(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (typeof JSZip === 'undefined') { showToast('⚠️ JSZip 로드 중입니다. 잠시 후 다시 시도해주세요'); return; }
+  document.getElementById('bulkImgName').textContent = file.name + ' 압축 해제 중...';
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    const zip = await JSZip.loadAsync(e.target.result);
+    const imageExts = ['png','jpg','jpeg','webp','gif'];
+    const imgFiles = [];
+    zip.forEach(function(relPath, zipEntry) {
+      if (zipEntry.dir) return;
+      const fname = relPath.split('/').pop();
+      const ext = fname.split('.').pop().toLowerCase();
+      if (imageExts.includes(ext)) imgFiles.push({fname, zipEntry, ext});
+    });
+    document.getElementById('bulkImgName').textContent = file.name + ' — ' + imgFiles.length + '개 이미지';
+    if (!imgFiles.length) { showToast('⚠️ ZIP 안에 이미지 파일이 없습니다'); return; }
+
+    _bulkImgFiles = [];
+    const preview = document.getElementById('bulkImgPreview');
+    const body = document.getElementById('bulkImgBody');
+    const saveWrap = document.getElementById('bulkImgSaveWrap');
+    body.innerHTML = '';
+    let matchCount = 0;
+
+    for (const {fname, zipEntry, ext} of imgFiles) {
+      const rawId = fname.slice(0, fname.lastIndexOf('.'));
+      let matchedDocId = null, matchType = null, matchName = null;
+      for (const [docId, cr] of Object.entries(_cr)) {
+        if (cr.pcId && cr.pcId === rawId) { matchedDocId = docId; matchType = 'PC'; matchName = cr.name; break; }
+        if (cr.moId && cr.moId === rawId) { matchedDocId = docId; matchType = 'MO'; matchName = cr.name; break; }
+      }
+      if (!matchedDocId) {
+        for (const r of _bulkRows) {
+          if (!r.errors.length) {
+            const rKey = (r.pcId || r.moId).replace(/[^a-zA-Z0-9\-_]/g,'_');
+            if (r.pcId && r.pcId === rawId) { matchedDocId = rKey; matchType = 'PC'; matchName = r.name; break; }
+            if (r.moId && r.moId === rawId) { matchedDocId = rKey; matchType = 'MO'; matchName = r.name; break; }
+          }
+        }
+      }
+      const blob = await zipEntry.async('blob');
+      const mimeType = ext === 'jpg' ? 'image/jpeg' : 'image/' + ext;
+      const dataUrl = await new Promise(function(res) {
+        const fr = new FileReader();
+        fr.onload = function(ev) { res(ev.target.result); };
+        fr.readAsDataURL(new Blob([blob], {type: mimeType}));
+      });
+      if (matchedDocId) { _bulkImgFiles.push({fname, rawId, matchedDocId, matchType, dataUrl}); matchCount++; }
+      const tr = document.createElement('tr');
+      const td = function(html, style) {
+        const td = document.createElement('td');
+        td.style.cssText = 'border:0.5px solid var(--gbd);padding:5px 8px;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' + (style||'');
+        td.innerHTML = html; return td;
+      };
+      tr.appendChild(td(fname));
+      tr.appendChild(td(matchType ? '<span class="' + (matchType==='PC'?'pcb':'mob') + '">' + matchType + '</span>' : '—', 'text-align:center'));
+      tr.appendChild(td(matchName || '<span style="color:var(--t3)">매칭 없음</span>'));
+      const imgTd = document.createElement('td');
+      imgTd.style.cssText = 'border:0.5px solid var(--gbd);padding:4px 8px;text-align:center';
+      const img = document.createElement('img');
+      img.src = dataUrl; img.style.cssText = 'max-width:60px;max-height:40px;object-fit:contain;border-radius:3px';
+      imgTd.appendChild(img); tr.appendChild(imgTd);
+      tr.appendChild(td(matchedDocId ? '<span style="color:var(--gr);font-weight:500">✅ 매칭</span>' : '<span style="color:var(--t3)">❌ 미매칭</span>', 'text-align:center'));
+      body.appendChild(tr);
+    }
+    preview.style.display = '';
+    if (matchCount) {
+      saveWrap.style.display = 'flex';
+      document.getElementById('bulkImgSaveBtnLabel').textContent = matchCount + '개 이미지 매칭 저장';
+      document.getElementById('bulkImgSaveStatus').textContent = '';
+    }
+    showToast('📦 압축 해제 완료 — 매칭 ' + matchCount + '개');
+  };
+  reader.readAsArrayBuffer(file);
+}
+
 function parseBulkImages(input) {
   const files = Array.from(input.files);
   if (!files.length) return;
@@ -845,6 +928,15 @@ function parseBulkImages(input) {
     for (const [docId, cr] of Object.entries(_cr)) {
       if (cr.pcId && cr.pcId === rawId) { matchedDocId = docId; matchType = 'PC'; matchName = cr.name; break; }
       if (cr.moId && cr.moId === rawId) { matchedDocId = docId; matchType = 'MO'; matchName = cr.name; break; }
+    }
+    if (!matchedDocId) {
+      for (const r of _bulkRows) {
+        if (!r.errors.length) {
+          const rKey = (r.pcId || r.moId).replace(/[^a-zA-Z0-9\-_]/g,'_');
+          if (r.pcId && r.pcId === rawId) { matchedDocId = rKey; matchType = 'PC'; matchName = r.name; break; }
+          if (r.moId && r.moId === rawId) { matchedDocId = rKey; matchType = 'MO'; matchName = r.name; break; }
+        }
+      }
     }
     const reader = new FileReader();
     reader.onload = function(e) {

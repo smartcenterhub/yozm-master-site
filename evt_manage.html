@@ -1680,34 +1680,24 @@ function renderRegProds(){
     const mDA=(pn&&mx)?'▼'+comma(pn-mx):'—';
     const mRate=(pn&&mx)?pct(pn,mx):'—';
     return`<tr data-sku="${p.skuCode}" style="border-bottom:1px solid rgba(0,0,0,.07)">
-      <td style="text-align:center;border-right:1px solid rgba(0,0,0,.07)"><span class="st s-mid" style="font-size:10px">제안중</span></td>
-      <td style="border-right:1px solid rgba(0,0,0,.07);cursor:pointer;text-align:center" onclick="copyToClip('${p.skuNick}',this)">
-        <div style="font-weight:600">${p.skuNick}</div>
-        <div style="margin-top:2px">
-          <span style="display:inline-block;padding:1px 6px;font-size:9.5px;border:1px solid rgba(152,152,168,.3);border-radius:10px;color:var(--t3);cursor:pointer;background:var(--gs)"
-            onclick="copyToClip('${p.skuCode}',this)">${p.skuCode}</span>
-        </div>
+      <td style="text-align:center"><span class="st s-mid" style="font-size:10px">제안중</span></td>
+      <td style="cursor:pointer;text-align:center;font-weight:600" onclick="copyToClip('${p.skuNick}',this)">${p.skuNick}</td>
+      <td style="font-size:10px;color:var(--t3);cursor:pointer;text-align:center" onclick="copyToClip('${p.skuCode}',this)">${p.skuCode}</td>
+      <td style="text-align:right;cursor:pointer" onclick="copyToClip('${pn}',this)"><span class="pn">${comma(pn)||'—'}</span></td>
+      <td style="text-align:right;cursor:pointer" onclick="copyToClip('${ev||''}',this)"><span style="color:var(--rd);font-size:11.5px;font-weight:600">${comma(ev)||'—'}</span></td>
+      <td style="text-align:right;cursor:pointer" onclick="if(event.target.tagName!=='INPUT'&&event.target.id!=='alim-disp-${i}')copyToClip('${ap||''}',this)">
+        <span id="alim-disp-${i}" style="font-weight:600;color:var(--or);cursor:pointer;font-size:11.5px" onclick="event.stopPropagation();copyToClip('${ap||''}',this)">${comma(ap)||'—'}</span>
+        <input id="alim-inp-${i}" type="number" style="display:none;width:68px;height:23px;text-align:right;padding:0 4px;font-size:11.5px;font-weight:600;color:var(--or);background:rgba(255,240,200,.7);border:1px solid rgba(186,117,23,.3);border-radius:4px" value="${ap!=null?ap:''}" min="${minP}" oninput="updateAlimRow(this,${minP},${pn})" onblur="(function(inp){const d=document.getElementById('alim-disp-${i}');d.textContent=inp.value?(+inp.value).toLocaleString():'—';d.style.display='inline';inp.style.display='none';})(this)">
       </td>
-      <td style="text-align:right;width:80px;cursor:pointer;border-right:1px solid rgba(0,0,0,.07)" onclick="copyToClip('${pn}',this)"><span class="pn">${comma(pn)||'—'}</span></td>
-      <td style="text-align:right;width:80px;cursor:pointer;border-right:1px solid rgba(0,0,0,.07)" onclick="copyToClip('${ev||''}',this)"><span style="color:var(--or);font-size:11.5px">${comma(ev)||'—'}</span></td>
-      <td style="text-align:right;width:80px;border-right:1px solid rgba(0,0,0,.07);cursor:pointer" onclick="if(event.target.tagName!=='INPUT'&&event.target.id!=='alim-disp-${i}')copyToClip('${ap||''}',this)">
-        <span id="alim-disp-${i}" style="font-weight:600;color:var(--rd);cursor:pointer;font-size:11.5px"
-          onclick="event.stopPropagation();copyToClip('${ap||''}',this)">${comma(ap)||'—'}</span>
-        
-        <input id="alim-inp-${i}" type="number"
-          style="display:none;width:72px;height:23px;text-align:right;padding:0 4px;font-size:11.5px;font-weight:600;color:var(--rd);background:rgba(255,240,240,.7);border:1px solid rgba(212,32,32,.3);border-radius:4px"
-          value="${ap!=null?ap:''}" min="${minP}"
-          oninput="updateAlimRow(this,${minP},${pn})"
-          onblur="(function(inp){const d=document.getElementById('alim-disp-${i}');d.textContent=inp.value?(+inp.value).toLocaleString():'—';d.style.display='inline';inp.style.display='none';})(this)">
-      </td>
-      <td style="text-align:right;width:80px;cursor:pointer;border-right:1px solid rgba(0,0,0,.07)" onclick="copyToClip('${mx||''}',this)"><span data-f="pmx" style="background:rgba(248,247,255,.8);color:var(--ac);font-weight:600;padding:2px 5px;border-radius:4px;font-size:11px">${comma(mx)}</span></td>
-      <td style="text-align:right;width:72px;border-right:1px solid rgba(0,0,0,.07);cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span style="font-size:11px;color:var(--or)">${bDA}</span></td>
-      <td style="text-align:right;width:72px;cursor:pointer;border-right:1px solid rgba(0,0,0,.07)" onclick="copyToClip(this.querySelector('span').textContent,this)"><span data-f="pda" class="da">${pDA}</span></td>
-      <td style="text-align:right;width:72px;border-right:1px solid rgba(0,0,0,.07);cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span data-f="mda" style="font-size:11px;color:var(--bl);font-weight:600">${mDA}</span></td>
-      <td style="text-align:center;width:52px;border-right:1px solid rgba(0,0,0,.07);cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span style="background:rgba(196,90,16,.08);color:var(--or);font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">${bRate}</span></td>
-      <td style="text-align:center;width:52px;cursor:pointer;border-right:1px solid rgba(0,0,0,.07)" onclick="copyToClip(this.querySelector('span').textContent,this)"><span data-f="prate" class="re">${pRate}</span></td>
-      <td style="text-align:center;width:52px;border-right:1px solid rgba(0,0,0,.07);cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span data-f="mrate" style="background:rgba(26,86,200,.08);color:var(--bl);font-size:10px;padding:1px 5px;border-radius:4px;font-weight:600">${mRate}</span></td>
-      <td style="text-align:center;font-size:11px;color:var(--t2);white-space:nowrap;width:64px;border-right:1px solid rgba(0,0,0,.07);cursor:pointer" onclick="copyToClip(this.textContent.trim(),this)">${p.ship||'무료배송'}</td>
+      <td style="text-align:right;cursor:pointer" onclick="copyToClip('${mx||''}',this)"><span data-f="pmx" style="color:var(--bl);font-weight:600;font-size:11px">${comma(mx)||'—'}</span></td>
+      <td style="text-align:right;cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span style="font-size:11px;color:var(--rd)">${bDA}</span></td>
+      <td style="text-align:right;cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span data-f="pda" class="da" style="color:var(--or)">${pDA}</span></td>
+      <td style="text-align:right;cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span data-f="mda" style="font-size:11px;color:var(--bl);font-weight:600">${mDA}</span></td>
+      <td style="text-align:center;cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span style="color:var(--rd);font-size:10px;font-weight:600">${bRate}</span></td>
+      <td style="text-align:center;cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span data-f="prate" class="re" style="color:var(--or)">${pRate}</span></td>
+      <td style="text-align:center;cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span data-f="mrate" style="color:var(--bl);font-size:10px;font-weight:600">${mRate}</span></td>
+      <td style="text-align:center;font-size:11px;color:var(--t2)">${p.ship||'무료배송'}</td>
+      <td style="text-align:center"><button class="btn btn-xs" style="color:var(--pu);border-color:rgba(108,53,204,.3)" onclick="event.stopPropagation()">소구</button></td>
       <td style="width:28px"><button class="btn btn-xs" style="color:var(--rd)" onclick="regRemoveProd('${p.skuCode}')">×</button></td>
     </tr>`;
   }).join('');
@@ -1754,21 +1744,24 @@ function renderRegProds(){
     <div class="egrpbody">
       <table class="tbl">
         <thead><tr>
-          <th style="text-align:center;width:50px;border-right:1px solid rgba(0,0,0,.07)">상태</th><th style="text-align:center;width:100px;border-right:1px solid rgba(0,0,0,.07)">닉네임</th>
-          ${(()=>{const lbl=getPriceLabels(typeCode);const sub=(t,c)=>`<div style="font-size:9.5px;color:${c||'var(--t4)'};margin-top:2px;font-weight:400">${t}</div>`;const vl='border-right:1px solid rgba(0,0,0,.07)';return`
-          <th style="text-align:center;${vl}">정상가${sub(lbl.normal)}</th>
-          <th style="text-align:center;color:var(--or);${vl}">기본행사가 🔒${sub(lbl.base||'(해당없음)')}</th>
-          <th style="text-align:center;color:var(--rd);font-weight:700;${vl}">제안행사가 <span onclick="document.querySelectorAll('[id^=alim-disp-]').forEach(d=>{d.style.display='none';const inp=document.getElementById(d.id.replace('disp','inp'));if(inp){inp.style.display='inline-block';inp.focus();inp.select();}});event.stopPropagation();" style="cursor:pointer;color:var(--ac)" title="전체 수정 모드">✏️</span>${sub(lbl.alim,'var(--rd)')}</th>
-          <th style="text-align:center;${vl}">최대혜택가 🔒${sub(lbl.max||'(해당없음)')}</th>
-          <th style="text-align:center;color:var(--or);${vl}">행사할인금액</th>
-          <th style="text-align:center;color:var(--rd);width:72px;${vl}">제안할인금액</th>
-          <th style="text-align:center;color:var(--bl);width:72px;${vl}">최대할인금액</th>
-          <th style="text-align:center;color:var(--or);width:52px;${vl}">행사할인율</th>
-          <th style="text-align:center;color:var(--rd);width:52px;${vl}">제안할인율</th>
-          <th style="text-align:center;color:var(--bl);width:52px;${vl}">최대할인율</th>
-          <th style="text-align:center;${vl}">배송</th><th></th>`;})()}
+          <th style="width:46px">상태</th>
+          <th style="width:90px">닉네임</th>
+          <th style="width:78px">상품코드</th>
+          <th style="text-align:right;width:62px">정상가</th>
+          <th style="text-align:right;width:80px;color:var(--rd)">최대할인가<br>=기본행사가 🔒</th>
+          <th style="text-align:right;width:76px;color:var(--or)">제안행사가 <span onclick="document.querySelectorAll('[id^=alim-disp-]').forEach(d=>{d.style.display='none';const inp=document.getElementById(d.id.replace('disp','inp'));if(inp){inp.style.display='inline-block';inp.focus();inp.select();}});event.stopPropagation();" style="cursor:pointer;color:var(--ac)" title="전체 수정 모드">✏️</span></th>
+          <th style="text-align:right;width:72px;color:var(--bl)">최종혜택가 🔒</th>
+          <th style="text-align:right;width:82px;color:var(--rd)">최대할인금액<br>=기본행사금액</th>
+          <th style="text-align:right;width:72px;color:var(--or)">제안행사금액</th>
+          <th style="text-align:right;width:72px;color:var(--bl)">최종혜택금액</th>
+          <th style="text-align:right;width:80px;color:var(--rd)">최대할인율<br>=기본행사율</th>
+          <th style="text-align:right;width:60px;color:var(--or)">제안행사율</th>
+          <th style="text-align:right;width:60px;color:var(--bl)">최종혜택율</th>
+          <th style="width:56px">배송</th>
+          <th style="width:52px">소구문구</th>
+          <th style="width:28px"></th>
         </tr></thead>
-        <tbody>${rows||'<tr><td colspan="15" style="text-align:center;padding:16px;color:var(--t3);font-size:12px">SKU 버튼 또는 코드로 상품을 추가하세요</td></tr>'}</tbody>
+        <tbody>${rows||'<tr><td colspan="16" style="text-align:center;padding:16px;color:var(--t3);font-size:12px">SKU 버튼 또는 코드로 상품을 추가하세요</td></tr>'}</tbody>
       </table>
     </div>
   </div>`;
@@ -2096,17 +2089,22 @@ function buildGroupHtml(eName,grp,tabNum){
   }
 
   /* 공통 열 헤더: 상태-닉네임-정상가-행사가(빨강)-최대혜택가-행사할인금액-최대할인금액(파랑)-행사할인율-최대할인율 */
-  const colHd=`<th style="width:60px">상태</th>
-    <th style="width:110px">닉네임 <button onclick="copyColAll('nick',this)" title="이 행사 닉네임 전체 복사" style="padding:1px 4px;border:0.5px solid var(--bd);border-radius:4px;background:var(--gs);color:var(--t3);cursor:pointer;margin-left:3px;line-height:1"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" style="vertical-align:middle"><rect x="4" y="0" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="0" y="4" width="8" height="8" rx="1.5" fill="var(--gs)" stroke="currentColor" stroke-width="1.5"/></svg></button></th>
-    <th style="width:100px">상품코드 <button onclick="copyColAll('code',this)" title="이 행사 상품코드 전체 복사" style="padding:1px 4px;border:0.5px solid var(--bd);border-radius:4px;background:var(--gs);color:var(--t3);cursor:pointer;margin-left:3px;line-height:1"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" style="vertical-align:middle"><rect x="4" y="0" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="0" y="4" width="8" height="8" rx="1.5" fill="var(--gs)" stroke="currentColor" stroke-width="1.5"/></svg></button></th>
-    <th style="text-align:right;width:70px">정상가</th>
-    <th style="text-align:right;width:75px;color:var(--or)">기본행사가</th>
-    <th style="text-align:right;width:75px;color:var(--rd)">제안행사가</th>
-    <th style="text-align:right;width:75px">최대혜택가</th>
-    <th style="text-align:right;width:80px">행사할인금액</th>
-    <th style="text-align:right;width:80px;color:var(--bl)">최대할인금액</th>
-    <th style="width:65px">행사할인율</th><th style="width:65px">최대할인율</th>
-    ${tabNum===2?'<th style="width:70px">소구문구</th>':''}<th style="width:32px"></th>`;
+  const colHd=`<th style="width:46px">상태</th>
+    <th style="width:90px">닉네임 <button onclick="copyColAll('nick',this)" title="이 행사 닉네임 전체 복사" style="padding:1px 4px;border:0.5px solid var(--bd);border-radius:4px;background:var(--gs);color:var(--t3);cursor:pointer;margin-left:3px;line-height:1"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" style="vertical-align:middle"><rect x="4" y="0" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="0" y="4" width="8" height="8" rx="1.5" fill="var(--gs)" stroke="currentColor" stroke-width="1.5"/></svg></button></th>
+    <th style="width:78px">상품코드 <button onclick="copyColAll('code',this)" title="이 행사 상품코드 전체 복사" style="padding:1px 4px;border:0.5px solid var(--bd);border-radius:4px;background:var(--gs);color:var(--t3);cursor:pointer;margin-left:3px;line-height:1"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" style="vertical-align:middle"><rect x="4" y="0" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="0" y="4" width="8" height="8" rx="1.5" fill="var(--gs)" stroke="currentColor" stroke-width="1.5"/></svg></button></th>
+    <th style="text-align:right;width:62px">정상가</th>
+    <th style="text-align:right;width:80px;color:var(--rd)">최대할인가<br>=기본행사가</th>
+    <th style="text-align:right;width:76px;color:var(--or)">제안행사가</th>
+    <th style="text-align:right;width:70px;color:var(--bl)">최종혜택가</th>
+    <th style="text-align:right;width:82px;color:var(--rd)">최대할인금액<br>=기본행사금액</th>
+    <th style="text-align:right;width:70px;color:var(--or)">제안행사금액</th>
+    <th style="text-align:right;width:70px;color:var(--bl)">최종혜택금액</th>
+    <th style="text-align:right;width:80px;color:var(--rd)">최대할인율<br>=기본행사율</th>
+    <th style="text-align:right;width:58px;color:var(--or)">제안행사율</th>
+    <th style="text-align:right;width:58px;color:var(--bl)">최종혜택율</th>
+    <th style="width:56px">배송</th>
+    <th style="width:52px">소구문구</th>
+    <th style="width:28px"></th>`;
 
   /* tabNum===3: 그룹 수정 폼 블록 */
   const selEditHtml=(tabNum===2||tabNum===3)?buildSelGroupEditBlock(eName,evId,grpId,grp.items,ev,lbl,tabNum):'';
@@ -2166,12 +2164,11 @@ function buildGroupHtml(eName,grp,tabNum){
       </div>
       <table class="tbl">
         <colgroup>
-          <col style="width:62px"><col style="width:110px"><col style="width:100px">
-          <col style="width:68px"><col style="width:72px"><col style="width:72px"><col style="width:72px">
-          <col style="width:76px"><col style="width:76px">
-          <col style="width:60px"><col style="width:60px">
-          ${tabNum===2?'<col style="width:70px">':''}
-          <col style="width:28px">
+          <col style="width:46px"><col style="width:90px"><col style="width:78px">
+          <col style="width:62px"><col style="width:80px"><col style="width:76px"><col style="width:70px">
+          <col style="width:82px"><col style="width:70px"><col style="width:70px">
+          <col style="width:80px"><col style="width:58px"><col style="width:58px">
+          <col style="width:56px"><col style="width:52px"><col style="width:28px">
         </colgroup>
         <thead><tr>${colHd}</tr></thead>
         <tbody>${rows}</tbody>
@@ -2187,8 +2184,13 @@ function buildProdRow(p,tabNum,grpEnded,lbl){
   const isDirty=DIRTY.has(p._id);
   const evPrice=p.priceEvent||null;
   const alimPrice=p.priceAlim||p.priceEvent;
+  /* 최대할인(기본행사가 기준) */
+  const bDA2=(p.priceNormal&&evPrice)?comma(p.priceNormal-evPrice):'—';
+  const bRate2=pct(p.priceNormal,evPrice);
+  /* 제안행사금액/율 */
   const eDA=(p.priceNormal&&alimPrice)?comma(p.priceNormal-alimPrice):'—';
   const eRate=pct(p.priceNormal,alimPrice);
+  /* 최종혜택금액/율 */
   const mDA=(p.priceNormal&&p.priceMax)?comma(p.priceNormal-p.priceMax):'—';
   const mRate=pct(p.priceNormal,p.priceMax);
   const rowId='row-'+p._id;
@@ -2211,30 +2213,36 @@ function buildProdRow(p,tabNum,grpEnded,lbl){
       <td class="opt-nick">└ ${o.nick||o.name}</td>
       <td></td>
       <td style="text-align:right">${comma(oNormal)}</td>
-      <td style="text-align:right;color:var(--or)">${comma(oDisc)}</td>
-      <td style="text-align:right;font-weight:600;color:var(--rd)">${comma(oDisc)}</td>
-      <td style="text-align:right">${comma(oMax)}</td>
-      <td style="text-align:right">${oEDA}</td>
-      <td style="text-align:right">${oMDA}</td>
-      <td>${oERate}</td>
-      <td>${oMRate}</td>
-      ${tabNum===2?'<td></td>':''}
+      <td style="text-align:right;color:var(--rd);font-weight:600">${comma(oMax)}</td>
+      <td style="text-align:right;color:var(--or);font-weight:600">${comma(oDisc)}</td>
+      <td style="text-align:right;color:var(--bl);font-weight:600">${oMax&&oDisc?comma(oDisc-1000):'—'}</td>
+      <td style="text-align:right;color:var(--rd)">${oNormal&&oMax?'▼'+comma(oNormal-oMax):'—'}</td>
+      <td style="text-align:right;color:var(--or)">${oEDA}</td>
+      <td style="text-align:right;color:var(--bl)">${oMDA}</td>
+      <td style="text-align:right;color:var(--rd)">${oNormal&&oMax?pct(oNormal,oMax):'—'}</td>
+      <td style="text-align:right;color:var(--or)">${oERate}</td>
+      <td style="text-align:right;color:var(--bl)">${oMRate}</td>
+      <td></td>
+      <td></td>
       <td></td>
     </tr>`;
   }).join('');
   return `<tr class="${isGray?' grayed':''}${isDirty?' dirty-row':''}" id="${rowId}"${hasOpts?` style="cursor:pointer" onclick="toggleOptRows('${p._id}')"`:''}">
     <td><span class="st ${stCls}" style="font-size:10px">${cStatus}</span></td>
     <td data-col="nick" data-val="${p.skuNick||p.productName||''}" style="font-weight:600"><span onclick="copyToClip('${p.skuNick||p.productName||''}',this);event.stopPropagation()" style="cursor:pointer">${p.skuNick||p.productName||'—'}</span></td>
-    <td data-col="code" data-val="${p.skuCode||''}" style="font-size:11px;color:var(--t3);cursor:pointer" onclick="copyToClip('${p.skuCode||''}',this);event.stopPropagation()">${p.skuCode||'—'}</td>
+    <td data-col="code" data-val="${p.skuCode||''}" style="font-size:10px;color:var(--t3);cursor:pointer;text-align:center" onclick="copyToClip('${p.skuCode||''}',this);event.stopPropagation()">${p.skuCode||'—'}</td>
     <td style="text-align:right"><span class="pn">${comma(p.priceNormal)}</span></td>
-    <td style="text-align:right"><span style="color:var(--or);font-size:11.5px">${comma(evPrice)}</span></td>
-    <td style="text-align:right"><b class="pe">${comma(alimPrice)}</b></td>
-    <td style="text-align:right"><span class="pm">${comma(p.priceMax)}</span></td>
-    <td style="text-align:right"><span class="da">${eDA!=='—'?'▼'+eDA:'—'}</span></td>
-    <td style="text-align:right"><span class="da-bl">${mDA!=='—'?'▼'+mDA:'—'}</span></td>
-    <td><span class="re">${eRate}</span></td>
-    <td><span class="rm">${mRate}</span></td>
-    ${tabNum===2?`<td><button class="btn btn-xs" style="color:var(--pu);border-color:rgba(108,53,204,.3)" onclick="event.stopPropagation()">소구문구</button></td>`:''}
+    <td style="text-align:right"><span style="color:var(--rd);font-size:11.5px;font-weight:600">${comma(evPrice)}</span></td>
+    <td style="text-align:right"><b class="pe" style="color:var(--or)">${comma(alimPrice)}</b></td>
+    <td style="text-align:right"><span class="pm" style="color:var(--bl);font-weight:600">${comma(p.priceMax)}</span></td>
+    <td style="text-align:right"><span style="color:var(--rd)">${bDA2!=='—'?'▼'+bDA2:'—'}</span></td>
+    <td style="text-align:right"><span class="da" style="color:var(--or)">${eDA!=='—'?'▼'+eDA:'—'}</span></td>
+    <td style="text-align:right"><span class="da-bl" style="color:var(--bl)">${mDA!=='—'?'▼'+mDA:'—'}</span></td>
+    <td style="text-align:right"><span style="color:var(--rd);font-size:10px">${bRate2}</span></td>
+    <td style="text-align:right"><span class="re" style="color:var(--or)">${eRate}</span></td>
+    <td style="text-align:right"><span class="rm" style="color:var(--bl)">${mRate}</span></td>
+    <td style="text-align:center;font-size:11px;color:var(--t2)">${p.ship||'—'}</td>
+    <td style="text-align:center"><button class="btn btn-xs" style="color:var(--pu);border-color:rgba(108,53,204,.3)" onclick="event.stopPropagation()">소구</button></td>
     <td style="text-align:center">${hasOpts?`<span id="opt-tog-${p._id}" style="font-size:10px;color:var(--t3);cursor:pointer">▶</span>`:''}</td>
   </tr>${optRows}`;
 }

@@ -185,6 +185,8 @@ tr.empty-group{opacity:.35}
     </div>
     <div class="pg-actions" style="position:relative">
       <button class="btn btn-ghost btn-sm" id="zipGuideBtn" onclick="toggleZipGuide()" style="font-size:11.5px">📦 ZIP 올리기</button>
+      <button class="btn btn-ghost btn-sm" onclick="goBkImg()" style="font-size:11.5px">🔍 브검 소재</button>
+      <button class="btn btn-ghost btn-sm" onclick="goGfaImg()" style="font-size:11.5px">🖼 GFA 소재</button>
 
       <!-- ZIP 팝업 -->
       <div id="zipGuidePopup" style="display:none;position:absolute;top:calc(100% + 8px);right:0;z-index:999;background:var(--glass-bg-strong);border:1px solid var(--glass-border-s);border-radius:14px;width:450px;box-shadow:0 4px 20px rgba(0,0,0,0.12);overflow:hidden">
@@ -682,6 +684,33 @@ const ZG_TOTAL = ZG_ROWS.length;
 let _zipGuideOpen = false;
 const _zgCopied = {};   // dateStr -> Set of keys
 const _zgUploaded = new Set(); // dateStr
+
+
+function goBkImg() {
+  // 브검 서브탭 활성화
+  const bkTab = document.getElementById('mainTabBk');
+  if (bkTab) swSub('bk', bkTab);
+  // 이미지 관리 내부탭 활성화
+  setTimeout(() => {
+    const imgTab = document.getElementById('innerTabBkImg');
+    if (imgTab) swBkInner('bkImg', imgTab);
+  }, 50);
+}
+
+function goGfaImg() {
+  // GFA 서브탭 활성화
+  const gfaTab = document.getElementById('mainTabGfa');
+  if (gfaTab) swSub('gfa', gfaTab);
+  // 소재 → 이미지 관리 탭 활성화
+  setTimeout(() => {
+    const sojai = document.querySelector('#innerTabGfaSojai');
+    if (sojai) swGfaInner('gfaSojai', sojai);
+    setTimeout(() => {
+      const imgTab = document.querySelector('#gfaSojai .inner-tab:last-child');
+      if (imgTab) imgTab.click();
+    }, 50);
+  }, 50);
+}
 
 function toggleZipGuide() {
   const popup = document.getElementById('zipGuidePopup');

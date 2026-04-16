@@ -281,6 +281,7 @@ tr.opt-row.opt-last td{border-bottom:1px solid rgba(58,58,240,.12)}
       <div><div class="pg-title">품목 관리</div><div class="pg-desc">Firebase <code>items</code> 컬렉션 · 변경 후 하단 Firebase 저장 버튼으로 반영</div></div>
       <div class="pg-actions">
         <a class="btn btn-dl" id="itemDlBtn" href="#"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v9M4 8l4 4 4-4"/><rect x="2" y="13" width="12" height="1" rx=".5"/></svg>업로드 양식</a>
+        <button class="btn btn-ghost" onclick="exportItems()"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v9M4 8l4 4 4-4"/><rect x="2" y="13" width="12" height="1" rx=".5"/></svg>현재 데이터 다운</button>
         <button class="btn btn-ghost" onclick="loadAll()">🔄 새로고침</button>
       </div>
     </div>
@@ -364,6 +365,7 @@ tr.opt-row.opt-last td{border-bottom:1px solid rgba(58,58,240,.12)}
       <div><div class="pg-title">SKU 관리</div><div class="pg-desc">Firebase <code>skus</code> 컬렉션 · 변경 후 하단 Firebase 저장 버튼으로 반영</div></div>
       <div class="pg-actions">
         <a class="btn btn-dl" id="skuDlBtn" href="#"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v9M4 8l4 4 4-4"/><rect x="2" y="13" width="12" height="1" rx=".5"/></svg>업로드 양식</a>
+        <button class="btn btn-ghost" onclick="exportSkus()"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v9M4 8l4 4 4-4"/><rect x="2" y="13" width="12" height="1" rx=".5"/></svg>현재 데이터 다운</button>
         <button class="btn btn-ghost" id="optUploadBtn" onclick="bulkUploadOptions()">📦 옵션 일괄 업로드</button>
         <button class="btn btn-ghost" onclick="loadAll()">🔄 새로고침</button>
       </div>
@@ -870,7 +872,7 @@ function stageSkuEdit(code){
   sk.name=document.getElementById('es-name').value||sk.name;
   sk.type=document.getElementById('es-type').value;
   sk.status=document.getElementById('es-status').value;
-  sk.priceNormal=toNum('es-pn');sk.priceDisc=toNum('es-pd');sk.priceMax=toNum('es-pm');const _pa=toNum('es-pa');if(_pa&&sk.priceDisc&&_pa<sk.priceDisc){alert('제안행사가는 상시할인가('+sk.priceDisc.toLocaleString()+'원) 이상이어야 합니다.');return;}sk.priceAlim=_pa||null;sk.priceFinal=sk.priceAlim?sk.priceAlim-1000:null;
+  sk.priceNormal=toNum('es-pn');sk.priceDisc=toNum('es-pd');sk.priceMax=toNum('es-pm');const _pa=toNum('es-pa');if(_pa&&sk.priceMax&&_pa<sk.priceMax){alert('제안행사가는 기본행사가('+sk.priceMax.toLocaleString()+'원) 이상이어야 합니다.');return;}sk.priceAlim=_pa||null;sk.priceFinal=sk.priceAlim?sk.priceAlim-1000:null;
   sk.ship=document.getElementById('es-ship').value;
   sk.memo=document.getElementById('es-memo').value;
   const opts=sk.options||[];
@@ -883,7 +885,6 @@ function stageSkuEdit(code){
     const pd=Number(document.getElementById(`eo-pd-${oi}`)?.value)||null;
     const pm=Number(document.getElementById(`eo-pm-${oi}`)?.value)||null;
     const pa=Number(document.getElementById(`eo-pa-${oi}`)?.value)||null;
-    if(pa&&pd&&pa<pd){alert(`옵션 ${oi+1}: 제안행사가는 상시할인가 이상이어야 합니다.`);return;}
     const pf=pa?pa-1000:null;
     const memo=document.getElementById(`eo-memo-${oi}`)?.value.trim()||null;
     if(nick||name) saved.push({nick:nick||'',name:name||'',status:sk.status,priceNormal:pn,priceDisc:pd,priceMax:pm,priceAlim:pa,priceFinal:pf,memo});
@@ -901,7 +902,7 @@ function addSkuOpt(code){
   const pd=Number(document.getElementById('eo-new-pd')?.value)||null;
   const pm=Number(document.getElementById('eo-new-pm')?.value)||null;
   const pa=Number(document.getElementById('eo-new-pa')?.value)||null;
-  if(pa&&sk.priceDisc&&pa<sk.priceDisc){alert('제안행사가는 상시할인가 이상이어야 합니다.');return;}
+  if(pa&&sk.priceMax&&pa<sk.priceMax){alert('제안행사가는 기본행사가('+sk.priceMax.toLocaleString()+'원) 이상이어야 합니다.');return;}
   const pf=pa?pa-1000:null;
   const memo=document.getElementById('eo-new-memo')?.value.trim()||null;
   if(!nick&&!name){alert('닉네임 또는 구성 설명을 입력해주세요.');return;}
@@ -1027,7 +1028,7 @@ function renderSkuTable(q){
         <td><input class="e-input r" id="es-pn" inputmode="numeric" value="${sk.priceNormal||''}" placeholder="—"></td>
         <td><input class="e-input r" id="es-pd" inputmode="numeric" value="${sk.priceDisc||''}" placeholder="—"></td>
         <td><input class="e-input r" id="es-pm" inputmode="numeric" value="${sk.priceMax||''}" placeholder="—"></td>
-        <td><input class="e-input r" id="es-pa" inputmode="numeric" value="${sk.priceAlim||sk.priceMax||''}" placeholder="제안행사가" oninput="validateAlim(this,${sk.priceDisc||0})" style="color:#e07000"></td>
+        <td><input class="e-input r" id="es-pa" inputmode="numeric" value="${sk.priceAlim||sk.priceMax||''}" placeholder="제안행사가" oninput="validateAlim(this,${sk.priceMax||0})" style="color:#e07000"></td>
         <td class="r" style="color:#1a56c8;font-size:11px">${(()=>{const a=sk.priceAlim||sk.priceMax||null;return a?(a-1000).toLocaleString()+'원':'—';})()}</td>
         <td style="color:var(--t4);text-align:right;font-size:11px">계산</td>
         <td style="color:var(--t4);text-align:right;font-size:11px">계산</td>
@@ -1060,7 +1061,7 @@ function renderSkuTable(q){
           </td>
           <td style="padding:4px 6px"><input class="e-input r" id="eo-pd-${oi}" inputmode="numeric" value="${opt.priceDisc||''}" placeholder="상시할인가"></td>
           <td style="padding:4px 6px"><input class="e-input r" id="eo-pm-${oi}" inputmode="numeric" value="${opt.priceMax||''}" placeholder="기본행사가"></td>
-          <td style="padding:4px 6px"><input class="e-input r" id="eo-pa-${oi}" inputmode="numeric" value="${opt.priceAlim||opt.priceMax||''}" placeholder="제안행사가" oninput="validateAlim(this,${opt.priceDisc||0})" style="color:#e07000"></td>
+          <td style="padding:4px 6px"><input class="e-input r" id="eo-pa-${oi}" inputmode="numeric" value="${opt.priceAlim||opt.priceMax||''}" placeholder="제안행사가" oninput="validateAlim(this,${opt.priceMax||0})" style="color:#e07000"></td>
           <td class="r" style="color:#1a56c8;font-size:11px;padding:4px 6px">${(()=>{const a=opt.priceAlim||null;return a?(a-1000).toLocaleString()+'원':'—';})()}</td>
           <td style="padding:4px 6px"><input class="e-input" id="eo-memo-${oi}" value="${opt.memo||''}" placeholder="메모"></td>
           <td></td>
@@ -1186,6 +1187,29 @@ function toggleSkuOpts(code){
 }
 
 /* 양식 다운로드 */
+function exportItems(){
+  const d=new Date();
+  const ts=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+  const rows=[['no','code','nick','name','category','status','memo']];
+  ITEMS.sort((a,b)=>(Number(a.no)||99)-(Number(b.no)||99)).forEach(it=>{
+    rows.push([it.no||'',it.code||'',it.nick||'',it.name||'',it.category||'',it.status||'',it.memo||'']);
+  });
+  dlCsv(makeCsv(rows),`품목_${ts}.csv`);
+  toast(`품목 ${ITEMS.length}건 다운로드`);
+}
+
+function exportSkus(){
+  const d=new Date();
+  const ts=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+  const rows=[['no','code','nick','name','type','status','priceNormal','priceDisc','priceMax','priceAlim','ship','memo']];
+  SKUS.sort((a,b)=>(Number(a.no)||99)-(Number(b.no)||99)).forEach(sk=>{
+    rows.push([sk.no||'',sk.code||'',sk.nick||'',sk.name||'',sk.type||'',sk.status||'',
+      sk.priceNormal||'',sk.priceDisc||'',sk.priceMax||'',sk.priceAlim||'',sk.ship||'',sk.memo||'']);
+  });
+  dlCsv(makeCsv(rows),`SKU_${ts}.csv`);
+  toast(`SKU ${SKUS.length}건 다운로드`);
+}
+
 function makeCsv(rows){return rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');}
 function dlCsv(c,n){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+c],{type:'text/csv;charset=utf-8'}));a.download=n;a.click();}
 document.getElementById('itemDlBtn').addEventListener('click',e=>{e.preventDefault();dlCsv(makeCsv([

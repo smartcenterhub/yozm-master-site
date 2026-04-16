@@ -985,7 +985,22 @@ async function bulkImgSave() {
   status.textContent = '저장 중...';
   let done = 0, fail = 0;
   for (const item of _bulkImgFiles) {
-    const existing = _cr[item.matchedDocId];
+    let existing = _cr[item.matchedDocId];
+    if (!existing) {
+      const matched = _bulkRows.find(function(r) {
+        if (r.errors.length) return false;
+        const rKey = (r.pcId || r.moId).replace(/[^a-zA-Z0-9\-_]/g,'_');
+        return rKey === item.matchedDocId;
+      });
+      if (matched) {
+        existing = {
+          pcId: matched.pcId, moId: matched.moId, name: matched.name,
+          startAt: matched.startAt, endAt: matched.endAt,
+          pcImg: null, moImg: null,
+          createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+        };
+      }
+    }
     if (!existing) { fail++; continue; }
     const compressed = await new Promise(function(res) {
       const img = new Image();

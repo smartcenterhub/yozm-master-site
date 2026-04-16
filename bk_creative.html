@@ -11,8 +11,8 @@
   --gbd:rgba(0,0,0,0.07);--tx:#0a0a0f;--t2:#4a4a5a;--t3:#9898a8;--t4:#c4c4d0;
   --ac:#3a3af0;--gr:#1a8a4a;--rd:#d42020;--bl:#1a56c8;--or:#c45a10;
 }
-html{height:100%;background:linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#eef0f8 100%) fixed;}
-body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;line-height:1.5;color:var(--tx);padding:20px 24px 32px;}
+html{height:100%;min-width:1188px;background:linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#eef0f8 100%) fixed;}
+body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;line-height:1.5;color:var(--tx);padding:20px 24px 32px;width:1188px;min-width:1188px;max-width:1188px;}
 .pg-title{font-size:15px;font-weight:700;margin-bottom:4px}
 .pg-desc{font-size:11.5px;color:var(--t3);margin-bottom:16px}
 .bk-tabs{display:flex;gap:0;border-bottom:1.5px solid var(--gbd);margin-bottom:16px}
@@ -20,17 +20,17 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 .bk-tab:hover{color:var(--tx)}
 .bk-tab.active{color:var(--ac);border-bottom-color:var(--ac);font-weight:600}
 .bk-pane{display:none}.bk-pane.active{display:block}
-.card{background:var(--gb);border:1px solid var(--gbd);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+.card{background:var(--gb);border:1px solid var(--gbd);border-radius:12px;padding:18px 20px;margin-bottom:14px;width:1132px}
 .card-title{font-size:12.5px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:7px}
 .cdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .cbadge{background:rgba(58,58,240,0.08);color:var(--ac);border-radius:10px;padding:2px 9px;font-size:11.5px;font-weight:500;margin-left:4px}
-.form-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px}
+.form-row{display:flex;gap:12px;align-items:flex-end;margin-bottom:12px;width:1132px}
 .fg{display:flex;flex-direction:column;gap:5px}
 .fl{font-size:11.5px;font-weight:500;color:var(--t2)}
 .inp{border:1px solid var(--gbd);border-radius:7px;padding:7px 12px;font-size:12.5px;color:var(--tx);background:var(--gbs);font-family:inherit;outline:none}
 .inp:focus{border-color:rgba(58,58,240,0.3);box-shadow:0 0 0 3px rgba(58,58,240,0.06)}
 .inp::placeholder{color:var(--t4)}
-.fdrop{border:1.5px dashed rgba(58,58,240,0.2);border-radius:8px;padding:8px 12px;text-align:center;cursor:pointer;transition:all .15s;background:rgba(58,58,240,0.02);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:160px;height:60px}
+.fdrop{border:1.5px dashed rgba(58,58,240,0.2);border-radius:8px;padding:8px 12px;text-align:center;cursor:pointer;transition:all .15s;background:rgba(58,58,240,0.02);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:400px;height:60px}
 .fdrop:hover,.fdrop.drag-over{border-color:rgba(58,58,240,0.4);background:rgba(58,58,240,0.04)}
 .fdrop-t{font-size:11px;color:var(--t3)}
 .fdrop-n{font-size:11px;font-weight:600;color:var(--ac);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -41,28 +41,28 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 .btn-sm{padding:4px 10px;font-size:11px}
 .pcb{background:rgba(26,86,200,0.1);color:var(--bl);border-radius:4px;padding:1px 6px;font-size:10px;font-weight:600}
 .mob{background:rgba(196,90,16,0.1);color:var(--or);border-radius:4px;padding:1px 6px;font-size:10px;font-weight:600}
-.urow{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-end}
+.urow{display:flex;gap:20px;align-items:flex-end;width:1132px}
 .ublock{display:flex;flex-direction:column;gap:5px}
 .utitle{font-size:11.5px;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:6px}
 /* 소재 현황 */
-.today-strip{background:var(--gb);border:1px solid var(--gbd);border-radius:10px;padding:12px 16px;margin-bottom:14px}
+.today-strip{background:var(--gb);border:1px solid var(--gbd);border-radius:10px;padding:12px 16px;margin-bottom:14px;width:1132px}
 .today-lbl{font-size:11px;color:var(--t3);margin-bottom:8px}
-.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pills{display:flex;gap:8px}
 .pill{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:6px;font-size:11px;border:1px solid var(--gbd);background:var(--gbs)}
 .pdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .pname{font-weight:500}
 .ptime{color:var(--t3)}
-.cal-layout{display:flex;gap:14px;align-items:flex-start}
-.cal-main{flex:1;min-width:0;overflow-x:auto}
+.cal-layout{display:flex;gap:14px;align-items:flex-start;width:1132px}
+.cal-main{width:850px;flex-shrink:0;overflow-x:auto}
 .cal-detail{width:268px;flex-shrink:0;background:var(--gbs);border:1px solid var(--gbd);border-radius:10px;padding:14px;position:sticky;top:20px;max-height:82vh;overflow-y:auto}
-.cal-nav{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.cal-nav{display:flex;align-items:center;gap:8px;margin-bottom:10px;width:1132px}
 .cnbtn{background:var(--gbs);border:1px solid var(--gbd);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--t2);font-family:inherit}
 .cnbtn:hover{color:var(--tx)}
 .cntitle{font-size:13px;font-weight:600;min-width:120px;text-align:center}
 .cvtog{display:flex;border:1px solid var(--gbd);border-radius:7px;overflow:hidden;margin-left:auto}
 .cvbtn{padding:4px 12px;font-size:11.5px;cursor:pointer;background:var(--gb);color:var(--t2);border:none;font-family:inherit;transition:all .12s}
 .cvbtn.active{background:rgba(58,58,240,0.08);color:var(--ac);font-weight:500}
-.legend{display:flex;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.legend{display:flex;gap:10px;margin-bottom:8px;width:1132px}
 .litem{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2)}
 .ldot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
 .cal-table{border-collapse:collapse;min-width:100%}
@@ -85,7 +85,7 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 .d-img:hover{opacity:.85}
 .d-btns{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--gbd)}
 /* 소재 이력 테이블 */
-.hist-table{width:100%;border-collapse:collapse}
+.hist-table{width:1132px;border-collapse:collapse;table-layout:fixed}
 .hist-table th{background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:8px 10px;border:0.5px solid var(--gbd);text-align:left;white-space:nowrap}
 .hist-table td{border:0.5px solid var(--gbd);padding:8px 10px;font-size:12px;vertical-align:middle}
 .hist-table tr:hover td{background:rgba(58,58,240,0.02)}
@@ -114,35 +114,39 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 <div class="bk-pane active" id="bkPane1">
 <div class="card">
   <div class="card-title"><div class="cdot" style="background:var(--ac)"></div>소재 등록</div>
-  <div class="form-row">
+  <div style="display:flex;gap:12px;align-items:flex-end;width:1132px;margin-bottom:10px">
     <div class="fg">
       <div class="fl">소재명</div>
-      <input type="text" id="nameInput" class="inp" placeholder="예) 요즘상시6+3_이벤트문구_0401-0410" style="width:320px">
-    </div>
-  </div>
-  <div class="form-row">
-    <div class="fg">
-      <div class="fl">시작 일시 <span style="font-size:10.5px;color:var(--t3);font-weight:400">— YYYY-MM-DD-HHMM 또는 달력 선택</span></div>
-      <input type="text" id="startRaw" class="inp" placeholder="2026-04-07-1100" style="width:180px" oninput="parseShortDt(this,'startInput')">
-      <input type="datetime-local" id="startInput" class="inp" style="width:190px;margin-top:5px">
+      <input type="text" id="nameInput" class="inp" placeholder="예) 요즘상시6+3_이벤트문구_0401-0410" style="width:400px" oninput="this.value=this.value.replace(/ /g,'')">
     </div>
     <div class="fg">
-      <div class="fl">종료 일시 <span style="font-size:10.5px;color:var(--t3);font-weight:400">— YYYY-MM-DD-HHMM 또는 달력 선택</span></div>
-      <input type="text" id="endRaw" class="inp" placeholder="2026-04-10-2359" style="width:180px" oninput="parseShortDt(this,'endInput')">
-      <input type="datetime-local" id="endInput" class="inp" style="width:190px;margin-top:5px">
+      <div class="fl">시작 일시 <span style="font-size:10px;color:var(--t3);font-weight:400">YYYY-MM-DD-HHMM</span></div>
+      <div style="display:flex;gap:5px;align-items:center">
+        <input type="text" id="startRaw" class="inp" placeholder="2026-04-07-1100" style="width:155px">
+        <button type="button" class="btn btn-g btn-sm" onclick="checkDt('startRaw','startInput')" style="height:34px;padding:0 10px">✓</button>
+      </div>
+      <input type="hidden" id="startInput">
+    </div>
+    <div class="fg">
+      <div class="fl">종료 일시 <span style="font-size:10px;color:var(--t3);font-weight:400">YYYY-MM-DD-HHMM</span></div>
+      <div style="display:flex;gap:5px;align-items:center">
+        <input type="text" id="endRaw" class="inp" placeholder="2026-04-10-2359" style="width:155px">
+        <button type="button" class="btn btn-g btn-sm" onclick="checkDt('endRaw','endInput')" style="height:34px;padding:0 10px">✓</button>
+      </div>
+      <input type="hidden" id="endInput">
     </div>
   </div>
-  <div class="form-row">
+  <div style="display:flex;gap:12px;align-items:flex-end;width:1132px;margin-bottom:10px">
     <div class="fg">
       <div class="fl"><span class="pcb">PC</span> 소재 ID</div>
-      <input type="text" id="pcIdInput" class="inp" placeholder="nad-a001-04-..." style="width:240px">
+      <input type="text" id="pcIdInput" class="inp" placeholder="nad-a001-04-..." style="width:400px" oninput="this.value=this.value.replace(/ /g,'')">
     </div>
     <div class="fg">
       <div class="fl"><span class="mob">MO</span> 소재 ID</div>
-      <input type="text" id="moIdInput" class="inp" placeholder="nad-a001-04-..." style="width:240px">
+      <input type="text" id="moIdInput" class="inp" placeholder="nad-a001-04-..." style="width:400px" oninput="this.value=this.value.replace(/ /g,'')">
     </div>
   </div>
-  <div class="urow">
+  <div style="display:flex;gap:16px;align-items:flex-end;width:1132px">
     <div class="ublock">
       <div class="utitle"><span class="pcb">PC</span> 이미지 <span style="font-size:10px;color:var(--t3);font-weight:400">(최대 2MB)</span></div>
       <label class="fdrop" id="pcFileDrop"><div id="pcDropText" class="fdrop-t">클릭 또는 드래그</div><input type="file" id="pcFileInput" accept="image/*" style="display:none"></label>
@@ -234,14 +238,19 @@ let _pendingPc = null, _pendingMo = null;
 let _toastTmr;
 
 /* ── 단축 날짜 파서 ── */
-function parseShortDt(el, targetId) {
+function checkDt(rawId, targetId) {
+  const el = document.getElementById(rawId);
   const v = el.value.trim();
   const m = v.match(/^(\d{4})[-.]?(\d{2})[-.]?(\d{2})[-T]?(\d{2})(\d{2})$/);
-  if (!m) return;
+  if (!m) {
+    el.style.borderColor = 'rgba(212,32,32,0.5)';
+    showToast('⚠️ 형식 오류 — 예: 2026-04-07-1100');
+    return;
+  }
   const dt = m[1] + '-' + m[2] + '-' + m[3] + 'T' + m[4] + ':' + m[5];
   document.getElementById(targetId).value = dt;
   el.style.borderColor = 'rgba(26,138,74,0.5)';
-  setTimeout(function() { el.style.borderColor = ''; }, 1200);
+  setTimeout(function() { el.style.borderColor = ''; }, 1000);
 }
 
 /* ── 유틸 ── */
@@ -337,6 +346,7 @@ function setDropFile(file, textEl, which) {
 }
 function resetForm() {
   ['pcIdInput','moIdInput','nameInput','startInput','endInput','startRaw','endRaw'].forEach(function(id) { document.getElementById(id).value = ''; });
+  document.getElementById('startRaw').style.borderColor=''; document.getElementById('endRaw').style.borderColor='';
   document.getElementById('pcDropText').textContent = '클릭 또는 드래그'; document.getElementById('pcDropText').className = 'fdrop-t';
   document.getElementById('moDropText').textContent = '클릭 또는 드래그'; document.getElementById('moDropText').className = 'fdrop-t';
   document.getElementById('pcFileInput').value = ''; document.getElementById('moFileInput').value = '';

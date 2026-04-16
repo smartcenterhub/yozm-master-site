@@ -1787,6 +1787,9 @@ function swSub(id, el) {
 
 function swBkInner(id, el) {
   ['bkPerf','bkKw','bkImg'].forEach(p => { const el2=document.getElementById(p); if(el2) el2.style.display='none'; });
+  // 이미지 관리 탭일 때 일비용 바 숨김
+  const costBar = document.querySelector('#s-bk [style*="sticky-top2"]');
+  if (costBar) costBar.style.display = id === 'bkImg' ? 'none' : '';
   el.closest('.inner-tabs').querySelectorAll('.inner-tab').forEach(t => {
     t.classList.remove('active');
     t.style.borderBottomColor = 'transparent';
@@ -2390,6 +2393,27 @@ function rptToggleGuide() {
   const open = body.style.display === 'block';
   body.style.display = open ? 'none' : 'block';
   if (arrow) arrow.style.transform = open ? '' : 'rotate(90deg)';
+}
+
+
+function rptRenderStatus() {
+  const el = document.getElementById('rptDataStatus');
+  if (!el) return;
+  try {
+    const bkDates = [...(_bkByDate?.keys()||[])].sort();
+    const bkOk = bkDates.length > 0;
+    const gfaOk = (_gfaData||[]).length > 0;
+    const daOk = Object.keys(_perfStore.da||{}).length > 0;
+    const saOk = Object.keys(_perfStore.sa||{}).length > 0;
+    const dot = (ok) => `<span style="width:6px;height:6px;border-radius:50%;background:${ok?'var(--green)':'var(--t4)'};display:inline-block;margin-right:4px;flex-shrink:0"></span>`;
+    const bkVal  = bkOk  ? `${perfDateDisplay(bkDates[bkDates.length-1])} MO/PC 연동` : '미업로드';
+    const gfaVal = gfaOk ? `${[...new Set((_gfaData).map(r=>r.group).filter(Boolean))].map(gcShortName).join('+')} 연동` : '미업로드';
+    const advVal = (daOk||saOk) ? `DA${daOk?'✓':'✗'} SA${saOk?'✓':'✗'}` : '미업로드';
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">${dot(bkOk)}<span style="font-size:11px;color:var(--t2);min-width:52px">BK</span><span style="font-size:11px;color:${bkOk?'var(--tx)':'var(--t3)'}">${bkVal}</span></div>
+      <div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">${dot(gfaOk)}<span style="font-size:11px;color:var(--t2);min-width:52px">GFA</span><span style="font-size:11px;color:${gfaOk?'var(--tx)':'var(--t3)'}">${gfaVal}</span></div>
+      <div style="display:flex;align-items:center;gap:4px">${dot(daOk||saOk)}<span style="font-size:11px;color:var(--t2);min-width:52px">ADV</span><span style="font-size:11px;color:${(daOk||saOk)?'var(--tx)':'var(--t3)'}">${advVal}</span></div>`;
+  } catch(e) { el.innerHTML = '<span style="font-size:11px;color:var(--t3)">데이터 대기 중...</span>'; }
 }
 
 
@@ -3225,6 +3249,7 @@ function renderAdvPanel(num, selDate) {
 }
 
 async function processAdv(file, num) {
+  try {
   const uz = document.getElementById(`advUpload${num}`);
   const panel = document.getElementById(`advPanel${num}`);
   const zip = await JSZip.loadAsync(file);
@@ -3299,6 +3324,7 @@ async function processAdv(file, num) {
   mailUpdateAdv(window._advDaConv||0, window._advSaConv||0);
   document.getElementById('mainTabAdv')?.classList.add('done');
   mailRefreshPerf();
+  } catch(err) { console.error('processAdv error:', err); showToast('❌ ADV 처리 오류: ' + err.message); throw err; }
 }
 
 function resetAdvPanel(num) {

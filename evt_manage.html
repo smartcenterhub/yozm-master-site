@@ -446,7 +446,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
           <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">업로드일/제안마감일</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">YYYY-MM-DD</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택</td></tr>
           <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">상품코드1~20</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">숫자 코드</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">★ 1개 이상 필수</td></tr>
           <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">배송1~20</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">무료배송 / 조건부무료 / 유료배송</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택 — 미입력 시 무료배송</td></tr>
-          <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">정상가/최대혜택가1~20</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">숫자 (원단위)</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택</td></tr>
+          <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">정상가/제안행사가1~20</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">숫자 (원단위)</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택 — 미입력 시 SKU 최대할인가 자동 적용</td></tr>
           <tr><td style="padding:5px 8px;font-weight:600;color:var(--bl)">중복 처리</td><td style="padding:5px 8px;color:var(--t2)">병합(merge)</td><td style="padding:5px 8px;color:var(--t3)">동일 행사 존재 시 엑셀 입력 필드만 업데이트</td></tr>
         </tbody>
       </table>
@@ -824,8 +824,8 @@ function parseBulkRows(data){
       if(!code)continue;
       const ship=get(row,[`배송${n}\n드롭다운`,`배송${n}`])||'무료배송';
       const priceNormal=parseFloat(get(row,[`정상가${n}`]))||null;
-      const priceMax=parseFloat(get(row,[`최대혜택가${n}`]))||null;
-      products.push({code:String(code).replace(/\.0$/,''),ship,priceNormal,priceMax});
+      const priceAlim=parseFloat(get(row,[`제안행사가${n}`,`최대혜택가${n}`]))||null;
+      products.push({code:String(code).replace(/\.0$/,''),ship,priceNormal,priceAlim});
     }
     const errs=[];
     if(!name)errs.push('행사명 없음');
@@ -880,7 +880,7 @@ window.doBulkUpload=async function(){
     bar.style.width=Math.round(done/total*100)+'%';
     const docId=r.name.replace(/\s/g,'')+'_'+(r.start||'None').replace(/-/g,'')+'_'+(r.end||'None').replace(/-/g,'');
     const evData={eventName:r.name,eventType:r.type||null,startDate:r.start||null,startTime:r.st,endDate:r.end||null,endTime:r.et,pageType:r.page||null,isClosed:false,isNotice:false,additionalDiscount:r.adddisc||null,proposalUploadedAt:r.upload||null,proposalDeadline:r.deadline||null,
-      products:r.products.map((p,i)=>{const sku=SKUS.find(s=>s._id===p.code)||{};const obj={no:i+1,subNo:null,isMain:skuGroup(sku.nick||sku.name||'')==='main'?'메인':'서브',isCancelled:false,skuCode:p.code,productName:sku.name||'',link:'https://brand.naver.com/yozmkorea/products/'+p.code,priceNormal:p.priceNormal||sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:sku.priceMax||null,priceMax:sku.priceMax?(sku.priceMax-1000):null,ship:p.ship||'무료배송',options:[]};return obj;}),
+      products:r.products.map((p,i)=>{const sku=SKUS.find(s=>s._id===p.code)||{};const obj={no:i+1,subNo:null,isMain:skuGroup(sku.nick||sku.name||'')==='main'?'메인':'서브',isCancelled:false,skuCode:p.code,productName:sku.name||'',link:'https://brand.naver.com/yozmkorea/products/'+p.code,priceNormal:p.priceNormal||sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:p.priceAlim||sku.priceMax||null,priceMax:(p.priceAlim||sku.priceMax)?((p.priceAlim||sku.priceMax)-1000):null,ship:p.ship||'무료배송',options:[]};return obj;}),
       updatedAt:new Date().toISOString()};
     try{
       await setDoc(doc(db,'events',docId),evData,{merge:true});
@@ -889,7 +889,7 @@ window.doBulkUpload=async function(){
       for(const p of r.products){
         const pid=(docId+'_'+p.code).replace(/\s/g,'');
         const sku=SKUS.find(s=>s._id===p.code)||{};
-        const pData={eventSID:docId,eventName:r.name,eventType:r.type||null,startDate:r.start||null,endDate:r.end||null,startTime:r.st,endTime:r.et,proposalUploadedAt:r.upload||null,proposalDeadline:r.deadline||null,skuCode:p.code,skuNick:sku.nick||sku.name||p.code,productName:sku.name||'',isMain:skuGroup(sku.nick||sku.name||'')==='main'?'메인':'서브',priceNormal:p.priceNormal||sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:sku.priceMax||null,priceMax:sku.priceMax?(sku.priceMax-1000):null,ship:p.ship||'무료배송',status:'제안중',createdAt:new Date().toISOString()};
+        const pData={eventSID:docId,eventName:r.name,eventType:r.type||null,startDate:r.start||null,endDate:r.end||null,startTime:r.st,endTime:r.et,proposalUploadedAt:r.upload||null,proposalDeadline:r.deadline||null,skuCode:p.code,skuNick:sku.nick||sku.name||p.code,productName:sku.name||'',isMain:skuGroup(sku.nick||sku.name||'')==='main'?'메인':'서브',priceNormal:p.priceNormal||sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:p.priceAlim||sku.priceMax||null,priceMax:(p.priceAlim||sku.priceMax)?((p.priceAlim||sku.priceMax)-1000):null,ship:p.ship||'무료배송',status:'제안중',createdAt:new Date().toISOString()};
         await setDoc(doc(db,'proposalItems',pid),pData,{merge:true});
         const exP=PROPOSALS.findIndex(x=>x._id===pid);
         if(exP>=0)Object.assign(PROPOSALS[exP],pData);else PROPOSALS.unshift({_id:pid,...pData});

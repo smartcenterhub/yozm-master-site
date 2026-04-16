@@ -879,7 +879,8 @@ function parseBulkZip(input) {
         fr.onload = function(ev) { res(ev.target.result); };
         fr.readAsDataURL(new Blob([blob], {type: mimeType}));
       });
-      if (matchedDocId) { _bulkImgFiles.push({fname, rawId, matchedDocId, matchType, dataUrl}); matchCount++; }
+      const matchedBulkRow2 = !_cr[matchedDocId] ? (_bulkRows.find(function(r) { return !r.errors.length && (r.pcId === rawId || r.moId === rawId); }) || null) : null;
+      if (matchedDocId) { _bulkImgFiles.push({fname, rawId, matchedDocId, matchType, dataUrl, bulkRow: matchedBulkRow2}); matchCount++; }
       const tr = document.createElement('tr');
       const td = function(html, style) {
         const td = document.createElement('td');
@@ -941,8 +942,9 @@ function parseBulkImages(input) {
     const reader = new FileReader();
     reader.onload = function(e) {
       const dataUrl = e.target.result;
+      const matchedBulkRow = !_cr[matchedDocId] ? (_bulkRows.find(function(r) { return !r.errors.length && (r.pcId === rawId || r.moId === rawId); }) || null) : null;
       if (matchedDocId) {
-        _bulkImgFiles.push({file, rawId, matchedDocId, matchType, dataUrl});
+        _bulkImgFiles.push({file, rawId, matchedDocId, matchType, dataUrl, bulkRow: matchedBulkRow});
         matchCount++;
       }
       processed++;
@@ -986,20 +988,16 @@ async function bulkImgSave() {
   let done = 0, fail = 0;
   for (const item of _bulkImgFiles) {
     let existing = _cr[item.matchedDocId];
-    if (!existing) {
-      const matched = _bulkRows.find(function(r) {
-        if (r.errors.length) return false;
-        const rKey = (r.pcId || r.moId).replace(/[^a-zA-Z0-9\-_]/g,'_');
-        return rKey === item.matchedDocId;
-      });
-      if (matched) {
-        existing = {
-          pcId: matched.pcId, moId: matched.moId, name: matched.name,
-          startAt: matched.startAt, endAt: matched.endAt,
-          pcImg: null, moImg: null,
-          createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
-        };
-      }
+    if (!existing && item.bulkRow) {
+      const matched = item.bulkRow;
+      existing = {
+        pcId: matched.pcId, moId: matched.moId, name: matched.name,
+        startAt: matched.startAt, endAt: matched.endAt,
+        pcImg: null, moImg: null,
+        createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+      };
+      const docId = (matched.pcId || matched.moId).replace(/[^a-zA-Z0-9\-_]/g,'_');
+      item.matchedDocId = docId;
     }
     if (!existing) { fail++; continue; }
     const compressed = await new Promise(function(res) {

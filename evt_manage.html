@@ -444,26 +444,27 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
           <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">시작/종료시간</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">HH:MM</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택 — 미입력 시 00:00/23:59</td></tr>
           <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">랜딩페이지</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">쇼핑스토리+카테고리 등</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택 — 드롭다운 4종</td></tr>
           <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">업로드일/제안마감일</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">YYYY-MM-DD</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택</td></tr>
-          <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">상품코드1~20</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">숫자 코드</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">★ 1개 이상 필수 — 스마트스토어 상품번호</td></tr>
+          <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">상품코드1~20</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">숫자 코드</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">★ 1개 이상 필수</td></tr>
           <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">배송1~20</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">무료배송 / 조건부무료 / 유료배송</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택 — 미입력 시 무료배송</td></tr>
-          <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">정상가1~20</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">숫자 (원단위)</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택 — 예) 35200</td></tr>
-          <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">최대혜택가1~20</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">숫자 (원단위)</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택 — 예) 25900</td></tr>
-          <tr><td style="padding:5px 8px;font-weight:600;color:var(--bl)">중복 처리</td><td style="padding:5px 8px;color:var(--t2)">병합(merge)</td><td style="padding:5px 8px;color:var(--t3)">동일 행사 존재 시 엑셀 입력 필드만 업데이트, 기존 필드 유지</td></tr>
+          <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">정상가/최대혜택가1~20</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">숫자 (원단위)</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택</td></tr>
+          <tr><td style="padding:5px 8px;font-weight:600;color:var(--bl)">중복 처리</td><td style="padding:5px 8px;color:var(--t2)">병합(merge)</td><td style="padding:5px 8px;color:var(--t3)">동일 행사 존재 시 엑셀 입력 필드만 업데이트</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 
   <!-- 업로드 존 -->
-  <div id="bulk-drop-zone" class="panel" style="text-align:center;padding:32px 20px;border:2px dashed var(--bd);background:var(--gb);cursor:pointer;transition:border-color .15s"
+  <div id="bulk-drop-zone" class="panel" style="text-align:center;padding:32px 20px;border:2px dashed var(--bd);background:var(--gb);transition:border-color .15s"
     ondragover="event.preventDefault();this.style.borderColor='var(--ac)'"
     ondragleave="this.style.borderColor=''"
-    ondrop="event.preventDefault();this.style.borderColor='';handleBulkDrop(event)">
+    ondrop="event.preventDefault();this.style.borderColor='';bulkOnDrop(event)">
     <div style="font-size:32px;margin-bottom:8px;color:var(--t3)">📂</div>
     <div style="font-size:13px;font-weight:600;margin-bottom:4px">엑셀 파일을 여기에 드래그하거나</div>
     <div style="font-size:12px;color:var(--t3);margin-bottom:14px">.xlsx 파일만 지원 · 시트명: 행사_일괄등록</div>
-    <button class="btn btn-sm btn-p" onclick="document.getElementById('bulk-file-input').click()">파일 선택</button>
-    <input type="file" id="bulk-file-input" accept=".xlsx" style="display:none">
+    <label style="display:inline-block;padding:5px 16px;background:var(--ac);color:#fff;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer">
+      파일 선택
+      <input type="file" accept=".xlsx" style="display:none" onchange="bulkOnChange(this)">
+    </label>
   </div>
 
   <!-- 미리보기 & 결과 -->
@@ -747,46 +748,58 @@ const STATUS_ST={'제안중':'s-gray','제안완료':'s-sel','확인필요':'s-w
 
 /* ══ 행사 일괄 등록 (엑셀) ══ */
 let BULK_ROWS=[];
-/* bulk-file-input addEventListener */
-document.addEventListener('DOMContentLoaded',()=>{
-  const bfi=document.getElementById('bulk-file-input');
-  if(bfi)bfi.addEventListener('change',function(){if(this.files[0])handleBulkFile(this.files[0]);});
-});
+/* SheetJS 로드 */
+function loadXLSX(cb){
+  if(window.XLSX){cb();return;}
+  const s=document.createElement('script');
+  s.src='https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js';
+  s.onload=cb;
+  s.onerror=()=>toast('SheetJS 로드 실패','err');
+  document.head.appendChild(s);
+}
+window.bulkOnChange=function(inp){
+  const file=inp.files[0];
+  if(!file)return;
+  if(!file.name.endsWith('.xlsx')){toast('xlsx 파일만 지원합니다','err');return;}
+  loadXLSX(()=>{
+    const reader=new FileReader();
+    reader.onload=function(e){
+      try{
+        const wb=XLSX.read(e.target.result,{type:'array'});
+        const ws=wb.Sheets['행사_일괄등록']||wb.Sheets[wb.SheetNames[0]];
+        const data=XLSX.utils.sheet_to_json(ws,{defval:''});
+        parseBulkRows(data);
+      }catch(err){toast('파일 파싱 오류: '+err.message,'err');}
+    };
+    reader.readAsArrayBuffer(file);
+  });
+};
+window.bulkOnDrop=function(e){
+  const file=e.dataTransfer.files[0];
+  if(!file)return;
+  if(!file.name.endsWith('.xlsx')){toast('xlsx 파일만 지원합니다','err');return;}
+  loadXLSX(()=>{
+    const reader=new FileReader();
+    reader.onload=function(ev){
+      try{
+        const wb=XLSX.read(ev.target.result,{type:'array'});
+        const ws=wb.Sheets['행사_일괄등록']||wb.Sheets[wb.SheetNames[0]];
+        const data=XLSX.utils.sheet_to_json(ws,{defval:''});
+        parseBulkRows(data);
+      }catch(err){toast('파일 파싱 오류: '+err.message,'err');}
+    };
+    reader.readAsArrayBuffer(file);
+  });
+};
 window.toggleBulkGuide=function(){
   const el=document.getElementById('bulk-guide');
   if(el)el.style.display=el.style.display==='none'?'block':'none';
 };
 window.downloadBulkTemplate=function(){
   const a=document.createElement('a');
-  a.href='/mnt/user-data/outputs/요즘_행사_일괄등록_양식.xlsx';
+  a.href='https://smartcenterhub.github.io/yozm-master-site/요즘_행사_일괄등록_양식.xlsx';
   a.download='요즘_행사_일괄등록_양식.xlsx';
   a.click();
-};
-window.handleBulkDrop=function(e){
-  const file=e.dataTransfer.files[0];
-  if(file)handleBulkFile(file);
-};
-window.handleBulkFile=async function(file){
-  if(!file||!file.name.endsWith('.xlsx')){toast('xlsx 파일만 지원합니다','err');return;}
-  /* SheetJS 동적 로드 */
-  if(!window.XLSX){
-    await new Promise((res,rej)=>{
-      const s=document.createElement('script');
-      s.src='https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js';
-      s.onload=res;s.onerror=rej;
-      document.head.appendChild(s);
-    });
-  }
-  const reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      const wb=XLSX.read(e.target.result,{type:'array'});
-      const ws=wb.Sheets['행사_일괄등록']||wb.Sheets[wb.SheetNames[0]];
-      const data=XLSX.utils.sheet_to_json(ws,{defval:''});
-      parseBulkRows(data);
-    }catch(err){toast('파일 파싱 오류: '+err.message,'err');}
-  };
-  reader.readAsArrayBuffer(file);
 };
 function parseBulkRows(data){
   function get(row,candidates){
@@ -852,7 +865,7 @@ window.resetBulk=function(){
   document.getElementById('bulk-drop-zone').style.display='block';
   document.getElementById('bulk-preview').style.display='none';
   document.getElementById('bulk-progress').style.display='none';
-  document.getElementById('bulk-file-input').value='';
+  document.querySelectorAll('#p1 input[type=file]').forEach(el=>el.value='');
 };
 window.doBulkUpload=async function(){
   const rows=BULK_ROWS.filter(r=>r.ok);

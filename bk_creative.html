@@ -98,6 +98,7 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(60px);background:rgba(10,10,15,0.88);color:#fff;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:500;transition:transform .2s ease;z-index:9999;pointer-events:none;backdrop-filter:blur(8px)}
 .toast.show{transform:translateX(-50%) translateY(0)}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -112,6 +113,95 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 
 <!-- ── 탭1: 소재 등록 ── -->
 <div class="bk-pane active" id="bkPane1">
+<div class="card" id="bulkCard">
+  <div class="card-title"><div class="cdot" style="background:var(--bl)"></div>일괄 등록</div>
+
+  <!-- 양식 다운로드 + 가이드 -->
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;padding:10px 14px;background:rgba(58,58,240,0.04);border-radius:8px;border:1px solid rgba(58,58,240,0.1);width:1092px">
+    <button class="btn btn-g btn-sm" onclick="downloadBulkTemplate()" style="white-space:nowrap">📥 양식 다운로드</button>
+    <span style="font-size:11.5px;color:var(--t2)">
+      <b>입력 규칙:</b> 소재명 공백 금지 &nbsp;·&nbsp; 일시 형식 <code style="background:rgba(0,0,0,0.06);padding:1px 5px;border-radius:3px">YYYY-MM-DD-HHMM</code> &nbsp;·&nbsp; PC/MO 소재 ID 중 하나 이상 필수
+    </span>
+  </div>
+
+  <!-- Step 1: 엑셀 업로드 -->
+  <div style="margin-bottom:14px">
+    <div class="fl" style="margin-bottom:6px">① 엑셀 업로드 <span style="font-size:10.5px;color:var(--t3);font-weight:400">— 양식 기준 xlsx 파일</span></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <label style="display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border:1px solid var(--gbd);border-radius:7px;cursor:pointer;background:var(--gbs);font-size:12px;color:var(--t2)">
+        📂 파일 선택
+        <input type="file" id="bulkXlsx" accept=".xlsx,.xls" style="display:none" onchange="parseBulkXlsx(this)">
+      </label>
+      <span id="bulkXlsxName" style="font-size:11.5px;color:var(--t3)">선택된 파일 없음</span>
+    </div>
+  </div>
+
+  <!-- Step 2: 미리보기 테이블 -->
+  <div id="bulkPreviewWrap" style="display:none;margin-bottom:14px">
+    <div class="fl" style="margin-bottom:6px">② 파싱 결과 확인 <span id="bulkPreviewCount" style="font-size:11px;color:var(--t3);font-weight:400"></span></div>
+    <div style="overflow-x:auto;width:1092px">
+      <table id="bulkPreviewTable" style="border-collapse:collapse;width:100%;table-layout:fixed">
+        <colgroup>
+          <col style="width:280px"><col style="width:160px"><col style="width:160px">
+          <col style="width:240px"><col style="width:240px"><col style="width:80px">
+        </colgroup>
+        <thead>
+          <tr>
+            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:left">소재명</th>
+            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:left">시작일시</th>
+            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:left">종료일시</th>
+            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:left">PC 소재 ID</th>
+            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:left">MO 소재 ID</th>
+            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:center">상태</th>
+          </tr>
+        </thead>
+        <tbody id="bulkPreviewBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Step 3: Firebase 저장 -->
+  <div id="bulkSaveWrap" style="display:none;margin-bottom:14px">
+    <div class="fl" style="margin-bottom:8px">③ Firebase 저장</div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="btn btn-p" id="bulkSaveBtn" onclick="bulkSaveToFirebase()">✅ <span id="bulkSaveBtnLabel">등록</span></button>
+      <span id="bulkSaveStatus" style="font-size:11.5px;color:var(--t3)"></span>
+    </div>
+  </div>
+
+  <!-- Step 4: 이미지 일괄 매칭 -->
+  <div id="bulkImgWrap" style="display:none">
+    <div style="height:1px;background:var(--gbd);width:1092px;margin-bottom:14px"></div>
+    <div class="fl" style="margin-bottom:6px">④ 이미지 일괄 매칭 <span style="font-size:10.5px;color:var(--t3);font-weight:400">— 파일명 = 소재 ID (예: nad-a001-04-XXXXXXX.png)</span></div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+      <label style="display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border:1px solid var(--gbd);border-radius:7px;cursor:pointer;background:var(--gbs);font-size:12px;color:var(--t2)">
+        🖼 이미지 선택 (복수)
+        <input type="file" id="bulkImgInput" accept="image/*" multiple style="display:none" onchange="parseBulkImages(this)">
+      </label>
+      <span id="bulkImgName" style="font-size:11.5px;color:var(--t3)">선택된 파일 없음</span>
+    </div>
+    <div id="bulkImgPreview" style="display:none;margin-bottom:10px;overflow-x:auto;width:1092px">
+      <table id="bulkImgTable" style="border-collapse:collapse;width:100%;table-layout:fixed">
+        <colgroup><col style="width:260px"><col style="width:120px"><col style="width:340px"><col style="width:120px"><col style="width:120px"></colgroup>
+        <thead>
+          <tr>
+            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:left">파일명</th>
+            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:center">PC/MO</th>
+            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:left">매칭 소재</th>
+            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:center">미리보기</th>
+            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:center">상태</th>
+          </tr>
+        </thead>
+        <tbody id="bulkImgBody"></tbody>
+      </table>
+    </div>
+    <div id="bulkImgSaveWrap" style="display:none;display:flex;gap:10px;align-items:center">
+      <button class="btn btn-p" id="bulkImgSaveBtn" onclick="bulkImgSave()">🖼 <span id="bulkImgSaveBtnLabel">이미지 매칭 저장</span></button>
+      <span id="bulkImgSaveStatus" style="font-size:11.5px;color:var(--t3)"></span>
+    </div>
+  </div>
+</div>
+
 <div class="card">
   <div class="card-title"><div class="cdot" style="background:var(--ac)"></div>소재 등록</div>
   <div style="display:flex;gap:12px;align-items:flex-end;width:1132px;margin-bottom:10px">
@@ -595,6 +685,244 @@ function renderHist() {
   });
   html += '</tbody></table>';
   wrap.innerHTML = html;
+}
+
+/* ── 일괄 등록 ── */
+let _bulkRows = [];
+let _bulkImgFiles = [];
+
+function parseShortDtStr(v) {
+  if (!v) return '';
+  const s = String(v).trim();
+  const m = s.match(/^(\d{4})[-.]?(\d{2})[-.]?(\d{2})[-T]?(\d{2})(\d{2})$/);
+  if (!m) return '';
+  return m[1] + '-' + m[2] + '-' + m[3] + 'T' + m[4] + ':' + m[5];
+}
+
+function downloadBulkTemplate() {
+  if (typeof XLSX === 'undefined') { showToast('⚠️ SheetJS 로드 중입니다. 잠시 후 다시 시도해주세요'); return; }
+  const wb = XLSX.utils.book_new();
+  const data = [
+    ['브검 소재 일괄 등록 양식 — 시작/종료일시 형식: YYYY-MM-DD-HHMM (예: 2026-04-07-1100)', '', '', '', ''],
+    ['소재명', '시작일시', '종료일시', 'PC 소재 ID', 'MO 소재 ID'],
+    ['요즘상시6+3_이벤트문구_0401-0410', '2026-04-01-0000', '2026-04-10-2359', 'nad-a001-04-000000493777435', 'nad-a001-04-000000493775672'],
+    ['4월슈적_이벤트문구_0401-0408', '2026-04-01-0900', '2026-04-08-1800', 'nad-a001-04-000000487886903', 'nad-a001-04-000000497939348'],
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  ws['!cols'] = [{wch:40},{wch:20},{wch:20},{wch:38},{wch:38}];
+  XLSX.utils.book_append_sheet(wb, ws, '브검소재_일괄등록');
+  XLSX.writeFile(wb, '브검소재_일괄등록_양식.xlsx');
+}
+
+function parseBulkXlsx(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById('bulkXlsxName').textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const wb = XLSX.read(e.target.result, {type:'array'});
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+    _bulkRows = [];
+    for (let i = 2; i < rows.length; i++) {
+      const r = rows[i];
+      const name   = String(r[0]||'').trim().replace(/\s/g,'');
+      const startV = String(r[1]||'').trim();
+      const endV   = String(r[2]||'').trim();
+      const pcId   = String(r[3]||'').trim().replace(/\s/g,'');
+      const moId   = String(r[4]||'').trim().replace(/\s/g,'');
+      if (!name && !pcId && !moId) continue;
+      const startAt = parseShortDtStr(startV);
+      const endAt   = parseShortDtStr(endV);
+      const errors = [];
+      if (!name)    errors.push('소재명 없음');
+      if (!startAt) errors.push('시작일시 오류');
+      if (!endAt)   errors.push('종료일시 오류');
+      if (!pcId && !moId) errors.push('ID 없음');
+      if (startAt && endAt && new Date(startAt) >= new Date(endAt)) errors.push('기간 오류');
+      _bulkRows.push({name, startAt, endAt, pcId, moId, startV, endV, errors});
+    }
+    renderBulkPreview();
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function renderBulkPreview() {
+  const wrap = document.getElementById('bulkPreviewWrap');
+  const body = document.getElementById('bulkPreviewBody');
+  const count = document.getElementById('bulkPreviewCount');
+  const saveWrap = document.getElementById('bulkSaveWrap');
+  const imgWrap = document.getElementById('bulkImgWrap');
+  if (!_bulkRows.length) { wrap.style.display='none'; saveWrap.style.display='none'; return; }
+  wrap.style.display = '';
+  const valid = _bulkRows.filter(function(r){return !r.errors.length;});
+  count.textContent = '— 총 ' + _bulkRows.length + '행, 유효 ' + valid.length + '행';
+  body.innerHTML = '';
+  _bulkRows.forEach(function(r) {
+    const ok = !r.errors.length;
+    const bg = ok ? '' : 'background:rgba(212,32,32,0.04)';
+    const tr = document.createElement('tr');
+    tr.style.cssText = bg;
+    const td = function(val, extra) {
+      const td = document.createElement('td');
+      td.style.cssText = 'border:0.5px solid var(--gbd);padding:5px 8px;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' + (extra||'');
+      td.textContent = val;
+      td.title = val;
+      return td;
+    };
+    tr.appendChild(td(r.name));
+    tr.appendChild(td(r.startAt ? r.startAt.replace('T',' ') : '⚠️ ' + r.startV, r.startAt ? '' : 'color:var(--rd)'));
+    tr.appendChild(td(r.endAt   ? r.endAt.replace('T',' ')   : '⚠️ ' + r.endV,   r.endAt   ? '' : 'color:var(--rd)'));
+    tr.appendChild(td(r.pcId || '—'));
+    tr.appendChild(td(r.moId || '—'));
+    const stTd = document.createElement('td');
+    stTd.style.cssText = 'border:0.5px solid var(--gbd);padding:5px 8px;font-size:10.5px;text-align:center';
+    stTd.innerHTML = ok
+      ? '<span style="color:var(--gr);font-weight:500">✅</span>'
+      : '<span style="color:var(--rd)" title="' + r.errors.join(', ') + '">⚠️</span>';
+    tr.appendChild(stTd);
+    body.appendChild(tr);
+  });
+  if (valid.length) {
+    saveWrap.style.display = '';
+    document.getElementById('bulkSaveBtnLabel').textContent = valid.length + '개 등록';
+    document.getElementById('bulkSaveStatus').textContent = '';
+    imgWrap.style.display = '';
+  } else {
+    saveWrap.style.display = 'none';
+  }
+}
+
+async function bulkSaveToFirebase() {
+  const valid = _bulkRows.filter(function(r){return !r.errors.length;});
+  if (!valid.length) return;
+  const btn = document.getElementById('bulkSaveBtn');
+  const status = document.getElementById('bulkSaveStatus');
+  btn.disabled = true;
+  status.textContent = '저장 중...';
+  let done = 0, fail = 0;
+  for (const r of valid) {
+    const rawKey = r.pcId || r.moId;
+    const docId = rawKey.replace(/[^a-zA-Z0-9\-_]/g,'_');
+    const isUpd = !!_cr[docId];
+    const ex = isUpd ? _cr[docId] : {};
+    const data = {
+      pcId: r.pcId, moId: r.moId, name: r.name,
+      startAt: r.startAt, endAt: r.endAt,
+      pcImg: ex.pcImg || null, moImg: ex.moImg || null,
+      createdAt: isUpd ? (ex.createdAt || new Date().toISOString()) : new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    try {
+      await window._bkFs.save(docId, data);
+      _cr[docId] = data;
+      done++;
+    } catch(e) { fail++; }
+  }
+  btn.disabled = false;
+  status.textContent = '✅ ' + done + '개 저장 완료' + (fail ? ' / ⚠️ ' + fail + '개 실패' : '');
+  showToast('✅ ' + done + '개 등록 완료');
+  renderAll();
+}
+
+function parseBulkImages(input) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+  document.getElementById('bulkImgName').textContent = files.length + '개 파일 선택됨';
+  _bulkImgFiles = [];
+  const preview = document.getElementById('bulkImgPreview');
+  const body = document.getElementById('bulkImgBody');
+  const saveWrap = document.getElementById('bulkImgSaveWrap');
+  body.innerHTML = '';
+  let matchCount = 0;
+  const pending = files.length;
+  let processed = 0;
+
+  files.forEach(function(file) {
+    const ext = file.name.lastIndexOf('.');
+    const rawId = ext > -1 ? file.name.slice(0, ext) : file.name;
+    let matchedDocId = null, matchType = null, matchName = null;
+    for (const [docId, cr] of Object.entries(_cr)) {
+      if (cr.pcId && cr.pcId === rawId) { matchedDocId = docId; matchType = 'PC'; matchName = cr.name; break; }
+      if (cr.moId && cr.moId === rawId) { matchedDocId = docId; matchType = 'MO'; matchName = cr.name; break; }
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const dataUrl = e.target.result;
+      if (matchedDocId) {
+        _bulkImgFiles.push({file, rawId, matchedDocId, matchType, dataUrl});
+        matchCount++;
+      }
+      processed++;
+      const tr = document.createElement('tr');
+      const td = function(html, style) {
+        const td = document.createElement('td');
+        td.style.cssText = 'border:0.5px solid var(--gbd);padding:5px 8px;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' + (style||'');
+        td.innerHTML = html;
+        return td;
+      };
+      tr.appendChild(td(file.name));
+      tr.appendChild(td(matchType ? '<span class="' + (matchType==='PC'?'pcb':'mob') + '">' + matchType + '</span>' : '—', 'text-align:center'));
+      tr.appendChild(td(matchName || '<span style="color:var(--t3)">매칭 없음</span>'));
+      const imgTd = document.createElement('td');
+      imgTd.style.cssText = 'border:0.5px solid var(--gbd);padding:4px 8px;text-align:center';
+      const img = document.createElement('img');
+      img.src = dataUrl; img.style.cssText = 'max-width:60px;max-height:40px;object-fit:contain;border-radius:3px';
+      imgTd.appendChild(img);
+      tr.appendChild(imgTd);
+      tr.appendChild(td(matchedDocId ? '<span style="color:var(--gr);font-weight:500">✅ 매칭</span>' : '<span style="color:var(--t3)">❌ 미매칭</span>', 'text-align:center'));
+      body.appendChild(tr);
+      if (processed === pending) {
+        preview.style.display = '';
+        if (matchCount) {
+          saveWrap.style.display = 'flex';
+          document.getElementById('bulkImgSaveBtnLabel').textContent = matchCount + '개 이미지 매칭 저장';
+          document.getElementById('bulkImgSaveStatus').textContent = '';
+        }
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function bulkImgSave() {
+  if (!_bulkImgFiles.length) return;
+  const btn = document.getElementById('bulkImgSaveBtn');
+  const status = document.getElementById('bulkImgSaveStatus');
+  btn.disabled = true;
+  status.textContent = '저장 중...';
+  let done = 0, fail = 0;
+  for (const item of _bulkImgFiles) {
+    const existing = _cr[item.matchedDocId];
+    if (!existing) { fail++; continue; }
+    const compressed = await new Promise(function(res) {
+      const img = new Image();
+      img.onload = function() {
+        const MAX = 300; let w = img.width, h = img.height;
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h*MAX/w); w = MAX; }
+          else { w = Math.round(w*MAX/h); h = MAX; }
+        }
+        const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        res(cv.toDataURL('image/webp', 0.75));
+      };
+      img.src = item.dataUrl;
+    });
+    const updated = Object.assign({}, existing, {
+      [item.matchType === 'PC' ? 'pcImg' : 'moImg']: compressed,
+      updatedAt: new Date().toISOString()
+    });
+    try {
+      await window._bkFs.save(item.matchedDocId, updated);
+      _cr[item.matchedDocId] = updated;
+      done++;
+    } catch(e) { fail++; }
+  }
+  btn.disabled = false;
+  status.textContent = '✅ ' + done + '개 저장' + (fail ? ' / ⚠️ ' + fail + '개 실패' : '');
+  showToast('🖼 ' + done + '개 이미지 매칭 완료');
+  renderAll();
 }
 
 /* ── 탭 전환 ── */

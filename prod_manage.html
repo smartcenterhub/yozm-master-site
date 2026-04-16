@@ -1173,7 +1173,7 @@ function validateAlim(el,minVal){
   if(v&&minVal&&v<minVal){
     el.style.borderBottomColor='var(--red)';
     el.style.color='var(--red)';
-    el.title='상시할인가('+minVal.toLocaleString()+'원) 이상이어야 합니다';
+    el.title='기본행사가('+minVal.toLocaleString()+'원) 이상이어야 합니다';
   } else {
     el.style.borderBottomColor='';
     el.style.color='#e07000';
@@ -1218,9 +1218,9 @@ document.getElementById('itemDlBtn').addEventListener('click',e=>{e.preventDefau
   ['','','','','','그릭요거트 본품 / 마시는 그릭요거트 / 토핑 / 굿즈/기타','상시 / 비운영 / 단종예정 / 단종',''],
 ]),'품목_업로드_양식.csv');});
 document.getElementById('skuDlBtn').addEventListener('click',e=>{e.preventDefault();dlCsv(makeCsv([
-  ['no','code','nick','name','type','status','priceNormal','priceDisc','priceMax','ship','memo'],
-  [1,'12835060307','플3+소3','플레인3+소프트3','슈퍼적립','상시',22900,19900,18900,'무료',''],
-  ['','','','','상시운영 / 슈퍼적립 / 행사운영 / 행사제안불가','상시 / 단종예정 / 런칭예정 / 단종','','','','무료 / 조건부무료',''],
+  ['no','code','nick','name','type','status','priceNormal','priceDisc','priceMax','priceAlim','ship','memo'],
+  [1,'12835060307','플3+소3','플레인3+소프트3','슈퍼적립','상시',22900,19900,18900,18900,'무료',''],
+  ['','','','','상시운영 / 슈퍼적립 / 행사운영 / 행사제안불가','상시 / 단종예정 / 런칭예정 / 단종','','','','','무료 / 조건부무료',''],
 ]),'SKU_업로드_양식.csv');});
 </script>
 

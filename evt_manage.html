@@ -880,7 +880,7 @@ window.doBulkUpload=async function(){
     bar.style.width=Math.round(done/total*100)+'%';
     const docId=r.name.replace(/\s/g,'')+'_'+(r.start||'None').replace(/-/g,'')+'_'+(r.end||'None').replace(/-/g,'');
     const evData={eventName:r.name,eventType:r.type||null,startDate:r.start||null,startTime:r.st,endDate:r.end||null,endTime:r.et,pageType:r.page||null,isClosed:false,isNotice:false,additionalDiscount:r.adddisc||null,proposalUploadedAt:r.upload||null,proposalDeadline:r.deadline||null,
-      products:r.products.map((p,i)=>{const sku=SKUS.find(s=>s._id===p.code)||{};const obj={no:i+1,subNo:null,isMain:skuGroup(sku.nick||sku.name||'')==='main'?'메인':'서브',isCancelled:false,skuCode:p.code,productName:sku.name||'',link:'https://brand.naver.com/yozmkorea/products/'+p.code,priceNormal:p.priceNormal||sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:sku.priceDisc||null,priceMax:sku.priceDisc?(sku.priceDisc-1000):null,ship:p.ship||'무료배송',options:[]};return obj;}),
+      products:r.products.map((p,i)=>{const sku=SKUS.find(s=>s._id===p.code)||{};const obj={no:i+1,subNo:null,isMain:skuGroup(sku.nick||sku.name||'')==='main'?'메인':'서브',isCancelled:false,skuCode:p.code,productName:sku.name||'',link:'https://brand.naver.com/yozmkorea/products/'+p.code,priceNormal:p.priceNormal||sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:sku.priceMax||null,priceMax:sku.priceMax?(sku.priceMax-1000):null,ship:p.ship||'무료배송',options:[]};return obj;}),
       updatedAt:new Date().toISOString()};
     try{
       await setDoc(doc(db,'events',docId),evData,{merge:true});
@@ -889,7 +889,7 @@ window.doBulkUpload=async function(){
       for(const p of r.products){
         const pid=(docId+'_'+p.code).replace(/\s/g,'');
         const sku=SKUS.find(s=>s._id===p.code)||{};
-        const pData={eventSID:docId,eventName:r.name,eventType:r.type||null,startDate:r.start||null,endDate:r.end||null,startTime:r.st,endTime:r.et,proposalUploadedAt:r.upload||null,proposalDeadline:r.deadline||null,skuCode:p.code,skuNick:sku.nick||sku.name||p.code,productName:sku.name||'',isMain:skuGroup(sku.nick||sku.name||'')==='main'?'메인':'서브',priceNormal:p.priceNormal||sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:sku.priceDisc||null,priceMax:sku.priceDisc?(sku.priceDisc-1000):null,ship:p.ship||'무료배송',status:'제안중',createdAt:new Date().toISOString()};
+        const pData={eventSID:docId,eventName:r.name,eventType:r.type||null,startDate:r.start||null,endDate:r.end||null,startTime:r.st,endTime:r.et,proposalUploadedAt:r.upload||null,proposalDeadline:r.deadline||null,skuCode:p.code,skuNick:sku.nick||sku.name||p.code,productName:sku.name||'',isMain:skuGroup(sku.nick||sku.name||'')==='main'?'메인':'서브',priceNormal:p.priceNormal||sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:sku.priceMax||null,priceMax:sku.priceMax?(sku.priceMax-1000):null,ship:p.ship||'무료배송',status:'제안중',createdAt:new Date().toISOString()};
         await setDoc(doc(db,'proposalItems',pid),pData,{merge:true});
         const exP=PROPOSALS.findIndex(x=>x._id===pid);
         if(exP>=0)Object.assign(PROPOSALS[exP],pData);else PROPOSALS.unshift({_id:pid,...pData});
@@ -1597,8 +1597,8 @@ function addRegProd(code,nick,mainType){
   regProducts.push({skuCode:code,skuNick:nick,productName:sku.name||'',isMain:mainType||'서브',
     priceNormal:sku.priceNormal||null,priceBase:sku.priceDisc||null,
     priceEvent:sku.priceMax||null,
-    priceAlim:sku.priceDisc||null,
-    priceMax:sku.priceDisc?(sku.priceDisc-1000):null,
+    priceAlim:sku.priceMax||null,
+    priceMax:sku.priceMax?(sku.priceMax-1000):null,
     ship:sku.ship||'무료배송'});
   renderRegProds();
 }
@@ -2623,7 +2623,7 @@ window.addProdToGroup=function(eName,tabNum,grpId){
   const m=PROPOSALS.find(p=>p.eventName===eName);
   allCodes.forEach(code=>{
     const sku=SKUS.find(s=>s._id===code)||{};
-    const newP={_id:'NEW_'+Date.now()+'_'+code,_isNew:true,eventName:eName,eventType:m?.eventType||detectType({eventName:eName}),startDate:m?.startDate||null,endDate:m?.endDate||null,startTime:m?.startTime||null,endTime:m?.endTime||null,proposalUploadedAt:$('ev-upload-date')?.value||m?.proposalUploadedAt||null,proposalDeadline:$('ev-deadline')?.value||m?.proposalDeadline||null,proposalMyDate:m?.proposalMyDate||null,skuCode:code,skuNick:sku.nick||sku.name||code,productName:sku.name||'',isMain:skuGroup(sku.nick||sku.name)==='main'?'메인':'서브',status:'제안중',priceNormal:sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:sku.priceDisc||null,priceMax:sku.priceDisc?(sku.priceDisc-1000):null,ship:'무료배송'};
+    const newP={_id:'NEW_'+Date.now()+'_'+code,_isNew:true,eventName:eName,eventType:m?.eventType||detectType({eventName:eName}),startDate:m?.startDate||null,endDate:m?.endDate||null,startTime:m?.startTime||null,endTime:m?.endTime||null,proposalUploadedAt:$('ev-upload-date')?.value||m?.proposalUploadedAt||null,proposalDeadline:$('ev-deadline')?.value||m?.proposalDeadline||null,proposalMyDate:m?.proposalMyDate||null,skuCode:code,skuNick:sku.nick||sku.name||code,productName:sku.name||'',isMain:skuGroup(sku.nick||sku.name)==='main'?'메인':'서브',status:'제안중',priceNormal:sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:sku.priceMax||null,priceMax:sku.priceMax?(sku.priceMax-1000):null,ship:'무료배송'};
     PROPOSALS.unshift(newP);markDirty('proposalItems',newP._id,newP);
   });
   if(codeInp)codeInp.value='';
@@ -3063,7 +3063,7 @@ window.selSkbToggle=function(btn,evId,grpId){
     const sku=SKUS.find(s=>s._id===code)||{};
     ev.products.push({skuCode:code,skuNick:nick,productName:sku.name||nick,
       priceNormal:sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,
-      priceAlim:sku.priceDisc||null,priceMax:sku.priceDisc?(sku.priceDisc-1000):null,ship:sku.ship||'무료배송',isCancelled:false});
+      priceAlim:sku.priceMax||null,priceMax:sku.priceMax?(sku.priceMax-1000):null,ship:sku.ship||'무료배송',isCancelled:false});
     markDirty('events',evId,{products:ev.products});
   } else {
     const idx=ev.products.findIndex(p=>p.skuCode===code&&!p.isCancelled);
@@ -3080,7 +3080,7 @@ window.selAddByCode=function(evId,grpId){
     if(!sku){toast('코드 없음: '+code,'err');return;}
     ev.products.push({skuCode:code,skuNick:sku.nick||sku.name,productName:sku.name||'',
       priceNormal:sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,
-      priceAlim:sku.priceDisc||null,priceMax:sku.priceDisc?(sku.priceDisc-1000):null,ship:sku.ship||'무료배송',isCancelled:false});
+      priceAlim:sku.priceMax||null,priceMax:sku.priceMax?(sku.priceMax-1000):null,ship:sku.ship||'무료배송',isCancelled:false});
   });
   markDirty('events',evId,{products:ev.products});
   inp.value='';

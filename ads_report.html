@@ -23,7 +23,7 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 .tab-content{display:none}.tab-content.active{display:block}
 
 /* ── 서브 탭 ── */
-.sub-tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:nowrap;border-top:1px solid var(--glass-border-s);border-bottom:1px solid var(--glass-border-s);padding:10px 0}
+.sub-tabs{display:flex;gap:6px;margin-bottom:0;flex-wrap:nowrap;border-top:1px solid var(--glass-border-s);border-bottom:1px solid var(--glass-border-s);padding:10px 0}
 .sub-tab{padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;color:var(--t2);background:var(--glass-bg);border:1px solid var(--glass-border-s);transition:all .15s;white-space:nowrap;user-select:none;}
 .sub-tab:hover{color:var(--tx);background:var(--glass-bg-strong)}
 .sub-tab.active{background:rgba(58,58,240,0.08);color:var(--accent);font-weight:600;border-color:rgba(58,58,240,0.18)}
@@ -207,7 +207,7 @@ tr.empty-group{opacity:.35}
   </div>
 
   <!-- 날짜 바 + 서브탭 sticky wrapper -->
-  <div style="position:sticky;top:0;z-index:100;background:var(--body-bg, #f0f2f8);padding-bottom:6px;margin-bottom:0">
+  <div style="position:sticky;top:0;z-index:100;background:var(--body-bg, #f0f2f8);padding-bottom:2px;margin-bottom:0">
   <div style="margin-bottom:8px;position:relative">
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <span style="font-size:12px;font-weight:500;color:var(--t2);white-space:nowrap">📅 리포트 날짜</span>
@@ -264,7 +264,7 @@ tr.empty-group{opacity:.35}
   <!-- ① 브검 (브검 성과 + 브검 키워드 통합) -->
   <div class="sub-content" id="s-bk">
     <!-- 내부 탭 -->
-    <div class="inner-tabs" id="bkInnerTabs" style="position:sticky;top:var(--sticky-top,88px);z-index:60;display:flex;gap:0;border-bottom:1.5px solid var(--glass-border-s);margin-bottom:0;background:var(--body-bg,#f0f2f8)">
+    <div class="inner-tabs" id="bkInnerTabs" style="position:sticky;top:var(--sticky-top,88px);z-index:60;display:flex;gap:0;border-bottom:1.5px solid var(--glass-border-s);margin-bottom:0;margin-top:0;background:var(--body-bg,#f0f2f8)">
       <div class="inner-tab active" id="innerTabBkPerf" onclick="swBkInner('bkPerf',this)" style="padding:5px 16px;font-size:12.5px;color:var(--accent);cursor:pointer;border-bottom:2.5px solid var(--accent);margin-bottom:-1.5px">📊 브검 성과</div>
       <div class="inner-tab" id="innerTabBkKw" onclick="swBkInner('bkKw',this)" style="padding:5px 16px;font-size:12.5px;color:var(--t2);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px">🔑 브검 키워드</div>
       <div class="inner-tab" id="innerTabBkImg" onclick="swBkInner('bkImg',this)" style="padding:5px 16px;font-size:12.5px;color:var(--t2);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px">🖼 이미지 관리</div>

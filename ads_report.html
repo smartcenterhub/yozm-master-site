@@ -1787,6 +1787,19 @@ function swBkInner(id, el) {
   // 이미지 관리 탭일 때 일비용 바 숨김
   const costBar = document.querySelector('#s-bk [style*="sticky-top2"]');
   if (costBar) costBar.style.display = id === 'bkImg' ? 'none' : '';
+  // 이미지 관리 탭일 때 내부탭 sticky 해제 (iframe 높이 문제)
+  const innerTabs = document.getElementById('bkInnerTabs');
+  if (innerTabs) {
+    if (id === 'bkImg') {
+      innerTabs.style.position = 'relative';
+      innerTabs.style.top = '';
+      innerTabs.style.zIndex = '';
+    } else {
+      innerTabs.style.position = 'sticky';
+      innerTabs.style.top = 'var(--sticky-top,88px)';
+      innerTabs.style.zIndex = '60';
+    }
+  }
   el.closest('.inner-tabs').querySelectorAll('.inner-tab').forEach(t => {
     t.classList.remove('active');
     t.style.borderBottomColor = 'transparent';

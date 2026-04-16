@@ -117,7 +117,7 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
   <div style="display:flex;gap:12px;align-items:flex-end;width:1132px;margin-bottom:10px">
     <div class="fg">
       <div class="fl">소재명</div>
-      <input type="text" id="nameInput" class="inp" placeholder="예) 요즘상시6+3_이벤트문구_0401-0410" style="width:400px" oninput="this.value=this.value.replace(/ /g,'')">
+      <input type="text" id="nameInput" class="inp" placeholder="예) 요즘상시6+3_이벤트문구_0401-0410" style="width:400px" oninput="this.value=this.value.replace(/\s/g,'')" onpaste="setTimeout(()=>{this.value=this.value.replace(/\s/g,'')},0)">
     </div>
     <div class="fg">
       <div class="fl">시작 일시 <span style="font-size:10px;color:var(--t3);font-weight:400">YYYY-MM-DD-HHMM</span></div>
@@ -139,11 +139,11 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
   <div style="display:flex;gap:12px;align-items:flex-end;width:1132px;margin-bottom:10px">
     <div class="fg">
       <div class="fl"><span class="pcb">PC</span> 소재 ID</div>
-      <input type="text" id="pcIdInput" class="inp" placeholder="nad-a001-04-..." style="width:400px" oninput="this.value=this.value.replace(/ /g,'')">
+      <input type="text" id="pcIdInput" class="inp" placeholder="nad-a001-04-..." style="width:400px" oninput="this.value=this.value.replace(/\s/g,'')" onpaste="setTimeout(()=>{this.value=this.value.replace(/\s/g,'')},0)">
     </div>
     <div class="fg">
       <div class="fl"><span class="mob">MO</span> 소재 ID</div>
-      <input type="text" id="moIdInput" class="inp" placeholder="nad-a001-04-..." style="width:400px" oninput="this.value=this.value.replace(/ /g,'')">
+      <input type="text" id="moIdInput" class="inp" placeholder="nad-a001-04-..." style="width:400px" oninput="this.value=this.value.replace(/\s/g,'')" onpaste="setTimeout(()=>{this.value=this.value.replace(/\s/g,'')},0)">
     </div>
   </div>
   <div style="display:flex;gap:16px;align-items:flex-end;width:1132px">
@@ -203,7 +203,7 @@ const _app = initializeApp({
   apiKey:'AIzaSyCEP7E_VJ6JkE_AZ5udN4aZfa3wUlLYr4I',
   authDomain:'daily-report-naver-ad-2026.firebaseapp.com',
   projectId:'daily-report-naver-ad-2026',
-  appId:'1:649512750747:web:6597ebc08040f413be003e'
+  appId:'1:649512750747:web:1ab69c0e8a44c609be003e'
 },'bkCreative');
 const _db = getFirestore(_app);
 const COL = 'bkImages';

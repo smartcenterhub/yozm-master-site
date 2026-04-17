@@ -65,12 +65,12 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 .legend{display:flex;gap:10px;margin-bottom:8px;width:1132px}
 .litem{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2)}
 .ldot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
-.cal-table{border-collapse:collapse;min-width:100%}
-.cal-table th{background:#EEF2FF;color:#3D5A99;font-size:10px;font-weight:500;padding:4px 2px;border:0.5px solid var(--gbd);text-align:center;white-space:nowrap;width:40px;min-width:40px}
+.cal-table{border-collapse:collapse;table-layout:fixed}
+.cal-table th{background:#EEF2FF;color:#3D5A99;font-size:9px;font-weight:500;padding:3px 0;border:0.5px solid var(--gbd);text-align:center;overflow:hidden}
 .cal-table th.tcol{background:rgba(58,58,240,0.18);color:var(--ac);font-weight:700}
-.cal-table th.time-hdr{text-align:left;width:11px;min-width:11px;position:sticky;left:0;z-index:2;background:#EEF2FF}
-.cal-table td.time-cell{font-size:8px;padding:0;border:0.5px solid var(--gbd);white-space:nowrap;color:var(--t2);background:var(--gbs);width:11px;min-width:11px;height:22px;vertical-align:middle;position:sticky;left:0;z-index:1;text-align:center;overflow:hidden}
-.cal-table td.day-cell{border:0.5px solid var(--gbd);height:22px;padding:0;overflow:hidden;vertical-align:middle;min-width:9px;width:9px;cursor:pointer}
+.cal-table th.time-hdr{text-align:left;position:sticky;left:0;z-index:2;background:#EEF2FF;padding:5px 6px}
+.cal-table td.time-cell{font-size:10px;padding:0 4px;border:0.5px solid var(--gbd);color:var(--t2);background:var(--gbs);height:22px;vertical-align:middle;position:sticky;left:0;z-index:1;overflow:hidden}
+.cal-table td.day-cell{border:0.5px solid var(--gbd);height:22px;padding:0;overflow:hidden;vertical-align:middle;cursor:pointer}
 .cal-table td.day-cell.tcol{background:rgba(58,58,240,0.04)}
 .cal-table td.day-cell:hover{filter:brightness(0.92)}
 .cell-inner{display:flex;height:100%;width:100%}
@@ -365,7 +365,7 @@ function fmtDt(s) {
   return (d.getMonth()+1) + '/' + String(d.getDate()).padStart(2,'0') + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
 }
 function fmtDateHdr(d) {
-  return (d.getMonth()+1) + '/' + String(d.getDate()).padStart(2,'0') + '<br><span style="font-size:9px;font-weight:400">' + DOW[d.getDay()] + '</span>';
+  return String(d.getDate()) + '<br><span style="font-size:9px;font-weight:400">' + DOW[d.getDay()] + '</span>';
 }
 function getColor(id) {
   const keys = Object.keys(_cr);
@@ -568,7 +568,9 @@ function renderCal() {
     legend.appendChild(div);
   });
 
-  let html = '<table class="cal-table"><thead><tr><th class="time-hdr">시간</th>';
+  let html = '<table class="cal-table"><colgroup><col style="width:80px">';
+  days.forEach(function() { html += '<col style="width:60px">'; });
+  html += '</colgroup><thead><tr><th class="time-hdr">시간</th>';
   days.forEach(function(d) {
     const isT = dateOnly(d).getTime() === todayMs;
     html += '<th' + (isT ? ' class="tcol"' : '') + '>' + fmtDateHdr(d) + '</th>';
@@ -614,13 +616,21 @@ function renderDetail() {
   const c = _cr[_selId], id = _selId;
   const col = getColor(id);
   let html = '<div style="display:flex;align-items:center;gap:7px;margin-bottom:6px"><div style="width:10px;height:10px;border-radius:50%;background:' + col + ';flex-shrink:0"></div><div class="d-name">' + c.name + '</div></div>';
-  html += '<div class="d-sub">';
-  if (c.pcId) html += '<span class="pcb">PC</span> ' + c.pcId + '<br>';
-  if (c.moId) html += '<span class="mob">MO</span> ' + c.moId;
-  html += '</div>';
+
   html += '<div class="d-period">▶ <b>' + fmtDt(c.startAt) + '</b><br>◀ <b>' + fmtDt(c.endAt) + '</b></div>';
-  if (c.pcImg) html += '<div class="d-iblk"><div class="d-ilbl"><span class="pcb">PC</span><span style="font-size:10px;color:var(--t3)">클릭하면 복사</span></div><img class="d-img" src="' + c.pcImg + '" onclick="copyImgData(_cr[\'' + id + '\'].pcImg)" title="클릭하면 이미지 복사"></div>';
-  if (c.moImg) html += '<div class="d-iblk"><div class="d-ilbl"><span class="mob">MO</span><span style="font-size:10px;color:var(--t3)">클릭하면 복사</span></div><img class="d-img" src="' + c.moImg + '" onclick="copyImgData(_cr[\'' + id + '\'].moImg)" title="클릭하면 이미지 복사"></div>';
+  const imgH = 'height:120px;width:100%;object-fit:contain;border-radius:6px;border:1px solid var(--gbd);background:#fff;cursor:pointer;display:block';
+  const noImg = '<div style="height:120px;width:100%;border-radius:6px;border:1px solid var(--gbd);background:var(--gbs);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t3)">이미지 없음</div>';
+  html += '<div style="margin-bottom:10px">';
+  html += '<div style="font-size:11px;margin-bottom:6px"><span class="pcb">PC</span></div>';
+  html += (c.pcImg ? '<img style="' + imgH + '" src="' + c.pcImg + '" onclick="copyImgData(_cr[\'' + id + '\'].pcImg)" title="클릭하면 이미지 복사">' : noImg);
+  html += '<div style="font-size:10px;color:var(--t3);margin-top:4px">' + (c.pcId || '—') + '</div>';
+  html += '</div>';
+  html += '<div style="height:0.5px;background:var(--gbd);margin:10px 0"></div>';
+  html += '<div style="margin-bottom:10px">';
+  html += '<div style="font-size:11px;margin-bottom:6px"><span class="mob">MO</span></div>';
+  html += (c.moImg ? '<img style="' + imgH + '" src="' + c.moImg + '" onclick="copyImgData(_cr[\'' + id + '\'].moImg)" title="클릭하면 이미지 복사">' : noImg);
+  html += '<div style="font-size:10px;color:var(--t3);margin-top:4px">' + (c.moId || '—') + '</div>';
+  html += '</div>';
   html += '<div class="d-btns"><button class="btn btn-g btn-sm" onclick="editCr(\'' + id + '\')">✏️ 수정</button><button class="btn btn-r btn-sm" onclick="deleteCr(\'' + id + '\')">🗑 삭제</button></div>';
   panel.innerHTML = html;
 }
@@ -672,16 +682,14 @@ function renderHist() {
     if (now < s) statusHtml = '<span class="status-badge sb-future">예정</span>';
     else if (now > en) statusHtml = '<span class="status-badge sb-done">종료</span>';
     else statusHtml = '<span class="status-badge sb-active">운영 중</span>';
-    const pcCell = '<div style="display:flex;gap:7px;align-items:center">'
-      + (c.pcImg
-        ? '<img src="' + c.pcImg + '" onclick="copyImgData(_cr[\'' + id + '\'].pcImg)" title="클릭하면 복사" style="width:52px;height:40px;object-fit:contain;border-radius:4px;border:1px solid var(--gbd);background:#fff;cursor:pointer;display:block;flex-shrink:0">'
-        : '<div style="width:52px;height:40px;border-radius:4px;border:1px solid var(--gbd);background:var(--gbs);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--t3);flex-shrink:0">없음</div>')
-      + '<span style="font-size:10px;color:var(--t2);line-height:1.5;word-break:break-all">' + (c.pcId || '—') + '</span></div>';
-    const moCell = '<div style="display:flex;gap:7px;align-items:center">'
-      + (c.moImg
-        ? '<img src="' + c.moImg + '" onclick="copyImgData(_cr[\'' + id + '\'].moImg)" title="클릭하면 복사" style="width:52px;height:40px;object-fit:contain;border-radius:4px;border:1px solid var(--gbd);background:#fff;cursor:pointer;display:block;flex-shrink:0">'
-        : '<div style="width:52px;height:40px;border-radius:4px;border:1px solid var(--gbd);background:var(--gbs);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--t3);flex-shrink:0">없음</div>')
-      + '<span style="font-size:10px;color:var(--t2);line-height:1.5;word-break:break-all">' + (c.moId || '—') + '</span></div>';
+    const iStyle = 'width:100%;height:70px;object-fit:contain;border-radius:4px;border:1px solid var(--gbd);background:#fff;cursor:pointer;display:block';
+    const noImgCell = '<div style="width:100%;height:70px;border-radius:4px;border:1px solid var(--gbd);background:var(--gbs);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--t3)">없음</div>';
+    const pcCell = '<div>'
+      + (c.pcImg ? '<img src="' + c.pcImg + '" onclick="copyImgData(_cr[\'' + id + '\'].pcImg)" title="클릭하면 복사" style="' + iStyle + '">' : noImgCell)
+      + '<div style="font-size:10px;color:var(--t2);line-height:1.5;word-break:break-all;margin-top:4px">' + (c.pcId || '—') + '</div></div>';
+    const moCell = '<div>'
+      + (c.moImg ? '<img src="' + c.moImg + '" onclick="copyImgData(_cr[\'' + id + '\'].moImg)" title="클릭하면 복사" style="' + iStyle + '">' : noImgCell)
+      + '<div style="font-size:10px;color:var(--t2);line-height:1.5;word-break:break-all;margin-top:4px">' + (c.moId || '—') + '</div></div>';
     html += '<tr>';
     html += '<td><div style="width:8px;height:8px;border-radius:50%;background:' + col + ';margin:auto"></div></td>';
     html += '<td style="font-weight:500">' + c.name + '</td>';

@@ -542,10 +542,10 @@ tr.empty-group{opacity:.35}
               <button class="btn btn-ghost btn-sm" onclick="rptCopyBlocks()" style="font-size:11px;padding:3px 8px">📋 복사</button>
               <button class="btn btn-ghost btn-sm" onclick="rptAddBlock()" style="font-size:11px;padding:3px 8px">+ 블럭</button>
               <span id="rptSavedAt" style="font-size:10.5px;color:var(--t3)"></span>
-              <span class="mail-card-chk on" id="mailChkRpt" onclick="mailToggleCard('mailCardRptBody','mailChkRpt')">✓</span>
+              <span class="mail-card-chk" id="mailChkRpt" onclick="mailToggleCard('mailCardRptBody','mailChkRpt')"></span>
             </div>
           </div>
-          <div id="mailCardRptBody">
+          <div id="mailCardRptBody" style="display:none">
           <!-- 데이터 연동 상태 -->
           <div id="rptDataStatus" style="background:var(--glass-bg);border-radius:7px;padding:7px 10px;margin-bottom:10px;border:0.5px solid var(--glass-border-s)"></div>
           <div id="rptBlocks"></div>
@@ -3321,8 +3321,8 @@ async function processAdv(file, num) {
     const cv = parseCSVLine(lines[i]);
     const conv = parseNum(cv[idx.conv]);
     const rev  = parseNum(cv[idx.rev]);
-    // 이상 데이터 제외: 전환수 1건 이상 & 전환단가 90만원 이상
-    if (conv >= 1 && rev / conv >= 900000) { excludedCount++; continue; }
+    // 이상 데이터 제외: 전환수 1건 이상 & 전환단가 50만원 이상
+    if (conv >= 1 && rev / conv >= 500000) { excludedCount++; continue; }
     newRows.push({
       date: (cv[idx.date]||'').trim(), group: (cv[idx.group]||'').trim(),
       imp:parseNum(cv[idx.imp]), clk:parseNum(cv[idx.clk]),
@@ -3355,7 +3355,7 @@ async function processAdv(file, num) {
   const dotColor = num === 1 ? 'var(--accent)' : 'var(--blue)';
   const excl = window._advExcluded?.[num] || 0;
   const exclHtml = excl > 0
-    ? `<span style="font-size:10.5px;color:var(--orange);background:rgba(196,90,16,0.08);border:0.5px solid rgba(196,90,16,0.25);border-radius:10px;padding:1px 8px;margin-left:4px">⚠️ ${excl}건 제외됨 (전환단가 90만원↑)</span>`
+    ? `<span style="font-size:10.5px;color:var(--orange);background:rgba(196,90,16,0.08);border:0.5px solid rgba(196,90,16,0.25);border-radius:10px;padding:1px 8px;margin-left:4px">⚠️ ${excl}건 제외됨 (전환단가 50만원↑)</span>`
     : '';
   panel.querySelector('.panel-header').innerHTML = `
     <div style="display:flex;flex-direction:column;gap:3px">

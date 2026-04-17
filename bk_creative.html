@@ -1061,7 +1061,7 @@ _calW = getWeekNum(_now, _calY, _calM);
 
 document.addEventListener('bkFsReady', async function() {
   try { _cr = await window._bkFs.loadAll(); }
-  catch(e) { _cr = {}; showToast('⚠️ Firestore 연결 실패'); }
+  catch(e) { _cr = {}; console.error('Firestore loadAll 실패:', e); showToast('⚠️ Firestore 연결 실패: ' + (e.message||e.code||e)); }
   renderAll();
 });
 </script>

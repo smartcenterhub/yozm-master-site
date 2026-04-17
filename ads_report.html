@@ -351,7 +351,7 @@ tr.empty-group{opacity:.35}
         <div class="tbl-scroll">
           <table>
             <colgroup><col style="width:36px"><col style="width:260px"><col style="width:110px"><col style="width:90px"><col style="width:110px"><col style="width:90px"><col style="width:110px"><col style="width:76px"></colgroup>
-            <thead><tr><th style="text-align:center">#</th><th>그룹명</th><th>노출</th><th>클릭</th><th>비용</th><th>전환</th><th>매출</th><th style="display:none"></th></tr></thead>
+            <thead><tr><th style="text-align:center">#</th><th>그룹명</th><th>노출</th><th>클릭</th><th>비용</th><th>전환</th><th>매출</th><th style="color:var(--accent)">구매</th><th style="color:var(--accent)">구매ROAS</th><th style="display:none"></th></tr></thead>
             <tbody id="gfaGroupBody"></tbody>
             <tfoot id="gfaGroupFoot"></tfoot>
           </table>
@@ -1500,7 +1500,17 @@ function mailUpdateAdv(daConv, saConv) {
   }
   if (_advMailMode === 'all' && dayLines.length > 0) textLines.push('    ───');
   if (_advMailMode === 'total' || _advMailMode === 'all') {
-    textLines.push(`DA (${daTot}건) / SA (${saTot}건)`);
+    const daPconv = Math.round(Object.values(_perfStore.da||{}).reduce((s,v)=>s+(v.pconv||0),0));
+    const saPconv = Math.round(Object.values(_perfStore.sa||{}).reduce((s,v)=>s+(v.pconv||0),0));
+    const daPrev  = Object.values(_perfStore.da||{}).reduce((s,v)=>s+(v.prev||0),0);
+    const saPrev  = Object.values(_perfStore.sa||{}).reduce((s,v)=>s+(v.prev||0),0);
+    const daCost  = Object.values(_perfStore.da||{}).reduce((s,v)=>s+(v.cost||0),0);
+    const saCost  = Object.values(_perfStore.sa||{}).reduce((s,v)=>s+(v.cost||0),0);
+    const daRoas  = daCost>0 ? Math.round(daPrev/daCost*100) : 0;
+    const saRoas  = saCost>0 ? Math.round(saPrev/saCost*100) : 0;
+    const daPStr  = daPconv>0 ? ` / 구매 ${daPconv}건 ROAS ${daRoas}%` : '';
+    const saPStr  = saPconv>0 ? ` / 구매 ${saPconv}건 ROAS ${saRoas}%` : '';
+    textLines.push(`DA (${daTot}건${daPStr}) / SA (${saTot}건${saPStr})`);
   }
   _mailData.advConv = textLines.join('\n');
 
@@ -1579,20 +1589,24 @@ function mailRefreshPerf() {
 
   // 날짜별 + 합산 데이터 계산
   const byDate = sortedDates.map(dk => {
-    const bkRaw = _perfStore.bk[dk] || {imp:0,clk:0,cost:0,conv:0,rev:0};
+    const bkRaw = _perfStore.bk[dk] || {imp:0,clk:0,cost:0,conv:0,rev:0,pconv:0,prev:0};
     const bk  = {...bkRaw, cost: bkCost}; // 원본 수정 방지, 비용 고정
-    const gfa = {...(_perfStore.gfa[dk] || {imp:0,clk:0,cost:0,conv:0,rev:0})};
+    const gfa = {...(_perfStore.gfa[dk] || {imp:0,clk:0,cost:0,conv:0,rev:0,pconv:0,prev:0})};
     const adv = {
       imp:  (_perfStore.da[dk]?.imp||0) + (_perfStore.sa[dk]?.imp||0),
       clk:  (_perfStore.da[dk]?.clk||0) + (_perfStore.sa[dk]?.clk||0),
       cost: (_perfStore.da[dk]?.cost||0)+ (_perfStore.sa[dk]?.cost||0),
       conv: (_perfStore.da[dk]?.conv||0)+ (_perfStore.sa[dk]?.conv||0),
       rev:  (_perfStore.da[dk]?.rev||0) + (_perfStore.sa[dk]?.rev||0),
+      pconv:(_perfStore.da[dk]?.pconv||0)+(_perfStore.sa[dk]?.pconv||0),
+      prev: (_perfStore.da[dk]?.prev||0) +(_perfStore.sa[dk]?.prev||0),
     };
     const total = {
       imp: bk.imp+gfa.imp+adv.imp, clk: bk.clk+gfa.clk+adv.clk,
       cost: bk.cost+gfa.cost+adv.cost, conv: bk.conv+gfa.conv+adv.conv,
       rev: bk.rev+gfa.rev+adv.rev,
+      pconv: (bk.pconv||0)+(gfa.pconv||0)+(adv.pconv||0),
+      prev:  (bk.prev||0)+(gfa.prev||0)+(adv.prev||0),
     };
     return { dk, bk, gfa, adv, total };
   });
@@ -1600,12 +1614,12 @@ function mailRefreshPerf() {
   // 합산 (2일 이상) — 초기값 명시해서 첫 날 중복 합산 방지
   let grand = null;
   if (sortedDates.length >= 2) {
-    const zero = {imp:0,clk:0,cost:0,conv:0,rev:0};
+    const zero = {imp:0,clk:0,cost:0,conv:0,rev:0,pconv:0,prev:0};
     grand = byDate.reduce((acc, d) => ({
-      bk:  {imp:acc.bk.imp+d.bk.imp,   clk:acc.bk.clk+d.bk.clk,   cost:acc.bk.cost+d.bk.cost,   conv:acc.bk.conv+d.bk.conv,   rev:acc.bk.rev+d.bk.rev},
-      gfa: {imp:acc.gfa.imp+d.gfa.imp, clk:acc.gfa.clk+d.gfa.clk, cost:acc.gfa.cost+d.gfa.cost, conv:acc.gfa.conv+d.gfa.conv, rev:acc.gfa.rev+d.gfa.rev},
-      adv: {imp:acc.adv.imp+d.adv.imp, clk:acc.adv.clk+d.adv.clk, cost:acc.adv.cost+d.adv.cost, conv:acc.adv.conv+d.adv.conv, rev:acc.adv.rev+d.adv.rev},
-      total:{imp:acc.total.imp+d.total.imp,clk:acc.total.clk+d.total.clk,cost:acc.total.cost+d.total.cost,conv:acc.total.conv+d.total.conv,rev:acc.total.rev+d.total.rev},
+      bk:   {imp:acc.bk.imp+d.bk.imp,    clk:acc.bk.clk+d.bk.clk,    cost:acc.bk.cost+d.bk.cost,    conv:acc.bk.conv+d.bk.conv,    rev:acc.bk.rev+d.bk.rev,    pconv:(acc.bk.pconv||0)+(d.bk.pconv||0),    prev:(acc.bk.prev||0)+(d.bk.prev||0)},
+      gfa:  {imp:acc.gfa.imp+d.gfa.imp,  clk:acc.gfa.clk+d.gfa.clk,  cost:acc.gfa.cost+d.gfa.cost,  conv:acc.gfa.conv+d.gfa.conv,  rev:acc.gfa.rev+d.gfa.rev,  pconv:(acc.gfa.pconv||0)+(d.gfa.pconv||0),  prev:(acc.gfa.prev||0)+(d.gfa.prev||0)},
+      adv:  {imp:acc.adv.imp+d.adv.imp,  clk:acc.adv.clk+d.adv.clk,  cost:acc.adv.cost+d.adv.cost,  conv:acc.adv.conv+d.adv.conv,  rev:acc.adv.rev+d.adv.rev,  pconv:(acc.adv.pconv||0)+(d.adv.pconv||0),  prev:(acc.adv.prev||0)+(d.adv.prev||0)},
+      total:{imp:acc.total.imp+d.total.imp,clk:acc.total.clk+d.total.clk,cost:acc.total.cost+d.total.cost,conv:acc.total.conv+d.total.conv,rev:acc.total.rev+d.total.rev,pconv:(acc.total.pconv||0)+(d.total.pconv||0),prev:(acc.total.prev||0)+(d.total.prev||0)},
     }), {bk:{...zero},gfa:{...zero},adv:{...zero},total:{...zero}});
   }
 
@@ -1620,6 +1634,7 @@ function mailRefreshPerf() {
         <th style="${thStyle}">노출</th><th style="${thStyle}">클릭</th>
         <th style="${thStyle}">비용</th><th style="${thStyle}">전환</th><th style="${thStyle}">매출</th>
         <th style="${thStyle}">CTR</th><th style="${thStyle}">CPC</th><th style="${thStyle}">CPA</th><th style="${thStyle}">ROAS</th>
+        <th style="${thStyle.replace('#3D5A99','#185FA5')}">구매</th><th style="${thStyle.replace('#3D5A99','#185FA5')}">구매ROAS</th>
       </tr></thead><tbody>`;
 
     rows.forEach(({label, d, isTotal, isBkCost}) => {
@@ -1643,6 +1658,8 @@ function mailRefreshPerf() {
         <td style="${metricStyle}">${r.cpc}</td>
         <td style="${metricStyle}">${r.cpa}</td>
         <td style="${metricStyle}">${r.roas}</td>
+        <td style="${cellStyle('color:#185FA5;font-weight:700;')}">${d.pconv!=null ? Math.round(d.pconv||0).toLocaleString('ko-KR') : '-'}</td>
+        <td style="${cellStyle('color:#185FA5;font-weight:700;')}">${d.cost>0 && d.prev!=null ? Math.round((d.prev||0)/d.cost*100)+'%' : '-'}</td>
       </tr>`;
     });
     html += '</tbody></table>';
@@ -1917,8 +1934,8 @@ function buildTableRows(tbody, rows, dateKey) {
 
 function buildTfoot(tfoot, rows) {
   tfoot.innerHTML = '';
-  const tot = {imp:0,clk:0,cost:0,conv:0,rev:0};
-  rows.forEach(([,v]) => { tot.imp+=v.imp; tot.clk+=v.clk; tot.cost+=v.cost; tot.conv+=v.conv; tot.rev+=v.rev; });
+  const tot = {imp:0,clk:0,cost:0,conv:0,rev:0,pconv:0,prev:0};
+  rows.forEach(([,v]) => { tot.imp+=v.imp; tot.clk+=v.clk; tot.cost+=v.cost; tot.conv+=v.conv; tot.rev+=v.rev; tot.pconv+=(v.pconv||0); tot.prev+=(v.prev||0); });
   const tv = [tot.imp,tot.clk,tot.cost,tot.conv,tot.rev];
   tfoot.innerHTML =
     `<tr class="tr-copyable"><td>합계</td>` +
@@ -1979,11 +1996,11 @@ function _aggregateBkKeywords() {
   const dkSet = new Set([..._bkByDate.keys()]);
   [..._kwByDate.keys()].forEach(k => dkSet.add(k.replace(/_MO$|_PC$/, '')));
   const allDks = [...dkSet].sort();
-  let moTotAll = 0, pcTotAll = 0;
+  let moTotAll = 0, pcTotAll = 0, moPconvAll = 0, pcPconvAll = 0, moPrevAll = 0, pcPrevAll = 0;
   const moKwCounts = {}, pcKwCounts = {};
   allDks.forEach(dk => {
     const bk = _bkByDate.get(dk);
-    if (bk) { moTotAll += Math.round(bk.moTot||0); pcTotAll += Math.round(bk.pcTot||0); }
+    if (bk) { moTotAll += Math.round(bk.moTot||0); pcTotAll += Math.round(bk.pcTot||0); moPconvAll += Math.round(bk.moPconv||0); pcPconvAll += Math.round(bk.pcPconv||0); moPrevAll += (bk.moPrev||0); pcPrevAll += (bk.pcPrev||0); }
     const parseKw = (summaryText, map) => {
       const slash = summaryText ? summaryText.indexOf(' / ') : -1;
       if (slash < 0) return;
@@ -1997,10 +2014,15 @@ function _aggregateBkKeywords() {
   });
   const kwStr = map => Object.entries(map).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k}(${v})`).join(', ');
   const moKwStr = kwStr(moKwCounts), pcKwStr = kwStr(pcKwCounts);
+  const bkCostMo = bkCostGet().mo, bkCostPc = bkCostGet().pc;
+  const moRoas = bkCostMo>0 ? Math.round(moPrevAll/bkCostMo*100) : 0;
+  const pcRoas = bkCostPc>0 ? Math.round(pcPrevAll/bkCostPc*100) : 0;
+  const moPStr = moPconvAll>0 ? ` / 구매 ${moPconvAll}건 (ROAS ${moRoas}%)` : '';
+  const pcPStr = pcPconvAll>0 ? ` / 구매 ${pcPconvAll}건 (ROAS ${pcRoas}%)` : '';
   return {
     allDks,
-    moTotalText: `Total(${moTotAll})${moKwStr ? ' / '+moKwStr : ''}`,
-    pcTotalText: `Total(${pcTotAll})${pcKwStr ? ' / '+pcKwStr : ''}`,
+    moTotalText: `Total(${moTotAll})${moKwStr ? ' / '+moKwStr : ''}${moPStr}`,
+    pcTotalText: `Total(${pcTotAll})${pcKwStr ? ' / '+pcKwStr : ''}${pcPStr}`,
   };
 }
 
@@ -2584,37 +2606,49 @@ async function processBk(file, slotDateKey) {
   const rows = XLSX.utils.sheet_to_json(ws, {header:1});
   const hIdx = rows.findIndex(r => String(r[0]).includes('광고그룹 ID'));
   const h = rows[hIdx >= 0 ? hIdx : 0];
-  const cName = h.findIndex(c => String(c).includes('광고그룹 이름'));
-  const cImp  = h.findIndex(c => String(c).includes('노출'));
-  const cClk  = h.findIndex(c => String(c).includes('클릭'));
-  const cConv = h.findIndex(c => String(c).includes('전환수'));
-  const cRev  = h.findIndex(c => String(c).includes('전환매출'));
+  const cName  = h.findIndex(c => String(c).includes('광고그룹 이름'));
+  const cImp   = h.findIndex(c => String(c).includes('노출'));
+  const cClk   = h.findIndex(c => String(c).includes('클릭'));
+  const cConv  = h.findIndex(c => String(c) === '총 전환수' || String(c).includes('총 전환수'));
+  const cRev   = h.findIndex(c => String(c) === '총 전환매출액' || (String(c).includes('전환매출') && !String(c).includes('구매완료')));
+  const cPconv = h.findIndex(c => String(c).includes('구매완료 전환수'));
+  const cPrev  = h.findIndex(c => String(c).includes('구매완료 전환매출액'));
   const dataRows = rows.slice((hIdx>=0?hIdx:0)+1).filter(r => String(r[0]).startsWith('grp'));
   const gMap = new Map();
   for (const r of dataRows) {
     const name = String(r[cName]||'').trim();
     if (!name) continue;
-    if (!gMap.has(name)) gMap.set(name, {imp:0,clk:0,cost:0,conv:0,rev:0});
+    if (!gMap.has(name)) gMap.set(name, {imp:0,clk:0,cost:0,conv:0,rev:0,pconv:0,prev:0});
     const g = gMap.get(name);
     g.imp+=parseNum(r[cImp]); g.clk+=parseNum(r[cClk]); g.conv+=parseNum(r[cConv]); g.rev+=parseNum(r[cRev]);
+    g.pconv+= cPconv>=0 ? parseNum(r[cPconv]) : 0;
+    g.prev +=  cPrev>=0 ? parseNum(r[cPrev])  : 0;
   }
   const moRows = [...gMap.entries()].filter(([n]) => n.toUpperCase().includes('MO')).sort((a,b) => b[1].imp-a[1].imp);
   const pcRows = [...gMap.entries()].filter(([n]) => n.toUpperCase().includes('PC')).sort((a,b) => b[1].imp-a[1].imp);
-  const moTot = moRows.reduce((s,[,v])=>s+v.conv,0);
-  const pcTot = pcRows.reduce((s,[,v])=>s+v.conv,0);
+  const moTot   = moRows.reduce((s,[,v])=>s+v.conv,0);
+  const pcTot   = pcRows.reduce((s,[,v])=>s+v.conv,0);
+  const moPconv = moRows.reduce((s,[,v])=>s+(v.pconv||0),0);
+  const pcPconv = pcRows.reduce((s,[,v])=>s+(v.pconv||0),0);
+  const moPrev  = moRows.reduce((s,[,v])=>s+(v.prev||0),0);
+  const pcPrev  = pcRows.reduce((s,[,v])=>s+(v.prev||0),0);
+  const moCost  = bkCostGet().mo;
+  const pcCost  = bkCostGet().pc;
   const moKw = moRows.filter(([,v])=>v.conv>0).map(([n,v])=>`${n.replace(/^[^_]+_/,'')}(${Math.round(v.conv)})`).join(', ');
   const pcKw = pcRows.filter(([,v])=>v.conv>0).map(([n,v])=>`${n.replace(/^[^_]+_/,'')}(${Math.round(v.conv)})`).join(', ');
 
-  _bkByDate.set(dateKey, { dispDate, moRows, pcRows, moTot, pcTot, moKw, pcKw });
+  _bkByDate.set(dateKey, { dispDate, moRows, pcRows, moTot, pcTot, moKw, pcKw, moPconv, pcPconv, moPrev, pcPrev, moCost, pcCost });
   renderBkAll();
   mailUpdateBk(Math.round(moTot), moKw||'없음', Math.round(pcTot), pcKw||'없음', dispDate);
 
   // 성과 저장소 업데이트 (브검은 날짜키 기준 합산)
-  const bkTotImp = [...moRows,...pcRows].reduce((s,[,v])=>s+v.imp,0);
-  const bkTotClk = [...moRows,...pcRows].reduce((s,[,v])=>s+v.clk,0);
-  const bkTotConv = [...moRows,...pcRows].reduce((s,[,v])=>s+v.conv,0);
-  const bkTotRev  = [...moRows,...pcRows].reduce((s,[,v])=>s+v.rev,0);
-  _perfStore.bk[dateKey] = { imp: bkTotImp, clk: bkTotClk, cost: bkCostGet().total, conv: bkTotConv, rev: bkTotRev };
+  const bkTotImp   = [...moRows,...pcRows].reduce((s,[,v])=>s+v.imp,0);
+  const bkTotClk   = [...moRows,...pcRows].reduce((s,[,v])=>s+v.clk,0);
+  const bkTotConv  = [...moRows,...pcRows].reduce((s,[,v])=>s+v.conv,0);
+  const bkTotRev   = [...moRows,...pcRows].reduce((s,[,v])=>s+v.rev,0);
+  const bkTotPconv = [...moRows,...pcRows].reduce((s,[,v])=>s+(v.pconv||0),0);
+  const bkTotPrev  = [...moRows,...pcRows].reduce((s,[,v])=>s+(v.prev||0),0);
+  _perfStore.bk[dateKey] = { imp: bkTotImp, clk: bkTotClk, cost: bkCostGet().total, conv: bkTotConv, rev: bkTotRev, pconv: bkTotPconv, prev: bkTotPrev };
   mailRefreshPerf();
   showToast(`✅ 브검 ${dispDate} 업로드 완료`);
   markTabDone('mainTabBk');
@@ -2681,12 +2715,12 @@ function renderBkAll() {
         const table = document.createElement('table');
         table.innerHTML = `<thead><tr><th>광고그룹명</th><th>노출</th><th>클릭</th><th style="color:var(--t4)">비용</th><th>전환</th><th>매출</th><th style="display:none"></th></tr></thead>`;
         const tbody = document.createElement('tbody'); const tfoot = document.createElement('tfoot');
-        let totImp=0,totClk=0,totConv=0,totRev=0;
+        let totImp=0,totClk=0,totConv=0,totRev=0,totPconv=0,totPrev=0;
         panelRows.forEach(([name,v]) => {
-          totImp+=v.imp; totClk+=v.clk; totConv+=v.conv; totRev+=v.rev;
+          totImp+=v.imp; totClk+=v.clk; totConv+=v.conv; totRev+=v.rev; totPconv+=(v.pconv||0); totPrev+=(v.prev||0);
           const tr = document.createElement('tr');
           tr.className = 'tr-copyable';
-          tr.innerHTML = `<td style="cursor:default">${name}</td><td data-val="${raw(v.imp)}" onclick="copyToClip(${raw(v.imp)},this)">${fmt(v.imp)}</td><td data-val="${raw(v.clk)}" onclick="copyToClip(${raw(v.clk)},this)">${fmt(v.clk)}</td><td style="text-align:right;color:var(--t4);cursor:default">-</td><td data-val="${raw(v.conv)}" onclick="copyToClip(${raw(v.conv)},this)">${fmt(v.conv)}</td><td data-val="${raw(v.rev)}" onclick="copyToClip(${raw(v.rev)},this)">${fmt(v.rev)}</td><td><button class="row-copy-btn" data-row="${[raw(v.imp),raw(v.clk),'',raw(v.conv),raw(v.rev)].join('\t')}">복사</button></td>`;
+          tr.innerHTML = `<td style="cursor:default">${name}</td><td data-val="${raw(v.imp)}" onclick="copyToClip(${raw(v.imp)},this)">${fmt(v.imp)}</td><td data-val="${raw(v.clk)}" onclick="copyToClip(${raw(v.clk)},this)">${fmt(v.clk)}</td><td style="text-align:right;color:var(--t4);cursor:default">-</td><td data-val="${raw(v.conv)}" onclick="copyToClip(${raw(v.conv)},this)">${fmt(v.conv)}</td><td data-val="${raw(v.rev)}" onclick="copyToClip(${raw(v.rev)},this)">${fmt(v.rev)}</td><td style="color:var(--accent);font-weight:500">${fmt(v.pconv||0)}</td><td style="color:var(--accent);font-weight:500">${v.cost>0?Math.round((v.prev||0)/v.cost*100)+'%':'-'}</td><td><button class="row-copy-btn" data-row="${[raw(v.imp),raw(v.clk),'',raw(v.conv),raw(v.rev)].join('\t')}">복사</button></td>`;
           tbody.appendChild(tr);
         });
         // 합계 행: 헤더 아래 빨간 구분선, 목록 맨 위
@@ -2694,7 +2728,7 @@ function renderBkAll() {
         sumTr.className = 'tr-copyable';
         const rb = '2px solid #E24B4A';
         const slotCost = type === 'mo' ? bkCostGet().mo : bkCostGet().pc;
-        sumTr.innerHTML = `<td style="font-weight:700;border-top:${rb}">합계</td><td style="font-weight:600;border-top:${rb}" data-val="${raw(totImp)}" onclick="copyToClip(${raw(totImp)},this)">${fmt(totImp)}</td><td style="font-weight:600;border-top:${rb}" data-val="${raw(totClk)}" onclick="copyToClip(${raw(totClk)},this)">${fmt(totClk)}</td><td style="font-weight:600;border-top:${rb};font-style:italic;color:var(--t3)" data-val="${slotCost}" onclick="copyToClip(${slotCost},this)">${slotCost>0?fmt(slotCost):'-'}</td><td style="font-weight:600;border-top:${rb}" data-val="${raw(totConv)}" onclick="copyToClip(${raw(totConv)},this)">${fmt(totConv)}</td><td style="font-weight:600;border-top:${rb}" data-val="${raw(totRev)}" onclick="copyToClip(${raw(totRev)},this)">${fmt(totRev)}</td><td style="border-top:${rb}"><button class="row-copy-btn" data-row="${[raw(totImp),raw(totClk),slotCost,raw(totConv),raw(totRev)].join('\t')}">복사</button></td>`;
+        sumTr.innerHTML = `<td style="font-weight:700;border-top:${rb}">합계</td><td style="font-weight:600;border-top:${rb}" data-val="${raw(totImp)}" onclick="copyToClip(${raw(totImp)},this)">${fmt(totImp)}</td><td style="font-weight:600;border-top:${rb}" data-val="${raw(totClk)}" onclick="copyToClip(${raw(totClk)},this)">${fmt(totClk)}</td><td style="font-weight:600;border-top:${rb};font-style:italic;color:var(--t3)" data-val="${slotCost}" onclick="copyToClip(${slotCost},this)">${slotCost>0?fmt(slotCost):'-'}</td><td style="font-weight:600;border-top:${rb}" data-val="${raw(totConv)}" onclick="copyToClip(${raw(totConv)},this)">${fmt(totConv)}</td><td style="font-weight:600;border-top:${rb}" data-val="${raw(totRev)}" onclick="copyToClip(${raw(totRev)},this)">${fmt(totRev)}</td><td style="font-weight:600;border-top:${rb};color:var(--accent)">${fmt(totPconv)}</td><td style="font-weight:600;border-top:${rb};color:var(--accent)">${slotCost>0?Math.round(totPrev/slotCost*100)+'%':'-'}</td><td style="border-top:${rb}"><button class="row-copy-btn" data-row="${[raw(totImp),raw(totClk),slotCost,raw(totConv),raw(totRev),raw(totPconv)].join('\t')}">복사</button></td>`;
         tbody.insertBefore(sumTr, tbody.firstChild);
         table.appendChild(tbody); scroll.appendChild(table); tableWrap.appendChild(scroll);
         card.appendChild(tableWrap); bindCellCopy(card); grid.appendChild(card);
@@ -2838,11 +2872,13 @@ async function processKw(file, slotDateKey, slotType) {
   const rows = XLSX.utils.sheet_to_json(ws, {header:1});
   const hIdx = Math.max(0, rows.findIndex(r => r.some(c => String(c).includes('키워드'))));
   const h = rows[hIdx];
-  const cKw   = h.findIndex(c => String(c).includes('키워드') && !String(c).includes('ID'));
-  const cImp  = h.findIndex(c => String(c).includes('노출'));
-  const cClk  = h.findIndex(c => String(c).includes('클릭'));
-  const cConv = h.findIndex(c => String(c).includes('전환수'));
-  const cRev  = h.findIndex(c => String(c).includes('전환매출'));
+  const cKw    = h.findIndex(c => String(c).includes('키워드') && !String(c).includes('ID'));
+  const cImp   = h.findIndex(c => String(c).includes('노출'));
+  const cClk   = h.findIndex(c => String(c).includes('클릭'));
+  const cConv  = h.findIndex(c => String(c) === '총 전환수' || String(c).includes('총 전환수'));
+  const cRev   = h.findIndex(c => String(c).includes('전환매출') && !String(c).includes('구매완료'));
+  const cPconv = h.findIndex(c => String(c).includes('구매완료 전환수'));
+  const cPrev  = h.findIndex(c => String(c).includes('구매완료 전환매출액'));
   let dataRows = rows.slice(hIdx+1).filter(r => String(r[0]).startsWith('nkw'));
   dataRows.sort((a,b) => parseNum(b[cImp]) - parseNum(a[cImp]));
   dataRows = dataRows.slice(0,30);
@@ -3110,6 +3146,8 @@ async function processGfa(file) {
   const iCost  = headers.indexOf('총비용');
   const iConv  = headers.indexOf('총 전환수');
   const iRev   = headers.indexOf('총 전환매출액');
+  const iPconv = headers.indexOf('구매완료 수');
+  const iPrev  = headers.indexOf('구매완료 전환매출액');
   // 이번 파일에 포함된 날짜 파악 → 해당 날짜 데이터만 교체 (다른 날짜는 유지)
   const newRows = [];
   for (let i = 1; i < lines.length; i++) {
@@ -3117,7 +3155,9 @@ async function processGfa(file) {
     const c = parseCSVLine(lines[i]);
     newRows.push({group:(c[iGroup]||'').trim(), date:(c[iDate]||'').trim(),
       imp:parseNum(c[iImp]), clk:parseNum(c[iClk]), cost:parseNum(c[iCost]),
-      conv:parseNum(c[iConv]), rev:parseNum(c[iRev])});
+      conv:parseNum(c[iConv]), rev:parseNum(c[iRev]),
+      pconv: iPconv>=0 ? parseNum(c[iPconv]) : 0,
+      prev:  iPrev>=0  ? parseNum(c[iPrev])  : 0});
   }
   const newDates = new Set(newRows.map(r => r.date));
   // 기존 _gfaData에서 이번 파일 날짜 제거 후 새 데이터 추가
@@ -3156,9 +3196,9 @@ async function renderGfaGroup(selDate) {
   const filtered = selDate === 'all' ? _gfaData : _gfaData.filter(r => r.date === selDate);
   const gMap = new Map();
   for (const r of filtered) {
-    if (!gMap.has(r.group)) gMap.set(r.group, {imp:0,clk:0,cost:0,conv:0,rev:0});
+    if (!gMap.has(r.group)) gMap.set(r.group, {imp:0,clk:0,cost:0,conv:0,rev:0,pconv:0,prev:0});
     const g = gMap.get(r.group);
-    g.imp+=r.imp; g.clk+=r.clk; g.cost+=r.cost; g.conv+=r.conv; g.rev+=r.rev;
+    g.imp+=r.imp; g.clk+=r.clk; g.cost+=r.cost; g.conv+=r.conv; g.rev+=r.rev; g.pconv+=(r.pconv||0); g.prev+=(r.prev||0);
   }
   const newGroups = [...gMap.keys()].filter(k => !GFA_ORDER.includes(k));
   await syncGfaOrder([...gMap.keys()]);
@@ -3166,34 +3206,39 @@ async function renderGfaGroup(selDate) {
   const tbody = document.getElementById('gfaGroupBody');
   const tfoot = document.getElementById('gfaGroupFoot');
   tbody.innerHTML = '';
-  const tot = {imp:0,clk:0,cost:0,conv:0,rev:0};
+  const tot = {imp:0,clk:0,cost:0,conv:0,rev:0,pconv:0,prev:0};
   ordered.forEach((name, idx) => {
     const v = gMap.get(name) || null;
     if (_gfaHideEmpty && !v) return;
     const tr = document.createElement('tr');
     if (v) {
-      const vals = [v.imp,v.clk,v.cost,v.conv,v.rev];
+      const vals = [v.imp,v.clk,v.cost,v.conv,v.rev]; const pRoas = v.cost>0 ? Math.round((v.prev||0)/v.cost*100)+'%' : '-';
       tr.className = 'tr-copyable';
       tr.innerHTML =
         `<td style="text-align:center;cursor:default;color:var(--t3);font-size:11px">${idx+1}</td>` +
         `<td style="font-size:11.5px" data-val="${name}" onclick="copyToClip('${name.replace(/'/g,"\\'")}',this)">${name}</td>` +
         vals.map(n => `<td data-val="${raw(n)}" onclick="copyToClip(${raw(n)},this)">${fmt(n)}</td>`).join('') +
-        `<td><button class="row-copy-btn" data-row="${[name,...vals.map(raw)].join('\t')}">복사</button></td>`;
-      tot.imp+=v.imp; tot.clk+=v.clk; tot.cost+=v.cost; tot.conv+=v.conv; tot.rev+=v.rev;
+        `<td style="color:var(--accent);font-weight:500">${fmt(v.pconv||0)}</td>` +
+        `<td style="color:var(--accent);font-weight:500">${pRoas}</td>` +
+        `<td><button class="row-copy-btn" data-row="${[name,...vals.map(raw),raw(v.pconv||0)].join('\t')}">복사</button></td>`;
+      tot.imp+=v.imp; tot.clk+=v.clk; tot.cost+=v.cost; tot.conv+=v.conv; tot.rev+=v.rev; tot.pconv+=(v.pconv||0); tot.prev+=(v.prev||0);
     } else {
       tr.className = 'empty-group';
       tr.innerHTML =
         `<td style="text-align:center;cursor:default;font-size:11px">${idx+1}</td>` +
         `<td style="cursor:default;font-size:11.5px">${name}</td>` +
-        `<td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td></td>`;
+        `<td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td></td>`;
     }
     tbody.appendChild(tr);
   });
   const tv = [tot.imp,tot.clk,tot.cost,tot.conv,tot.rev];
+  const totPRoas = tot.cost>0 ? Math.round(tot.prev/tot.cost*100)+'%' : '-';
   tfoot.innerHTML =
     `<tr class="tr-copyable"><td style="text-align:center"></td><td>합계</td>` +
     tv.map(n => `<td data-val="${raw(n)}" onclick="copyToClip(${raw(n)},this)">${fmt(n)}</td>`).join('') +
-    `<td><button class="row-copy-btn" data-row="${tv.map(raw).join('\t')}">복사</button></td></tr>`;
+    `<td style="color:var(--accent);font-weight:600">${fmt(tot.pconv)}</td>` +
+    `<td style="color:var(--accent);font-weight:600">${totPRoas}</td>` +
+    `<td><button class="row-copy-btn" data-row="${[...tv.map(raw),raw(tot.pconv)].join('\t')}">복사</button></td></tr>`;
   document.getElementById('gfaGroupCopyValues').onclick = async () => {
     const sd = _gfaCurDate;
     const filt = sd === 'all' ? _gfaData : _gfaData.filter(r => r.date === sd);
@@ -3201,7 +3246,7 @@ async function renderGfaGroup(selDate) {
     for (const r of filt) {
       if (!gm2.has(r.group)) gm2.set(r.group, {imp:0,clk:0,cost:0,conv:0,rev:0});
       const g = gm2.get(r.group);
-      g.imp+=r.imp; g.clk+=r.clk; g.cost+=r.cost; g.conv+=r.conv; g.rev+=r.rev;
+      g.imp+=r.imp; g.clk+=r.clk; g.cost+=r.cost; g.conv+=r.conv; g.rev+=r.rev; g.pconv+=(r.pconv||0); g.prev+=(r.prev||0);
     }
     const ng2 = [...gm2.keys()].filter(k => !GFA_ORDER.includes(k));
     await syncGfaOrder([...gm2.keys()]);
@@ -3252,12 +3297,12 @@ function renderAdvPanel(num, selDate) {
   const dateMap = new Map(), groupMap = new Map();
   rows.forEach(r => {
     if (r.date) {
-      if (!dateMap.has(r.date)) dateMap.set(r.date, {imp:0,clk:0,cost:0,conv:0,rev:0});
-      const d = dateMap.get(r.date); d.imp+=r.imp; d.clk+=r.clk; d.cost+=r.cost; d.conv+=r.conv; d.rev+=r.rev;
+      if (!dateMap.has(r.date)) dateMap.set(r.date, {imp:0,clk:0,cost:0,conv:0,rev:0,pconv:0,prev:0});
+      const d = dateMap.get(r.date); d.imp+=r.imp; d.clk+=r.clk; d.cost+=r.cost; d.conv+=r.conv; d.rev+=r.rev; d.pconv+=(r.pconv||0); d.prev+=(r.prev||0);
     }
     if (r.group) {
-      if (!groupMap.has(r.group)) groupMap.set(r.group, {imp:0,clk:0,cost:0,conv:0,rev:0});
-      const g = groupMap.get(r.group); g.imp+=r.imp; g.clk+=r.clk; g.cost+=r.cost; g.conv+=r.conv; g.rev+=r.rev;
+      if (!groupMap.has(r.group)) groupMap.set(r.group, {imp:0,clk:0,cost:0,conv:0,rev:0,pconv:0,prev:0});
+      const g = groupMap.get(r.group); g.imp+=r.imp; g.clk+=r.clk; g.cost+=r.cost; g.conv+=r.conv; g.rev+=r.rev; g.pconv+=(r.pconv||0); g.prev+=(r.prev||0);
     }
   });
   const dateSorted  = [...dateMap.entries()].sort((a,b) => a[0].localeCompare(b[0]));
@@ -3267,9 +3312,31 @@ function renderAdvPanel(num, selDate) {
     const card = document.createElement('div'); card.className = 'tbl-card';
     const scroll = document.createElement('div'); scroll.className = 'tbl-scroll'; scroll.style.maxHeight = '320px';
     const table = document.createElement('table');
-    table.innerHTML = `<thead><tr><th>${firstColLabel}</th><th>노출</th><th>클릭</th><th>비용</th><th>전환</th><th>매출</th></tr></thead>`;
+    table.innerHTML = `<thead><tr><th>${firstColLabel}</th><th>노출</th><th>클릭</th><th>비용</th><th>전환</th><th>매출</th><th style="color:var(--accent)">구매</th><th style="color:var(--accent)">구매ROAS</th></tr></thead>`;
     const tbody = document.createElement('tbody'), tfoot = document.createElement('tfoot');
-    buildTableRows(tbody, rows, null); buildTfoot(tfoot, rows);
+    // 구매완료/구매ROAS 포함 렌더
+    tbody.innerHTML = '';
+    rows.forEach(([label, v]) => {
+      const pRoas = v.cost>0 ? Math.round((v.prev||0)/v.cost*100)+'%' : '-';
+      const tr = document.createElement('tr'); tr.className = 'tr-copyable';
+      tr.innerHTML = `<td style="cursor:default">${label}</td>` +
+        `<td data-val="${raw(v.imp)}" onclick="copyToClip(${raw(v.imp)},this)">${fmt(v.imp)}</td>` +
+        `<td data-val="${raw(v.clk)}" onclick="copyToClip(${raw(v.clk)},this)">${fmt(v.clk)}</td>` +
+        `<td data-val="${raw(v.cost)}" onclick="copyToClip(${raw(v.cost)},this)">${fmt(v.cost)}</td>` +
+        `<td data-val="${raw(v.conv)}" onclick="copyToClip(${raw(v.conv)},this)">${fmt(v.conv)}</td>` +
+        `<td data-val="${raw(v.rev)}" onclick="copyToClip(${raw(v.rev)},this)">${fmt(v.rev)}</td>` +
+        `<td style="color:var(--accent);font-weight:500">${fmt(v.pconv||0)}</td>` +
+        `<td style="color:var(--accent);font-weight:500">${pRoas}</td>` +
+        `<td><button class="row-copy-btn" data-row="${[label,raw(v.imp),raw(v.clk),raw(v.cost),raw(v.conv),raw(v.rev),raw(v.pconv||0)].join('\t')}">복사</button></td>`;
+      tbody.appendChild(tr);
+    });
+    const totV = rows.reduce((a,[,v])=>({imp:a.imp+v.imp,clk:a.clk+v.clk,cost:a.cost+v.cost,conv:a.conv+v.conv,rev:a.rev+v.rev,pconv:a.pconv+(v.pconv||0),prev:a.prev+(v.prev||0)}),{imp:0,clk:0,cost:0,conv:0,rev:0,pconv:0,prev:0});
+    const totPRoas = totV.cost>0 ? Math.round(totV.prev/totV.cost*100)+'%' : '-';
+    tfoot.innerHTML = `<tr class="tr-copyable"><td>합계</td>` +
+      [totV.imp,totV.clk,totV.cost,totV.conv,totV.rev].map(n=>`<td data-val="${raw(n)}" onclick="copyToClip(${raw(n)},this)">${fmt(n)}</td>`).join('') +
+      `<td style="color:var(--accent);font-weight:600">${fmt(totV.pconv)}</td>` +
+      `<td style="color:var(--accent);font-weight:600">${totPRoas}</td>` +
+      `<td><button class="row-copy-btn" data-row="${[raw(totV.imp),raw(totV.clk),raw(totV.cost),raw(totV.conv),raw(totV.rev),raw(totV.pconv)].join('\t')}">복사</button></td></tr>`;
     table.appendChild(tbody); table.appendChild(tfoot); scroll.appendChild(table); card.appendChild(scroll);
     return {card, tbody};
   }
@@ -3311,6 +3378,7 @@ async function processAdv(file, num) {
     date:headers.indexOf('기간'), group:headers.indexOf('애셋 그룹 이름'),
     imp:headers.indexOf('노출수'), clk:headers.indexOf('클릭수'),
     cost:headers.indexOf('총비용'), conv:headers.indexOf('총 전환수'), rev:headers.indexOf('총 전환매출액'),
+    pconv:headers.indexOf('구매완료 수'), prev:headers.indexOf('구매완료 전환매출액'),
   };
 
   // 새 파일의 날짜 파악 → 해당 날짜만 교체, 나머지 유지
@@ -3327,6 +3395,8 @@ async function processAdv(file, num) {
       date: (cv[idx.date]||'').trim(), group: (cv[idx.group]||'').trim(),
       imp:parseNum(cv[idx.imp]), clk:parseNum(cv[idx.clk]),
       cost:parseNum(cv[idx.cost]), conv, rev,
+      pconv: idx.pconv>=0 ? parseNum(cv[idx.pconv]) : 0,
+      prev:  idx.prev>=0  ? parseNum(cv[idx.prev])  : 0,
     });
   }
   const newDates = new Set(newRows.map(r => r.date));

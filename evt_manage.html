@@ -217,6 +217,10 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
 .sfb.sf-sel{color:var(--gr)}
 .sfb.sf-rej{color:var(--rd)}
 .sfb.sf-run{color:var(--pk)}
+.sfb.sf-mid{color:var(--or)}
+.sfb.sf-end{color:var(--t3)}
+.sfb.sf-miss{color:var(--t3);font-size:10.5px}
+.sfb.sf-miss.on{background:rgba(58,58,240,.08);border-color:rgba(58,58,240,.3);color:var(--ac);font-weight:600}
 .sfb.on.sf-proposal{background:rgba(196,90,16,.1);border-color:var(--or);color:var(--or);font-weight:600}
 .sfb.on.sf-done{background:rgba(58,58,240,.1);border-color:var(--ac);color:var(--ac);font-weight:600}
 .sfb.on.sf-warning{background:rgba(202,138,4,.1);border-color:#b45309;color:#854d0e;font-weight:600}
@@ -526,13 +530,22 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     <button class="sfb sf-done"     onclick="sfClick(this,'제안완료',2)">제안완료</button>
     <button class="sfb sf-warning"  onclick="sfClick(this,'확인필요',2)">확인필요</button>
     <div class="tfsep"></div>
-    <button class="sfb sf-run"  onclick="sfClick(this,'진행중',2)">진행중</button>
-    <button class="sfb sf-rej"  onclick="sfClick(this,'미선정',2)">미선정</button>
     <button class="sfb sf-sel"  onclick="sfClick(this,'선정',2)">선정</button>
+    <button class="sfb sf-rej"  onclick="sfClick(this,'미선정',2)">미선정</button>
+    <div class="tfsep"></div>
+    <button class="sfb sf-mid"  onclick="sfClick(this,'진행전',2)">진행전</button>
+    <button class="sfb sf-run"  onclick="sfClick(this,'진행중',2)">진행중</button>
+    <button class="sfb sf-end"  onclick="sfClick(this,'진행종료',2)">진행종료</button>
   </div>
   <div class="fbar">
     <input id="prop-search" placeholder="행사명 / 닉네임 검색" oninput="renderPropList(2)">
     <select id="prop-mf" onchange="renderPropList(2)"><option value="">전체 월</option></select>
+    <div style="display:flex;gap:4px;margin-left:6px">
+      <button class="sfb sf-miss" id="miss-start" onclick="toggleMissFilter('startDate',this,2)" title="행사 시작일/종료일 미입력">기간 미입력</button>
+      <button class="sfb sf-miss" id="miss-upload" onclick="toggleMissFilter('upload',this,2)" title="업로드일 미입력">업로드일 미입력</button>
+      <button class="sfb sf-miss" id="miss-deadline" onclick="toggleMissFilter('deadline',this,2)" title="제안마감일 미입력">제안마감일 미입력</button>
+      <button class="sfb sf-miss" id="miss-propdate" onclick="toggleMissFilter('propdate',this,2)" title="제안일 미입력">제안일 미입력</button>
+    </div>
     <div style="margin-left:auto;display:flex;gap:4px;align-items:center">
       <span style="font-size:10.5px;color:var(--t3)">정렬</span>
       <button id="sort-btn-2-startDate"  class="sort-crit-btn on" onclick="setSortCrit(2,'startDate',this)">행사시작일 <span id="sort-dir-2-startDate">↓</span></button>
@@ -661,6 +674,13 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 
 <div id="toast"></div>
 
+<script>
+function sw(i,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));el.classList.add('on');document.getElementById('p'+i).classList.add('on');}
+function tog(id){document.getElementById(id)?.classList.toggle('open');}
+function showBadge(id){const el=document.getElementById(id);if(el)el.style.display='inline-block';}
+function clearBadge(id){const el=document.getElementById(id);if(el)el.style.display='none';}
+</script>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, getDocs, doc, setDoc, updateDoc, deleteDoc }
@@ -679,6 +699,7 @@ let regProducts=[], selectedSkuCodesReg=[];
 let tlView='week', tlWeekOffset=0, tlMonthYear=new Date().getFullYear(), tlMonthMon=new Date().getMonth();
 let propTypeFilter={2:[],3:[],5:[]};
 let statusFilter={2:new Set(),3:new Set(),5:new Set()};
+let dateFilter={2:new Set(),3:new Set(),5:new Set()}; /* 기간미등록 필터: startDate/endDate/upload/deadline/propdate */
 let EDIT_OPEN=null;
 let isDragging=false, dragStartX=0;
 const DIRTY=new Map(), TO_DELETE=new Set(), SNAPSHOTS=new Map();
@@ -741,10 +762,17 @@ function skuGroup(nick){return MAIN_NICKS.some(n=>nick&&nick.replace(/\s/g,'')==
 function isEvEnded(e){if(!e)return false;const t=new Date().toISOString().substring(0,10);return!!(e.endDate&&e.endDate<t);}
 function computeStatus(p){
   const today=new Date().toISOString().substring(0,10);
-  if(p.status==='선정'){const ev=EVENTS.find(e=>e._id===p.eventSID)||EVENTS.find(e=>e.eventName===p.eventName);if(ev&&ev.startDate&&ev.endDate&&today>=ev.startDate&&today<=ev.endDate)return '진행중';}
+  if(p.status==='선정'){
+    const ev=EVENTS.find(e=>e._id===p.eventSID)||EVENTS.find(e=>e.eventName===p.eventName);
+    if(ev&&ev.startDate&&ev.endDate){
+      if(today<ev.startDate)return '진행전';
+      if(today>=ev.startDate&&today<=ev.endDate)return '진행중';
+      if(today>ev.endDate)return '진행종료';
+    }
+  }
   return p.status||'제안중';
 }
-const STATUS_ST={'제안중':'s-gray','제안완료':'s-sel','확인필요':'s-warn','선정':'s-done','미선정':'s-rej','진행중':'s-run','종료':'s-end'};
+const STATUS_ST={'제안중':'s-gray','제안완료':'s-sel','확인필요':'s-warn','선정':'s-done','미선정':'s-rej','진행전':'s-mid','진행중':'s-run','진행종료':'s-end','종료':'s-end'};
 
 /* ══ 행사 일괄 등록 (엑셀) ══ */
 let BULK_ROWS=[];
@@ -1950,6 +1978,7 @@ window.renderPropList=function(tabNum){
   const mfId={2:'prop-mf',3:'sel-mf-3',5:'end-mf'}[tabNum];
   const tFilter=propTypeFilter[tabNum]||[];
   const sf=statusFilter[tabNum]||new Set();
+  const df=dateFilter[tabNum]||new Set();
   const search=($( searchId)?.value||'').toLowerCase();
   const monthF=$(mfId)?.value||'';
   let list=PROPOSALS.filter(p=>{
@@ -1967,6 +1996,16 @@ window.renderPropList=function(tabNum){
     if(monthF&&!((_ev?.startDate||p.startDate||'')).startsWith(monthF))return false;
     const _evName=EVENTS.find(e=>e._id===p.eventSID)?.eventName||p.eventName||'';
     if(search&&!_evName.toLowerCase().includes(search)&&!(p.skuNick||'').toLowerCase().includes(search))return false;
+    /* 기간 미등록 필터 */
+    if(df.size>0){
+      const ev2=_ev;
+      if(df.has('startDate')&&(ev2?.startDate||p.startDate))return false;
+      if(df.has('endDate')&&(ev2?.endDate||p.endDate))return false;
+      if(df.has('upload')&&(ev2?.proposalUploadedAt||p.proposalUploadedAt))return false;
+      if(df.has('deadline')&&(ev2?.proposalDeadline||p.proposalDeadline))return false;
+      if(df.has('propdate')&&p.proposalMyDate)return false;
+      /* 선택된 필드 중 하나라도 미입력인 것만 통과 — 위에서 이미 입력된 것 제거했으니 df에 해당하는 게 하나라도 남으면 표시 */
+    }
     return true;
   });
   const groups={};
@@ -2741,8 +2780,7 @@ function buildMonthFilters(){
 }
 
 /* ══ 탭/필터 ══ */
-window.showBadge=function(id){const el=document.getElementById(id);if(el)el.style.display='inline-block';};
-window.clearBadge=function(id){const el=document.getElementById(id);if(el)el.style.display='none';};
+window.tog=function(id){document.getElementById(id)?.classList.toggle('open');};
 window.sw=function(i,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));el.classList.add('on');$('p'+i).classList.add('on');};
 window.tog=function(id){$(id)?.classList.toggle('open');};
 window.tfSelect=function(sel,tab){
@@ -2766,6 +2804,14 @@ window.tfClick=function(el,cls,tab){
   renderPropList(tab);
 };
 window.sfClick=function(el,statusVal,tab){el.classList.toggle('on');if(!statusFilter[tab])statusFilter[tab]=new Set();if(el.classList.contains('on'))statusFilter[tab].add(statusVal);else statusFilter[tab].delete(statusVal);renderPropList(tab);};
+window.dfClick=function(el,field,tab){
+  el.classList.toggle('on');
+  if(!dateFilter[tab])dateFilter[tab]=new Set();
+  if(el.classList.contains('on'))dateFilter[tab].add(field);
+  else dateFilter[tab].delete(field);
+  renderPropList(tab);
+};
+window.toggleMissFilter=function(field,el,tab){dfClick(el,field,tab);};
 
 
 

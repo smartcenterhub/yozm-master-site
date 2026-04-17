@@ -66,11 +66,11 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 .litem{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2)}
 .ldot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
 .cal-table{border-collapse:collapse;min-width:100%}
-.cal-table th{background:#EEF2FF;color:#3D5A99;font-size:10.5px;font-weight:500;padding:5px 6px;border:0.5px solid var(--gbd);text-align:center;white-space:nowrap;min-width:72px}
+.cal-table th{background:#EEF2FF;color:#3D5A99;font-size:10.5px;font-weight:500;padding:5px 1px;border:0.5px solid var(--gbd);text-align:center;white-space:nowrap;min-width:9px;width:9px}
 .cal-table th.tcol{background:rgba(58,58,240,0.18);color:var(--ac);font-weight:700}
-.cal-table th.time-hdr{text-align:left;min-width:100px;position:sticky;left:0;z-index:2;background:#EEF2FF}
-.cal-table td.time-cell{font-size:10.5px;padding:0 8px;border:0.5px solid var(--gbd);white-space:nowrap;color:var(--t2);background:var(--gbs);width:100px;height:22px;vertical-align:middle;position:sticky;left:0;z-index:1}
-.cal-table td.day-cell{border:0.5px solid var(--gbd);height:22px;padding:0;overflow:hidden;vertical-align:middle;min-width:72px;cursor:pointer}
+.cal-table th.time-hdr{text-align:left;width:11px;min-width:11px;position:sticky;left:0;z-index:2;background:#EEF2FF}
+.cal-table td.time-cell{font-size:8px;padding:0;border:0.5px solid var(--gbd);white-space:nowrap;color:var(--t2);background:var(--gbs);width:11px;min-width:11px;height:22px;vertical-align:middle;position:sticky;left:0;z-index:1;text-align:center;overflow:hidden}
+.cal-table td.day-cell{border:0.5px solid var(--gbd);height:22px;padding:0;overflow:hidden;vertical-align:middle;min-width:9px;width:9px;cursor:pointer}
 .cal-table td.day-cell.tcol{background:rgba(58,58,240,0.04)}
 .cal-table td.day-cell:hover{filter:brightness(0.92)}
 .cell-inner{display:flex;height:100%;width:100%}
@@ -267,6 +267,7 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
     <button class="cnbtn" id="calPrev">◀ 이전</button>
     <div class="cntitle" id="calTitle">—</div>
     <button class="cnbtn" id="calNext">다음 ▶</button>
+    <button class="cnbtn" id="calNow" onclick="calGoNow()" style="margin-left:4px">↺ 지금</button>
     <div class="cvtog">
       <button class="cvbtn active" id="cvWeek" onclick="setCalView('week')">주</button>
       <button class="cvbtn" id="cvMonth" onclick="setCalView('month')">월</button>
@@ -567,11 +568,6 @@ function renderCal() {
     legend.appendChild(div);
   });
 
-  if (!visibleCrs.length) {
-    document.getElementById('calGrid').innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><div>이 기간에 등록된 소재가 없습니다</div></div>';
-    return;
-  }
-
   let html = '<table class="cal-table"><thead><tr><th class="time-hdr">시간</th>';
   days.forEach(function(d) {
     const isT = dateOnly(d).getTime() === todayMs;
@@ -623,8 +619,8 @@ function renderDetail() {
   if (c.moId) html += '<span class="mob">MO</span> ' + c.moId;
   html += '</div>';
   html += '<div class="d-period">▶ <b>' + fmtDt(c.startAt) + '</b><br>◀ <b>' + fmtDt(c.endAt) + '</b></div>';
-  if (c.pcImg) html += '<div class="d-iblk"><div class="d-ilbl"><span class="pcb">PC</span><button class="btn btn-g btn-sm" onclick="copyImgData(_cr[\'' + id + '\'].pcImg)">📋 복사</button></div><img class="d-img" src="' + c.pcImg + '" onclick="copyImgData(_cr[\'' + id + '\'].pcImg)"></div>';
-  if (c.moImg) html += '<div class="d-iblk"><div class="d-ilbl"><span class="mob">MO</span><button class="btn btn-g btn-sm" onclick="copyImgData(_cr[\'' + id + '\'].moImg)">📋 복사</button></div><img class="d-img" src="' + c.moImg + '" onclick="copyImgData(_cr[\'' + id + '\'].moImg)"></div>';
+  if (c.pcImg) html += '<div class="d-iblk"><div class="d-ilbl"><span class="pcb">PC</span><span style="font-size:10px;color:var(--t3)">클릭하면 복사</span></div><img class="d-img" src="' + c.pcImg + '" onclick="copyImgData(_cr[\'' + id + '\'].pcImg)" title="클릭하면 이미지 복사"></div>';
+  if (c.moImg) html += '<div class="d-iblk"><div class="d-ilbl"><span class="mob">MO</span><span style="font-size:10px;color:var(--t3)">클릭하면 복사</span></div><img class="d-img" src="' + c.moImg + '" onclick="copyImgData(_cr[\'' + id + '\'].moImg)" title="클릭하면 이미지 복사"></div>';
   html += '<div class="d-btns"><button class="btn btn-g btn-sm" onclick="editCr(\'' + id + '\')">✏️ 수정</button><button class="btn btn-r btn-sm" onclick="deleteCr(\'' + id + '\')">🗑 삭제</button></div>';
   panel.innerHTML = html;
 }
@@ -667,7 +663,7 @@ function renderHist() {
     return;
   }
   const now = new Date();
-  let html = '<table class="hist-table"><thead><tr><th style="width:20px"></th><th>소재명</th><th>기간</th><th>PC 소재 ID</th><th>MO 소재 ID</th><th>이미지</th><th>상태</th><th style="width:100px">관리</th></tr></thead><tbody>';
+  let html = '<table class="hist-table"><thead><tr><th style="width:20px"></th><th>소재명</th><th>기간</th><th><span class="pcb">PC</span> 이미지 / 소재 ID</th><th><span class="mob">MO</span> 이미지 / 소재 ID</th><th>상태</th><th style="width:80px">관리</th></tr></thead><tbody>';
   entries.forEach(function(e) {
     const id = e[0], c = e[1];
     const col = getColor(id);
@@ -676,14 +672,22 @@ function renderHist() {
     if (now < s) statusHtml = '<span class="status-badge sb-future">예정</span>';
     else if (now > en) statusHtml = '<span class="status-badge sb-done">종료</span>';
     else statusHtml = '<span class="status-badge sb-active">운영 중</span>';
-    const imgHtml = (c.pcImg ? '<span class="pcb">PC</span> ' : '') + (c.moImg ? '<span class="mob">MO</span>' : (!c.pcImg ? '<span style="font-size:11px;color:var(--t4)">없음</span>' : ''));
+    const pcCell = '<div style="display:flex;gap:7px;align-items:center">'
+      + (c.pcImg
+        ? '<img src="' + c.pcImg + '" onclick="copyImgData(_cr[\'' + id + '\'].pcImg)" title="클릭하면 복사" style="width:52px;height:40px;object-fit:contain;border-radius:4px;border:1px solid var(--gbd);background:#fff;cursor:pointer;display:block;flex-shrink:0">'
+        : '<div style="width:52px;height:40px;border-radius:4px;border:1px solid var(--gbd);background:var(--gbs);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--t3);flex-shrink:0">없음</div>')
+      + '<span style="font-size:10px;color:var(--t2);line-height:1.5;word-break:break-all">' + (c.pcId || '—') + '</span></div>';
+    const moCell = '<div style="display:flex;gap:7px;align-items:center">'
+      + (c.moImg
+        ? '<img src="' + c.moImg + '" onclick="copyImgData(_cr[\'' + id + '\'].moImg)" title="클릭하면 복사" style="width:52px;height:40px;object-fit:contain;border-radius:4px;border:1px solid var(--gbd);background:#fff;cursor:pointer;display:block;flex-shrink:0">'
+        : '<div style="width:52px;height:40px;border-radius:4px;border:1px solid var(--gbd);background:var(--gbs);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--t3);flex-shrink:0">없음</div>')
+      + '<span style="font-size:10px;color:var(--t2);line-height:1.5;word-break:break-all">' + (c.moId || '—') + '</span></div>';
     html += '<tr>';
     html += '<td><div style="width:8px;height:8px;border-radius:50%;background:' + col + ';margin:auto"></div></td>';
     html += '<td style="font-weight:500">' + c.name + '</td>';
     html += '<td style="font-size:11.5px;color:var(--t2)">' + fmtDt(c.startAt) + '<br>' + fmtDt(c.endAt) + '</td>';
-    html += '<td style="font-size:11px;color:var(--t2)">' + (c.pcId || '—') + '</td>';
-    html += '<td style="font-size:11px;color:var(--t2)">' + (c.moId || '—') + '</td>';
-    html += '<td>' + imgHtml + '</td>';
+    html += '<td>' + pcCell + '</td>';
+    html += '<td>' + moCell + '</td>';
     html += '<td>' + statusHtml + '</td>';
     html += '<td><div style="display:flex;gap:5px"><button class="btn btn-g btn-sm" onclick="editCr(\'' + id + '\')">✏️</button><button class="btn btn-r btn-sm" onclick="deleteCr(\'' + id + '\')">🗑</button></div></td>';
     html += '</tr>';
@@ -1031,18 +1035,41 @@ async function bulkImgSave() {
 }
 
 /* ── 탭 전환 ── */
+function calGoNow() {
+  const now = new Date();
+  _calY = now.getFullYear(); _calM = now.getMonth();
+  _calW = getWeekNum(now, _calY, _calM);
+  _calView = 'week';
+  document.getElementById('cvWeek').classList.add('active');
+  document.getElementById('cvMonth').classList.remove('active');
+  autoSelNowCr();
+  renderCal();
+  renderDetail();
+}
+
+function autoSelNowCr() {
+  const now = new Date();
+  const active = Object.entries(_cr).filter(function(e) {
+    return new Date(e[1].startAt) <= now && now <= new Date(e[1].endAt);
+  });
+  if (active.length) {
+    _selId = active[0][0];
+  }
+}
+
 function swTab(n) {
   [1,2,3].forEach(function(i) {
     document.getElementById('bkTab' + i).classList.toggle('active', i === n);
     document.getElementById('bkPane' + i).classList.toggle('active', i === n);
   });
-  if (n === 2) { renderToday(); renderCal(); renderDetail(); }
+  if (n === 2) { renderToday(); autoSelNowCr(); renderCal(); renderDetail(); }
   if (n === 3) renderHist();
 }
 
 /* ── 전체 렌더 ── */
 function renderAll() {
   renderToday();
+  autoSelNowCr();
   renderCal();
   renderDetail();
   renderHist();

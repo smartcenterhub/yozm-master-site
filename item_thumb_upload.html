@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>품목 썸네일 일괄 등록</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,sans-serif;font-size:13px;background:#f0f2f7;padding:32px;color:#1a2030}
+h2{font-size:18px;font-weight:600;margin-bottom:6px}
+.sub{color:#888;font-size:12px;margin-bottom:20px;line-height:1.6}
+.card{background:#fff;border-radius:12px;border:1px solid rgba(0,0,0,.08);padding:24px;max-width:760px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 24px;border-radius:30px;font-size:13px;font-weight:600;border:none;cursor:pointer;font-family:inherit}
+.btn-primary{background:#3a3af0;color:#fff}.btn-primary:hover{background:#2828d8}.btn-primary:disabled{opacity:.5;cursor:default}
+.log{margin-top:16px;background:#f8f9fc;border-radius:8px;padding:14px;max-height:320px;overflow-y:auto;font-size:12px;line-height:1.8;font-family:monospace;display:none}
+.ok{color:#0d6b35}.err{color:#d42020}.info{color:#888}
+table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:12px}
+thead th{background:#b8c4d4;padding:7px 10px;text-align:left;font-weight:500}
+tbody td{padding:6px 10px;border-bottom:0.5px solid rgba(0,0,0,.06);vertical-align:middle}
+tbody tr:hover td{background:#f5f6f9}
+img{width:44px;height:44px;object-fit:cover;border-radius:6px;vertical-align:middle}
+.note{background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:12px 14px;font-size:12px;color:#7a5c00;margin-bottom:20px;line-height:1.7}
+code{background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px}
+</style>
+</head>
+<body>
+<div class="card">
+  <h2>품목 썸네일 일괄 등록</h2>
+  <p class="sub">GitHub Pages에 이미지 업로드 후 Firestore <code>items</code> 컬렉션에 <code>thumbUrl</code> 저장</p>
+
+  <div class="note">
+    ⚠️ 먼저 GitHub repo에 이미지를 업로드해야 해요.<br>
+    경로: <code>yozm-master-site/images/items/</code> 폴더에 닉네임.png 파일 업로드<br>
+    예: <code>플.png</code>, <code>말.png</code>, <code>마S.png</code> ...
+  </div>
+
+  <table>
+    <thead><tr><th>미리보기</th><th>닉네임</th><th>URL</th><th>상태</th></tr></thead>
+    <tbody id="previewTbody"></tbody>
+  </table>
+
+  <div style="display:flex;gap:10px;align-items:center">
+    <button class="btn btn-primary" id="uploadBtn" onclick="startUpload()">🚀 Firestore에 일괄 등록</button>
+    <span id="progress" style="font-size:12px;color:#888"></span>
+  </div>
+  <div class="log" id="log"></div>
+</div>
+
+<script type="module">
+import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import{getFirestore,collection,getDocs,doc,setDoc}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const app=initializeApp({
+  apiKey:'AIzaSyBB3XxL4kJz5uGVRUn-eLPYirJsuwuiEIU',
+  authDomain:'data-hub-app-2026.firebaseapp.com',
+  projectId:'data-hub-app-2026',
+  appId:'1:390258983242:web:abc123'
+});
+const db=getFirestore(app);
+const BASE='https://smartcenterhub.github.io/yozm-master-site/images/items/';
+
+// 닉네임 목록 (items 컬렉션에서 로드)
+const NICKS=['플','소','말','알','라','오','애','블','카','크','푸','스','복','마S','마L','블토','초토','크토','꿀'];
+
+// 이미지 파일 존재 여부 확인용 (GitHub에 올려진 것만)
+const FILE_NICKS=['라','마L','마S','말','블토','스토','알','애','오','초토','크토','크토2','푸','플'];
+
+// items 컬렉션에서 닉네임-코드 매핑 로드
+let ITEMS_MAP={};
+
+async function init(){
+  try{
+    const snap=await getDocs(collection(db,'items'));
+    snap.forEach(d=>{
+      const dt=d.data();
+      if(dt.nick) ITEMS_MAP[dt.nick]={code:d.id,name:dt.name||''};
+    });
+    renderPreview();
+  }catch(e){
+    document.getElementById('previewTbody').innerHTML=`<tr><td colspan="4" style="color:#d42020;padding:12px">Firebase 연결 실패: ${e.message}</td></tr>`;
+  }
+}
+
+function renderPreview(){
+  const tbody=document.getElementById('previewTbody');
+  tbody.innerHTML='';
+  FILE_NICKS.forEach(nick=>{
+    const url=BASE+encodeURIComponent(nick)+'.png';
+    const item=ITEMS_MAP[nick];
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td><img src="${url}" onerror="this.style.opacity=.2;this.title='이미지 없음'"></td>
+      <td><b>${nick}</b>${item?` <span style="color:#888;font-size:11px">— ${item.name||item.code}</span>`:' <span style="color:#d42020;font-size:11px">품목 없음</span>'}</td>
+      <td style="color:#aaa;font-size:11px;word-break:break-all">${url}</td>
+      <td id="st-${nick}" style="color:#aaa">대기</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+window.startUpload=async function(){
+  const btn=document.getElementById('uploadBtn');
+  const log=document.getElementById('log');
+  const prog=document.getElementById('progress');
+  btn.disabled=true;
+  log.style.display='block';
+  log.innerHTML='';
+
+  let ok=0,skip=0,fail=0;
+  for(let i=0;i<FILE_NICKS.length;i++){
+    const nick=FILE_NICKS[i];
+    const url=BASE+encodeURIComponent(nick)+'.png';
+    const item=ITEMS_MAP[nick];
+    const stEl=document.getElementById('st-'+nick);
+    prog.textContent=`${i+1}/${FILE_NICKS.length} 처리 중...`;
+
+    if(!item){
+      stEl.textContent='⏭ 품목 없음';stEl.style.color='#aaa';
+      log.innerHTML+=`<span class="info">⏭ ${nick} — items에 없음</span>\n`;
+      skip++;
+    } else {
+      try{
+        await setDoc(doc(db,'items',item.code),{thumbUrl:url},{merge:true});
+        stEl.textContent='✅ 완료';stEl.style.color='#0d6b35';
+        log.innerHTML+=`<span class="ok">✅ ${nick} (${item.code})</span>\n`;
+        ok++;
+      }catch(e){
+        stEl.textContent='❌ 실패';stEl.style.color='#d42020';
+        log.innerHTML+=`<span class="err">❌ ${nick} — ${e.message}</span>\n`;
+        fail++;
+      }
+    }
+    log.scrollTop=log.scrollHeight;
+    await new Promise(r=>setTimeout(r,120));
+  }
+  prog.textContent=`완료: ✅${ok}개 / ⏭${skip}개 / ❌${fail}개`;
+  log.innerHTML+=`\n<span class="info">─── 완료 ───</span>`;
+  btn.textContent='✅ 등록 완료';
+};
+
+init();
+</script>
+</body>
+</html>

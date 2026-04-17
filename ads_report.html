@@ -3315,17 +3315,25 @@ async function processAdv(file, num) {
 
   // 새 파일의 날짜 파악 → 해당 날짜만 교체, 나머지 유지
   const newRows = [];
+  let excludedCount = 0;
   for (let i = 1; i < lines.length; i++) {
     if (!lines[i].trim()) continue;
     const cv = parseCSVLine(lines[i]);
+    const conv = parseNum(cv[idx.conv]);
+    const rev  = parseNum(cv[idx.rev]);
+    // 이상 데이터 제외: 전환수 1건 이상 & 전환단가 90만원 이상
+    if (conv >= 1 && rev / conv >= 900000) { excludedCount++; continue; }
     newRows.push({
       date: (cv[idx.date]||'').trim(), group: (cv[idx.group]||'').trim(),
       imp:parseNum(cv[idx.imp]), clk:parseNum(cv[idx.clk]),
-      cost:parseNum(cv[idx.cost]), conv:parseNum(cv[idx.conv]), rev:parseNum(cv[idx.rev]),
+      cost:parseNum(cv[idx.cost]), conv, rev,
     });
   }
   const newDates = new Set(newRows.map(r => r.date));
   _advData[num] = _advData[num].filter(r => !newDates.has(r.date)).concat(newRows);
+  // 제외 건수 저장
+  if (!window._advExcluded) window._advExcluded = {1:0, 2:0};
+  window._advExcluded[num] = (window._advExcluded[num]||0) + excludedCount;
 
   // 날짜 탭 업데이트
   const allDates = [...new Set(_advData[num].map(r => r.date).filter(Boolean))].sort();
@@ -3345,9 +3353,13 @@ async function processAdv(file, num) {
 
   // 패널 헤더
   const dotColor = num === 1 ? 'var(--accent)' : 'var(--blue)';
+  const excl = window._advExcluded?.[num] || 0;
+  const exclHtml = excl > 0
+    ? `<span style="font-size:10.5px;color:var(--orange);background:rgba(196,90,16,0.08);border:0.5px solid rgba(196,90,16,0.25);border-radius:10px;padding:1px 8px;margin-left:4px">⚠️ ${excl}건 제외됨 (전환단가 90만원↑)</span>`
+    : '';
   panel.querySelector('.panel-header').innerHTML = `
     <div style="display:flex;flex-direction:column;gap:3px">
-      <div class="panel-title"><div class="panel-title-dot" style="background:${dotColor}"></div>${ADV_NAMES[num]}</div>
+      <div class="panel-title" style="flex-wrap:wrap;gap:5px"><div class="panel-title-dot" style="background:${dotColor}"></div>${ADV_NAMES[num]}${exclHtml}</div>
       <span style="font-size:11px;color:var(--t3)">${file.name}</span>
     </div>
     <button class="btn btn-ghost btn-sm" onclick="resetAdvPanel(${num})">↩ 재업로드</button>`;
@@ -3381,6 +3393,7 @@ function resetAdvPanel(num) {
   const tabsEl = document.getElementById(`advDateTabs${num}`);
   if (tabsEl) tabsEl.remove();
   _advData[num] = []; _advCurDate[num] = 'all';
+  if (window._advExcluded) window._advExcluded[num] = 0;
   const dotColor = num === 1 ? 'var(--accent)' : 'var(--blue)';
   document.getElementById(`advPanel${num}`).querySelector('.panel-header').innerHTML =
     `<div class="panel-title"><div class="panel-title-dot" style="background:${dotColor}"></div>${ADV_NAMES[num]}</div>`;

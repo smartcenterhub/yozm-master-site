@@ -295,6 +295,7 @@ tr.opt-row:hover td.fix{background:rgba(242,243,255,1)}
         <a class="btn btn-dl" id="itemDlBtn" href="#"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v9M4 8l4 4 4-4"/><rect x="2" y="13" width="12" height="1" rx=".5"/></svg>업로드 양식</a>
         <button class="btn btn-ghost" onclick="exportItems()"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v9M4 8l4 4 4-4"/><rect x="2" y="13" width="12" height="1" rx=".5"/></svg>현재 데이터 다운</button>
         <button class="btn btn-ghost" onclick="loadAll()">🔄 새로고침</button>
+        <button class="btn btn-ghost" onclick="refreshThumbs('item')">🖼 썸네일 갱신</button>
       </div>
     </div>
     <div class="upload-section" id="itemUpSec">
@@ -333,7 +334,7 @@ tr.opt-row:hover td.fix{background:rgba(242,243,255,1)}
         </div>
         <div class="filter-right">
           <div>
-            <div class="col-group-row"><span class="col-group-lbl">기본 정보</span><span class="col-all-btn" onclick="toggleColGroup(['ic-name','ic-cat','ic-status','ic-memo','ic-edit','ic-date'],true)">전부 켜기</span></div>
+            <div class="col-group-row"><span class="col-group-lbl">기본 정보</span><span class="col-all-btn" onclick="toggleColGroup(['ic-name','ic-cat','ic-status','ic-memo','ic-edit','ic-date'],this)">전부 켜기</span></div>
             <div class="col-chips-row">
               <span class="col-chip on" data-col="ic-name" onclick="toggleColChip(this)">품목명</span>
               <span class="col-chip on" data-col="ic-cat" onclick="toggleColChip(this)">분류</span>
@@ -387,6 +388,7 @@ tr.opt-row:hover td.fix{background:rgba(242,243,255,1)}
         <a class="btn btn-dl" id="skuDlBtn" href="#"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v9M4 8l4 4 4-4"/><rect x="2" y="13" width="12" height="1" rx=".5"/></svg>업로드 양식</a>
         <button class="btn btn-ghost" onclick="exportSkus()"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v9M4 8l4 4 4-4"/><rect x="2" y="13" width="12" height="1" rx=".5"/></svg>현재 데이터 다운</button>
         <button class="btn btn-ghost" onclick="loadAll()">🔄 새로고침</button>
+        <button class="btn btn-ghost" onclick="refreshThumbs('sku')">🖼 썸네일 갱신</button>
       </div>
     </div>
     <div class="upload-section" id="skuUpSec">
@@ -429,7 +431,7 @@ tr.opt-row:hover td.fix{background:rgba(242,243,255,1)}
         </div>
         <div class="filter-right">
           <div>
-            <div class="col-group-row"><span class="col-group-lbl">기본 정보</span><span class="col-all-btn" onclick="toggleColGroup(['sc-name','sc-type','sc-status','sc-ship','sc-memo','sc-opt','sc-edit','sc-date'],true)">전부 켜기</span></div>
+            <div class="col-group-row"><span class="col-group-lbl">기본 정보</span><span class="col-all-btn" onclick="toggleColGroup(['sc-name','sc-type','sc-status','sc-ship','sc-memo','sc-opt','sc-edit','sc-date'],this)">전부 켜기</span></div>
             <div class="col-chips-row">
               <span class="col-chip on" data-col="sc-name" onclick="toggleColChip(this)">상품명</span>
               <span class="col-chip on" data-col="sc-type" onclick="toggleColChip(this)">유형</span>
@@ -442,7 +444,7 @@ tr.opt-row:hover td.fix{background:rgba(242,243,255,1)}
             </div>
           </div>
           <div>
-            <div class="col-group-row"><span class="col-group-lbl">가격</span><span class="col-all-btn" onclick="toggleColGroup(['sc-pn','sc-pd','sc-pm','sc-pa','sc-pf'],true)">전부 켜기</span></div>
+            <div class="col-group-row"><span class="col-group-lbl">가격</span><span class="col-all-btn" onclick="toggleColGroup(['sc-pn','sc-pd','sc-pm','sc-pa','sc-pf'],this)">전부 켜기</span></div>
             <div class="col-chips-row">
               <span class="col-chip on" data-col="sc-pn" onclick="toggleColChip(this)">정상가</span>
               <span class="col-chip on" data-col="sc-pd" onclick="toggleColChip(this)">상시할인가</span>
@@ -452,7 +454,7 @@ tr.opt-row:hover td.fix{background:rgba(242,243,255,1)}
             </div>
           </div>
           <div>
-            <div class="col-group-row"><span class="col-group-lbl">계산열</span><span class="col-all-btn" onclick="toggleColGroup(['sc-da','sc-db','sc-dc','sc-ra','sc-rb','sc-rc'],true)">전부 켜기</span></div>
+            <div class="col-group-row"><span class="col-group-lbl">계산열</span><span class="col-all-btn" onclick="toggleColGroup(['sc-da','sc-db','sc-dc','sc-ra','sc-rb','sc-rc'],this)">전부 켜기</span></div>
             <div class="col-chips-row">
               <span class="col-chip on" data-col="sc-da" onclick="toggleColChip(this)">상시할인금액</span>
               <span class="col-chip on" data-col="sc-db" onclick="toggleColChip(this)">기본행사금액</span>
@@ -836,7 +838,7 @@ function renderItemTable(q){
       html+=`<tr class="${pCls}">
         <td class="fix" style="left:0px;text-align:center;padding:7px 4px">${dot(it.pending)}</td>
         <td class="fix" style="left:24px;color:var(--t3);font-size:11px;cursor:pointer" onclick="copyToClip('${it.no}',this,'item')">${it.no}</td>
-        <td class="fix" style="left:68px;padding:3px;text-align:center">${it.thumbUrl?`<img src="${it.thumbUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;display:block">`:''}</td>
+        <td class="fix" style="left:68px;padding:3px;text-align:center"><img src="${it.thumbUrl||'https://smartcenterhub.github.io/yozm-master-site/images/items/'+encodeURIComponent(it.nick)+'.png'}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;display:block" referrerpolicy="no-referrer" onerror="this.style.display='none'"></td>
         <td class="fix" style="left:116px;cursor:pointer" onclick="copyToClip('${it.code}',this,'item')"><span class="code-val">${it.code}</span></td>
         <td class="fix fix-last" style="left:216px;cursor:pointer" onclick="copyToClip('${it.nick}',this,'item')"><span class="nick${isOff?' off':''}">${it.nick}</span></td>
         <td style="font-weight:500;color:var(--tx);cursor:pointer" onclick="copyToClip('${it.name}',this,'item')">${it.name}</td>
@@ -863,8 +865,8 @@ function toggleFilterBody(tab){
   const btn=document.getElementById(btnId);
   if(!body)return;
   if(body.classList.contains('closed')){
-    body.style.maxHeight=body.scrollHeight+'px';
     body.classList.remove('closed');
+    body.style.maxHeight='none';
     btn.classList.remove('closed');
   } else {
     body.style.maxHeight=body.scrollHeight+'px';
@@ -878,18 +880,27 @@ function initFilterBodies(){
   ['iFilterBody','sFilterBody'].forEach(id=>{
     const el=document.getElementById(id);
     const btn=document.getElementById(id==='iFilterBody'?'iFilterToggle':'sFilterToggle');
-    if(el) el.style.maxHeight=el.scrollHeight+'px';
+    if(!el)return;
+    el.classList.remove('closed');
+    el.style.maxHeight='none';
     if(btn) btn.classList.remove('closed');
   });
 }
 
-function toggleColGroup(ids, on){
+function toggleColGroup(ids, btn){
+  // 현재 그룹 상태 확인 - 하나라도 꺼져있으면 전부 켜기, 다 켜져있으면 전부 끄기
+  const allOn=ids.every(id=>{
+    const chip=document.querySelector(`[data-col="${id}"]`);
+    return chip&&chip.classList.contains('on');
+  });
+  const newOn=!allOn;
   ids.forEach(id=>{
     const col=document.getElementById(id);
-    if(col) col.style.visibility=on?'':'collapse';
+    if(col) col.style.visibility=newOn?'':'collapse';
     const chip=document.querySelector(`[data-col="${id}"]`);
-    if(chip){chip.classList.toggle('on',on);}
+    if(chip) chip.classList.toggle('on',newOn);
   });
+  if(btn) btn.textContent=newOn?'전부 끄기':'전부 켜기';
 }
 
 function resetAllCols(tab){
@@ -1170,7 +1181,7 @@ function renderSkuTable(q){
       html+=`<tr class="${pCls}">
         <td class="fix" style="left:0px;text-align:center;padding:7px 4px">${dot(sk.pending)}</td>
         <td class="fix" style="left:24px;color:var(--t3);font-size:11px;cursor:pointer" onclick="copyToClip('${sk.no}',this,'sku')">${sk.no}</td>
-        <td class="fix" style="left:68px;padding:3px;text-align:center">${sk.thumbUrl?`<img src="${sk.thumbUrl}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;display:block">`:''}</td>
+        <td class="fix" style="left:68px;padding:3px;text-align:center"><img src="${sk.thumbUrl||'https://smartcenterhub.github.io/yozm-master-site/images/skus/${sk.code}.jpg'}" style="width:40px;height:40px;object-fit:cover;border-radius:4px;display:block" referrerpolicy="no-referrer" onerror="this.style.display='none'"></td>
         <td class="fix" style="left:116px;cursor:pointer" onclick="copyToClip('${sk.code}',this,'sku')"><span class="code-val">${sk.code}</span></td>
         <td class="fix fix-last" style="left:240px;cursor:pointer" onclick="copyToClip('${sk.nick}',this,'sku')"><span class="nick${isOff?' off':''}">${sk.nick}</span></td>
         <td style="font-weight:500;color:var(--tx);cursor:pointer" onclick="copyToClip('${sk.name}',this,'sku')">${sk.name}</td>
@@ -1205,7 +1216,7 @@ function renderSkuTable(q){
           html+=`<tr class="opt-row${isLast?' opt-last':''}">
             <td style="text-align:center"><span class="opt-num">${oi+1}</span></td>
             <td></td><td></td><td></td>
-            <td class="fix fix-last" style="left:192px;cursor:pointer" onclick="copyToClip('${opt.nick||''}',this,'sku')"><span class="opt-nick">${opt.nick||''}</span></td>
+            <td class="fix fix-last" style="left:240px;cursor:pointer" onclick="copyToClip('${opt.nick||''}',this,'sku')"><span class="opt-nick">${opt.nick||''}</span></td>
             <td style="font-size:11.5px">${opt.name||''}</td>
             <td></td>
             <td style="cursor:pointer" onclick="copyToClip('${opt.status||''}',this,'sku')">
@@ -1325,6 +1336,18 @@ function setStatus(ok,msg){
     ?{background:'rgba(26,138,74,.08)',borderColor:'rgba(26,138,74,.25)',color:'#1a8a4a'}
     :{background:'rgba(212,32,32,.07)',borderColor:'rgba(212,32,32,.2)',color:'#d42020'});
   el.innerHTML=`<span style="width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0"></span>${msg}`;
+}
+
+function refreshThumbs(tab){
+  const tbody=document.getElementById(tab==='item'?'itemTbody':'skuTbody');
+  if(!tbody)return;
+  const ts='?t='+Date.now();
+  tbody.querySelectorAll('img[src]').forEach(img=>{
+    const src=img.src.split('?')[0];
+    img.style.display='';
+    img.src=src+ts;
+  });
+  toast('썸네일 갱신 완료');
 }
 
 window.loadAll=async function(){

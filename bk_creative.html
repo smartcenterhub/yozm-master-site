@@ -170,41 +170,7 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
     </div>
   </div>
 
-  <!-- Step 4: 이미지 일괄 매칭 -->
-  <div id="bulkImgWrap" style="display:none">
-    <div style="height:1px;background:var(--gbd);width:1092px;margin-bottom:14px"></div>
-    <div class="fl" style="margin-bottom:6px">④ 이미지 일괄 매칭 <span style="font-size:10.5px;color:var(--t3);font-weight:400">— 파일명 = 소재 ID (예: nad-a001-04-XXXXXXX.png)</span></div>
-    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
-      <label style="display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border:1px solid var(--gbd);border-radius:7px;cursor:pointer;background:var(--gbs);font-size:12px;color:var(--t2)">
-        🖼 이미지 선택 (복수)
-        <input type="file" id="bulkImgInput" accept="image/*" multiple style="display:none" onchange="parseBulkImages(this)">
-      </label>
-      <label style="display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border:1px solid var(--gbd);border-radius:7px;cursor:pointer;background:var(--gbs);font-size:12px;color:var(--t2)">
-        📦 ZIP 선택
-        <input type="file" id="bulkZipInput" accept=".zip" style="display:none" onchange="parseBulkZip(this)">
-      </label>
-      <span id="bulkImgName" style="font-size:11.5px;color:var(--t3)">선택된 파일 없음</span>
-    </div>
-    <div id="bulkImgPreview" style="display:none;margin-bottom:10px;overflow-x:auto;width:1092px">
-      <table id="bulkImgTable" style="border-collapse:collapse;width:100%;table-layout:fixed">
-        <colgroup><col style="width:260px"><col style="width:120px"><col style="width:340px"><col style="width:120px"><col style="width:120px"></colgroup>
-        <thead>
-          <tr>
-            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:left">파일명</th>
-            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:center">PC/MO</th>
-            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:left">매칭 소재</th>
-            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:center">미리보기</th>
-            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:center">상태</th>
-          </tr>
-        </thead>
-        <tbody id="bulkImgBody"></tbody>
-      </table>
-    </div>
-    <div id="bulkImgSaveWrap" style="display:none;display:flex;gap:10px;align-items:center">
-      <button class="btn btn-p" id="bulkImgSaveBtn" onclick="bulkImgSave()">🖼 <span id="bulkImgSaveBtnLabel">이미지 매칭 저장</span></button>
-      <span id="bulkImgSaveStatus" style="font-size:11.5px;color:var(--t3)"></span>
-    </div>
-  </div>
+
 </div>
 
 <div class="card">
@@ -241,18 +207,13 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
       <input type="text" id="moIdInput" class="inp" placeholder="nad-a001-04-..." style="width:400px" oninput="this.value=this.value.replace(/\s/g,'')" onpaste="setTimeout(()=>{this.value=this.value.replace(/\s/g,'')},0)">
     </div>
   </div>
-  <div style="display:flex;gap:16px;align-items:flex-end;width:1132px">
-    <div class="ublock">
-      <div class="utitle"><span class="pcb">PC</span> 이미지 <span style="font-size:10px;color:var(--t3);font-weight:400">(최대 2MB)</span></div>
-      <label class="fdrop" id="pcFileDrop"><div id="pcDropText" class="fdrop-t">클릭 또는 드래그</div><input type="file" id="pcFileInput" accept="image/*" style="display:none"></label>
+  <div style="display:flex;gap:12px;align-items:flex-end;width:1132px;margin-bottom:8px">
+    <div style="font-size:11px;color:var(--t3);padding:6px 10px;background:rgba(58,58,240,0.04);border-radius:6px;border:1px solid rgba(58,58,240,0.1)">
+      🖼 이미지 URL은 소재 ID 기준으로 자동 생성됩니다 — <code style="font-size:10.5px">images/bk/{소재ID}.png</code>
     </div>
-    <div class="ublock">
-      <div class="utitle"><span class="mob">MO</span> 이미지 <span style="font-size:10px;color:var(--t3);font-weight:400">(최대 2MB)</span></div>
-      <label class="fdrop" id="moFileDrop"><div id="moDropText" class="fdrop-t">클릭 또는 드래그</div><input type="file" id="moFileInput" accept="image/*" style="display:none"></label>
-    </div>
-    <div class="ublock" style="justify-content:flex-end">
-      <button class="btn btn-p" id="addBtn" style="height:60px;padding:0 24px;align-self:flex-end">＋ 등록</button>
-    </div>
+    <input type="hidden" id="pcImgUrlInput">
+    <input type="hidden" id="moImgUrlInput">
+    <button class="btn btn-p" id="addBtn" style="height:34px;padding:0 24px;align-self:center">＋ 등록</button>
   </div>
 </div>
 </div>
@@ -268,6 +229,7 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
     <div class="cntitle" id="calTitle">—</div>
     <button class="cnbtn" id="calNext">다음 ▶</button>
     <button class="cnbtn" id="calNow" onclick="calGoNow()" style="margin-left:4px">↺ 지금</button>
+    <button class="cnbtn" onclick="refreshThumbs()" style="margin-left:4px">🖼 썸네일 갱신</button>
     <div class="cvtog">
       <button class="cvbtn active" id="cvWeek" onclick="setCalView('week')">주</button>
       <button class="cvbtn" id="cvMonth" onclick="setCalView('month')">월</button>
@@ -283,7 +245,8 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 <!-- ── 탭3: 소재 이력 ── -->
 <div class="bk-pane" id="bkPane3">
 <div class="card">
-  <div class="card-title"><div class="cdot" style="background:var(--bl)"></div>등록된 소재 전체</div>
+  <div class="card-title"><div class="cdot" style="background:var(--bl)"></div>등록된 소재 전체<div style="display:flex;gap:8px;margin-left:auto"><button class="btn btn-g btn-sm" onclick="refreshThumbs()">🖼 썸네일 갱신</button><button class="btn btn-g btn-sm" onclick="toggleGuide()">📋 등록 가이드</button></div></div>
+  <div id="guidePanel" style="display:none;margin:10px 0 14px;padding:14px 18px;background:#F4F5FF;border-radius:8px;border:1px solid rgba(58,58,240,0.15);font-size:12px;line-height:2;color:var(--t1);width:1132px"></div>
   <div id="histTable"><div class="empty-state"><div class="empty-icon">📋</div><div>등록된 소재가 없습니다</div></div></div>
 </div>
 </div>
@@ -332,6 +295,31 @@ let _calW = 1;
 let _selId = null;
 let _pendingPc = null, _pendingMo = null;
 let _toastTmr;
+
+/* ── GitHub URL 자동 완성 ── */
+const GH_BASE = 'https://smartcenterhub.github.io/yozm-master-site/images/bk/';
+function autoGenUrls() {}
+
+function toggleGuide() {
+  const p = document.getElementById('guidePanel');
+  if (p.style.display !== 'none') { p.style.display = 'none'; return; }
+  p.innerHTML = [
+    '<b style="font-size:13px">브검 소재 등록 가이드</b>',
+    '<div style="height:8px"></div>',
+    '<b>1. 이미지 GitHub에 올리기</b>',
+    '파일명을 소재 ID로 변경 후 <code style="background:rgba(0,0,0,0.07);padding:1px 5px;border-radius:3px">images/bk/</code> 폴더에 넣고 GitHub Desktop → Commit → Push',
+    '<span style="color:var(--t3)">예) nad-a001-04-000000493777435.png</span>',
+    '<div style="height:6px"></div>',
+    '<b>2. 소재 등록</b>',
+    '· 일괄: 소재 등록 탭 → 일괄 등록 → 엑셀 업로드 → N개 등록',
+    '· 개별: 소재 등록 탭 → 소재명 / 기간 / PC ID / MO ID 입력 → ＋ 등록',
+    '<span style="color:var(--t3)">이미지 URL은 소재 ID 기준으로 자동 생성됩니다</span>',
+    '<div style="height:6px"></div>',
+    '<b>3. 이미지 확인</b>',
+    '소재 현황 또는 소재 이력 탭에서 확인 — 안 뜨면 🖼 썸네일 갱신 클릭',
+  ].join('<br>');
+  p.style.display = '';
+}
 
 /* ── 단축 날짜 파서 ── */
 function checkDt(rawId, targetId) {
@@ -422,51 +410,41 @@ function setCalView(v) {
 }
 
 /* ── 파일 드롭 ── */
-function setupDrop(dropId, inputId, textId, which) {
-  const drop = document.getElementById(dropId);
-  const input = document.getElementById(inputId);
-  const textEl = document.getElementById(textId);
-  drop.addEventListener('click', function() { input.click(); });
-  drop.addEventListener('dragover', function(e) { e.preventDefault(); drop.classList.add('drag-over'); });
-  drop.addEventListener('dragleave', function() { drop.classList.remove('drag-over'); });
-  drop.addEventListener('drop', function(e) {
-    e.preventDefault(); drop.classList.remove('drag-over');
-    const f = e.dataTransfer.files[0];
-    if (f && f.type.startsWith('image/')) setDropFile(f, textEl, which);
-  });
-  input.addEventListener('change', function(e) { if (e.target.files[0]) setDropFile(e.target.files[0], textEl, which); });
-}
-function setDropFile(file, textEl, which) {
-  if (which === 'pc') _pendingPc = file; else _pendingMo = file;
-  textEl.textContent = file.name; textEl.className = 'fdrop-n';
-}
 function resetForm() {
-  ['pcIdInput','moIdInput','nameInput','startInput','endInput','startRaw','endRaw'].forEach(function(id) { document.getElementById(id).value = ''; });
+  ['pcIdInput','moIdInput','nameInput','startInput','endInput','startRaw','endRaw','pcImgUrlInput','moImgUrlInput'].forEach(function(id) { var el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('startRaw').style.borderColor=''; document.getElementById('endRaw').style.borderColor='';
   document.getElementById('pcDropText').textContent = '클릭 또는 드래그'; document.getElementById('pcDropText').className = 'fdrop-t';
   document.getElementById('moDropText').textContent = '클릭 또는 드래그'; document.getElementById('moDropText').className = 'fdrop-t';
   document.getElementById('pcFileInput').value = ''; document.getElementById('moFileInput').value = '';
   _pendingPc = null; _pendingMo = null;
 }
-function compressFile(file) {
-  return new Promise(function(res) {
-    if (!file) { res(null); return; }
-    if (file.size > 2 * 1024 * 1024) { showToast('⚠️ 2MB 초과'); res(null); return; }
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const img = new Image();
-      img.onload = function() {
-        const MAX = 300; let w = img.width, h = img.height;
-        if (w > MAX || h > MAX) { if (w > h) { h = Math.round(h * MAX / w); w = MAX; } else { w = Math.round(w * MAX / h); h = MAX; } }
-        const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
-        cv.getContext('2d').drawImage(img, 0, 0, w, h);
-        res(cv.toDataURL('image/webp', 0.75));
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
+function refreshThumbs() {
+  document.querySelectorAll('img[src]').forEach(function(img) {
+    const src = img.src.split('?')[0];
+    img.style.opacity = '';
+    img.style.filter = '';
+    img.src = src + '?t=' + Date.now();
   });
+  showToast('🖼 썸네일 갱신 완료');
 }
+
+function copyGhImg(url) {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = function() {
+    const cv = document.createElement('canvas');
+    cv.width = img.width; cv.height = img.height;
+    cv.getContext('2d').drawImage(img, 0, 0);
+    cv.toBlob(function(blob) {
+      navigator.clipboard.write([new ClipboardItem({'image/png': blob})])
+        .then(function() { showToast('✅ 이미지 복사됨'); })
+        .catch(function() { showToast('❌ 복사 실패 (브라우저 권한 필요)'); });
+    }, 'image/png');
+  };
+  img.onerror = function() { showToast('❌ 이미지 로드 실패'); };
+  img.src = url + '?t=' + Date.now();
+}
+
 function copyImgData(dataURL) {
   if (!dataURL) { showToast('⚠️ 이미지 없음'); return; }
   const img = new Image();
@@ -622,13 +600,13 @@ function renderDetail() {
   const noImg = '<div style="height:120px;width:100%;border-radius:6px;border:1px solid var(--gbd);background:var(--gbs);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t3)">이미지 없음</div>';
   html += '<div style="margin-bottom:10px">';
   html += '<div style="font-size:11px;margin-bottom:6px"><span class="pcb">PC</span></div>';
-  html += (c.pcImg ? '<img style="' + imgH + '" src="' + c.pcImg + '" onclick="copyImgData(_cr[\'' + id + '\'].pcImg)" title="클릭하면 이미지 복사">' : noImg);
+  html += (c.pcImgUrl ? '<img style="' + imgH + '" src="' + c.pcImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" title="클릭하면 이미지 복사" onclick="copyGhImg(\'" + c.pcImgUrl + "\')">': noImg);
   html += '<div style="font-size:10px;color:var(--t3);margin-top:4px">' + (c.pcId || '—') + '</div>';
   html += '</div>';
   html += '<div style="height:0.5px;background:var(--gbd);margin:10px 0"></div>';
   html += '<div style="margin-bottom:10px">';
   html += '<div style="font-size:11px;margin-bottom:6px"><span class="mob">MO</span></div>';
-  html += (c.moImg ? '<img style="' + imgH + '" src="' + c.moImg + '" onclick="copyImgData(_cr[\'' + id + '\'].moImg)" title="클릭하면 이미지 복사">' : noImg);
+  html += (c.moImgUrl ? '<img style="' + imgH + '" src="' + c.moImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" title="클릭하면 이미지 복사" onclick="copyGhImg(\'" + c.moImgUrl + "\')">': noImg);
   html += '<div style="font-size:10px;color:var(--t3);margin-top:4px">' + (c.moId || '—') + '</div>';
   html += '</div>';
   html += '<div class="d-btns"><button class="btn btn-g btn-sm" onclick="editCr(\'' + id + '\')">✏️ 수정</button><button class="btn btn-r btn-sm" onclick="deleteCr(\'' + id + '\')">🗑 삭제</button></div>';
@@ -644,9 +622,8 @@ function editCr(id) {
   document.getElementById('endInput').value = c.endAt || '';
   document.getElementById('startRaw').value = '';
   document.getElementById('endRaw').value = '';
-  document.getElementById('pcDropText').textContent = c.pcImg ? '(기존 유지)' : '클릭 또는 드래그';
-  document.getElementById('moDropText').textContent = c.moImg ? '(기존 유지)' : '클릭 또는 드래그';
-  _pendingPc = null; _pendingMo = null;
+  var pcUrlEl = document.getElementById('pcImgUrlInput'); if(pcUrlEl) pcUrlEl.value = c.pcImgUrl || '';
+  var moUrlEl = document.getElementById('moImgUrlInput'); if(moUrlEl) moUrlEl.value = c.moImgUrl || '';
   swTab(1);
   window.scrollTo({top:0, behavior:'smooth'});
   showToast('📝 수정 모드 — 변경 후 등록 버튼을 눌러주세요');
@@ -673,7 +650,7 @@ function renderHist() {
     return;
   }
   const now = new Date();
-  let html = '<table class="hist-table"><thead><tr><th style="width:20px"></th><th>소재명</th><th>기간</th><th><span class="pcb">PC</span> 이미지 / 소재 ID</th><th><span class="mob">MO</span> 이미지 / 소재 ID</th><th>상태</th><th style="width:80px">관리</th></tr></thead><tbody>';
+  let html = '<table class="hist-table"><colgroup><col style="width:16px"><col style="width:200px"><col style="width:110px"><col style="width:360px"><col style="width:360px"><col style="width:70px"><col style="width:80px"></colgroup><thead><tr><th></th><th>소재명</th><th>기간</th><th><span class="pcb">PC</span> 이미지 / 소재 ID</th><th><span class="mob">MO</span> 이미지 / 소재 ID</th><th style="text-align:center">상태</th><th>관리</th></tr></thead><tbody>';
   entries.forEach(function(e) {
     const id = e[0], c = e[1];
     const col = getColor(id);
@@ -685,10 +662,10 @@ function renderHist() {
     const iStyle = 'width:100%;height:70px;object-fit:contain;border-radius:4px;border:1px solid var(--gbd);background:#fff;cursor:pointer;display:block';
     const noImgCell = '<div style="width:100%;height:70px;border-radius:4px;border:1px solid var(--gbd);background:var(--gbs);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--t3)">없음</div>';
     const pcCell = '<div>'
-      + (c.pcImg ? '<img src="' + c.pcImg + '" onclick="copyImgData(_cr[\'' + id + '\'].pcImg)" title="클릭하면 복사" style="' + iStyle + '">' : noImgCell)
+      + (c.pcImgUrl ? '<img src="' + c.pcImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" title="클릭하면 복사" style="' + iStyle + '">' : noImgCell)
       + '<div style="font-size:10px;color:var(--t2);line-height:1.5;word-break:break-all;margin-top:4px">' + (c.pcId || '—') + '</div></div>';
     const moCell = '<div>'
-      + (c.moImg ? '<img src="' + c.moImg + '" onclick="copyImgData(_cr[\'' + id + '\'].moImg)" title="클릭하면 복사" style="' + iStyle + '">' : noImgCell)
+      + (c.moImgUrl ? '<img src="' + c.moImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" title="클릭하면 복사" style="' + iStyle + '">' : noImgCell)
       + '<div style="font-size:10px;color:var(--t2);line-height:1.5;word-break:break-all;margin-top:4px">' + (c.moId || '—') + '</div></div>';
     html += '<tr>';
     html += '<td><div style="width:8px;height:8px;border-radius:50%;background:' + col + ';margin:auto"></div></td>';
@@ -769,8 +746,7 @@ function renderBulkPreview() {
   const body = document.getElementById('bulkPreviewBody');
   const count = document.getElementById('bulkPreviewCount');
   const saveWrap = document.getElementById('bulkSaveWrap');
-  const imgWrap = document.getElementById('bulkImgWrap');
-  if (!_bulkRows.length) { wrap.style.display='none'; saveWrap.style.display='none'; return; }
+  if (!_bulkRows.length) { wrap.style.display='none'; if(saveWrap) saveWrap.style.display='none'; return; }
   wrap.style.display = '';
   const valid = _bulkRows.filter(function(r){return !r.errors.length;});
   count.textContent = '— 총 ' + _bulkRows.length + '행, 유효 ' + valid.length + '행';
@@ -804,7 +780,6 @@ function renderBulkPreview() {
     saveWrap.style.display = '';
     document.getElementById('bulkSaveBtnLabel').textContent = valid.length + '개 등록';
     document.getElementById('bulkSaveStatus').textContent = '';
-    imgWrap.style.display = '';
   } else {
     saveWrap.style.display = 'none';
   }
@@ -826,7 +801,8 @@ async function bulkSaveToFirebase() {
     const data = {
       pcId: r.pcId, moId: r.moId, name: r.name,
       startAt: r.startAt, endAt: r.endAt,
-      pcImg: ex.pcImg || null, moImg: ex.moImg || null,
+      pcImgUrl: r.pcId ? GH_BASE + r.pcId + '.png' : (ex.pcImgUrl || null),
+      moImgUrl: r.moId ? GH_BASE + r.moId + '.png' : (ex.moImgUrl || null),
       createdAt: isUpd ? (ex.createdAt || new Date().toISOString()) : new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -842,154 +818,7 @@ async function bulkSaveToFirebase() {
   renderAll();
 }
 
-function parseBulkZip(input) {
-  const file = input.files[0];
-  if (!file) return;
-  if (typeof JSZip === 'undefined') { showToast('⚠️ JSZip 로드 중입니다. 잠시 후 다시 시도해주세요'); return; }
-  document.getElementById('bulkImgName').textContent = file.name + ' 압축 해제 중...';
-  const reader = new FileReader();
-  reader.onload = async function(e) {
-    const zip = await JSZip.loadAsync(e.target.result);
-    const imageExts = ['png','jpg','jpeg','webp','gif'];
-    const imgFiles = [];
-    zip.forEach(function(relPath, zipEntry) {
-      if (zipEntry.dir) return;
-      const fname = relPath.split('/').pop();
-      const ext = fname.split('.').pop().toLowerCase();
-      if (imageExts.includes(ext)) imgFiles.push({fname, zipEntry, ext});
-    });
-    document.getElementById('bulkImgName').textContent = file.name + ' — ' + imgFiles.length + '개 이미지';
-    if (!imgFiles.length) { showToast('⚠️ ZIP 안에 이미지 파일이 없습니다'); return; }
 
-    _bulkImgFiles = [];
-    const preview = document.getElementById('bulkImgPreview');
-    const body = document.getElementById('bulkImgBody');
-    const saveWrap = document.getElementById('bulkImgSaveWrap');
-    body.innerHTML = '';
-    let matchCount = 0;
-
-    for (const {fname, zipEntry, ext} of imgFiles) {
-      const rawId = fname.slice(0, fname.lastIndexOf('.'));
-      let matchedDocId = null, matchType = null, matchName = null;
-      for (const [docId, cr] of Object.entries(_cr)) {
-        if (cr.pcId && cr.pcId === rawId) { matchedDocId = docId; matchType = 'PC'; matchName = cr.name; break; }
-        if (cr.moId && cr.moId === rawId) { matchedDocId = docId; matchType = 'MO'; matchName = cr.name; break; }
-      }
-      if (!matchedDocId) {
-        for (const r of _bulkRows) {
-          if (!r.errors.length) {
-            const rKey = (r.pcId || r.moId).replace(/[^a-zA-Z0-9\-_]/g,'_');
-            if (r.pcId && r.pcId === rawId) { matchedDocId = rKey; matchType = 'PC'; matchName = r.name; break; }
-            if (r.moId && r.moId === rawId) { matchedDocId = rKey; matchType = 'MO'; matchName = r.name; break; }
-          }
-        }
-      }
-      const blob = await zipEntry.async('blob');
-      const mimeType = ext === 'jpg' ? 'image/jpeg' : 'image/' + ext;
-      const dataUrl = await new Promise(function(res) {
-        const fr = new FileReader();
-        fr.onload = function(ev) { res(ev.target.result); };
-        fr.readAsDataURL(new Blob([blob], {type: mimeType}));
-      });
-      const matchedBulkRow2 = !_cr[matchedDocId] ? (_bulkRows.find(function(r) { return !r.errors.length && (r.pcId === rawId || r.moId === rawId); }) || null) : null;
-      if (matchedDocId) { _bulkImgFiles.push({fname, rawId, matchedDocId, matchType, dataUrl, bulkRow: matchedBulkRow2}); matchCount++; }
-      const tr = document.createElement('tr');
-      const td = function(html, style) {
-        const td = document.createElement('td');
-        td.style.cssText = 'border:0.5px solid var(--gbd);padding:5px 8px;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' + (style||'');
-        td.innerHTML = html; return td;
-      };
-      tr.appendChild(td(fname));
-      tr.appendChild(td(matchType ? '<span class="' + (matchType==='PC'?'pcb':'mob') + '">' + matchType + '</span>' : '—', 'text-align:center'));
-      tr.appendChild(td(matchName || '<span style="color:var(--t3)">매칭 없음</span>'));
-      const imgTd = document.createElement('td');
-      imgTd.style.cssText = 'border:0.5px solid var(--gbd);padding:4px 8px;text-align:center';
-      const img = document.createElement('img');
-      img.src = dataUrl; img.style.cssText = 'max-width:60px;max-height:40px;object-fit:contain;border-radius:3px';
-      imgTd.appendChild(img); tr.appendChild(imgTd);
-      tr.appendChild(td(matchedDocId ? '<span style="color:var(--gr);font-weight:500">✅ 매칭</span>' : '<span style="color:var(--t3)">❌ 미매칭</span>', 'text-align:center'));
-      body.appendChild(tr);
-    }
-    preview.style.display = '';
-    if (matchCount) {
-      saveWrap.style.display = 'flex';
-      document.getElementById('bulkImgSaveBtnLabel').textContent = matchCount + '개 이미지 매칭 저장';
-      document.getElementById('bulkImgSaveStatus').textContent = '';
-    }
-    showToast('📦 압축 해제 완료 — 매칭 ' + matchCount + '개');
-  };
-  reader.readAsArrayBuffer(file);
-}
-
-function parseBulkImages(input) {
-  const files = Array.from(input.files);
-  if (!files.length) return;
-  document.getElementById('bulkImgName').textContent = files.length + '개 파일 선택됨';
-  _bulkImgFiles = [];
-  const preview = document.getElementById('bulkImgPreview');
-  const body = document.getElementById('bulkImgBody');
-  const saveWrap = document.getElementById('bulkImgSaveWrap');
-  body.innerHTML = '';
-  let matchCount = 0;
-  const pending = files.length;
-  let processed = 0;
-
-  files.forEach(function(file) {
-    const ext = file.name.lastIndexOf('.');
-    const rawId = ext > -1 ? file.name.slice(0, ext) : file.name;
-    let matchedDocId = null, matchType = null, matchName = null;
-    for (const [docId, cr] of Object.entries(_cr)) {
-      if (cr.pcId && cr.pcId === rawId) { matchedDocId = docId; matchType = 'PC'; matchName = cr.name; break; }
-      if (cr.moId && cr.moId === rawId) { matchedDocId = docId; matchType = 'MO'; matchName = cr.name; break; }
-    }
-    if (!matchedDocId) {
-      for (const r of _bulkRows) {
-        if (!r.errors.length) {
-          const rKey = (r.pcId || r.moId).replace(/[^a-zA-Z0-9\-_]/g,'_');
-          if (r.pcId && r.pcId === rawId) { matchedDocId = rKey; matchType = 'PC'; matchName = r.name; break; }
-          if (r.moId && r.moId === rawId) { matchedDocId = rKey; matchType = 'MO'; matchName = r.name; break; }
-        }
-      }
-    }
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const dataUrl = e.target.result;
-      const matchedBulkRow = !_cr[matchedDocId] ? (_bulkRows.find(function(r) { return !r.errors.length && (r.pcId === rawId || r.moId === rawId); }) || null) : null;
-      if (matchedDocId) {
-        _bulkImgFiles.push({file, rawId, matchedDocId, matchType, dataUrl, bulkRow: matchedBulkRow});
-        matchCount++;
-      }
-      processed++;
-      const tr = document.createElement('tr');
-      const td = function(html, style) {
-        const td = document.createElement('td');
-        td.style.cssText = 'border:0.5px solid var(--gbd);padding:5px 8px;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' + (style||'');
-        td.innerHTML = html;
-        return td;
-      };
-      tr.appendChild(td(file.name));
-      tr.appendChild(td(matchType ? '<span class="' + (matchType==='PC'?'pcb':'mob') + '">' + matchType + '</span>' : '—', 'text-align:center'));
-      tr.appendChild(td(matchName || '<span style="color:var(--t3)">매칭 없음</span>'));
-      const imgTd = document.createElement('td');
-      imgTd.style.cssText = 'border:0.5px solid var(--gbd);padding:4px 8px;text-align:center';
-      const img = document.createElement('img');
-      img.src = dataUrl; img.style.cssText = 'max-width:60px;max-height:40px;object-fit:contain;border-radius:3px';
-      imgTd.appendChild(img);
-      tr.appendChild(imgTd);
-      tr.appendChild(td(matchedDocId ? '<span style="color:var(--gr);font-weight:500">✅ 매칭</span>' : '<span style="color:var(--t3)">❌ 미매칭</span>', 'text-align:center'));
-      body.appendChild(tr);
-      if (processed === pending) {
-        preview.style.display = '';
-        if (matchCount) {
-          saveWrap.style.display = 'flex';
-          document.getElementById('bulkImgSaveBtnLabel').textContent = matchCount + '개 이미지 매칭 저장';
-          document.getElementById('bulkImgSaveStatus').textContent = '';
-        }
-      }
-    };
-    reader.readAsDataURL(file);
-  });
-}
 
 async function bulkImgSave() {
   if (!_bulkImgFiles.length) return;
@@ -1084,8 +913,6 @@ function renderAll() {
 }
 
 /* ── 이벤트 ── */
-setupDrop('pcFileDrop','pcFileInput','pcDropText','pc');
-setupDrop('moFileDrop','moFileInput','moDropText','mo');
 document.getElementById('calPrev').onclick = function() { calNavigate(-1); };
 document.getElementById('calNext').onclick = function() { calNavigate(1); };
 

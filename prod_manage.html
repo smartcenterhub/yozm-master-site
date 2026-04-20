@@ -297,6 +297,7 @@ tr.opt-row.editing-row td.fix{background:rgba(240,240,255,0.98)}
         <button class="btn btn-ghost" onclick="exportItems()"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v9M4 8l4 4 4-4"/><rect x="2" y="13" width="12" height="1" rx=".5"/></svg>현재 데이터 다운</button>
         <button class="btn btn-ghost" onclick="loadAll()">🔄 새로고침</button>
         <button class="btn btn-ghost" onclick="refreshThumbs('item')">🖼 썸네일 갱신</button>
+        <button class="btn btn-ghost" onclick="showThumbGuide()">📋 등록 가이드</button>
       </div>
     </div>
     <div class="upload-section" id="itemUpSec">
@@ -390,6 +391,7 @@ tr.opt-row.editing-row td.fix{background:rgba(240,240,255,0.98)}
         <button class="btn btn-ghost" onclick="exportSkus()"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v9M4 8l4 4 4-4"/><rect x="2" y="13" width="12" height="1" rx=".5"/></svg>현재 데이터 다운</button>
         <button class="btn btn-ghost" onclick="loadAll()">🔄 새로고침</button>
         <button class="btn btn-ghost" onclick="refreshThumbs('sku')">🖼 썸네일 갱신</button>
+        <button class="btn btn-ghost" onclick="showThumbGuide()">📋 등록 가이드</button>
       </div>
     </div>
     <div class="upload-section" id="skuUpSec">
@@ -1051,7 +1053,10 @@ function renderSkuTable(q){
     const sTy=SF.type;if(sTy!=='전체'&&!(Array.isArray(sTy)?sTy.includes(x.type):x.type===sTy)) return false;
     if(SF.item!=='전체'){
       const item=SF.item;
-      const match=x.options?.some(opt=>(opt.nick||'').split(/[+×]/).some(p=>p.trim()===item));
+      const match=x.options?.some(opt=>
+        opt.items?.some(i=>i.nick===item) ||
+        (opt.nick||'').split(/[+×]/).some(p=>p.trim()===item)
+      );
       if(!match) return false;
     }
     if(SF.nick!=='전체'){
@@ -1340,6 +1345,11 @@ function resetItemFilters(){
   renderItemTable('');
   toast('필터 초기화됨');
 }
+function showThumbGuide(){
+  const m=document.getElementById('thumbGuideModal');
+  if(m){m.style.display='flex';}
+}
+
 function refreshThumbs(tab){
   const tbody=document.getElementById(tab==='item'?'itemTbody':'skuTbody');
   if(!tbody)return;
@@ -1418,5 +1428,39 @@ document.addEventListener('mouseout',e=>{
 loadAll();
 window.addEventListener('load',initFilterBodies);
 </script>
+
+<!-- 썸네일 가이드 모달 -->
+<div id="thumbGuideModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:16px;padding:28px 32px;max-width:480px;width:90%;position:relative;box-shadow:0 8px 40px rgba(0,0,0,.18)">
+    <button onclick="document.getElementById('thumbGuideModal').style.display='none'" style="position:absolute;top:14px;right:18px;border:none;background:none;font-size:18px;cursor:pointer;color:#aaa">✕</button>
+    <h3 style="font-size:15px;font-weight:600;margin-bottom:18px">🖼 썸네일 등록 가이드</h3>
+
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;font-weight:600;color:#1a56c8;margin-bottom:6px">품목 이미지</div>
+      <div style="font-size:12.5px;line-height:1.8;color:#444">
+        파일명: <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px">닉네임.png</code><br>
+        예시: <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px">플.png</code>, <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px">말.png</code>, <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px">마S.png</code><br>
+        위치: GitHub <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px">images/items/</code> 폴더
+      </div>
+    </div>
+
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:600;color:#1a56c8;margin-bottom:6px">SKU 이미지</div>
+      <div style="font-size:12.5px;line-height:1.8;color:#444">
+        파일명: <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px">상품코드.jpg</code><br>
+        예시: <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px">12835060307.jpg</code><br>
+        위치: GitHub <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px">images/skus/</code> 폴더
+      </div>
+    </div>
+
+    <div style="background:#f8f9fc;border-radius:8px;padding:12px 14px;font-size:12px;line-height:1.9;color:#555">
+      <b>올리는 법</b><br>
+      1. GitHub Desktop 열기<br>
+      2. 해당 폴더에 이미지 파일 넣기<br>
+      3. Commit → Push origin<br>
+      4. 이 페이지에서 <b>🖼 썸네일 갱신</b> 클릭
+    </div>
+  </div>
+</div>
 </body>
 </html>

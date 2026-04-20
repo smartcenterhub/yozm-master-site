@@ -71,11 +71,11 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 
 /* ── 테이블 ── */
 .tbl-card{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:12px;overflow:hidden;margin-bottom:8px}
-.tbl-scroll{overflow:auto;max-height:420px}
-table{border-collapse:collapse;table-layout:fixed;font-size:12px;width:100%}
-thead th{padding:8px 10px;text-align:right;font-size:11px;font-weight:500;color:var(--t2);border-bottom:1px solid var(--glass-border-s);white-space:nowrap;background:#f4f5f9;position:sticky;top:0;z-index:1}
+.tbl-scroll{overflow-x:auto;overflow-y:auto;max-height:420px}
+table{border-collapse:collapse;font-size:11px;width:100%}
+thead th{padding:5px 7px;text-align:right;font-size:10px;font-weight:500;color:var(--t2);border-bottom:1px solid var(--glass-border-s);white-space:nowrap;background:#f4f5f9;position:sticky;top:0;z-index:1}
 thead th:first-child{text-align:left;padding-left:14px}
-tbody td{padding:7px 10px;border-bottom:1px solid rgba(0,0,0,0.03);font-size:12px;color:var(--t2);text-align:right;white-space:nowrap;overflow:hidden;cursor:pointer;position:relative;transition:background .1s;user-select:none}
+tbody td{padding:4px 7px;border-bottom:1px solid rgba(0,0,0,0.03);font-size:11px;color:var(--t2);text-align:right;white-space:nowrap;overflow:hidden;cursor:pointer;position:relative;transition:background .1s;user-select:none}
 tbody td:first-child{text-align:left;padding-left:14px;font-size:11.5px;cursor:default}
 tbody tr:hover td{background:rgba(0,0,0,0.015)}
 tbody tr:last-child td{border-bottom:none}
@@ -195,12 +195,30 @@ tr.empty-group{opacity:.35}
           <button onclick="toggleZipGuide()" style="width:24px;height:24px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg);cursor:pointer;font-size:13px;color:var(--t2);display:flex;align-items:center;justify-content:center">✕</button>
         </div>
         <div style="padding:14px 16px;display:flex;flex-direction:column;gap:12px;max-height:72vh;overflow-y:auto">
-          <div id="zgDateTabsWrap">
-            <div style="font-size:10.5px;font-weight:600;color:var(--t3);letter-spacing:.5px;margin-bottom:6px">날짜</div>
-            <div style="display:flex;gap:5px;flex-wrap:wrap" id="zgDateTabs"></div>
+          <!-- 세그먼트 탭 -->
+          <div style="display:flex;background:var(--glass-bg);border-radius:8px;padding:3px;gap:3px">
+            <button id="zgSegDay" onclick="zgSwSeg('day')" style="flex:1;padding:5px 0;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);font-size:12px;font-weight:500;cursor:pointer;color:var(--tx)">하루별</button>
+            <button id="zgSegFile" onclick="zgSwSeg('file')" style="flex:1;padding:5px 0;border-radius:6px;border:none;background:transparent;font-size:12px;font-weight:400;cursor:pointer;color:var(--t2)">파일별</button>
+            <button id="zgSegBatch" onclick="zgSwSeg('batch')" style="flex:1;padding:5px 0;border-radius:6px;border:none;background:transparent;font-size:12px;font-weight:400;cursor:pointer;color:var(--t2)">기간별</button>
           </div>
-          <div style="height:1px;background:var(--glass-border-s)"></div>
-          <div id="zgPanels"></div>
+
+          <!-- 하루별 뷰 -->
+          <div id="zgDayView">
+            <div id="zgDateTabsWrap">
+              <div style="font-size:10.5px;font-weight:600;color:var(--t3);letter-spacing:.5px;margin-bottom:6px">날짜</div>
+              <div style="display:flex;gap:5px;flex-wrap:wrap" id="zgDateTabs"></div>
+            </div>
+            <div style="height:1px;background:var(--glass-border-s)"></div>
+            <div id="zgPanels"></div>
+          </div>
+
+          <!-- 파일별 뷰 -->
+          <div id="zgFileView" style="display:none">
+            <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px" id="zgFileTabs"></div>
+            <div style="height:1px;background:var(--glass-border-s);margin-bottom:10px"></div>
+            <div style="font-size:10.5px;font-weight:600;color:var(--t3);letter-spacing:.5px;margin-bottom:8px" id="zgFileViewLabel">파일명 복사 — 기간별</div>
+            <div id="zgFileRows"></div>
+          </div>
           <div id="zgAllDone" style="display:none;background:rgba(58,58,240,0.07);border-radius:9px;padding:10px 14px;font-size:12.5px;color:var(--accent);font-weight:500">✅ 모든 날짜 업로드 완료!</div>
           <div id="zgNoDate" style="font-size:12px;color:var(--t3);text-align:center;padding:16px 0">날짜 바에서 날짜를 먼저 적용해주세요</div>
         </div>
@@ -255,7 +273,11 @@ tr.empty-group{opacity:.35}
     <div class="sub-tab active" onclick="swSub('bk',this)" id="mainTabBk">[1] 브검</div>
     <div class="sub-tab" onclick="swSub('gfa',this)" id="mainTabGfa">[2] GFA</div>
     <div class="sub-tab" onclick="swSub('adv',this)" id="mainTabAdv">[3] ADVoost</div>
-    <div class="sub-tab" onclick="swSub('mail',this)" id="mainTabMail" style="margin-left:auto;background:rgba(58,58,240,0.06);color:var(--accent);border-color:rgba(58,58,240,0.2)">메일쓰기</div>
+    <div style="margin-left:auto;display:flex;gap:5px;align-items:center">
+        <button id="globalModeAll" onclick="setGlobalMode('all')" style="padding:3px 11px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid rgba(192,57,43,.3);background:rgba(192,57,43,.08);color:#c0392b;font-weight:600;font-family:inherit;transition:all .12s">전체전환</button>
+        <button id="globalModeBuy" onclick="setGlobalMode('buy')" style="padding:3px 11px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit;transition:all .12s">구매전환</button>
+      </div>
+    <div class="sub-tab" onclick="swSub('mail',this)" id="mainTabMail" style="background:rgba(58,58,240,0.06);color:var(--accent);border-color:rgba(58,58,240,0.2)">메일쓰기</div>
   </div><!-- /sticky wrapper -->
 
   <!-- 날짜 미적용 안내 -->
@@ -273,26 +295,22 @@ tr.empty-group{opacity:.35}
     </div>
 
     <!-- 일비용 -->
-    <div style="position:sticky;top:var(--sticky-top2,128px);z-index:50;margin-top:14px;display:flex;align-items:center;gap:10px;margin-bottom:12px;background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:9px;padding:8px 14px;flex-wrap:wrap;backdrop-filter:blur(8px)">
+    <div id="bkCostBar" style="margin-top:6px;display:flex;align-items:center;gap:8px;margin-bottom:10px;background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:9px;padding:6px 12px;flex-wrap:nowrap;overflow-x:auto">
       <span style="font-size:11.5px;font-weight:500;color:var(--t2);white-space:nowrap">💰 브검 일비용</span>
       <span id="bkCostMonth" style="font-size:11px;color:var(--t3);white-space:nowrap"></span>
-      <div style="display:flex;align-items:center;gap:6px">
-        <span style="font-size:11px;color:var(--t3)">MO</span>
-        <input type="number" id="bkCostMO" placeholder="0" min="0"
-          style="width:110px;font-size:12px;padding:4px 8px;border:1px solid var(--glass-border-s);border-radius:6px;background:var(--glass-bg-strong);color:var(--tx);text-align:right"
-          oninput="bkCostOnChange()">
-      </div>
+      <span style="font-size:11px;color:var(--t3);white-space:nowrap">MO</span>
+      <input type="number" id="bkCostMO" placeholder="0" min="0"
+        style="width:76px;font-size:12px;padding:3px 6px;border:1px solid var(--glass-border-s);border-radius:6px;background:var(--glass-bg-strong);color:var(--tx);text-align:right;flex-shrink:0"
+        oninput="bkCostOnChange()">
       <span style="font-size:11px;color:var(--t3)">+</span>
-      <div style="display:flex;align-items:center;gap:6px">
-        <span style="font-size:11px;color:var(--t3)">PC</span>
-        <input type="number" id="bkCostPC" placeholder="0" min="0"
-          style="width:110px;font-size:12px;padding:4px 8px;border:1px solid var(--glass-border-s);border-radius:6px;background:var(--glass-bg-strong);color:var(--tx);text-align:right"
-          oninput="bkCostOnChange()">
-      </div>
+      <span style="font-size:11px;color:var(--t3);white-space:nowrap">PC</span>
+      <input type="number" id="bkCostPC" placeholder="0" min="0"
+        style="width:76px;font-size:12px;padding:3px 6px;border:1px solid var(--glass-border-s);border-radius:6px;background:var(--glass-bg-strong);color:var(--tx);text-align:right;flex-shrink:0"
+        oninput="bkCostOnChange()">
       <span style="font-size:11px;color:var(--t3)">=</span>
-      <span id="bkCostTotal" style="font-size:13px;font-weight:600;color:var(--accent);min-width:80px">-</span>
-      <button class="btn btn-ghost btn-sm" id="bkCostSaveBtn" onclick="bkCostSave()" style="font-size:11px;margin-left:4px">💾 저장</button>
-      <span id="bkCostSavedAt" style="font-size:10.5px;color:var(--t3)"></span>
+      <span id="bkCostTotal" style="font-size:13px;font-weight:600;color:var(--accent);white-space:nowrap;min-width:70px">-</span>
+      <button class="btn btn-ghost btn-sm" id="bkCostSaveBtn" onclick="bkCostSave()" style="font-size:11px;white-space:nowrap">💾 저장</button>
+      <span id="bkCostSavedAt" style="font-size:10.5px;color:var(--t3);white-space:nowrap"></span>
     </div>
 
     <div id="bkPerf">
@@ -332,7 +350,7 @@ tr.empty-group{opacity:.35}
         <div class="tbl-scroll">
           <table>
             <colgroup><col style="width:130px"><col style="width:110px"><col style="width:90px"><col style="width:110px"><col style="width:90px"><col style="width:110px"><col style="width:76px"></colgroup>
-            <thead><tr><th>날짜</th><th>노출</th><th>클릭</th><th>비용</th><th>전환</th><th>매출</th><th style="display:none"></th></tr></thead>
+            <thead id="gfaDateHead"><tr><th>날짜</th><th>노출</th><th>클릭</th><th>비용</th><th>전환</th><th>매출</th><th>ROAS</th><th style="display:none"></th></tr></thead>
             <tbody id="gfaDateBody"></tbody>
             <tfoot id="gfaDateFoot"></tfoot>
           </table>
@@ -351,7 +369,7 @@ tr.empty-group{opacity:.35}
         <div class="tbl-scroll">
           <table>
             <colgroup><col style="width:36px"><col style="width:260px"><col style="width:110px"><col style="width:90px"><col style="width:110px"><col style="width:90px"><col style="width:110px"><col style="width:76px"></colgroup>
-            <thead><tr><th style="text-align:center">#</th><th>그룹명</th><th>노출</th><th>클릭</th><th>비용</th><th>전환</th><th>매출</th><th style="color:var(--accent)">구매</th><th style="color:var(--accent)">구매ROAS</th><th style="display:none"></th></tr></thead>
+            <thead id="gfaGroupHead"><tr><th style="text-align:center">#</th><th>그룹명</th><th>노출</th><th>클릭</th><th>비용</th><th>전환</th><th>매출</th><th style="display:none"></th></tr></thead>
             <tbody id="gfaGroupBody"></tbody>
             <tfoot id="gfaGroupFoot"></tfoot>
           </table>
@@ -440,15 +458,26 @@ tr.empty-group{opacity:.35}
 
       <!-- 왼쪽: 섹션 카드들 -->
       <div style="display:flex;flex-direction:column;gap:12px">
-        <div style="display:flex;justify-content:flex-end;gap:6px">
-          <button class="btn btn-ghost btn-sm" onclick="mailExpandAll()" style="font-size:11.5px">☑ 전체 열기</button>
-          <button class="btn btn-ghost btn-sm" onclick="mailCollapseAll()" style="font-size:11.5px">☐ 전체 닫기</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+          <div style="display:flex;gap:5px">
+            <button id="mailModeAll" onclick="setMailMode('all')" style="padding:3px 11px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit;transition:all .12s">전체전환</button>
+            <button id="mailModeBuy" onclick="setMailMode('buy')" style="padding:3px 11px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit;transition:all .12s">구매전환</button>
+            <button id="mailModeBoth" onclick="setMailMode('both')" style="padding:3px 11px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid rgba(58,58,240,.3);background:rgba(58,58,240,.08);color:var(--accent);font-weight:600;font-family:inherit;transition:all .12s">전체+구매</button>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-ghost btn-sm" onclick="mailExpandAll()" style="font-size:11.5px">☑ 전체 열기</button>
+            <button class="btn btn-ghost btn-sm" onclick="mailCollapseAll()" style="font-size:11.5px">☐ 전체 닫기</button>
+          </div>
         </div>
 
         <!-- 성과 테이블 카드 -->
         <div class="card mail-inactive" id="mailCardPerf">
           <div class="card-title" style="justify-content:space-between;cursor:pointer" onclick="mailToggleCard('mailCardPerfBody','mailChkPerf')">
-            <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--accent)"></div>날짜별 성과 요약</span>
+            <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--accent)"></div>날짜별 성과 요약</span><div style="display:flex;gap:4px;margin-left:8px" onclick="event.stopPropagation()">
+                <button id="mailMode_perf_all" onclick="setCardMailMode('perf','all')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">전체</button>
+                <button id="mailMode_perf_buy" onclick="setCardMailMode('perf','buy')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">구매</button>
+                <button id="mailMode_perf_both" onclick="setCardMailMode('perf','both')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid rgba(58,58,240,.3);background:rgba(58,58,240,.08);color:var(--accent);font-weight:600;font-family:inherit">전체+구매</button>
+              </div>
             <div style="display:flex;gap:6px;align-items:center" onclick="event.stopPropagation()">
               <span style="font-size:10.5px;color:var(--t3)">파일 업로드 시 자동</span>
               <button class="btn btn-ghost btn-sm" id="mailPerfImgBtn" onclick="mailCopyPerfImage()" style="display:none">🖼 이미지 복사</button>
@@ -467,7 +496,11 @@ tr.empty-group{opacity:.35}
         <!-- 브검 카드 -->
         <div class="card mail-inactive" id="mailCardBk">
           <div class="card-title" style="justify-content:space-between;cursor:pointer" onclick="mailToggleCard('mailCardBkBody','mailChkBk')">
-            <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--accent)"></div>* 브랜드검색</span>
+            <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--accent)"></div>* 브랜드검색</span><div style="display:flex;gap:4px;margin-left:8px" onclick="event.stopPropagation()">
+                <button id="mailMode_bk_all" onclick="setCardMailMode('bk','all')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">전체</button>
+                <button id="mailMode_bk_buy" onclick="setCardMailMode('bk','buy')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">구매</button>
+                <button id="mailMode_bk_both" onclick="setCardMailMode('bk','both')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid rgba(58,58,240,.3);background:rgba(58,58,240,.08);color:var(--accent);font-weight:600;font-family:inherit">전체+구매</button>
+              </div>
             <div style="display:flex;gap:5px;align-items:center" onclick="event.stopPropagation()">
               <div style="display:flex;gap:3px" id="bkModeGroup">
                 <button class="btn btn-ghost btn-sm" onclick="setBkMode('total')" id="bkModeTotal" style="font-size:11px;padding:3px 8px;background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2)">합계만</button>
@@ -484,7 +517,11 @@ tr.empty-group{opacity:.35}
         <!-- GFA 카드 -->
         <div class="card mail-inactive" id="mailCardGfa">
           <div class="card-title" style="justify-content:space-between;cursor:pointer" onclick="mailToggleCard('mailCardGfaBody','mailChkGfa')">
-            <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--blue)"></div>* 성과형DA(GFA)</span>
+            <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--blue)"></div>* 성과형DA(GFA)</span><div style="display:flex;gap:4px;margin-left:8px" onclick="event.stopPropagation()">
+                <button id="mailMode_gfa_all" onclick="setCardMailMode('gfa','all')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">전체</button>
+                <button id="mailMode_gfa_buy" onclick="setCardMailMode('gfa','buy')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">구매</button>
+                <button id="mailMode_gfa_both" onclick="setCardMailMode('gfa','both')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid rgba(58,58,240,.3);background:rgba(58,58,240,.08);color:var(--accent);font-weight:600;font-family:inherit">전체+구매</button>
+              </div>
             <div style="display:flex;gap:6px;align-items:center" onclick="event.stopPropagation()">
               <button class="btn btn-ghost btn-sm" onclick="mailApplyCard('gfa')" title="이 카드만 미리보기 반영">↙ 적용</button>
               <span class="mail-card-chk on" id="mailChkGfa" onclick="mailToggleCard('mailCardGfaBody','mailChkGfa')">✓</span>
@@ -500,6 +537,9 @@ tr.empty-group{opacity:.35}
             <div style="display:flex;gap:6px;align-items:center" onclick="event.stopPropagation()">
               <span style="font-size:10.5px;color:var(--t3)">GFA 소재 업로드 시 자동</span>
               <button class="btn btn-ghost btn-sm" id="mailGfaEmptyBtn" onclick="toggleMailGfaEmpty()" style="display:none;font-size:11px;background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2)">전환 0 숨김</button>
+              <button id="mailGfaImgModeAll" onclick="setGfaImgMode('all')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid rgba(192,57,43,.3);background:rgba(192,57,43,.08);color:#c0392b;font-weight:600;font-family:inherit;display:none">전체</button>
+              <button id="mailGfaImgModeBuy" onclick="setGfaImgMode('buy')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit;display:none">구매</button>
+              <button id="mailGfaImgModeBoth" onclick="setGfaImgMode('both')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit;display:none">전체+구매</button>
               <button class="btn btn-ghost btn-sm" id="mailGfaImgBtn" onclick="mailCopyGfaImage()" style="display:none">🖼 이미지 복사</button>
               <span class="mail-card-chk on" id="mailChkGfaImg" onclick="mailToggleCard('mailCardGfaImgBody','mailChkGfaImg')">✓</span>
             </div>
@@ -516,7 +556,11 @@ tr.empty-group{opacity:.35}
         <!-- ADV 카드 -->
         <div class="card mail-inactive" id="mailCardAdv">
           <div class="card-title" style="justify-content:space-between;cursor:pointer" onclick="mailToggleCard('mailCardAdvBody','mailChkAdv')">
-            <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--green)"></div>* ADVoost</span>
+            <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--green)"></div>* ADVoost</span><div style="display:flex;gap:4px;margin-left:8px" onclick="event.stopPropagation()">
+                <button id="mailMode_adv_all" onclick="setCardMailMode('adv','all')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">전체</button>
+                <button id="mailMode_adv_buy" onclick="setCardMailMode('adv','buy')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">구매</button>
+                <button id="mailMode_adv_both" onclick="setCardMailMode('adv','both')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid rgba(58,58,240,.3);background:rgba(58,58,240,.08);color:var(--accent);font-weight:600;font-family:inherit">전체+구매</button>
+              </div>
             <div style="display:flex;gap:5px;align-items:center" onclick="event.stopPropagation()">
               <div style="display:flex;gap:3px" id="advModeGroup">
                 <button class="btn btn-ghost btn-sm" onclick="setAdvMode('total')" id="advModeTotal" style="font-size:11px;padding:3px 8px;background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2)">합계만</button>
@@ -730,6 +774,166 @@ document.addEventListener('click', e => {
   }
 });
 
+
+let _zgSeg = 'day';
+let _zgFileKey = null;
+
+function zgSwSeg(mode) {
+  _zgSeg = mode;
+  const dayBtn   = document.getElementById('zgSegDay');
+  const fileBtn  = document.getElementById('zgSegFile');
+  const batchBtn = document.getElementById('zgSegBatch');
+  if (dayBtn) {
+    dayBtn.style.background  = mode==='day' ? 'var(--glass-bg-strong)' : 'transparent';
+    dayBtn.style.border      = mode==='day' ? '1px solid var(--glass-border-s)' : 'none';
+    dayBtn.style.fontWeight  = mode==='day' ? '500' : '400';
+    dayBtn.style.color       = mode==='day' ? 'var(--tx)' : 'var(--t2)';
+  }
+  if (fileBtn) {
+    fileBtn.style.background = mode==='file' ? 'var(--glass-bg-strong)' : 'transparent';
+    fileBtn.style.border     = mode==='file' ? '1px solid var(--glass-border-s)' : 'none';
+    fileBtn.style.fontWeight = mode==='file' ? '500' : '400';
+    fileBtn.style.color      = mode==='file' ? 'var(--tx)' : 'var(--t2)';
+  }
+  document.getElementById('zgDayView').style.display   = mode==='day'   ? '' : 'none';
+  document.getElementById('zgFileView').style.display  = mode==='file'  ? '' : 'none';
+  document.getElementById('zgBatchView').style.display = mode==='batch' ? '' : 'none';
+  if (batchBtn) {
+    const on = mode === 'batch';
+    batchBtn.style.background  = on ? 'var(--glass-bg-strong)' : 'transparent';
+    batchBtn.style.border      = on ? '1px solid var(--glass-border-s)' : 'none';
+    batchBtn.style.fontWeight  = on ? '500' : '400';
+    batchBtn.style.color       = on ? 'var(--tx)' : 'var(--t2)';
+  }
+  if (mode === 'file') zgBuildFileView(_zgFileKey || ZG_ROWS[0]?.key);
+  if (mode === 'batch') zgInitBatch();
+}
+
+function zgBuildFileView(key) {
+  if (!_appliedStart) return;
+  _zgFileKey = key;
+  const dates = getDateRange(_appliedStart, _appliedEnd);
+
+  // 파일 탭
+  const tabsEl = document.getElementById('zgFileTabs');
+  tabsEl.innerHTML = '';
+  ZG_ROWS.forEach(r => {
+    const t = document.createElement('div');
+    t.style.cssText = `padding:4px 11px;border-radius:20px;font-size:11.5px;border:1px solid ${r.key===key?r.border:'var(--glass-border-s)'};background:${r.key===key?r.bg:'var(--glass-bg-strong)'};color:${r.key===key?r.lc:'var(--t2)'};cursor:pointer;font-weight:${r.key===key?'500':'400'};transition:all .12s`;
+    t.textContent = r.lbl;
+    t.onclick = () => zgBuildFileView(r.key);
+    tabsEl.appendChild(t);
+  });
+
+  // 레이블
+  const row = ZG_ROWS.find(r => r.key === key);
+  const lbl = document.getElementById('zgFileViewLabel');
+  if (lbl && row) lbl.textContent = `${row.lbl} 파일명 — 기간별`;
+
+  // 행 렌더
+  const rowsEl = document.getElementById('zgFileRows');
+  rowsEl.innerHTML = '';
+  dates.forEach(ds => {
+    const dk = dateToKey(ds);
+    const short = dk.slice(2);
+    const disp = perfDateDisplay(dk);
+    const fnameRaw = row.pf ? row.pf + short : short;
+    const fname = fnameRaw;
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:7px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);margin-bottom:3px';
+    div.innerHTML = `
+      <span style="font-size:11px;color:var(--t2);margin-right:8px;min-width:64px;flex-shrink:0">${disp}</span>
+      <span style="font-size:12px;font-family:monospace;color:var(--tx);flex:1;cursor:pointer" title="클릭하여 복사" onclick="zgFileCopy(this,'${fname}')">${fname}</span>
+      <button onclick="zgFileCopy(this,'${fname}')" style="padding:4px 10px;border-radius:6px;border:1px solid rgba(0,0,0,0.1);background:rgba(255,255,255,0.5);cursor:pointer;font-size:11.5px;color:${row.lc};white-space:nowrap;flex-shrink:0">복사</button>`;
+    rowsEl.appendChild(div);
+  });
+}
+
+function zgFileCopy(spanEl, fname) {
+  navigator.clipboard.writeText(fname).then(() => {
+    showToast('📋 복사됨');
+    // 행 전체 색 변경 (하루별 탭과 동일한 r.border 색)
+    const row = spanEl ? spanEl.closest('div[style*="border-radius:7px"]') || spanEl.parentElement : null;
+    if (row) {
+      const key = _zgFileKey;
+      const r = ZG_ROWS.find(x => x.key === key);
+      if (r) {
+        row.style.background = r.border;
+        const btn = row.querySelector('button');
+        if (btn) btn.textContent = '✓';
+      }
+    }
+  });
+}
+
+
+let _zgBatchFiles = [];
+
+function zgInitBatch() {
+  const zone = document.getElementById('zgBatchZone');
+  const input = document.getElementById('zgBatchInput');
+  if (!zone || zone._batchInited) return;
+  zone._batchInited = true;
+
+  zone.onclick = () => input.click();
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor='var(--accent)'; zone.style.background='rgba(58,58,240,0.04)'; });
+  zone.addEventListener('dragleave', () => { zone.style.borderColor='var(--glass-border-s)'; zone.style.background='var(--glass-bg)'; });
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.style.borderColor='var(--glass-border-s)'; zone.style.background='var(--glass-bg)';
+    zgBatchSetFiles([...e.dataTransfer.files]);
+  });
+  input.onchange = e => zgBatchSetFiles([...e.target.files]);
+}
+
+const PREFIXES_BATCH = ['bk','kwmo','kwpc','gfa','gc','da','sa'];
+
+function zgBatchSetFiles(files) {
+  _zgBatchFiles = files;
+  const listEl = document.getElementById('zgBatchList');
+  const itemsEl = document.getElementById('zgBatchItems');
+  if (!itemsEl) return;
+
+  itemsEl.innerHTML = '';
+  files.forEach(f => {
+    const name = f.name.toLowerCase().replace(/\.xlsx$|\.zip$/, '');
+    const prefix = PREFIXES_BATCH.find(p => name.startsWith(p + '_') || name.startsWith(p + '.'));
+    const dateM = name.match(/\d{6}/);
+    const date = dateM ? `20${dateM[0].slice(0,2)}.${dateM[0].slice(2,4)}.${dateM[0].slice(4,6)}` : '날짜미상';
+    const label = prefix ? `${prefix.toUpperCase()}` : '?';
+    const color = prefix ? 'var(--green)' : 'var(--orange)';
+    const item = document.createElement('div');
+    item.style.cssText = 'display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:7px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);font-size:11.5px';
+    item.innerHTML = `<span style="font-size:10px;color:${color};font-weight:600;min-width:36px">${label}</span><span style="color:var(--t3);min-width:56px">${date}</span><span style="color:var(--tx);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.name}</span><span id="zbStat_${f.name.replace(/[^a-z0-9]/gi,'_')}" style="font-size:10px;color:var(--t3)">대기</span>`;
+    itemsEl.appendChild(item);
+  });
+  listEl.style.display = files.length ? '' : 'none';
+}
+
+async function zgBatchUpload() {
+  if (!_zgBatchFiles.length) return;
+  const btn = document.getElementById('zgBatchUploadBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '업로드 중...'; }
+  let done = 0, fail = 0;
+
+  for (const file of _zgBatchFiles) {
+    const statId = 'zbStat_' + file.name.replace(/[^a-z0-9]/gi,'_');
+    const statEl = document.getElementById(statId);
+    if (statEl) statEl.textContent = '처리중...';
+    try {
+      await processDailyZip(file);
+      done++;
+      if (statEl) { statEl.textContent = '✓'; statEl.style.color = 'var(--green)'; }
+    } catch(e) {
+      fail++;
+      if (statEl) { statEl.textContent = '실패'; statEl.style.color = 'var(--orange)'; }
+    }
+  }
+
+  showToast(`✅ ${done}개 완료${fail ? ' / ❌ ' + fail + '개 실패' : ''}`);
+  if (btn) { btn.disabled = false; btn.textContent = '🚀 전체 업로드'; }
+  zgBuild();
+}
+
 function zgBuild() {
   const noDate = document.getElementById('zgNoDate');
   const tabsWrap = document.getElementById('zgDateTabsWrap');
@@ -777,7 +981,7 @@ function zgBuild() {
       const fname = fnameRaw.split('.').slice(0, -1).join('.'); // 확장자 제거
       const copied = _zgCopied[ds].has(r.key);
       html += `<div id="zgRow_${ds}_${r.key}" style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:7px;border:1px solid ${r.border};background:${copied ? r.border : r.bg};margin-bottom:3px">
-        <div><span style="font-size:11px;color:${r.lc};margin-right:8px;min-width:60px;display:inline-block;font-weight:500">${r.lbl}</span><span style="font-size:12px;font-family:monospace;color:${r.nc}">${fname}</span></div>
+        <div><span style="font-size:11px;color:${r.lc};margin-right:8px;min-width:60px;display:inline-block;font-weight:500">${r.lbl}</span><span style="font-size:12px;font-family:monospace;color:${r.nc};cursor:pointer" title="클릭하여 복사" onclick="zgCopy('${ds}','${r.key}','${fname}')">${fname}</span></div>
         <button onclick="zgCopy('${ds}','${r.key}','${fname}')" style="padding:4px 10px;border-radius:6px;border:1px solid rgba(0,0,0,0.1);background:rgba(255,255,255,0.5);cursor:pointer;font-size:11.5px;color:${r.lc};white-space:nowrap" id="zgBtn_${ds}_${r.key}">${copied ? '✓' : '복사'}</button>
       </div>`;
     });
@@ -856,21 +1060,26 @@ async function zgUpload(e, ds) {
    하루치 ZIP 업로드
 ══════════════════════════ */
 async function processDailyZip(zipFile, forceDateKey) {
-  const nameMatch = zipFile.name.match(/(\d{6})/);
-  if (!nameMatch && !forceDateKey) { showToast('⚠️ ZIP명에 날짜 6자리 필요 (예: 260408.zip)'); return; }
-  const raw = forceDateKey ? forceDateKey.slice(2) : nameMatch[1];
-  const dateKey = '20' + raw;
+  const zip = await JSZip.loadAsync(zipFile);
 
-  // 날짜 바 범위 체크
-  if (_appliedStart && _appliedEnd) {
-    const dateStr = `${dateKey.slice(0,4)}-${dateKey.slice(4,6)}-${dateKey.slice(6,8)}`;
-    if (dateStr < _appliedStart || dateStr > _appliedEnd) {
-      showToast('⚠️ ZIP 날짜가 적용된 날짜 범위 밖입니다');
-      return;
-    }
+  // 내부 파일에서 날짜 자동 감지
+  const fileNames = Object.keys(zip.files).filter(n => !zip.files[n].dir).map(n => n.split('/').pop().toLowerCase());
+  const PREFIXES = ['bk','kwmo','kwpc','gfa','gc','da','sa'];
+  const detectedDates = new Set();
+  fileNames.forEach(fn => {
+    const m = fn.match(/(?:bk|kwmo|kwpc|gfa|gc|da|sa)_?(\d{6})/);
+    if (m) detectedDates.add(m[1]);
+  });
+
+  const isMultiDate = detectedDates.size > 1;
+
+  // 단일날짜면 기존 방식
+  const nameMatch = zipFile.name.match(/(\d{6})/);
+  if (!isMultiDate && !forceDateKey && !nameMatch && detectedDates.size === 0) {
+    showToast('⚠️ ZIP명에 날짜 6자리 필요 (예: 260408.zip)'); return;
   }
 
-  const PREFIX_MAP = {
+  const makePrefixMap = (dateKey) => ({
     'bk':   f => processBk(f, dateKey),
     'kwmo': f => processKw(f, dateKey, 'MO'),
     'kwpc': f => processKw(f, dateKey, 'PC'),
@@ -878,32 +1087,54 @@ async function processDailyZip(zipFile, forceDateKey) {
     'gc':   f => processGc(f),
     'da':   f => processAdv(f, 1),
     'sa':   f => processAdv(f, 2),
-  };
+  });
 
-  const zip = await JSZip.loadAsync(zipFile);
   const done = [], fail = [];
+
   for (const [name, entry] of Object.entries(zip.files)) {
     if (entry.dir) continue;
-    const raw = name.split('/').pop().toLowerCase();
-    const prefix = Object.keys(PREFIX_MAP).find(p => raw.startsWith(p + '_') || raw.startsWith(p + '.'));
+    const rawName = name.split('/').pop().toLowerCase();
+    const parts = rawName.split('.');
+    const ext = parts[parts.length - 1];
+    const ext2 = parts.length >= 2 ? parts[parts.length - 2] : '';
+    const cleanName = (ext === ext2 && (ext === 'xlsx' || ext === 'zip')) ? parts.slice(0,-1).join('.') : rawName;
+    const mime = ext === 'xlsx' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'application/zip';
+
+    // 파일명에서 날짜 추출 (멀티날짜 모드)
+    let fileDate = null;
+    if (isMultiDate) {
+      const dm = cleanName.match(/(?:bk|kwmo|kwpc|gfa|gc|da|sa)_?(\d{6})/);
+      if (dm) fileDate = '20' + dm[1];
+    }
+
+    // 날짜 결정
+    const dateKey = fileDate ||
+      (forceDateKey ? forceDateKey : ('20' + (nameMatch?.[1] || [...detectedDates][0] || '')));
+
+    // 범위 체크
+    if (_appliedStart && _appliedEnd) {
+      const ds = `${dateKey.slice(0,4)}-${dateKey.slice(4,6)}-${dateKey.slice(6,8)}`;
+      if (ds < _appliedStart || ds > _appliedEnd) continue;
+    }
+
+    const PREFIX_MAP = makePrefixMap(dateKey);
+    const prefix = PREFIXES.find(p => cleanName.startsWith(p + '_') || cleanName.startsWith(p + '.'));
     if (!prefix) continue;
+
     try {
       const blob = await entry.async('blob');
-      // 이중 확장자 정규화: .xlsx.xlsx → .xlsx, .zip.zip → .zip
-      const parts = raw.split('.');
-      const ext = parts[parts.length - 1];
-      const ext2 = parts.length >= 2 ? parts[parts.length - 2] : '';
-      const realExt = (ext === ext2 && (ext === 'xlsx' || ext === 'zip')) ? ext : ext;
-      const mime = realExt === 'xlsx' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'application/zip';
-      // 파일명에서 이중 확장자 제거
-      const cleanName = (ext === ext2) ? parts.slice(0, -1).join('.') : raw;
       const file = new File([blob], cleanName, { type: mime });
       await PREFIX_MAP[prefix](file);
-      done.push(prefix);
+      done.push(`${prefix}(${dateKey.slice(2)})`);
     } catch(err) { fail.push(prefix); console.error(prefix, err); }
   }
-  const uniqueDone = [...new Set(done)];
-  let msg = uniqueDone.length ? `✅ ${perfDateDisplay(dateKey)} — ${uniqueDone.join(', ')} 완료` : '⚠️ 매칭 파일 없음 — prefix 확인';
+
+  const dateCount = new Set(done.map(d => d.match(/\((\d+)\)/)?.[1])).size;
+  let msg = done.length
+    ? isMultiDate
+      ? `✅ ${dateCount}일치 — ${[...new Set(done.map(d=>d.replace(/\(.*\)/,'')))].join(', ')} 완료`
+      : `✅ ${perfDateDisplay('20'+(nameMatch?.[1]||[...detectedDates][0]||''))} — ${[...new Set(done.map(d=>d.replace(/\(.*\)/,'')))].join(', ')} 완료`
+    : '⚠️ 매칭 파일 없음';
   if (fail.length) msg += ` ❌ 실패: ${[...new Set(fail)].join(', ')}`;
   showToast(msg);
 
@@ -1152,6 +1383,22 @@ function normalizeDateKey(raw) {
 const MAIL_LOG_KEY = 'yozm_mail_log_v1';
 
 // 각 카드의 콘텐츠를 자동 텍스트로 업데이트하는 함수 (타 탭에서 호출)
+function mailRefreshBkCard() {
+  mailUpdateBk(0,'',0,'','');
+}
+function mailRefreshGfaCard() {
+  const mode = _cardMailMode.gfa || 'all';
+  const gfaBody = document.getElementById('mailCardGfaBody');
+  if (!gfaBody) return;
+  gfaBody.querySelectorAll('[data-mail-mode]').forEach(el => {
+    const elMode = el.dataset.mailMode;
+    el.style.display = (elMode === mode || mode === 'both' || elMode === 'common') ? '' : 'none';
+  });
+}
+function mailRefreshAdvCard() {
+  mailUpdateAdv();
+}
+
 function mailUpdateBk(moTotal, moKeywords, pcTotal, pcKeywords, date) {
   _mailData.date = date || _mailData.date;
   const { allDks, moTotalText, pcTotalText } = _aggregateBkKeywords();
@@ -1168,8 +1415,14 @@ function mailUpdateBk(moTotal, moKeywords, pcTotal, pcKeywords, date) {
   }
   if (_bkMailMode === 'all' && dayLines.length > 0) textLines.push('    ───');
   if (_bkMailMode === 'total' || _bkMailMode === 'all') {
-    textLines.push(`    → MO: ${moTotalText}`);
-    textLines.push(`       PC: ${pcTotalText}`);
+    const bkMode2 = (typeof _cardMailMode !== 'undefined' ? _cardMailMode.bk : null) || _mailMode || 'all';
+    if (bkMode2 === 'both') {
+      moTotalText.split('\n').forEach(l => textLines.push('    ' + l));
+      pcTotalText.split('\n').forEach(l => textLines.push('    ' + l));
+    } else {
+      textLines.push(`    → MO: ${moTotalText}`);
+      textLines.push(`       PC: ${pcTotalText}`);
+    }
   }
   _mailData.bkAuto = textLines.join('\n');
 
@@ -1192,7 +1445,20 @@ function mailUpdateBk(moTotal, moKeywords, pcTotal, pcKeywords, date) {
     html += `<div style="border-top:1px solid var(--glass-border-s);margin:3px 0"></div>`;
   }
   if (_bkMailMode === 'total' || _bkMailMode === 'all') {
-    html += `<div>→ MO: ${moTotalText}</div><div style="margin-left:2.8em">PC: ${pcTotalText}</div>`;
+    const bkMode3 = (typeof _cardMailMode !== 'undefined' ? _cardMailMode.bk : null) || _mailMode || 'all';
+    if (bkMode3 === 'both') {
+      // [구매 전환] / [전체 전환] 섹션 분리 렌더
+      const allLines = [...moTotalText.split('\n'), ...pcTotalText.split('\n')];
+      allLines.forEach(l => {
+        if (l.startsWith('[')) {
+          html += `<div style="font-weight:600;font-size:11px;color:${l.includes('구매')?'#185FA5':'#c0392b'};margin-top:4px">${l}</div>`;
+        } else {
+          html += `<div>${l}</div>`;
+        }
+      });
+    } else {
+      html += `<div>→ MO: ${moTotalText}</div><div style="margin-left:2.8em">PC: ${pcTotalText}</div>`;
+    }
   }
   html += '</div>';
   el.innerHTML = html;
@@ -1273,8 +1539,8 @@ function _buildGfaImgTbl(dateRows, images, globalSg, hideEmpty=true) {
     if (!r.group || !r.creative) continue;
     if (!gm.has(r.group)) gm.set(r.group, new Map());
     const cm = gm.get(r.group);
-    if (!cm.has(r.creative)) cm.set(r.creative, { name:r.creative, code:r.code||'', conv:0, imp:0 });
-    const cv = cm.get(r.creative); cv.conv+=r.conv; cv.imp+=r.imp;
+    if (!cm.has(r.creative)) cm.set(r.creative, { name:r.creative, code:r.code||'', conv:0, imp:0, pconv:0, prev:0 });
+    const cv = cm.get(r.creative); cv.conv+=r.conv; cv.imp+=r.imp; cv.pconv+=(r.pconv||0); cv.prev+=(r.prev||0);
   }
   // 열 순서: globalSg 기준으로 정렬 (hideEmpty=true면 데이터 없는 열 숨김)
   const base = globalSg || [...GFA_ORDER.filter(k=>gm.has(k)), ...[...gm.keys()].filter(k=>!GFA_ORDER.includes(k))];
@@ -1290,8 +1556,22 @@ function _buildGfaImgTbl(dateRows, images, globalSg, hideEmpty=true) {
 
   sg.forEach(g => {
     const creativeMap = gm.get(g);
-    const tot = creativeMap ? [...creativeMap.values()].reduce((s,v)=>s+v.conv,0) : 0;
-    h += `<th style="${thS}">${gcShortName(g)}<div style="font-size:10.5px;color:${tot>0?'#185FA5':'#aaa'};font-weight:500;margin-top:2px">전환 ${Math.round(tot)}건</div></th>`;
+    const imgMode = window._gcBuyMode || 'all';
+    const isBuyImg = imgMode === 'buy';
+    const isBothImg = imgMode === 'both';
+    // 순위는 항상 전체전환 기준
+    const totAll  = creativeMap ? [...creativeMap.values()].reduce((s,v)=>s+v.conv,0) : 0;
+    const totBuy  = creativeMap ? [...creativeMap.values()].reduce((s,v)=>s+(v.pconv||0),0) : 0;
+    let subTxt = '';
+    if (isBothImg) {
+      subTxt = `<div style="font-size:10.5px;color:${totAll>0?'#c0392b':'#aaa'};font-weight:500;margin-top:1px">전체전환 ${Math.round(totAll)}건</div>` +
+               `<div style="font-size:10.5px;color:${totBuy>0?'#185FA5':'#aaa'};font-weight:500;margin-top:1px">구매전환 ${Math.round(totBuy)}건</div>`;
+    } else if (isBuyImg) {
+      subTxt = `<div style="font-size:10.5px;color:${totBuy>0?'#185FA5':'#aaa'};font-weight:500;margin-top:2px">구매전환 ${Math.round(totBuy)}건</div>`;
+    } else {
+      subTxt = `<div style="font-size:10.5px;color:${totAll>0?'#c0392b':'#aaa'};font-weight:500;margin-top:2px">전체전환 ${Math.round(totAll)}건</div>`;
+    }
+    h += `<th style="${thS}">${gcShortName(g)}${subTxt}</th>`;
   });
   h += `</tr></thead><tbody>`;
 
@@ -1330,6 +1610,29 @@ function toggleMailGfaEmpty() {
   updateMailGfaImgCard();
 }
 
+let _gfaImgMode = 'all';
+
+async function setGfaImgMode(mode) {
+  _gfaImgMode = mode;
+  window._gcBuyMode = mode;
+  const styles = {
+    all:  {border:'rgba(192,57,43,.3)',  bg:'rgba(192,57,43,.08)',  color:'#c0392b'},
+    buy:  {border:'rgba(24,95,165,.3)',  bg:'rgba(24,95,165,.08)',  color:'#185FA5'},
+    both: {border:'rgba(58,58,240,.3)',  bg:'rgba(58,58,240,.08)',  color:'var(--accent)'},
+  };
+  ['all','buy','both'].forEach(m => {
+    const btn = document.getElementById(`mailGfaImgMode${m.charAt(0).toUpperCase()+m.slice(1)}`);
+    if (!btn) return;
+    const on = m === mode;
+    const s = styles[m];
+    btn.style.borderColor = on ? s.border : 'var(--glass-border-s)';
+    btn.style.background  = on ? s.bg     : 'var(--glass-bg)';
+    btn.style.color       = on ? s.color  : 'var(--t2)';
+    btn.style.fontWeight  = on ? '600'    : '400';
+  });
+  await updateMailGfaImgCard();
+}
+
 async function updateMailGfaImgCard() {
   const content = document.getElementById('mailGfaImgContent');
   const tabsEl = document.getElementById('mailGfaImgDateTabs');
@@ -1341,6 +1644,12 @@ async function updateMailGfaImgCard() {
   // 토글 버튼 표시
   const emptyBtn = document.getElementById('mailGfaEmptyBtn');
   if (emptyBtn) emptyBtn.style.display = '';
+  const imgModeAll = document.getElementById('mailGfaImgModeAll');
+  const imgModeBuy = document.getElementById('mailGfaImgModeBuy');
+  if (imgModeAll) imgModeAll.style.display = '';
+  if (imgModeBuy) imgModeBuy.style.display = '';
+  const imgModeBoth = document.getElementById('mailGfaImgModeBoth');
+  if (imgModeBoth) imgModeBoth.style.display = '';
 
   // 날짜 탭 버튼 렌더
   const onS  = 'background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2);font-weight:500';
@@ -1482,62 +1791,85 @@ async function mailCopyGfaImage() {
 }
 
 function mailUpdateAdv(daConv, saConv) {
-  const daTot = Math.round(Object.values(_perfStore.da).reduce((s,v) => s+(v.conv||0), 0));
-  const saTot = Math.round(Object.values(_perfStore.sa).reduce((s,v) => s+(v.conv||0), 0));
-  const dates = [...new Set([...Object.keys(_perfStore.da), ...Object.keys(_perfStore.sa)])].sort();
+  const mode = (typeof _cardMailMode !== 'undefined' ? _cardMailMode.adv : null) || _mailMode || 'all';
+
+  const daTotAll   = Math.round(Object.values(_perfStore.da).reduce((s,v)=>s+(v.conv||0),0));
+  const saTotAll   = Math.round(Object.values(_perfStore.sa).reduce((s,v)=>s+(v.conv||0),0));
+  const daTotBuy   = Math.round(Object.values(_perfStore.da).reduce((s,v)=>s+(v.pconv||0),0));
+  const saTotBuy   = Math.round(Object.values(_perfStore.sa).reduce((s,v)=>s+(v.pconv||0),0));
+  const daPrev     = Object.values(_perfStore.da).reduce((s,v)=>s+(v.prev||0),0);
+  const saPrev     = Object.values(_perfStore.sa).reduce((s,v)=>s+(v.prev||0),0);
+  const daCost     = Object.values(_perfStore.da).reduce((s,v)=>s+(v.cost||0),0);
+  const saCost     = Object.values(_perfStore.sa).reduce((s,v)=>s+(v.cost||0),0);
+  const daRoas     = daCost>0 ? Math.round(daPrev/daCost*100) : 0;
+  const saRoas     = saCost>0 ? Math.round(saPrev/saCost*100) : 0;
+  const daAllRoas  = daCost>0 ? Math.round(Object.values(_perfStore.da).reduce((s,v)=>s+(v.rev||0),0)/daCost*100) : 0;
+  const saAllRoas  = saCost>0 ? Math.round(Object.values(_perfStore.sa).reduce((s,v)=>s+(v.rev||0),0)/saCost*100) : 0;
+
+  const dates = [...new Set([...Object.keys(_perfStore.da),...Object.keys(_perfStore.sa)])].sort();
   const dayLines = dates.map(dk => ({
     dk,
-    da: Math.round(_perfStore.da[dk]?.conv||0),
-    sa: Math.round(_perfStore.sa[dk]?.conv||0),
+    da:    Math.round(_perfStore.da[dk]?.conv||0),
+    sa:    Math.round(_perfStore.sa[dk]?.conv||0),
+    daBuy: Math.round(_perfStore.da[dk]?.pconv||0),
+    saBuy: Math.round(_perfStore.sa[dk]?.pconv||0),
   }));
 
-  // _mailData.advConv → mailBuildHtml 에서 사용
+  const fmtLine = (dk, da, sa, daB, saB) => {
+    if (mode === 'all')  return `    ${perfDateDisplay(dk)} → DA (${da}건) / SA (${sa}건)`;
+    if (mode === 'buy')  return `    ${perfDateDisplay(dk)} → DA 구매(${daB}건) / SA 구매(${saB}건)`;
+    if (mode === 'both') return `    ${perfDateDisplay(dk)} → DA (${da}건/구매${daB}건) / SA (${sa}건/구매${saB}건)`;
+  };
+  const fmtTotal = () => {
+    if (mode === 'all')  return `DA (${daTotAll}건) / SA (${saTotAll}건)`;
+    if (mode === 'buy')  return `DA 구매(${daTotBuy}건) / SA 구매(${saTotBuy}건)`;
+    if (mode === 'both') return `DA (${daTotAll}건/구매${daTotBuy}건) / SA (${saTotAll}건/구매${saTotBuy}건)`;
+  };
+
   const textLines = [];
   if (_advMailMode === 'daily' || _advMailMode === 'all') {
-    dayLines.forEach(({ dk, da, sa }) => {
-      textLines.push(`    ${perfDateDisplay(dk)} → DA (${da}건) / SA (${sa}건)`);
-    });
+    dayLines.forEach(({dk,da,sa,daBuy,saBuy}) => textLines.push(fmtLine(dk,da,sa,daBuy,saBuy)));
   }
   if (_advMailMode === 'all' && dayLines.length > 0) textLines.push('    ───');
-  if (_advMailMode === 'total' || _advMailMode === 'all') {
-    const daPconv = Math.round(Object.values(_perfStore.da||{}).reduce((s,v)=>s+(v.pconv||0),0));
-    const saPconv = Math.round(Object.values(_perfStore.sa||{}).reduce((s,v)=>s+(v.pconv||0),0));
-    const daPrev  = Object.values(_perfStore.da||{}).reduce((s,v)=>s+(v.prev||0),0);
-    const saPrev  = Object.values(_perfStore.sa||{}).reduce((s,v)=>s+(v.prev||0),0);
-    const daCost  = Object.values(_perfStore.da||{}).reduce((s,v)=>s+(v.cost||0),0);
-    const saCost  = Object.values(_perfStore.sa||{}).reduce((s,v)=>s+(v.cost||0),0);
-    const daRoas  = daCost>0 ? Math.round(daPrev/daCost*100) : 0;
-    const saRoas  = saCost>0 ? Math.round(saPrev/saCost*100) : 0;
-    const daPStr  = daPconv>0 ? ` / 구매 ${daPconv}건 ROAS ${daRoas}%` : '';
-    const saPStr  = saPconv>0 ? ` / 구매 ${saPconv}건 ROAS ${saRoas}%` : '';
-    textLines.push(`DA (${daTot}건${daPStr}) / SA (${saTot}건${saPStr})`);
-  }
+  if (_advMailMode === 'total' || _advMailMode === 'all') textLines.push(fmtTotal());
   _mailData.advConv = textLines.join('\n');
 
-  // 카드 HTML 렌더링
+  // 카드 렌더
   const el = document.getElementById('mailAdvAuto');
   if (!el) return;
   const D = 'var(--glass-border-s)', T = 'var(--t3)', TX = 'var(--tx)';
+  const RED = '#c0392b', BLUE = '#185FA5';
   const badge = `<span style="font-size:10px;background:rgba(58,58,240,0.08);color:var(--accent);border-radius:4px;padding:1px 6px;margin-right:6px">자동</span>`;
-  let html = badge + `광고계정 전환<div style="margin-left:12px;margin-top:4px;font-size:12px;color:${TX};line-height:2">`;
 
+  const mkVal = (conv, buy, roas, buyRoas, isD) => {
+    const name = isD ? 'DA' : 'SA';
+    if (mode === 'all')  return `${name} <span style="color:${RED};font-weight:600">${conv}건</span>`;
+    if (mode === 'buy')  return `${name} 구매 <span style="color:${BLUE};font-weight:600">${buy}건</span>`;
+    if (mode === 'both') return `${name} <span style="color:${RED};font-weight:600">${conv}건</span>/<span style="color:${BLUE};font-weight:600">구매${buy}건</span>`;
+  };
+  const mkDayLine = ({dk,da,sa,daBuy,saBuy}) => {
+    if (mode === 'all')  return `→ <span style="color:${RED}">DA(${da})</span> / <span style="color:${RED}">SA(${sa})</span>`;
+    if (mode === 'buy')  return `→ <span style="color:${BLUE}">DA구매(${daBuy})</span> / <span style="color:${BLUE}">SA구매(${saBuy})</span>`;
+    if (mode === 'both') return `→ DA(<span style="color:${RED}">${da}</span>/<span style="color:${BLUE}">구매${daBuy}</span>) / SA(<span style="color:${RED}">${sa}</span>/<span style="color:${BLUE}">구매${saBuy}</span>)`;
+  };
+
+  let html = badge + `광고계정 전환<div style="margin-left:12px;margin-top:4px;font-size:12px;color:${TX};line-height:2">`;
   if (_advMailMode === 'daily' || _advMailMode === 'all') {
-    dayLines.forEach(({ dk, da, sa }, i) => {
-      if (i > 0) html += `<div style="border-top:0.5px solid ${D};margin:1px 0"></div>`;
-      html += `<div><span style="font-size:11px;color:${T};margin-right:5px">${perfDateDisplay(dk)}</span>→ DA (${da}건) / SA (${sa}건)</div>`;
+    dayLines.forEach(({dk,da,sa,daBuy,saBuy},i) => {
+      if (i>0) html += `<div style="border-top:0.5px solid ${D};margin:1px 0"></div>`;
+      html += `<div><span style="font-size:11px;color:${T};margin-right:5px">${perfDateDisplay(dk)}</span>${mkDayLine({dk,da,sa,daBuy,saBuy})}</div>`;
     });
   }
-  if (_advMailMode === 'all' && dayLines.length > 0) {
-    html += `<div style="border-top:1px solid var(--glass-border-s);margin:3px 0"></div>`;
-  }
+  if (_advMailMode === 'all' && dayLines.length>0) html += `<div style="border-top:1px solid ${D};margin:3px 0"></div>`;
   if (_advMailMode === 'total' || _advMailMode === 'all') {
-    html += `<div>→ DA (${daTot}건) / SA (${saTot}건)</div>`;
+    html += `<div>${mkVal(daTotAll,daTotBuy,daAllRoas,daRoas,true)} / ${mkVal(saTotAll,saTotBuy,saAllRoas,saRoas,false)}</div>`;
   }
   html += '</div>';
   el.innerHTML = html;
   document.getElementById('mailCardAdv')?.classList.remove('mail-inactive');
   document.getElementById('mailCardAdv')?.classList.add('mail-active');
 }
+
 
 // 날짜별 성과 전역 저장소
 const _perfStore = {
@@ -1625,46 +1957,68 @@ function mailRefreshPerf() {
 
   // 표 HTML 생성 함수 (C1 스타일)
   function makeTable(rows, isGrand) {
-    const thStyle = `background:#EEF2FF;color:#3D5A99;padding:3px 8px;text-align:center;font-weight:700;font-size:11px;white-space:nowrap;border:1px solid #C8D4F0;border-bottom:2px solid #B8C8EF`;
-    const thLStyle = `background:#EEF2FF;color:#3D5A99;padding:3px 8px;text-align:left;font-weight:700;font-size:11px;white-space:nowrap;border:1px solid #C8D4F0;border-bottom:2px solid #B8C8EF;width:82px`;
+    const mode = (typeof _cardMailMode !== 'undefined' ? _cardMailMode.perf : null) || _mailMode || 'all';
+    const thS = `background:#EEF2FF;color:#3D5A99;padding:3px 8px;text-align:center;font-weight:700;font-size:11px;white-space:nowrap;border:1px solid #C8D4F0;border-bottom:2px solid #B8C8EF`;
+    const thL = `background:#EEF2FF;color:#3D5A99;padding:3px 8px;text-align:left;font-weight:700;font-size:11px;white-space:nowrap;border:1px solid #C8D4F0;border-bottom:2px solid #B8C8EF;width:82px`;
+    const thR = `background:#EEF2FF;color:#c0392b;padding:3px 8px;text-align:center;font-weight:700;font-size:11px;white-space:nowrap;border:1px solid #C8D4F0;border-bottom:2px solid #B8C8EF`;
+    const thB = `background:#EEF2FF;color:#185FA5;padding:3px 8px;text-align:center;font-weight:700;font-size:11px;white-space:nowrap;border:1px solid #C8D4F0;border-bottom:2px solid #B8C8EF`;
 
-    let html = `<table style="width:100%;border-collapse:collapse;font-family:'Malgun Gothic',sans-serif">
-      <thead><tr>
-        <th style="${thLStyle}">캠페인 유형</th>
-        <th style="${thStyle}">노출</th><th style="${thStyle}">클릭</th>
-        <th style="${thStyle}">비용</th><th style="${thStyle}">전환</th><th style="${thStyle}">매출</th>
-        <th style="${thStyle}">CTR</th><th style="${thStyle}">CPC</th><th style="${thStyle}">CPA</th><th style="${thStyle}">ROAS</th>
-        <th style="${thStyle.replace('#3D5A99','#185FA5')}">구매</th><th style="${thStyle.replace('#3D5A99','#185FA5')}">구매ROAS</th>
-      </tr></thead><tbody>`;
+    // 헤더: 캠페인유형 노출 클릭 비용 [전환/구매] CTR CPC CPA [ROAS]
+    let headHtml = `<th style="${thL}">캠페인 유형</th><th style="${thS}">노출</th><th style="${thS}">클릭</th><th style="${thS}">비용</th>`;
+    if (mode === 'all')  headHtml += `<th style="${thR}">전체전환</th><th style="${thR}">전체매출</th>`;
+    if (mode === 'buy')  headHtml += `<th style="${thB}">구매전환</th><th style="${thB}">구매매출</th>`;
+    if (mode === 'both') headHtml += `<th style="${thB}">구매전환</th><th style="${thR}">전체전환</th><th style="${thB}">구매매출</th><th style="${thR}">전체매출</th>`;
+    headHtml += `<th style="${thS}">CTR</th><th style="${thS}">CPC</th><th style="${thS}">CPA</th>`;
+    if (mode === 'all')  headHtml += `<th style="${thR}">전체ROAS</th>`;
+    if (mode === 'buy')  headHtml += `<th style="${thB}">구매ROAS</th>`;
+    if (mode === 'both') headHtml += `<th style="${thB}">구매ROAS</th><th style="${thR}">전체ROAS</th>`;
+
+    let html = `<table style="width:100%;border-collapse:collapse;font-family:'Malgun Gothic',sans-serif"><thead><tr>${headHtml}</tr></thead><tbody>`;
 
     rows.forEach(({label, d, isTotal, isBkCost}) => {
       const r = perfCalcRow(d.imp, d.clk, d.cost, d.conv, d.rev);
-      const isGrandTotal = isGrand && isTotal;
+      const pRoas = d.cost>0 ? Math.round((d.prev||0)/d.cost*100)+'%' : '-';
       const rowBg = isTotal ? 'background:#F2F5FE;' : 'background:#fff;';
-      const numColor = isTotal ? 'color:#2B4A90;font-weight:700;' : 'color:#1a1a1a;font-weight:400;';
-      const labelStyle = `padding:3px 8px;text-align:left;font-size:11.5px;font-weight:700;color:#333;border:1px solid #E8EDF8;${isTotal?'background:#F2F5FE;color:#2B4A90;border-top:2px solid #B8C8EF;':'background:#fff;'}`;
-      const cellStyle = (extra) => `padding:3px 8px;text-align:right;font-size:11.5px;border:1px solid ${isTotal?'#C8D4F0':'#E8EDF8'};${isTotal?'border-top:2px solid #B8C8EF;':''}${rowBg}${numColor}${extra||''}`;
-      const metricStyle = cellStyle('font-weight:700;');
-      const costStyle = `padding:3px 8px;text-align:right;font-size:11.5px;border:1px solid ${isTotal?'#C8D4F0':'#E8EDF8'};${isTotal?'border-top:2px solid #B8C8EF;':''}${rowBg}${isTotal?'color:#2B4A90;font-weight:700;':isBkCost?'color:#aaa;font-style:italic;font-weight:400;':'color:#1a1a1a;font-weight:400;'}`;
+      const numC  = isTotal ? 'color:#2B4A90;font-weight:700;' : 'color:#1a1a1a;font-weight:400;';
+      const bTop  = isTotal ? 'border-top:2px solid #B8C8EF;' : '';
+      const bClr  = isTotal ? '#C8D4F0' : '#E8EDF8';
+      const cs = (extra='') => `padding:3px 8px;text-align:right;font-size:11.5px;border:1px solid ${bClr};${bTop}${rowBg}${numC}${extra}`;
+      const costStyle = `padding:3px 8px;text-align:right;font-size:11.5px;border:1px solid ${bClr};${bTop}${rowBg}${isTotal?'color:#2B4A90;font-weight:700;':isBkCost?'color:#aaa;font-style:italic;font-weight:400;':'color:#1a1a1a;font-weight:400;'}`;
+      const lblStyle = `padding:3px 8px;text-align:left;font-size:11.5px;font-weight:700;color:#333;border:1px solid #E8EDF8;${isTotal?'background:#F2F5FE;color:#2B4A90;border-top:2px solid #B8C8EF;':'background:#fff;'}`;
 
-      html += `<tr>
-        <td style="${labelStyle}">${label}</td>
-        <td style="${cellStyle()}">${r.imp.toLocaleString('ko-KR')}</td>
-        <td style="${cellStyle()}">${r.clk.toLocaleString('ko-KR')}</td>
-        <td style="${costStyle}">${r.cost.toLocaleString('ko-KR')}</td>
-        <td style="${cellStyle()}">${r.conv.toLocaleString('ko-KR')}</td>
-        <td style="${cellStyle()}">${r.rev.toLocaleString('ko-KR')}</td>
-        <td style="${metricStyle}">${r.ctr}</td>
-        <td style="${metricStyle}">${r.cpc}</td>
-        <td style="${metricStyle}">${r.cpa}</td>
-        <td style="${metricStyle}">${r.roas}</td>
-        <td style="${cellStyle('color:#185FA5;font-weight:700;')}">${d.pconv!=null ? Math.round(d.pconv||0).toLocaleString('ko-KR') : '-'}</td>
-        <td style="${cellStyle('color:#185FA5;font-weight:700;')}">${d.cost>0 && d.prev!=null ? Math.round((d.prev||0)/d.cost*100)+'%' : '-'}</td>
-      </tr>`;
+      let row = `<td style="${lblStyle}">${label}</td>`;
+      row += `<td style="${cs()}">${r.imp.toLocaleString('ko-KR')}</td>`;
+      row += `<td style="${cs()}">${r.clk.toLocaleString('ko-KR')}</td>`;
+      row += `<td style="${costStyle}">${r.cost.toLocaleString('ko-KR')}</td>`;
+      if (mode === 'all') {
+        row += `<td style="${cs('color:#c0392b;font-weight:700;')}">${r.conv.toLocaleString('ko-KR')}</td>`;
+        row += `<td style="${cs('color:#c0392b;font-weight:700;')}">${r.rev.toLocaleString('ko-KR')}</td>`;
+      }
+      if (mode === 'buy') {
+        row += `<td style="${cs('color:#185FA5;font-weight:700;')}">${Math.round(d.pconv||0).toLocaleString('ko-KR')}</td>`;
+        row += `<td style="${cs('color:#185FA5;font-weight:700;')}">${Math.round(d.prev||0).toLocaleString('ko-KR')}</td>`;
+      }
+      if (mode === 'both') {
+        row += `<td style="${cs('color:#185FA5;font-weight:700;')}">${Math.round(d.pconv||0).toLocaleString('ko-KR')}</td>`;
+        row += `<td style="${cs('color:#c0392b;font-weight:700;')}">${r.conv.toLocaleString('ko-KR')}</td>`;
+        row += `<td style="${cs('color:#185FA5;font-weight:700;')}">${Math.round(d.prev||0).toLocaleString('ko-KR')}</td>`;
+        row += `<td style="${cs('color:#c0392b;font-weight:700;')}">${r.rev.toLocaleString('ko-KR')}</td>`;
+      }
+      row += `<td style="${cs('font-weight:700;')}">${r.ctr}</td>`;
+      row += `<td style="${cs('font-weight:700;')}">${r.cpc}</td>`;
+      row += `<td style="${cs('font-weight:700;')}">${r.cpa}</td>`;
+      if (mode === 'all')  row += `<td style="${cs('color:#c0392b;font-weight:700;')}">${r.roas}</td>`;
+      if (mode === 'buy')  row += `<td style="${cs('color:#185FA5;font-weight:700;')}">${pRoas}</td>`;
+      if (mode === 'both') {
+        row += `<td style="${cs('color:#185FA5;font-weight:700;')}">${pRoas}</td>`;
+        row += `<td style="${cs('color:#c0392b;font-weight:700;')}">${r.roas}</td>`;
+      }
+      html += `<tr>${row}</tr>`;
     });
     html += '</tbody></table>';
     return html;
   }
+
 
   const dateLblStyle = `font-size:11.5px;font-weight:700;color:#3D5A99;margin:8px 0 3px;font-family:'Malgun Gothic',sans-serif`;
   const grandLblStyle = `font-size:11.5px;font-weight:700;color:#3D5A99;margin-top:12px;margin-bottom:3px;padding-top:10px;border-top:2px solid #B8C8EF;font-family:'Malgun Gothic',sans-serif`;
@@ -1804,6 +2158,128 @@ function mailBuildText() {
    유틸리티 함수
 ══════════════════════════ */
 let _toastTimer;
+/* ── 전체/구매완료 탭 헬퍼 ── */
+function makePerfTabCard(opts) {
+  // opts: { color, label, rows, slotCost, isGfa, hasBkCost }
+  const { color='var(--accent)', label='', allRows, buyRows, slotCost=0 } = opts;
+  const uid = 'ptab_' + Math.random().toString(36).slice(2,8);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'tbl-card';
+
+  // 탭 헤더
+  const tabRow = document.createElement('div');
+  tabRow.style.cssText = 'display:flex;gap:0;border-bottom:1px solid var(--glass-border-s)';
+  const makeTab = (txt, mode, active, isBlue) => {
+    const t = document.createElement('div');
+    t.textContent = txt;
+    t.dataset.mode = mode;
+    t.style.cssText = `padding:5px 14px;font-size:11.5px;cursor:pointer;border-bottom:2.5px solid ${active?(isBlue?'#185FA5':'var(--accent)'):'transparent'};margin-bottom:-1px;color:${active?(isBlue?'#185FA5':'var(--accent)'):'var(--t2)'};font-weight:${active?'600':'400'};user-select:none;transition:all .12s`;
+    t.onclick = () => {
+      tabRow.querySelectorAll('[data-mode]').forEach(tb => {
+        const isA = tb.dataset.mode === t.dataset.mode;
+        tb.style.borderBottomColor = isA ? (tb.dataset.blue?'#185FA5':'var(--accent)') : 'transparent';
+        tb.style.color = isA ? (tb.dataset.blue?'#185FA5':'var(--accent)') : 'var(--t2)';
+        tb.style.fontWeight = isA ? '600' : '400';
+      });
+      wrap.querySelector('.pt-all').style.display = mode === 'all' ? '' : 'none';
+      wrap.querySelector('.pt-buy').style.display = mode === 'buy' ? '' : 'none';
+    };
+    if (isBlue) t.dataset.blue = '1';
+    return t;
+  };
+  tabRow.appendChild(makeTab('전체', 'all', true, false));
+  tabRow.appendChild(makeTab('구매완료', 'buy', false, true));
+  wrap.appendChild(tabRow);
+
+  const ths = 'padding:5px 4px;font-size:10px;text-align:right;white-space:nowrap;background:#f4f5f9;position:sticky;top:0';
+  const thL = ths + ';text-align:left';
+
+  // 전체 탭
+  const allDiv = document.createElement('div');
+  allDiv.className = 'pt-all';
+  const allScroll = document.createElement('div'); allScroll.className = 'tbl-scroll'; allScroll.style.maxHeight = '280px';
+  const allTbl = buildPerfTable(allRows, slotCost, false, ths, thL);
+  allScroll.appendChild(allTbl); allDiv.appendChild(allScroll);
+
+  // 구매완료 탭
+  const buyDiv = document.createElement('div');
+  buyDiv.className = 'pt-buy'; buyDiv.style.display = 'none';
+  const buyScroll = document.createElement('div'); buyScroll.className = 'tbl-scroll'; buyScroll.style.maxHeight = '280px';
+  const buyTbl = buildPerfTable(buyRows || allRows, slotCost, true, ths, thL);
+  buyScroll.appendChild(buyTbl); buyDiv.appendChild(buyScroll);
+
+  wrap.appendChild(allDiv);
+  wrap.appendChild(buyDiv);
+  return wrap;
+}
+
+function buildPerfTable(rows, slotCost, isBuy, ths, thL) {
+  const tbl = document.createElement('table');
+  tbl.style.cssText = 'width:100%;border-collapse:collapse';
+  const heads = isBuy
+    ? ['광고그룹명','노출','클릭','비용','구매전환','구매매출','구매ROAS']
+    : ['광고그룹명','노출','클릭','비용','전체전환','전체매출','전체ROAS'];
+  const hRow = heads.map((h,i) => {
+    const blue = isBuy && i >= 4;
+    const red  = !isBuy && i >= 4;
+    return `<th style="${i===0?thL:ths}${blue?';color:#185FA5':''}${red?';color:#c0392b':''}">${h}</th>`;
+  }).join('');
+  tbl.innerHTML = `<thead><tr>${hRow}<th style="display:none"></th></tr></thead>`;
+  const tbody = document.createElement('tbody');
+  const tfoot = document.createElement('tfoot');
+  let tImp=0,tClk=0,tConv=0,tRev=0,tPconv=0,tPrev=0;
+
+  rows.forEach(([name, v]) => {
+    tImp+=v.imp; tClk+=v.clk; tConv+=v.conv; tRev+=v.rev; tPconv+=(v.pconv||0); tPrev+=(v.prev||0);
+    const cost = slotCost || v.cost || 0;
+    const pRoas = cost>0 ? Math.round((v.prev||0)/cost*100)+'%' : '-';
+    const tr = document.createElement('tr'); tr.className = 'tr-copyable';
+    const cells = isBuy
+      ? [`<td style="cursor:default;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</td>`,
+         `<td>${fmt(v.imp)}</td>`,`<td>${fmt(v.clk)}</td>`,
+         `<td style="color:var(--t4);cursor:default">-</td>`,
+         `<td style="color:#185FA5;font-weight:500">${fmt(v.pconv||0)}</td>`,
+         `<td style="color:#185FA5;font-weight:500">${fmt(v.prev||0)}</td>`,
+         `<td style="color:#185FA5;font-weight:500">${pRoas}</td>`]
+      : [`<td style="cursor:default;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</td>`,
+         `<td data-val="${raw(v.imp)}" onclick="copyToClip(${raw(v.imp)},this)">${fmt(v.imp)}</td>`,
+         `<td data-val="${raw(v.clk)}" onclick="copyToClip(${raw(v.clk)},this)">${fmt(v.clk)}</td>`,
+         `<td style="color:var(--t4);cursor:default">-</td>`,
+         `<td style="color:#c0392b" data-val="${raw(v.conv)}" onclick="copyToClip(${raw(v.conv)},this)">${fmt(v.conv)}</td>`,
+         `<td style="color:#c0392b" data-val="${raw(v.rev)}" onclick="copyToClip(${raw(v.rev)},this)">${fmt(v.rev)}</td>`,
+         `<td style="font-weight:500;color:#c0392b">${(slotCost||v.cost)>0?Math.round(v.rev/(slotCost||v.cost)*100)+'%':'-'}</td>`];
+    tr.innerHTML = cells.join('') + `<td><button class="row-copy-btn" data-row="${[name,raw(v.imp),raw(v.clk),'',isBuy?raw(v.pconv||0):raw(v.conv),isBuy?raw(v.prev||0):raw(v.rev)].join('\t')}">복사</button></td>`;
+    tbody.appendChild(tr);
+  });
+
+  // 합계
+  const rb = '2px solid #E24B4A';
+  const sumTr = document.createElement('tr'); sumTr.className = 'tr-copyable';
+  const totCost = slotCost || rows.reduce((s,[,v])=>s+(v.cost||0),0);
+  const totPRoas = totCost>0 ? Math.round(tPrev/totCost*100)+'%' : '-';
+  const sumCells = isBuy
+    ? [`<td style="font-weight:700;border-top:${rb}">합계</td>`,
+       `<td style="font-weight:600;border-top:${rb}">${fmt(tImp)}</td>`,
+       `<td style="font-weight:600;border-top:${rb}">${fmt(tClk)}</td>`,
+       `<td style="font-weight:600;border-top:${rb};color:var(--t3);font-style:italic">${slotCost>0?fmt(slotCost):'-'}</td>`,
+       `<td style="font-weight:600;border-top:${rb};color:#185FA5">${fmt(tPconv)}</td>`,
+       `<td style="font-weight:600;border-top:${rb};color:#185FA5">${fmt(tPrev)}</td>`,
+       `<td style="font-weight:600;border-top:${rb};color:#185FA5">${totPRoas}</td>`]
+    : [`<td style="font-weight:700;border-top:${rb}">합계</td>`,
+       `<td style="font-weight:600;border-top:${rb}">${fmt(tImp)}</td>`,
+       `<td style="font-weight:600;border-top:${rb}">${fmt(tClk)}</td>`,
+       `<td style="font-weight:600;border-top:${rb};color:var(--t3);font-style:italic">${slotCost>0?fmt(slotCost):'-'}</td>`,
+       `<td style="font-weight:600;border-top:${rb};color:#c0392b">${fmt(tConv)}</td>`,
+       `<td style="font-weight:600;border-top:${rb};color:#c0392b">${fmt(tRev)}</td>`,
+       `<td style="font-weight:600;border-top:${rb};color:#c0392b">${slotCost>0?Math.round(tRev/slotCost*100)+'%':'-'}</td>`];
+  sumTr.innerHTML = sumCells.join('') + `<td><button class="row-copy-btn" data-row="${[raw(tImp),raw(tClk),slotCost?slotCost:'',isBuy?raw(tPconv):raw(tConv),isBuy?raw(tPrev):raw(tRev)].join('\t')}">복사</button></td>`;
+  tbody.insertBefore(sumTr, tbody.firstChild);
+  tbl.appendChild(tbody); tbl.appendChild(tfoot);
+  return tbl;
+}
+
+
 function showToast(msg) {
   const el = document.getElementById('toast');
   if (!el) return;
@@ -1820,6 +2296,143 @@ function sw(id, el) {
   document.getElementById('t-' + id).classList.add('active');
 }
 
+
+
+
+const _cardMailMode = { perf: 'both', bk: 'both', gfa: 'both', adv: 'both' };
+
+function setCardMailMode(key, mode) {
+  _cardMailMode[key] = mode;
+  const colors = {
+    all:  { border:'rgba(192,57,43,.3)',  bg:'rgba(192,57,43,.08)',  color:'#c0392b' },
+    buy:  { border:'rgba(24,95,165,.3)',  bg:'rgba(24,95,165,.08)',  color:'#185FA5' },
+    both: { border:'rgba(58,58,240,.3)',  bg:'rgba(58,58,240,.08)',  color:'var(--accent)' },
+  };
+  ['all','buy','both'].forEach(m => {
+    const btn = document.getElementById(`mailMode_${key}_${m}`);
+    if (!btn) return;
+    const active = m === mode;
+    const s = colors[m];
+    btn.style.borderColor = active ? s.border : 'var(--glass-border-s)';
+    btn.style.background  = active ? s.bg     : 'var(--glass-bg)';
+    btn.style.color       = active ? s.color  : 'var(--t2)';
+    btn.style.fontWeight  = active ? '600'    : '400';
+  });
+  // 해당 카드만 재렌더
+  if (key === 'perf') mailRefreshPerf();
+  if (key === 'bk')   mailRefreshBkCard();
+  if (key === 'gfa')  mailRefreshGfaCard();
+  if (key === 'adv')  mailRefreshAdvCard();
+}
+
+let _mailMode = 'both'; // 'all' | 'buy' | 'both'
+
+function setMailMode(mode) {
+  _mailMode = mode;
+  // 카드별 모드도 동기화
+  if (typeof _cardMailMode !== 'undefined') {
+    Object.keys(_cardMailMode).forEach(k => { _cardMailMode[k] = mode; });
+    ['perf','bk','gfa','adv'].forEach(k => {
+      ['all','buy','both'].forEach(m => {
+        const btn = document.getElementById(`mailMode_${k}_${m}`);
+        if (!btn) return;
+        const colors = {
+          all:{border:'rgba(192,57,43,.3)',bg:'rgba(192,57,43,.08)',color:'#c0392b'},
+          buy:{border:'rgba(24,95,165,.3)',bg:'rgba(24,95,165,.08)',color:'#185FA5'},
+          both:{border:'rgba(58,58,240,.3)',bg:'rgba(58,58,240,.08)',color:'var(--accent)'},
+        };
+        const active = m === mode;
+        const s = colors[m];
+        btn.style.borderColor = active ? s.border : 'var(--glass-border-s)';
+        btn.style.background  = active ? s.bg     : 'var(--glass-bg)';
+        btn.style.color       = active ? s.color  : 'var(--t2)';
+        btn.style.fontWeight  = active ? '600'    : '400';
+      });
+    });
+  }
+  const btns = {
+    all:  document.getElementById('mailModeAll'),
+    buy:  document.getElementById('mailModeBuy'),
+    both: document.getElementById('mailModeBoth'),
+  };
+  const styles = {
+    all:  {border:'rgba(192,57,43,.3)',  bg:'rgba(192,57,43,.08)',  color:'#c0392b'},
+    buy:  {border:'rgba(24,95,165,.3)',  bg:'rgba(24,95,165,.08)',  color:'#185FA5'},
+    both: {border:'rgba(58,58,240,.3)',  bg:'rgba(58,58,240,.08)',  color:'var(--accent)'},
+  };
+  Object.entries(btns).forEach(([k, btn]) => {
+    if (!btn) return;
+    const active = k === mode;
+    const s = styles[k];
+    btn.style.borderColor = active ? s.border : 'var(--glass-border-s)';
+    btn.style.background  = active ? s.bg     : 'var(--glass-bg)';
+    btn.style.color       = active ? s.color  : 'var(--t2)';
+    btn.style.fontWeight  = active ? '600'    : '400';
+  });
+  mailRefreshPerf();
+}
+
+let _globalMode = 'all';
+
+function setGlobalMode(mode) {
+  _globalMode = mode;
+
+  // 버튼 스타일
+  const allBtn = document.getElementById('globalModeAll');
+  const buyBtn = document.getElementById('globalModeBuy');
+  if (allBtn) {
+    const on = mode === 'all';
+    allBtn.style.background   = on ? 'rgba(192,57,43,.08)' : 'var(--glass-bg)';
+    allBtn.style.color        = on ? '#c0392b' : 'var(--t2)';
+    allBtn.style.borderColor  = on ? 'rgba(192,57,43,.3)' : 'var(--glass-border-s)';
+    allBtn.style.fontWeight   = on ? '600' : '400';
+  }
+  if (buyBtn) {
+    const on = mode === 'buy';
+    buyBtn.style.background   = on ? 'rgba(24,95,165,.08)' : 'var(--glass-bg)';
+    buyBtn.style.color        = on ? '#185FA5' : 'var(--t2)';
+    buyBtn.style.borderColor  = on ? 'rgba(24,95,165,.3)' : 'var(--glass-border-s)';
+    buyBtn.style.fontWeight   = on ? '600' : '400';
+  }
+
+  // BK 테이블 탭 전환
+  document.querySelectorAll('[data-mode]').forEach(t => {
+    if (t.dataset.mode === mode) t.click();
+  });
+
+  // GFA 날짜별
+  _gfaDateMode = mode; refreshGfaDateTable();
+
+  // GFA 그룹별
+  _gfaTableMode = mode; renderGfaGroup(_gfaCurDate || 'all');
+
+  // GFA 소재
+  window._gcBuyMode = mode;
+  renderGcCards(window._gcSelDate || 'all');
+
+  // ADV 탭 전환
+  document.querySelectorAll('[data-adv-mode]').forEach(t => {
+    if (t.dataset.advMode === mode) t.click();
+  });
+
+  // 브검 키워드 테이블 탭 전환
+  document.querySelectorAll('[data-kw-mode]').forEach(t => {
+    if (t.dataset.kwMode === mode) t.click();
+  });
+
+  // 키워드 요약 탭도 전환
+  document.querySelectorAll('.summary-box[data-kw-sum-dk]').forEach(box => {
+    const dk2 = box.dataset.kwSumDk;
+    const type2 = box.dataset.kwSumType;
+    if (dk2 && type2) {
+      window[`_kwSumMode_${dk2}_${type2}`] = mode;
+      box.dispatchEvent(new Event('kwsumswitch'));
+    }
+  });
+
+  showToast(mode === 'all' ? '📊 전체전환 보기' : '🛒 구매전환 보기');
+}
+
 function swSub(id, el) {
   document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
@@ -1831,7 +2444,7 @@ function swSub(id, el) {
 function swBkInner(id, el) {
   ['bkPerf','bkKw','bkImg'].forEach(p => { const el2=document.getElementById(p); if(el2) el2.style.display='none'; });
   // 이미지 관리 탭일 때 일비용 바 숨김
-  const costBar = document.querySelector('#s-bk [style*="sticky-top2"]');
+  const costBar = document.getElementById('bkCostBar');
   if (costBar) costBar.style.display = id === 'bkImg' ? 'none' : '';
   // 이미지 관리 탭일 때 내부탭 sticky 해제 (iframe 높이 문제)
   const innerTabs = document.getElementById('bkInnerTabs');
@@ -1844,6 +2457,8 @@ function swBkInner(id, el) {
       innerTabs.style.position = 'sticky';
       innerTabs.style.top = 'var(--sticky-top,88px)';
       innerTabs.style.zIndex = '60';
+      // 탭 전환 시 내부탭이 보이도록 스크롤
+      setTimeout(() => innerTabs.scrollIntoView({behavior:'smooth', block:'nearest'}), 50);
     }
   }
   el.closest('.inner-tabs').querySelectorAll('.inner-tab').forEach(t => {
@@ -1908,9 +2523,10 @@ function bindCellCopy(container) {
       const btn = e.target.closest('.row-copy-btn');
       if (btn) {
         const row = btn.dataset.row;
-        if (row) navigator.clipboard.writeText(row).then(() => {
+        if (row) navigator.clipboard.writeText(row.split('\\t').join('\t')).then(() => {
           tr.classList.add('tr-flash');
           setTimeout(() => tr.classList.remove('tr-flash'), 400);
+          showToast('📋 복사됨');
         }).catch(() => {});
         return;
       }
@@ -2000,7 +2616,7 @@ function _aggregateBkKeywords() {
   const moKwCounts = {}, pcKwCounts = {};
   allDks.forEach(dk => {
     const bk = _bkByDate.get(dk);
-    if (bk) { moTotAll += Math.round(bk.moTot||0); pcTotAll += Math.round(bk.pcTot||0); moPconvAll += Math.round(bk.moPconv||0); pcPconvAll += Math.round(bk.pcPconv||0); moPrevAll += (bk.moPrev||0); pcPrevAll += (bk.pcPrev||0); }
+    if (bk) { const _useBuy2 = ((typeof _cardMailMode !== 'undefined' ? _cardMailMode.bk : null) || _mailMode || 'all') === 'buy'; moTotAll += _useBuy2 ? Math.round(bk.moPconv||0) : Math.round(bk.moTot||0); pcTotAll += _useBuy2 ? Math.round(bk.pcPconv||0) : Math.round(bk.pcTot||0); moPconvAll += Math.round(bk.moPconv||0); pcPconvAll += Math.round(bk.pcPconv||0); moPrevAll += (bk.moPrev||0); pcPrevAll += (bk.pcPrev||0); }
     const parseKw = (summaryText, map) => {
       const slash = summaryText ? summaryText.indexOf(' / ') : -1;
       if (slash < 0) return;
@@ -2009,20 +2625,34 @@ function _aggregateBkKeywords() {
         if (m) map[m[1]] = (map[m[1]]||0) + parseInt(m[2]);
       });
     };
-    parseKw(_kwByDate.get(dk+'_MO')?.summaryText, moKwCounts);
-    parseKw(_kwByDate.get(dk+'_PC')?.summaryText, pcKwCounts);
+    const bkCardMode = (typeof _cardMailMode !== 'undefined' ? _cardMailMode.bk : null) || _mailMode || 'all';
+    const useBuy = bkCardMode === 'buy';
+    parseKw(useBuy ? _kwByDate.get(dk+'_MO')?.buySummaryText : _kwByDate.get(dk+'_MO')?.summaryText, moKwCounts);
+    parseKw(useBuy ? _kwByDate.get(dk+'_PC')?.buySummaryText : _kwByDate.get(dk+'_PC')?.summaryText, pcKwCounts);
   });
   const kwStr = map => Object.entries(map).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k}(${v})`).join(', ');
   const moKwStr = kwStr(moKwCounts), pcKwStr = kwStr(pcKwCounts);
   const bkCostMo = bkCostGet().mo, bkCostPc = bkCostGet().pc;
   const moRoas = bkCostMo>0 ? Math.round(moPrevAll/bkCostMo*100) : 0;
   const pcRoas = bkCostPc>0 ? Math.round(pcPrevAll/bkCostPc*100) : 0;
-  const moPStr = moPconvAll>0 ? ` / 구매 ${moPconvAll}건 (ROAS ${moRoas}%)` : '';
-  const pcPStr = pcPconvAll>0 ? ` / 구매 ${pcPconvAll}건 (ROAS ${pcRoas}%)` : '';
+  const bkFinalMode = ((typeof _cardMailMode !== 'undefined' ? _cardMailMode.bk : null) || _mailMode || 'all');
+  const moPStr = (bkFinalMode === 'both' || bkFinalMode === 'all') && moPconvAll>0 ? ` / 구매 ${moPconvAll}건 (ROAS ${moRoas}%)` : '';
+  const pcPStr = (bkFinalMode === 'both' || bkFinalMode === 'all') && pcPconvAll>0 ? ` / 구매 ${pcPconvAll}건 (ROAS ${pcRoas}%)` : '';
+  const moLabel = bkFinalMode === 'buy' ? `구매 Total(${moTotAll})` : `Total(${moTotAll})`;
+  const pcLabel = bkFinalMode === 'buy' ? `구매 Total(${pcTotAll})` : `Total(${pcTotAll})`;
+  // both 모드: 전체 키워드 + 구매 키워드 병기
+  const moBuyKwStr = kwStr((() => { const m={}; allDks.forEach(dk => { const parseKw2=(t,mp)=>{const sl=t?t.indexOf(' / '):-1;if(sl<0)return;t.slice(sl+3).split(', ').forEach(kw=>{const mm=kw.match(/^(.+)\((\d+)\)$/);if(mm)mp[mm[1]]=(mp[mm[1]]||0)+parseInt(mm[2]);}); }; parseKw2(_kwByDate.get(dk+'_MO')?.buySummaryText,m); }); return m; })());
+  const pcBuyKwStr = kwStr((() => { const m={}; allDks.forEach(dk => { const parseKw2=(t,mp)=>{const sl=t?t.indexOf(' / '):-1;if(sl<0)return;t.slice(sl+3).split(', ').forEach(kw=>{const mm=kw.match(/^(.+)\((\d+)\)$/);if(mm)mp[mm[1]]=(mp[mm[1]]||0)+parseInt(mm[2]);}); }; parseKw2(_kwByDate.get(dk+'_PC')?.buySummaryText,m); }); return m; })());
+  const moText = bkFinalMode === 'both'
+    ? `[구매 전환]\n→ MO구매: Total(${moPconvAll})${moBuyKwStr?' / '+moBuyKwStr:''}\n[전체 전환]\n→ MO전체: Total(${moTotAll})${moKwStr?' / '+moKwStr:''}`
+    : `${moLabel}${moKwStr ? ' / '+moKwStr : ''}${moPStr}`;
+  const pcText = bkFinalMode === 'both'
+    ? `→ PC구매: Total(${pcPconvAll})${pcBuyKwStr?' / '+pcBuyKwStr:''}\n→ PC전체: Total(${pcTotAll})${pcKwStr?' / '+pcKwStr:''}`
+    : `${pcLabel}${pcKwStr ? ' / '+pcKwStr : ''}${pcPStr}`;
   return {
     allDks,
-    moTotalText: `Total(${moTotAll})${moKwStr ? ' / '+moKwStr : ''}${moPStr}`,
-    pcTotalText: `Total(${pcTotAll})${pcKwStr ? ' / '+pcKwStr : ''}${pcPStr}`,
+    moTotalText: moText,
+    pcTotalText: pcText,
   };
 }
 
@@ -2072,17 +2702,20 @@ function mailCollapseAll() {
 let _mailSubjectEditing = false;
 
 function mailBuildSubject() {
-  // 날짜 적용된 경우 자동 생성
   if (_appliedStart) {
-    const dk = dateToKey(_appliedStart);
-    const d = new Date(_appliedStart + 'T00:00:00');
-    const m = d.getMonth() + 1;
-    const day = d.getDate();
-    const dow = ['일','월','화','수','목','금','토'][d.getDay()];
-    const yy = String(d.getFullYear()).slice(2);
-    const mm = String(m).padStart(2,'0');
-    const dd = String(day).padStart(2,'0');
-    return `[올리브파트너스] YOZM ${m}월 데일리리포트 _${yy}.${mm}.${dd}(${dow}) 광고실적`;
+    const fmt = (dateStr) => {
+      const d = new Date(dateStr + 'T00:00:00');
+      const yy = String(d.getFullYear()).slice(2);
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const dd = String(d.getDate()).padStart(2,'0');
+      const dow = ['일','월','화','수','목','금','토'][d.getDay()];
+      return `${yy}.${mm}.${dd}(${dow})`;
+    };
+    const s = fmt(_appliedStart);
+    const e = _appliedEnd && _appliedEnd !== _appliedStart ? fmt(_appliedEnd) : null;
+    const m = new Date(_appliedStart + 'T00:00:00').getMonth() + 1;
+    const dateStr = e ? `_${s}~${e}` : `_${s}`;
+    return `[올리브파트너스] YOZM ${m}월 데일리리포트 ${dateStr} 광고실적`;
   }
   return '[올리브파트너스] YOZM 데일리리포트 광고실적';
 }
@@ -2518,10 +3151,14 @@ function rptRefreshAutoBlocks() {
     const wrapper = document.querySelector('[style*="position:sticky"][style*="z-index:100"]');
     if (wrapper) {
       const h = wrapper.offsetHeight;
-      document.documentElement.style.setProperty('--sticky-top', h + 'px');
+      // 서브탭 바 높이도 포함
+      const subTabs = document.getElementById('subTabsWrap');
+      const subH = subTabs && subTabs.offsetHeight > 0 ? subTabs.offsetHeight : 0;
+      const total = h + subH;
+      document.documentElement.style.setProperty('--sticky-top', total + 'px');
       // 브검 내부 탭 높이 추가
       const bkInner = document.getElementById('bkInnerTabs');
-      const h2 = bkInner ? h + bkInner.offsetHeight : h + 40;
+      const h2 = bkInner ? total + bkInner.offsetHeight : total + 40;
       document.documentElement.style.setProperty('--sticky-top2', h2 + 'px');
     }
   }
@@ -2710,27 +3347,8 @@ function renderBkAll() {
         const panelHdr = document.createElement('div'); panelHdr.className = 'panel-header';
         panelHdr.innerHTML = `<div class="panel-title"><div class="panel-title-dot" style="background:${color}"></div>${label}</div>`;
         card.appendChild(panelHdr);
-        const tableWrap = document.createElement('div'); tableWrap.className = 'tbl-card';
-        const scroll = document.createElement('div'); scroll.className = 'tbl-scroll'; scroll.style.maxHeight = '280px';
-        const table = document.createElement('table');
-        table.innerHTML = `<thead><tr><th>광고그룹명</th><th>노출</th><th>클릭</th><th style="color:var(--t4)">비용</th><th>전환</th><th>매출</th><th style="display:none"></th></tr></thead>`;
-        const tbody = document.createElement('tbody'); const tfoot = document.createElement('tfoot');
-        let totImp=0,totClk=0,totConv=0,totRev=0,totPconv=0,totPrev=0;
-        panelRows.forEach(([name,v]) => {
-          totImp+=v.imp; totClk+=v.clk; totConv+=v.conv; totRev+=v.rev; totPconv+=(v.pconv||0); totPrev+=(v.prev||0);
-          const tr = document.createElement('tr');
-          tr.className = 'tr-copyable';
-          tr.innerHTML = `<td style="cursor:default">${name}</td><td data-val="${raw(v.imp)}" onclick="copyToClip(${raw(v.imp)},this)">${fmt(v.imp)}</td><td data-val="${raw(v.clk)}" onclick="copyToClip(${raw(v.clk)},this)">${fmt(v.clk)}</td><td style="text-align:right;color:var(--t4);cursor:default">-</td><td data-val="${raw(v.conv)}" onclick="copyToClip(${raw(v.conv)},this)">${fmt(v.conv)}</td><td data-val="${raw(v.rev)}" onclick="copyToClip(${raw(v.rev)},this)">${fmt(v.rev)}</td><td style="color:var(--accent);font-weight:500">${fmt(v.pconv||0)}</td><td style="color:var(--accent);font-weight:500">${v.cost>0?Math.round((v.prev||0)/v.cost*100)+'%':'-'}</td><td><button class="row-copy-btn" data-row="${[raw(v.imp),raw(v.clk),'',raw(v.conv),raw(v.rev)].join('\t')}">복사</button></td>`;
-          tbody.appendChild(tr);
-        });
-        // 합계 행: 헤더 아래 빨간 구분선, 목록 맨 위
-        const sumTr = document.createElement('tr');
-        sumTr.className = 'tr-copyable';
-        const rb = '2px solid #E24B4A';
         const slotCost = type === 'mo' ? bkCostGet().mo : bkCostGet().pc;
-        sumTr.innerHTML = `<td style="font-weight:700;border-top:${rb}">합계</td><td style="font-weight:600;border-top:${rb}" data-val="${raw(totImp)}" onclick="copyToClip(${raw(totImp)},this)">${fmt(totImp)}</td><td style="font-weight:600;border-top:${rb}" data-val="${raw(totClk)}" onclick="copyToClip(${raw(totClk)},this)">${fmt(totClk)}</td><td style="font-weight:600;border-top:${rb};font-style:italic;color:var(--t3)" data-val="${slotCost}" onclick="copyToClip(${slotCost},this)">${slotCost>0?fmt(slotCost):'-'}</td><td style="font-weight:600;border-top:${rb}" data-val="${raw(totConv)}" onclick="copyToClip(${raw(totConv)},this)">${fmt(totConv)}</td><td style="font-weight:600;border-top:${rb}" data-val="${raw(totRev)}" onclick="copyToClip(${raw(totRev)},this)">${fmt(totRev)}</td><td style="font-weight:600;border-top:${rb};color:var(--accent)">${fmt(totPconv)}</td><td style="font-weight:600;border-top:${rb};color:var(--accent)">${slotCost>0?Math.round(totPrev/slotCost*100)+'%':'-'}</td><td style="border-top:${rb}"><button class="row-copy-btn" data-row="${[raw(totImp),raw(totClk),slotCost,raw(totConv),raw(totRev),raw(totPconv)].join('\t')}">복사</button></td>`;
-        tbody.insertBefore(sumTr, tbody.firstChild);
-        table.appendChild(tbody); scroll.appendChild(table); tableWrap.appendChild(scroll);
+        const tableWrap = makePerfTabCard({ allRows: panelRows, buyRows: panelRows, slotCost });
         card.appendChild(tableWrap); bindCellCopy(card); grid.appendChild(card);
       });
       section.appendChild(grid);
@@ -2885,10 +3503,16 @@ async function processKw(file, slotDateKey, slotType) {
   const totalConv = dataRows.reduce((s,r) => s+parseNum(r[cConv]), 0);
   const summaryText = `Total(${Math.round(totalConv)}) / ` +
     dataRows.filter(r=>parseNum(r[cConv])>0).map(r=>`${r[cKw]}(${Math.round(parseNum(r[cConv]))})`).join(', ');
+  const totalPconvKw = cPconv>=0 ? dataRows.reduce((s,r)=>s+parseNum(r[cPconv]),0) : 0;
+  const buySummaryText = totalPconvKw>0
+    ? `Total(${Math.round(totalPconvKw)}) / ` + dataRows.filter(r=>cPconv>=0&&parseNum(r[cPconv])>0).map(r=>`${r[cKw]}(${Math.round(parseNum(r[cPconv]))})`).join(', ')
+    : '구매전환 발생 키워드 없음';
   const totImp  = dataRows.reduce((s,r)=>s+parseNum(r[cImp]),0);
   const totClk  = dataRows.reduce((s,r)=>s+parseNum(r[cClk]),0);
-  const totRev  = dataRows.reduce((s,r)=>s+parseNum(r[cRev]),0);
-  _kwByDate.set(`${dk}_${type}`, { dk, type, dataRows, summaryText, totImp, totClk, totConv: totalConv, totRev, cKw, cImp, cClk, cConv, cRev });
+  const totRev   = dataRows.reduce((s,r)=>s+parseNum(r[cRev]),0);
+  const totPconv = cPconv>=0 ? dataRows.reduce((s,r)=>s+parseNum(r[cPconv]),0) : 0;
+  const totPrev  = cPrev>=0  ? dataRows.reduce((s,r)=>s+parseNum(r[cPrev]),0)  : 0;
+  _kwByDate.set(`${dk}_${type}`, { dk, type, dataRows, summaryText, buySummaryText, totImp, totClk, totConv: totalConv, totRev, totPconv, totPrev, cKw, cImp, cClk, cConv, cRev, cPconv, cPrev });
   renderKwAll();
   // 브검 카드 갱신 (키워드 summaryText 반영)
   mailUpdateBk(0, '', 0, '', '');
@@ -2948,32 +3572,95 @@ function renderKwAll() {
         card.appendChild(slot); card.appendChild(inp);
       } else {
         // 합계 행 먼저
-        const tableWrap = document.createElement('div'); tableWrap.className = 'tbl-card';
-        const scroll = document.createElement('div'); scroll.className = 'tbl-scroll'; scroll.style.maxHeight = '280px';
-        const table = document.createElement('table');
-        table.innerHTML = `<thead><tr><th>키워드</th><th>노출</th><th>클릭</th><th style="color:var(--t4)">비용</th><th>전환</th><th>매출</th><th style="display:none"></th></tr></thead>`;
-        const tbody = document.createElement('tbody');
-        data.dataRows.forEach(r => {
-          const imp=Math.round(parseNum(r[data.cImp])), clk=Math.round(parseNum(r[data.cClk]));
-          const conv=Math.round(parseNum(r[data.cConv])), rev=Math.round(parseNum(r[data.cRev]));
-          const tr = document.createElement('tr');
-          tr.className = 'tr-copyable';
-          tr.innerHTML = `<td style="cursor:default">${r[data.cKw]||''}</td><td data-val="${imp}" onclick="copyToClip(${imp},this)">${fmt(imp)}</td><td data-val="${clk}" onclick="copyToClip(${clk},this)">${fmt(clk)}</td><td style="text-align:right;color:var(--t4);cursor:default">-</td><td data-val="${conv}" onclick="copyToClip(${conv},this)">${fmt(conv)}</td><td data-val="${rev}" onclick="copyToClip(${rev},this)">${fmt(rev)}</td><td><button class="row-copy-btn" data-row="${[imp,clk,'',conv,rev].join('\t')}">복사</button></td>`;
-          tbody.appendChild(tr);
-        });
-        // 합계 행: 헤더 아래 빨간 구분선, 목록 맨 위
-        const rb = '2px solid #E24B4A';
         const kwCost = type === 'MO' ? bkCostGet().mo : bkCostGet().pc;
-        const kwSumTr = document.createElement('tr');
-        kwSumTr.className = 'tr-copyable';
-        kwSumTr.innerHTML = `<td style="font-weight:700;border-top:${rb}">합계</td><td style="font-weight:600;border-top:${rb}" data-val="${Math.round(data.totImp)}" onclick="copyToClip(${Math.round(data.totImp)},this)">${fmt(data.totImp)}</td><td style="font-weight:600;border-top:${rb}" data-val="${Math.round(data.totClk)}" onclick="copyToClip(${Math.round(data.totClk)},this)">${fmt(data.totClk)}</td><td style="font-weight:600;border-top:${rb};font-style:italic;color:var(--t3)" data-val="${kwCost}" onclick="copyToClip(${kwCost},this)">${kwCost>0?fmt(kwCost):'-'}</td><td style="font-weight:600;border-top:${rb}" data-val="${Math.round(data.totConv)}" onclick="copyToClip(${Math.round(data.totConv)},this)">${fmt(data.totConv)}</td><td style="font-weight:600;border-top:${rb}" data-val="${Math.round(data.totRev)}" onclick="copyToClip(${Math.round(data.totRev)},this)">${fmt(data.totRev)}</td><td style="border-top:${rb}"><button class="row-copy-btn" data-row="${[Math.round(data.totImp),Math.round(data.totClk),kwCost,Math.round(data.totConv),Math.round(data.totRev)].join('\t')}">복사</button></td>`;
-        tbody.insertBefore(kwSumTr, tbody.firstChild);
-        table.appendChild(tbody); scroll.appendChild(table); tableWrap.appendChild(scroll);
+        const rb = '2px solid #E24B4A';
 
+        const buildKwTbl = (isBuy) => {
+          const tbl = document.createElement('table');
+          const heads = isBuy
+            ? ['키워드','노출','클릭','비용','구매전환','구매매출','구매ROAS']
+            : ['키워드','노출','클릭','비용','전체전환','전체매출','전체ROAS'];
+          tbl.innerHTML = `<thead><tr>${heads.map((h,i)=>`<th${(isBuy&&i>=4)?' style="color:#185FA5"':''}>${h}</th>`).join('')}<th style="display:none"></th></tr></thead>`;
+          const tbody2 = document.createElement('tbody');
+          data.dataRows.forEach(r => {
+            const imp=Math.round(parseNum(r[data.cImp])), clk=Math.round(parseNum(r[data.cClk]));
+            const conv=Math.round(parseNum(r[data.cConv])), rev=Math.round(parseNum(r[data.cRev]));
+            const pconv=data.cPconv>=0?Math.round(parseNum(r[data.cPconv])):0;
+            const prev=data.cPrev>=0?Math.round(parseNum(r[data.cPrev])):0;
+            const roas = kwCost>0?Math.round(rev/kwCost*100)+'%':'-';
+            const pRoas = kwCost>0?Math.round(prev/kwCost*100)+'%':'-';
+            const tr = document.createElement('tr'); tr.className='tr-copyable';
+            tr.innerHTML = isBuy
+              ? `<td style="cursor:default">${r[data.cKw]||''}</td><td>${fmt(imp)}</td><td>${fmt(clk)}</td><td style="color:var(--t4)">-</td><td style="color:#185FA5;font-weight:500">${fmt(pconv)}</td><td style="color:#185FA5;font-weight:500">${fmt(prev)}</td><td style="color:#185FA5;font-weight:500">${pRoas}</td><td><button class="row-copy-btn" data-row="${[imp,clk,'',pconv,prev].join('\t')}">복사</button></td>`
+              : `<td style="cursor:default">${r[data.cKw]||''}</td><td data-val="${imp}" onclick="copyToClip(${imp},this)">${fmt(imp)}</td><td data-val="${clk}" onclick="copyToClip(${clk},this)">${fmt(clk)}</td><td style="color:var(--t4)">-</td><td style="color:#c0392b" data-val="${conv}" onclick="copyToClip(${conv},this)">${fmt(conv)}</td><td style="color:#c0392b" data-val="${rev}" onclick="copyToClip(${rev},this)">${fmt(rev)}</td><td style="font-weight:500;color:#c0392b">${roas}</td><td><button class="row-copy-btn" data-row="${[imp,clk,'',conv,rev].join('\t')}">복사</button></td>`;
+            tbody2.appendChild(tr);
+          });
+          const kwSumTr = document.createElement('tr'); kwSumTr.className='tr-copyable';
+          const tPR = kwCost>0?Math.round(Math.round(data.totPrev)/kwCost*100)+'%':'-';
+          const tRoas = kwCost>0?Math.round(Math.round(data.totRev)/kwCost*100)+'%':'-';
+          kwSumTr.innerHTML = isBuy
+            ? `<td style="font-weight:700;border-top:${rb}">합계</td><td style="font-weight:600;border-top:${rb}">${fmt(data.totImp)}</td><td style="font-weight:600;border-top:${rb}">${fmt(data.totClk)}</td><td style="font-weight:600;border-top:${rb};color:var(--t3);font-style:italic">${kwCost>0?fmt(kwCost):'-'}</td><td style="font-weight:600;border-top:${rb};color:#185FA5">${fmt(data.totPconv||0)}</td><td style="font-weight:600;border-top:${rb};color:#185FA5">${fmt(data.totPrev||0)}</td><td style="font-weight:600;border-top:${rb};color:#185FA5">${tPR}</td><td></td>`
+            : `<td style="font-weight:700;border-top:${rb}">합계</td><td style="font-weight:600;border-top:${rb}" data-val="${Math.round(data.totImp)}" onclick="copyToClip(${Math.round(data.totImp)},this)">${fmt(data.totImp)}</td><td style="font-weight:600;border-top:${rb}" data-val="${Math.round(data.totClk)}" onclick="copyToClip(${Math.round(data.totClk)},this)">${fmt(data.totClk)}</td><td style="font-weight:600;border-top:${rb};font-style:italic;color:var(--t3)">${kwCost>0?fmt(kwCost):'-'}</td><td style="font-weight:600;border-top:${rb};color:#c0392b" data-val="${Math.round(data.totConv)}" onclick="copyToClip(${Math.round(data.totConv)},this)">${fmt(data.totConv)}</td><td style="font-weight:600;border-top:${rb};color:#c0392b" data-val="${Math.round(data.totRev)}" onclick="copyToClip(${Math.round(data.totRev)},this)">${fmt(data.totRev)}</td><td style="font-weight:600;border-top:${rb};color:#c0392b">${tRoas}</td><td></td>`;
+          tbody2.insertBefore(kwSumTr, tbody2.firstChild);
+          tbl.appendChild(tbody2);
+          return tbl;
+        };
+
+        const tableWrap = document.createElement('div'); tableWrap.className = 'tbl-card';
+        const tabRow2 = document.createElement('div');
+        tabRow2.style.cssText = 'display:flex;gap:0;border-bottom:1px solid var(--glass-border-s)';
+        const mkKwT = (txt, mode, active, blue) => {
+          const t = document.createElement('div'); t.textContent = txt; t.dataset.kwMode = mode;
+          t.style.cssText = `padding:5px 14px;font-size:11.5px;cursor:pointer;border-bottom:2.5px solid ${active?(blue?'#185FA5':'var(--accent)'):'transparent'};margin-bottom:-1px;color:${active?(blue?'#185FA5':'var(--accent)'):'var(--t2)'};font-weight:${active?'600':'400'};user-select:none;transition:all .12s`;
+          t.onclick = () => {
+            tabRow2.querySelectorAll('div').forEach(tb => {
+              const on = tb.textContent === txt;
+              tb.style.borderBottomColor = on?(blue?'#185FA5':'var(--accent)'):'transparent';
+              tb.style.color = on?(blue?'#185FA5':'var(--accent)'):'var(--t2)';
+              tb.style.fontWeight = on?'600':'400';
+            });
+            allKwDiv.style.display = mode==='all'?'':'none';
+            buyKwDiv.style.display = mode==='buy'?'':'none';
+          };
+          return t;
+        };
+        tabRow2.appendChild(mkKwT('전체','all',true,false));
+        tabRow2.appendChild(mkKwT('구매완료','buy',false,true));
+        tableWrap.appendChild(tabRow2);
+        const allKwDiv = document.createElement('div');
+        const as2 = document.createElement('div'); as2.className='tbl-scroll'; as2.style.maxHeight='280px';
+        as2.appendChild(buildKwTbl(false)); allKwDiv.appendChild(as2); tableWrap.appendChild(allKwDiv);
+        const buyKwDiv = document.createElement('div'); buyKwDiv.style.display='none';
+        const bs2 = document.createElement('div'); bs2.className='tbl-scroll'; bs2.style.maxHeight='280px';
+        bs2.appendChild(buildKwTbl(true)); buyKwDiv.appendChild(bs2); tableWrap.appendChild(buyKwDiv);
         const uid = `kws_${dk}_${type}`;
-        const sumTextBox = document.createElement('div'); sumTextBox.className = 'summary-box';
-        sumTextBox.innerHTML = `<div class="summary-box-header"><span class="summary-label">📝 키워드 요약</span><button class="btn btn-ghost btn-sm" id="${uid}">복사</button></div><div class="summary-text">${data.summaryText||'전환 발생 키워드 없음'}</div>`;
-
+        const sumTextBox = document.createElement('div'); sumTextBox.className = 'summary-box'; sumTextBox.dataset.kwSumDk = dk; sumTextBox.dataset.kwSumType = type;
+        // 탭 구조로 구성
+        let sumMode = 'all';
+        const renderSumBox = () => {
+          const txt = sumMode === 'buy' ? (data.buySummaryText||'구매전환 발생 키워드 없음') : (data.summaryText||'전환 발생 키워드 없음');
+          const allOn  = sumMode === 'all';
+          const buyOn  = sumMode === 'buy';
+          const tabStyle = (on, blue) => `padding:3px 10px;font-size:11px;cursor:pointer;border-radius:10px;border:1px solid ${on?(blue?'rgba(24,95,165,.3)':'rgba(192,57,43,.3)'):'var(--glass-border-s)'};background:${on?(blue?'rgba(24,95,165,.08)':'rgba(192,57,43,.08)'):'var(--glass-bg)'};color:${on?(blue?'#185FA5':'#c0392b'):'var(--t2)'};font-weight:${on?'600':'400'};font-family:inherit`;
+          sumTextBox.innerHTML =
+            `<div class="summary-box-header" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              <span class="summary-label">📝 키워드 요약</span>
+              <button style="${tabStyle(allOn,false)}" onclick="(function(el){window._kwSumMode_${dk}_${type}='all';el.closest('.summary-box').dispatchEvent(new Event('kwsumswitch'))})(this)">전체전환</button>
+              <button style="${tabStyle(buyOn,true)}"  onclick="(function(el){window._kwSumMode_${dk}_${type}='buy';el.closest('.summary-box').dispatchEvent(new Event('kwsumswitch'))})(this)">구매전환</button>
+              <button class="btn btn-ghost btn-sm" id="${uid}" style="margin-left:auto">복사</button>
+            </div>
+            <div class="summary-text" style="color:${buyOn?'#185FA5':'var(--tx)'}">${txt}</div>`;
+        };
+        renderSumBox();
+        sumTextBox.addEventListener('kwsumswitch', () => {
+          sumMode = window[`_kwSumMode_${dk}_${type}`] || 'all';
+          renderSumBox();
+          const b = document.getElementById(uid);
+          if (b) b.onclick = () => {
+            const t = sumMode==='buy'?(data.buySummaryText||''):(data.summaryText||'');
+            navigator.clipboard.writeText(t).then(()=>showToast('📋 복사됨'));
+          };
+        });
         card.appendChild(tableWrap); card.appendChild(sumTextBox);
         bindCellCopy(card);
         setTimeout(() => {
@@ -3080,13 +3767,16 @@ function buildDateTabs(containerId, dates, currentVal, onSelect) {
 
 let _gfaData = [];        // GFA 성과 원본 데이터
 let _gfaSelectedGroups = new Set(); // 선택된 운영 그룹
-let _gfaHideEmpty = true; // 값 없는 그룹 숨김 여부
+let _gfaHideEmpty = true;
+let _gfaTableMode = 'all'; // 값 없는 그룹 숨김 여부
 let _bkMailMode  = 'total'; // 'total' | 'daily' | 'all'
 let _advMailMode = 'total'; // 'total' | 'daily' | 'all'
 let _gfaCurDate = 'all';
 let _gcCurDate = 'all';
 
 // GFA 날짜별 성과 표를 _perfStore.gfa 전체 기준으로 재렌더링
+let _gfaDateMode = 'all';
+
 function refreshGfaDateTable() {
   const dateSorted = Object.entries(_perfStore.gfa)
     .sort((a,b) => a[0].localeCompare(b[0]))
@@ -3096,14 +3786,63 @@ function refreshGfaDateTable() {
     });
   const dateBody = document.getElementById('gfaDateBody');
   const dateFoot = document.getElementById('gfaDateFoot');
+  const dateHead = document.getElementById('gfaDateHead');
   if (!dateBody) return;
-  buildTableRows(dateBody, dateSorted, null);
-  buildTfoot(dateFoot, dateSorted);
-  const copyBtn = document.getElementById('gfaDateCopyAll');
-  if (copyBtn) copyBtn.onclick = () => {
-    const rows = [...dateBody.querySelectorAll('tr')].map(tr => [tr.children[0].textContent, ...[...tr.querySelectorAll('td[data-val]')].map(td=>td.dataset.val)]);
-    navigator.clipboard.writeText(rows.map(r=>r.join('\t')).join('\n')).then(() => showToast('✅ 전체 복사 완료'));
-  };
+
+  // 탭 헤더 초기화
+  const tblCard = dateBody.closest('.tbl-card');
+  if (tblCard && !document.getElementById('gfaDateTabRow')) {
+    const tabRow = document.createElement('div');
+    tabRow.id = 'gfaDateTabRow';
+    tabRow.style.cssText = 'display:flex;gap:0;border-bottom:1px solid var(--glass-border-s)';
+    const mkT = (txt, mode, active, blue) => {
+      const t = document.createElement('div'); t.textContent = txt;
+      t.style.cssText = `padding:5px 14px;font-size:11.5px;cursor:pointer;border-bottom:2.5px solid ${active?(blue?'#185FA5':'var(--accent)'):'transparent'};margin-bottom:-1px;color:${active?(blue?'#185FA5':'var(--accent)'):'var(--t2)'};font-weight:${active?'600':'400'};user-select:none;transition:all .12s`;
+      t.onclick = () => { _gfaDateMode = mode; refreshGfaDateTable(); };
+      return t;
+    };
+    tabRow.appendChild(mkT('전체','all',true,false));
+    tabRow.appendChild(mkT('구매완료','buy',false,true));
+    tblCard.insertBefore(tabRow, tblCard.firstChild);
+  }
+
+  // 탭 활성 표시
+  const tabRow = document.getElementById('gfaDateTabRow');
+  if (tabRow) {
+    [...tabRow.children].forEach((t,i) => {
+      const isActive = (i===0&&_gfaDateMode==='all')||(i===1&&_gfaDateMode==='buy');
+      const blue = i===1;
+      t.style.borderBottomColor = isActive?(blue?'#185FA5':'var(--accent)'):'transparent';
+      t.style.color = isActive?(blue?'#185FA5':'var(--accent)'):'var(--t2)';
+      t.style.fontWeight = isActive?'600':'400';
+    });
+  }
+
+  const isBuy = _gfaDateMode === 'buy';
+  if (dateHead) {
+    dateHead.innerHTML = isBuy
+      ? '<tr><th>날짜</th><th>노출</th><th>클릭</th><th>비용</th><th style="color:#185FA5">구매</th><th style="color:#185FA5">구매매출</th><th style="color:#185FA5">구매ROAS</th><th style="display:none"></th></tr>'
+      : '<tr><th>날짜</th><th>노출</th><th>클릭</th><th>비용</th><th style="color:#c0392b">전체전환</th><th style="color:#c0392b">전체매출</th><th style="color:#c0392b">전체ROAS</th><th style="display:none"></th></tr>';
+  }
+
+  dateBody.innerHTML = '';
+  dateFoot.innerHTML = '';
+  let tImp=0,tClk=0,tCost=0,tConv=0,tRev=0,tPconv=0,tPrev=0;
+  dateSorted.forEach(([label, v]) => {
+    tImp+=v.imp; tClk+=v.clk; tCost+=v.cost; tConv+=v.conv; tRev+=v.rev; tPconv+=(v.pconv||0); tPrev+=(v.prev||0);
+    const roas = v.cost>0?Math.round(v.rev/v.cost*100)+'%':'-';
+    const pRoas = v.cost>0?Math.round((v.prev||0)/v.cost*100)+'%':'-';
+    const tr = document.createElement('tr'); tr.className='tr-copyable';
+    tr.innerHTML = isBuy
+      ? `<td style="cursor:default;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;user-select:text" title="${label}">${label}</td><td>${fmt(v.imp)}</td><td>${fmt(v.clk)}</td><td>${fmt(v.cost)}</td><td style="color:#185FA5;font-weight:500">${fmt(v.pconv||0)}</td><td style="color:#185FA5;font-weight:500">${fmt(v.prev||0)}</td><td style="color:#185FA5;font-weight:500">${pRoas}</td><td style="white-space:nowrap;padding:3px 5px"><button class="row-copy-btn" title="행복사" style="width:22px;height:22px;border-radius:5px;border:0.5px solid var(--glass-border-s);background:var(--glass-bg);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--t2);padding:0;vertical-align:middle" data-row="${[label,raw(v.imp),raw(v.clk),raw(v.cost),raw(v.pconv||0),raw(v.prev||0),pRoas].join('\\t')}"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button> <button class="row-copy-btn" title="리포트용" style="width:22px;height:22px;border-radius:5px;border:0.5px solid rgba(24,95,165,.25);background:rgba(24,95,165,.05);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:#185FA5;padding:0;vertical-align:middle" data-row="${[raw(v.imp),raw(v.clk),raw(v.cost),raw(v.pconv||0),raw(v.prev||0)].join('\\t')}"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 5h6M5 8h4M5 11h3"/></svg></button></td>`
+      : `<td data-val="${label}" onclick="copyToClip('${label}',this)" style="cursor:default">${label}</td><td data-val="${raw(v.imp)}" onclick="copyToClip(${raw(v.imp)},this)">${fmt(v.imp)}</td><td data-val="${raw(v.clk)}" onclick="copyToClip(${raw(v.clk)},this)">${fmt(v.clk)}</td><td data-val="${raw(v.cost)}" onclick="copyToClip(${raw(v.cost)},this)">${fmt(v.cost)}</td><td data-val="${raw(v.conv)}" onclick="copyToClip(${raw(v.conv)},this)">${fmt(v.conv)}</td><td data-val="${raw(v.rev)}" onclick="copyToClip(${raw(v.rev)},this)">${fmt(v.rev)}</td><td style="font-weight:500;color:#c0392b">${roas}</td><td style="display:flex;gap:3px;padding:3px"><button class="row-copy-btn" style="font-size:10px;padding:2px 6px" data-row="${[label,raw(v.imp),raw(v.clk),raw(v.cost),raw(v.conv),raw(v.rev),roas].join('\t')}">행복사</button><button class="row-copy-btn" style="font-size:10px;padding:2px 6px" data-row="${[raw(v.imp),raw(v.clk),raw(v.cost),raw(v.conv),raw(v.rev)].join('\t')}">리포트용</button></td>`;
+    dateBody.appendChild(tr);
+  });
+  const totRoas  = tCost>0?Math.round(tRev/tCost*100)+'%':'-';
+  const totPRoas = tCost>0?Math.round(tPrev/tCost*100)+'%':'-';
+  dateFoot.innerHTML = isBuy
+    ? `<tr><td>합계</td><td>${fmt(tImp)}</td><td>${fmt(tClk)}</td><td>${fmt(tCost)}</td><td style="color:#185FA5;font-weight:600">${fmt(tPconv)}</td><td style="color:#185FA5;font-weight:600">${fmt(tPrev)}</td><td style="color:#185FA5;font-weight:600">${totPRoas}</td><td style="display:flex;gap:3px;padding:3px"><button class="row-copy-btn" style="font-size:10px;padding:2px 6px" data-row="${[raw(tImp),raw(tClk),raw(tCost),raw(tPconv),raw(tPrev),totPRoas].join('\t')}">행복사</button><button class="row-copy-btn" style="font-size:10px;padding:2px 6px" data-row="${[raw(tImp),raw(tClk),raw(tCost),raw(tPconv),raw(tPrev)].join('\t')}">리포트용</button></td></tr>`
+    : `<tr><td>합계</td><td>${fmt(tImp)}</td><td>${fmt(tClk)}</td><td>${fmt(tCost)}</td><td>${fmt(tConv)}</td><td>${fmt(tRev)}</td><td style="font-weight:600">${totRoas}</td><td style="display:flex;gap:3px;padding:3px"><button class="row-copy-btn" style="font-size:10px;padding:2px 6px" data-row="${[raw(tImp),raw(tClk),raw(tCost),raw(tConv),raw(tRev),totRoas].join('\t')}">행복사</button><button class="row-copy-btn" style="font-size:10px;padding:2px 6px" data-row="${[raw(tImp),raw(tClk),raw(tCost),raw(tConv),raw(tRev)].join('\t')}">리포트용</button></td></tr>`;
   bindCellCopy(dateBody); bindCellCopy(dateFoot);
 }
 
@@ -3167,9 +3906,9 @@ async function processGfa(file) {
   buildDateTabs('gfaDateTabs', dates, 'all', (d) => { _gfaCurDate = d; renderGfaGroup(d); });
   const dateMap = new Map();
   for (const r of _gfaData) {
-    if (!dateMap.has(r.date)) dateMap.set(r.date, {imp:0,clk:0,cost:0,conv:0,rev:0});
+    if (!dateMap.has(r.date)) dateMap.set(r.date, {imp:0,clk:0,cost:0,conv:0,rev:0,pconv:0,prev:0});
     const d = dateMap.get(r.date);
-    d.imp+=r.imp; d.clk+=r.clk; d.cost+=r.cost; d.conv+=r.conv; d.rev+=r.rev;
+    d.imp+=r.imp; d.clk+=r.clk; d.cost+=r.cost; d.conv+=r.conv; d.rev+=r.rev; d.pconv+=(r.pconv||0); d.prev+=(r.prev||0);
   }
   // _perfStore.gfa 에 머지 후 날짜 표 전체 재렌더링
   dateMap.forEach((v, dk) => { _perfStore.gfa[normalizeDateKey(dk)] = {...v}; });
@@ -3200,11 +3939,54 @@ async function renderGfaGroup(selDate) {
     const g = gMap.get(r.group);
     g.imp+=r.imp; g.clk+=r.clk; g.cost+=r.cost; g.conv+=r.conv; g.rev+=r.rev; g.pconv+=(r.pconv||0); g.prev+=(r.prev||0);
   }
+  // 탭 초기화 (처음 한 번)
+  if (!document.getElementById('gfaTabRow')) {
+    const tblCard = document.querySelector('#gfaGroupBody')?.closest('.tbl-card');
+    if (tblCard) {
+      const tabRow = document.createElement('div');
+      tabRow.id = 'gfaTabRow';
+      tabRow.style.cssText = 'display:flex;gap:0;border-bottom:1px solid var(--glass-border-s)';
+      const mkT = (txt, mode, active, blue) => {
+        const t = document.createElement('div');
+        t.textContent = txt; t.dataset.gfaMode = mode;
+        t.style.cssText = `padding:5px 14px;font-size:11.5px;cursor:pointer;border-bottom:2.5px solid ${active?(blue?'#185FA5':'var(--accent)'):'transparent'};margin-bottom:-1px;color:${active?(blue?'#185FA5':'var(--accent)'):'var(--t2)'};font-weight:${active?'600':'400'};user-select:none;transition:all .12s`;
+        t.onclick = () => {
+          tabRow.querySelectorAll('[data-gfa-mode]').forEach(tb => {
+            const on = tb.dataset.gfaMode === mode;
+            tb.style.borderBottomColor = on?(tb.dataset.gfaMode==='buy'?'#185FA5':'var(--accent)'):'transparent';
+            tb.style.color = on?(tb.dataset.gfaMode==='buy'?'#185FA5':'var(--accent)'):'var(--t2)';
+            tb.style.fontWeight = on?'600':'400';
+          });
+          _gfaTableMode = mode;
+          renderGfaGroup(_gfaCurDate||'all');
+        };
+        return t;
+      };
+      tabRow.appendChild(mkT('전체','all',true,false));
+      tabRow.appendChild(mkT('구매완료','buy',false,true));
+      tblCard.insertBefore(tabRow, tblCard.firstChild);
+    }
+  }
   const newGroups = [...gMap.keys()].filter(k => !GFA_ORDER.includes(k));
   await syncGfaOrder([...gMap.keys()]);
   const ordered = [...GFA_ORDER, ...newGroups.filter(k => !GFA_ORDER.includes(k))];
   const tbody = document.getElementById('gfaGroupBody');
   const tfoot = document.getElementById('gfaGroupFoot');
+  const isBuy = (typeof _gfaTableMode !== 'undefined') && _gfaTableMode === 'buy';
+  // 탭 활성 표시 갱신
+  document.querySelectorAll('[data-gfa-mode]').forEach(t => {
+    const on = t.dataset.gfaMode === (isBuy?'buy':'all');
+    t.style.borderBottomColor = on?(t.dataset.gfaMode==='buy'?'#185FA5':'var(--accent)'):'transparent';
+    t.style.color = on?(t.dataset.gfaMode==='buy'?'#185FA5':'var(--accent)'):'var(--t2)';
+    t.style.fontWeight = on?'600':'400';
+  });
+  // 헤더 갱신
+  const thead = document.getElementById('gfaGroupHead');
+  if (thead) {
+    thead.innerHTML = isBuy
+      ? '<tr><th style="text-align:center">#</th><th>그룹명</th><th>노출</th><th>클릭</th><th>비용</th><th style="color:#185FA5">구매</th><th style="color:#185FA5">구매매출</th><th style="color:#185FA5">구매ROAS</th><th style="display:none"></th></tr>'
+      : '<tr><th style="text-align:center">#</th><th>그룹명</th><th>노출</th><th>클릭</th><th>비용</th><th style="color:#c0392b">전체전환</th><th style="color:#c0392b">전체매출</th><th style="color:#c0392b">전체ROAS</th><th style="display:none"></th></tr>';
+  }
   tbody.innerHTML = '';
   const tot = {imp:0,clk:0,cost:0,conv:0,rev:0,pconv:0,prev:0};
   ordered.forEach((name, idx) => {
@@ -3212,33 +3994,44 @@ async function renderGfaGroup(selDate) {
     if (_gfaHideEmpty && !v) return;
     const tr = document.createElement('tr');
     if (v) {
-      const vals = [v.imp,v.clk,v.cost,v.conv,v.rev]; const pRoas = v.cost>0 ? Math.round((v.prev||0)/v.cost*100)+'%' : '-';
+      const pRoas = v.cost>0 ? Math.round((v.prev||0)/v.cost*100)+'%' : '-';
+      const nameSafe = name.replace(/'/g, "\\'");
       tr.className = 'tr-copyable';
-      tr.innerHTML =
-        `<td style="text-align:center;cursor:default;color:var(--t3);font-size:11px">${idx+1}</td>` +
-        `<td style="font-size:11.5px" data-val="${name}" onclick="copyToClip('${name.replace(/'/g,"\\'")}',this)">${name}</td>` +
-        vals.map(n => `<td data-val="${raw(n)}" onclick="copyToClip(${raw(n)},this)">${fmt(n)}</td>`).join('') +
-        `<td style="color:var(--accent);font-weight:500">${fmt(v.pconv||0)}</td>` +
-        `<td style="color:var(--accent);font-weight:500">${pRoas}</td>` +
-        `<td><button class="row-copy-btn" data-row="${[name,...vals.map(raw),raw(v.pconv||0)].join('\t')}">복사</button></td>`;
+      if (isBuy) {
+        tr.innerHTML =
+          `<td style="text-align:center;cursor:default;color:var(--t3);font-size:11px">${idx+1}</td>` +
+          `<td style="font-size:11.5px">${name}</td>` +
+          `<td>${fmt(v.imp)}</td><td>${fmt(v.clk)}</td>` +
+          `<td data-val="${raw(v.cost)}" onclick="copyToClip(${raw(v.cost)},this)">${fmt(v.cost)}</td>` +
+          `<td style="color:#185FA5;font-weight:500">${fmt(v.pconv||0)}</td>` +
+          `<td style="color:#185FA5;font-weight:500">${fmt(v.prev||0)}</td>` +
+          `<td style="color:#185FA5;font-weight:500">${pRoas}</td>` +
+          `<td><button class="row-copy-btn" data-row="${[name,raw(v.imp),raw(v.clk),raw(v.cost),raw(v.pconv||0),raw(v.prev||0)].join('\t')}">복사</button></td>`;
+      } else {
+        tr.innerHTML =
+          `<td style="text-align:center;cursor:default;color:var(--t3);font-size:11px">${idx+1}</td>` +
+          `<td style="font-size:11.5px" data-val="${name}" onclick="copyToClip('${nameSafe}',this)">${name}</td>` +
+          [v.imp,v.clk,v.cost,v.conv,v.rev].map(n=>`<td data-val="${raw(n)}" onclick="copyToClip(${raw(n)},this)">${fmt(n)}</td>`).join('') +
+          `<td style="font-weight:500;color:#c0392b">${v.cost>0?Math.round(v.rev/v.cost*100)+'%':'-'}</td>` +
+          `<td><button class="row-copy-btn" data-row="${[name,raw(v.imp),raw(v.clk),raw(v.cost),raw(v.conv),raw(v.rev)].join('\t')}">복사</button></td>`;
+      }
       tot.imp+=v.imp; tot.clk+=v.clk; tot.cost+=v.cost; tot.conv+=v.conv; tot.rev+=v.rev; tot.pconv+=(v.pconv||0); tot.prev+=(v.prev||0);
     } else {
       tr.className = 'empty-group';
-      tr.innerHTML =
-        `<td style="text-align:center;cursor:default;font-size:11px">${idx+1}</td>` +
-        `<td style="cursor:default;font-size:11.5px">${name}</td>` +
-        `<td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td></td>`;
+      tr.innerHTML = isBuy
+        ? `<td style="text-align:center;cursor:default;font-size:11px">${idx+1}</td><td style="cursor:default;font-size:11.5px">${name}</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td></td>`
+        : `<td style="text-align:center;cursor:default;font-size:11px">${idx+1}</td><td style="cursor:default;font-size:11.5px">${name}</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td></td>`;
     }
     tbody.appendChild(tr);
   });
   const tv = [tot.imp,tot.clk,tot.cost,tot.conv,tot.rev];
   const totPRoas = tot.cost>0 ? Math.round(tot.prev/tot.cost*100)+'%' : '-';
-  tfoot.innerHTML =
-    `<tr class="tr-copyable"><td style="text-align:center"></td><td>합계</td>` +
-    tv.map(n => `<td data-val="${raw(n)}" onclick="copyToClip(${raw(n)},this)">${fmt(n)}</td>`).join('') +
-    `<td style="color:var(--accent);font-weight:600">${fmt(tot.pconv)}</td>` +
-    `<td style="color:var(--accent);font-weight:600">${totPRoas}</td>` +
-    `<td><button class="row-copy-btn" data-row="${[...tv.map(raw),raw(tot.pconv)].join('\t')}">복사</button></td></tr>`;
+  tfoot.innerHTML = isBuy
+    ? `<tr class="tr-copyable"><td></td><td>합계</td><td>${fmt(tot.imp)}</td><td>${fmt(tot.clk)}</td><td ${fmt(tot.cost)}</td><td style="color:#185FA5;font-weight:600">${fmt(tot.pconv)}</td><td style="color:#185FA5;font-weight:600">${fmt(tot.prev)}</td><td style="color:#185FA5;font-weight:600">${totPRoas}</td><td><button class="row-copy-btn">복사</button></td></tr>`
+    : `<tr class="tr-copyable"><td style="text-align:center"></td><td>합계</td>` +
+      tv.map(n => `<td data-val="${raw(n)}" onclick="copyToClip(${raw(n)},this)">${fmt(n)}</td>`).join('') +
+      `<td style="font-weight:600">${tot.cost>0?Math.round(tot.rev/tot.cost*100)+'%':'-'}</td>` +
+      `<td><button class="row-copy-btn" data-row="${tv.map(raw).join('\t')}">복사</button></td></tr>`;
   document.getElementById('gfaGroupCopyValues').onclick = async () => {
     const sd = _gfaCurDate;
     const filt = sd === 'all' ? _gfaData : _gfaData.filter(r => r.date === sd);
@@ -3310,37 +4103,49 @@ function renderAdvPanel(num, selDate) {
 
   function makeTblCard(rows, firstColLabel) {
     const card = document.createElement('div'); card.className = 'tbl-card';
-    const scroll = document.createElement('div'); scroll.className = 'tbl-scroll'; scroll.style.maxHeight = '320px';
-    const table = document.createElement('table');
-    table.innerHTML = `<thead><tr><th>${firstColLabel}</th><th>노출</th><th>클릭</th><th>비용</th><th>전환</th><th>매출</th><th style="color:var(--accent)">구매</th><th style="color:var(--accent)">구매ROAS</th></tr></thead>`;
-    const tbody = document.createElement('tbody'), tfoot = document.createElement('tfoot');
-    // 구매완료/구매ROAS 포함 렌더
-    tbody.innerHTML = '';
-    rows.forEach(([label, v]) => {
-      const pRoas = v.cost>0 ? Math.round((v.prev||0)/v.cost*100)+'%' : '-';
-      const tr = document.createElement('tr'); tr.className = 'tr-copyable';
-      tr.innerHTML = `<td style="cursor:default">${label}</td>` +
-        `<td data-val="${raw(v.imp)}" onclick="copyToClip(${raw(v.imp)},this)">${fmt(v.imp)}</td>` +
-        `<td data-val="${raw(v.clk)}" onclick="copyToClip(${raw(v.clk)},this)">${fmt(v.clk)}</td>` +
-        `<td data-val="${raw(v.cost)}" onclick="copyToClip(${raw(v.cost)},this)">${fmt(v.cost)}</td>` +
-        `<td data-val="${raw(v.conv)}" onclick="copyToClip(${raw(v.conv)},this)">${fmt(v.conv)}</td>` +
-        `<td data-val="${raw(v.rev)}" onclick="copyToClip(${raw(v.rev)},this)">${fmt(v.rev)}</td>` +
-        `<td style="color:var(--accent);font-weight:500">${fmt(v.pconv||0)}</td>` +
-        `<td style="color:var(--accent);font-weight:500">${pRoas}</td>` +
-        `<td><button class="row-copy-btn" data-row="${[label,raw(v.imp),raw(v.clk),raw(v.cost),raw(v.conv),raw(v.rev),raw(v.pconv||0)].join('\t')}">복사</button></td>`;
-      tbody.appendChild(tr);
-    });
-    const totV = rows.reduce((a,[,v])=>({imp:a.imp+v.imp,clk:a.clk+v.clk,cost:a.cost+v.cost,conv:a.conv+v.conv,rev:a.rev+v.rev,pconv:a.pconv+(v.pconv||0),prev:a.prev+(v.prev||0)}),{imp:0,clk:0,cost:0,conv:0,rev:0,pconv:0,prev:0});
-    const totPRoas = totV.cost>0 ? Math.round(totV.prev/totV.cost*100)+'%' : '-';
-    tfoot.innerHTML = `<tr class="tr-copyable"><td>합계</td>` +
-      [totV.imp,totV.clk,totV.cost,totV.conv,totV.rev].map(n=>`<td data-val="${raw(n)}" onclick="copyToClip(${raw(n)},this)">${fmt(n)}</td>`).join('') +
-      `<td style="color:var(--accent);font-weight:600">${fmt(totV.pconv)}</td>` +
-      `<td style="color:var(--accent);font-weight:600">${totPRoas}</td>` +
-      `<td><button class="row-copy-btn" data-row="${[raw(totV.imp),raw(totV.clk),raw(totV.cost),raw(totV.conv),raw(totV.rev),raw(totV.pconv)].join('\t')}">복사</button></td></tr>`;
-    table.appendChild(tbody); table.appendChild(tfoot); scroll.appendChild(table); card.appendChild(scroll);
+    const tabRow = document.createElement('div');
+    tabRow.style.display = 'none';
+    const mkT = (txt, mode, active, blue) => {
+      const t = document.createElement('div'); t.textContent = txt; t.dataset.advMode = mode;
+      t.onclick = () => {
+        allDiv.style.display = mode==='all'?'':'none';
+        buyDiv.style.display = mode==='buy'?'':'none';
+      };
+      return t;
+    };
+    tabRow.appendChild(mkT('전체','all',true,false));
+    tabRow.appendChild(mkT('구매완료','buy',false,true));
+    card.appendChild(tabRow);
+    const buildTbl = (isBuy) => {
+      const tbl = document.createElement('table');
+      const heads = isBuy ? [firstColLabel,'노출','클릭','비용','구매전환','구매매출','구매ROAS'] : [firstColLabel,'노출','클릭','비용','전체전환','전체매출','전체ROAS'];
+      tbl.innerHTML = `<thead><tr>${heads.map((h,i)=>`<th${(isBuy&&i>=4)?' style="color:#185FA5"':(!isBuy&&i>=4)?' style="color:#c0392b"':''}>${h}</th>`).join('')}</tr></thead>`;
+      const tbody2 = document.createElement('tbody'), tfoot2 = document.createElement('tfoot');
+      const totV = rows.reduce((a,[,v])=>({imp:a.imp+v.imp,clk:a.clk+v.clk,cost:a.cost+v.cost,conv:a.conv+v.conv,rev:a.rev+v.rev,pconv:a.pconv+(v.pconv||0),prev:a.prev+(v.prev||0)}),{imp:0,clk:0,cost:0,conv:0,rev:0,pconv:0,prev:0});
+      rows.forEach(([label, v]) => {
+        const pRoas = v.cost>0 ? Math.round((v.prev||0)/v.cost*100)+'%' : '-';
+        const tr = document.createElement('tr'); tr.className = 'tr-copyable';
+        tr.innerHTML = isBuy
+          ? `<td style="cursor:default;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;user-select:text" title="${label}">${label}</td><td data-val="${raw(v.imp)}" onclick="copyToClip(${raw(v.imp)},this)" style="user-select:text">${fmt(v.imp)}</td><td data-val="${raw(v.clk)}" onclick="copyToClip(${raw(v.clk)},this)" style="user-select:text">${fmt(v.clk)}</td><td data-val="${raw(v.cost)}" onclick="copyToClip(${raw(v.cost)},this)" style="user-select:text">${fmt(v.cost)}</td><td style="color:#185FA5;font-weight:500;user-select:text" data-val="${raw(v.pconv||0)}" onclick="copyToClip(${raw(v.pconv||0)},this)">${fmt(v.pconv||0)}</td><td style="color:#185FA5;font-weight:500;user-select:text" data-val="${raw(v.prev||0)}" onclick="copyToClip(${raw(v.prev||0)},this)">${fmt(v.prev||0)}</td><td style="color:#185FA5;font-weight:500;user-select:text">${pRoas}</td><td><button class="row-copy-btn" data-row="${[label,raw(v.imp),raw(v.clk),raw(v.cost),raw(v.pconv||0)].join('\t')}">복사</button></td>`
+          : `<td style="cursor:default;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;user-select:text" title="${label}">${label}</td><td data-val="${raw(v.imp)}" onclick="copyToClip(${raw(v.imp)},this)">${fmt(v.imp)}</td><td data-val="${raw(v.clk)}" onclick="copyToClip(${raw(v.clk)},this)">${fmt(v.clk)}</td><td data-val="${raw(v.cost)}" onclick="copyToClip(${raw(v.cost)},this)">${fmt(v.cost)}</td><td style="color:#c0392b;font-weight:500" data-val="${raw(v.conv)}" onclick="copyToClip(${raw(v.conv)},this)">${fmt(v.conv)}</td><td style="color:#c0392b;font-weight:500" data-val="${raw(v.rev)}" onclick="copyToClip(${raw(v.rev)},this)">${fmt(v.rev)}</td><td style="font-weight:500;color:#c0392b">${v.cost>0?Math.round(v.rev/v.cost*100)+'%':'-'}</td><td style="white-space:nowrap;padding:3px 5px"><button class="row-copy-btn" title="행복사" style="width:22px;height:22px;border-radius:5px;border:0.5px solid var(--glass-border-s);background:var(--glass-bg);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--t2);padding:0;vertical-align:middle" data-row="${[label,raw(v.imp),raw(v.clk),raw(v.cost),raw(v.conv),raw(v.rev)].join('\\t')}"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button> <button class="row-copy-btn" title="리포트용" style="width:22px;height:22px;border-radius:5px;border:0.5px solid rgba(24,95,165,.25);background:rgba(24,95,165,.05);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:#185FA5;padding:0;vertical-align:middle" data-row="${[raw(v.imp),raw(v.clk),raw(v.cost),raw(v.conv),raw(v.rev)].join('\\t')}"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 5h6M5 8h4M5 11h3"/></svg></button></td>`;
+        tbody2.appendChild(tr);
+      });
+      const tPR = totV.cost>0?Math.round(totV.prev/totV.cost*100)+'%':'-';
+      tfoot2.innerHTML = isBuy
+        ? `<tr><td>합계</td><td>${fmt(totV.imp)}</td><td>${fmt(totV.clk)}</td><td>${fmt(totV.cost)}</td><td style="color:#185FA5;font-weight:600">${fmt(totV.pconv)}</td><td style="color:#185FA5;font-weight:600">${fmt(totV.prev)}</td><td style="color:#185FA5;font-weight:600">${tPR}</td><td style="white-space:nowrap;padding:3px 5px"><button class="row-copy-btn" title="행복사" style="width:22px;height:22px;border-radius:5px;border:0.5px solid var(--glass-border-s);background:var(--glass-bg);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--t2);padding:0;vertical-align:middle" data-row="${[raw(totV.imp),raw(totV.clk),raw(totV.cost),raw(totV.pconv),raw(totV.prev),tPR].join('\\t')}"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button> <button class="row-copy-btn" title="리포트용" style="width:22px;height:22px;border-radius:5px;border:0.5px solid rgba(24,95,165,.25);background:rgba(24,95,165,.05);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:#185FA5;padding:0;vertical-align:middle" data-row="${[raw(totV.imp),raw(totV.clk),raw(totV.cost),raw(totV.pconv),raw(totV.prev)].join('\\t')}"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 5h6M5 8h4M5 11h3"/></svg></button></td></tr>`
+        : `<tr class="tr-copyable"><td>합계</td>${[totV.imp,totV.clk,totV.cost].map(n=>`<td data-val="${raw(n)}" onclick="copyToClip(${raw(n)},this)">${fmt(n)}</td>`).join('')}${[totV.conv,totV.rev].map(n=>`<td style="color:#c0392b;font-weight:600" data-val="${raw(n)}" onclick="copyToClip(${raw(n)},this)">${fmt(n)}</td>`).join('')}<td style="font-weight:600;color:#c0392b">${totV.cost>0?Math.round(totV.rev/totV.cost*100)+'%':'-'}</td><td style="white-space:nowrap;padding:3px 5px"><button class="row-copy-btn" title="행복사" style="width:22px;height:22px;border-radius:5px;border:0.5px solid var(--glass-border-s);background:var(--glass-bg);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--t2);padding:0;vertical-align:middle" data-row="${[raw(totV.imp),raw(totV.clk),raw(totV.cost),raw(totV.conv),raw(totV.rev)].join('\\t')}"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button> <button class="row-copy-btn" title="리포트용" style="width:22px;height:22px;border-radius:5px;border:0.5px solid rgba(24,95,165,.25);background:rgba(24,95,165,.05);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:#185FA5;padding:0;vertical-align:middle" data-row="${[raw(totV.imp),raw(totV.clk),raw(totV.cost),raw(totV.conv),raw(totV.rev)].join('\\t')}"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 5h6M5 8h4M5 11h3"/></svg></button></td></tr>`;
+      tbl.appendChild(tbody2); tbl.appendChild(tfoot2); return tbl;
+    };
+    const allDiv = document.createElement('div');
+    const as = document.createElement('div'); as.className='tbl-scroll'; as.style.maxHeight='320px';
+    as.appendChild(buildTbl(false)); allDiv.appendChild(as);
+    const buyDiv = document.createElement('div'); buyDiv.style.display='none';
+    const bs = document.createElement('div'); bs.className='tbl-scroll'; bs.style.maxHeight='320px';
+    bs.appendChild(buildTbl(true)); buyDiv.appendChild(bs);
+    card.appendChild(allDiv); card.appendChild(buyDiv);
+    const tbody = allDiv.querySelector('tbody');
     return {card, tbody};
   }
-
   const {card:dateCard, tbody:dateTbody} = makeTblCard(dateSorted, '날짜');
   const copyWrap = document.createElement('div'); copyWrap.className = 'copy-row'; copyWrap.style.marginTop = '8px';
   const copyBtn = document.createElement('button'); copyBtn.className = 'btn btn-primary btn-sm'; copyBtn.textContent = '📋 전체 복사';
@@ -3383,14 +4188,14 @@ async function processAdv(file, num) {
 
   // 새 파일의 날짜 파악 → 해당 날짜만 교체, 나머지 유지
   const newRows = [];
-  let excludedCount = 0;
+  let excludedCount = 0, excludedRev = 0;
   for (let i = 1; i < lines.length; i++) {
     if (!lines[i].trim()) continue;
     const cv = parseCSVLine(lines[i]);
     const conv = parseNum(cv[idx.conv]);
     const rev  = parseNum(cv[idx.rev]);
     // 이상 데이터 제외: 전환수 1건 이상 & 전환단가 50만원 이상
-    if (conv >= 1 && rev / conv >= 500000) { excludedCount++; continue; }
+    if (conv >= 1 && rev / conv >= 500000) { excludedCount++; excludedRev += rev; continue; }
     newRows.push({
       date: (cv[idx.date]||'').trim(), group: (cv[idx.group]||'').trim(),
       imp:parseNum(cv[idx.imp]), clk:parseNum(cv[idx.clk]),
@@ -3402,8 +4207,10 @@ async function processAdv(file, num) {
   const newDates = new Set(newRows.map(r => r.date));
   _advData[num] = _advData[num].filter(r => !newDates.has(r.date)).concat(newRows);
   // 제외 건수 저장
-  if (!window._advExcluded) window._advExcluded = {1:0, 2:0};
-  window._advExcluded[num] = (window._advExcluded[num]||0) + excludedCount;
+  if (!window._advExcluded) window._advExcluded = {1:{cnt:0,rev:0}, 2:{cnt:0,rev:0}};
+  if (typeof window._advExcluded[num] === 'number') window._advExcluded[num] = {cnt:0,rev:0};
+  window._advExcluded[num].cnt = (window._advExcluded[num].cnt||0) + excludedCount;
+  window._advExcluded[num].rev = (window._advExcluded[num].rev||0) + excludedRev;
 
   // 날짜 탭 업데이트
   const allDates = [...new Set(_advData[num].map(r => r.date).filter(Boolean))].sort();
@@ -3416,16 +4223,62 @@ async function processAdv(file, num) {
     tabsEl.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;padding:6px 0 2px';
     panel.insertBefore(tabsEl, document.getElementById(`advUpload${num}`));
   }
+  if (!window._advBuyMode) window._advBuyMode = {1:'all', 2:'all'};
   buildDateTabs(tabsId, allDates, 'all', (d) => {
     _advCurDate[num] = d;
     renderAdvPanel(num, d);
   });
 
+  // 전체전환/구매전환 버튼 추가
+  let modeWrap = document.getElementById(`advModeWrap${num}`);
+  if (!modeWrap) {
+    modeWrap = document.createElement('div');
+    modeWrap.id = `advModeWrap${num}`;
+    modeWrap.style.cssText = 'display:flex;gap:5px;margin:4px 0 2px';
+  }
+  modeWrap.innerHTML = '';
+  [['전체전환','all','#c0392b'],['구매전환','buy','#185FA5']].forEach(([label,mode,col]) => {
+    const btn = document.createElement('button');
+    const isOn = window._advBuyMode[num] === mode;
+    btn.textContent = label;
+    btn.style.cssText = `padding:3px 10px;border-radius:10px;font-size:11px;cursor:pointer;border:1px solid ${isOn?col+'66':' var(--glass-border-s)'};background:${isOn?col+'14':'var(--glass-bg)'};color:${isOn?col:'var(--t2)'};font-weight:${isOn?'600':'400'};font-family:inherit;transition:all .12s`;
+    btn.onclick = () => {
+      window._advBuyMode[num] = mode;
+      // 패널 내 모든 탭카드의 탭 전환
+      const panel = document.getElementById(`advPanel${num}`);
+      panel.querySelectorAll('[data-adv-mode]').forEach(t => {
+        const on = t.dataset.advMode === mode;
+        const blue = t.dataset.advMode === 'buy';
+        t.style.borderBottomColor = on?(blue?'#185FA5':'var(--accent)'):'transparent';
+        t.style.color = on?(blue?'#185FA5':'var(--accent)'):'var(--t2)';
+        t.style.fontWeight = on?'600':'400';
+      });
+      panel.querySelectorAll('.pt-all,.pt-buy,[class*="pt-"]').forEach(el => {
+        if (el.classList.contains('pt-all')) el.style.display = mode==='all'?'':'none';
+        if (el.classList.contains('pt-buy')) el.style.display = mode==='buy'?'':'none';
+      });
+      // 버튼 상태 갱신
+      const wrap = document.getElementById(`advModeWrap${num}`);
+      if (wrap) wrap.querySelectorAll('button').forEach((b,i) => {
+        const m = i===0?'all':'buy'; const c2 = i===0?'#c0392b':'#185FA5';
+        const on2 = window._advBuyMode[num]===m;
+        b.style.borderColor = on2?c2+'66':'var(--glass-border-s)';
+        b.style.background  = on2?c2+'14':'var(--glass-bg)';
+        b.style.color       = on2?c2:'var(--t2)';
+        b.style.fontWeight  = on2?'600':'400';
+      });
+    };
+    modeWrap.appendChild(btn);
+  });
+  tabsEl.insertAdjacentElement('afterend', modeWrap);
+
   // 패널 헤더
   const dotColor = num === 1 ? 'var(--accent)' : 'var(--blue)';
-  const excl = window._advExcluded?.[num] || 0;
-  const exclHtml = excl > 0
-    ? `<span style="font-size:10.5px;color:var(--orange);background:rgba(196,90,16,0.08);border:0.5px solid rgba(196,90,16,0.25);border-radius:10px;padding:1px 8px;margin-left:4px">⚠️ ${excl}건 제외됨 (전환단가 50만원↑)</span>`
+  const exclData = window._advExcluded?.[num];
+  const exclCnt = typeof exclData === 'object' ? (exclData.cnt||0) : (exclData||0);
+  const exclRev = typeof exclData === 'object' ? (exclData.rev||0) : 0;
+  const exclHtml = exclCnt > 0
+    ? `<span style="font-size:10.5px;color:var(--orange);background:rgba(196,90,16,0.08);border:0.5px solid rgba(196,90,16,0.25);border-radius:10px;padding:1px 8px;margin-left:4px">⚠️ ${exclCnt}건 / ${Math.round(exclRev).toLocaleString('ko-KR')}원 제외됨 (전환단가 50만원↑)</span>`
     : '';
   panel.querySelector('.panel-header').innerHTML = `
     <div style="display:flex;flex-direction:column;gap:3px">
@@ -3442,8 +4295,8 @@ async function processAdv(file, num) {
   const allDateMap = new Map();
   _advData[num].forEach(r => {
     if (!r.date) return;
-    if (!allDateMap.has(r.date)) allDateMap.set(r.date, {imp:0,clk:0,cost:0,conv:0,rev:0});
-    const d = allDateMap.get(r.date); d.imp+=r.imp; d.clk+=r.clk; d.cost+=r.cost; d.conv+=r.conv; d.rev+=r.rev;
+    if (!allDateMap.has(r.date)) allDateMap.set(r.date, {imp:0,clk:0,cost:0,conv:0,rev:0,pconv:0,prev:0});
+    const d = allDateMap.get(r.date); d.imp+=r.imp; d.clk+=r.clk; d.cost+=r.cost; d.conv+=r.conv; d.rev+=r.rev; d.pconv+=(r.pconv||0); d.prev+=(r.prev||0);
   });
   allDateMap.forEach((v, dk) => { store[normalizeDateKey(dk)] = {...v}; });
   const totalConv = [...allDateMap.values()].reduce((s,v) => s+v.conv, 0);
@@ -3463,7 +4316,7 @@ function resetAdvPanel(num) {
   const tabsEl = document.getElementById(`advDateTabs${num}`);
   if (tabsEl) tabsEl.remove();
   _advData[num] = []; _advCurDate[num] = 'all';
-  if (window._advExcluded) window._advExcluded[num] = 0;
+  if (window._advExcluded) window._advExcluded[num] = {cnt:0,rev:0};
   const dotColor = num === 1 ? 'var(--accent)' : 'var(--blue)';
   document.getElementById(`advPanel${num}`).querySelector('.panel-header').innerHTML =
     `<div class="panel-title"><div class="panel-title-dot" style="background:${dotColor}"></div>${ADV_NAMES[num]}</div>`;
@@ -3548,6 +4401,7 @@ async function getGcImages() {
 })();
 
 async function processGc(file) {
+  try {
   const zip = await JSZip.loadAsync(file);
   let csvText = null;
   for (const name of Object.keys(zip.files)) {
@@ -3564,6 +4418,9 @@ async function processGc(file) {
   const iDate     = headers.indexOf('기간');
   const iConv     = headers.indexOf('총 전환수');
   const iImp      = headers.indexOf('노출수');
+  const iPconv    = headers.indexOf('구매완료 수');
+  const iPrev     = headers.indexOf('구매완료 전환매출액');
+  const iCost     = headers.indexOf('총비용');
 
   if (iGroup < 0 || iCreative < 0) { showToast('❌ 소재 성과 CSV 형식이 아닙니다'); return; }
 
@@ -3579,6 +4436,9 @@ async function processGc(file) {
       date:     (c[iDate]     || '').trim(),
       conv:     parseNum(c[iConv]),
       imp:      parseNum(c[iImp]),
+      pconv:    iPconv>=0 ? parseNum(c[iPconv]) : 0,
+      prev:     iPrev>=0  ? parseNum(c[iPrev])  : 0,
+      cost:     iCost>=0  ? parseNum(c[iCost])  : 0,
     });
   }
   const newDates = new Set(newRows.map(r => r.date));
@@ -3607,9 +4467,15 @@ async function processGc(file) {
   const groupLabel = convGroups.map(g=>gcShortName(g)).join(' + ');
   mailUpdateGfa(groupLabel || groups.map(gcShortName).join(' + '));
   await updateMailGfaImgCard();
+  } catch(err) {
+    console.error('processGc error:', err);
+    showToast('❌ GC 처리 오류: ' + err.message);
+    throw err;
+  }
 }
 
 async function renderGcCards(selDate) {
+  window._gcSelDate = selDate;
   const filtered = selDate === 'all' ? _gcAllData : _gcAllData.filter(r => r.date === selDate);
 
   // group -> creative 집계
@@ -3618,9 +4484,9 @@ async function renderGcCards(selDate) {
     if (!r.group || !r.creative) continue;
     if (!groupMap.has(r.group)) groupMap.set(r.group, new Map());
     const cm = groupMap.get(r.group);
-    if (!cm.has(r.creative)) cm.set(r.creative, { name: r.creative, code: r.code || '', conv: 0, imp: 0 });
+    if (!cm.has(r.creative)) cm.set(r.creative, { name: r.creative, code: r.code || '', conv: 0, imp: 0, pconv: 0, prev: 0, cost: 0 });
     const c = cm.get(r.creative);
-    c.conv += r.conv; c.imp += r.imp;
+    c.conv += r.conv; c.imp += r.imp; c.pconv += (r.pconv||0); c.prev += (r.prev||0); c.cost += (r.cost||0);
   }
 
   const images = await getGcImages();
@@ -3640,14 +4506,41 @@ async function renderGcCards(selDate) {
 
   // ── 압축 보기 ──
   if (_gcView === 'compact') {
+    const isBuyGc = window._gcBuyMode === 'buy';
+
     // 전체보기 OFF면 전환 > 0인 그룹만
     const visibleGroups = _gcAllOn
       ? sortedGroups
       : sortedGroups.filter(k => {
-          const total = [...groupMap.get(k).values()].reduce((s,c) => s+c.conv, 0);
+          const total = [...groupMap.get(k).values()].reduce((s,cv) => s+(isBuyGc?(cv.pconv||0):cv.conv), 0);
           return total > 0;
         });
 
+    // 전체/구매전환 탭
+    let gcTabRow = document.getElementById('gcModeTabRow');
+    if (!gcTabRow) {
+      gcTabRow = document.createElement('div');
+      gcTabRow.id = 'gcModeTabRow';
+      gcTabRow.style.cssText = 'display:flex;gap:0;border-bottom:1px solid var(--glass-border-s);margin-bottom:0';
+      const mkGcT = (txt, mode, active, blue) => {
+        const t = document.createElement('div'); t.textContent = txt;
+        t.style.cssText = `padding:5px 14px;font-size:11.5px;cursor:pointer;border-bottom:2.5px solid ${active?(blue?'#185FA5':'#c0392b'):'transparent'};margin-bottom:-1px;color:${active?(blue?'#185FA5':'#c0392b'):'var(--t2)'};font-weight:${active?'600':'400'};user-select:none;transition:all .12s`;
+        t.onclick = () => {
+          window._gcBuyMode = mode;
+          gcTabRow.querySelectorAll('div').forEach((tb,i) => {
+            const on = (i===0&&mode==='all')||(i===1&&mode==='buy');
+            tb.style.borderBottomColor = on?(i===1?'#185FA5':'#c0392b'):'transparent';
+            tb.style.color = on?(i===1?'#185FA5':'#c0392b'):'var(--t2)';
+            tb.style.fontWeight = on?'600':'400';
+          });
+          renderGcCards(window._gcSelDate||'all');
+        };
+        return t;
+      };
+      gcTabRow.appendChild(mkGcT('전체전환','all',true,false));
+      gcTabRow.appendChild(mkGcT('구매전환','buy',false,true));
+      container.appendChild(gcTabRow);
+    }
     const tbl = document.createElement('table');
     tbl.id = 'gcCompactTbl';
     tbl.style.cssText = 'width:auto;table-layout:fixed;border-collapse:collapse;background:var(--glass-bg-strong);border:1px solid var(--glass-border-s);border-radius:12px;overflow:hidden';
@@ -3659,12 +4552,12 @@ async function renderGcCards(selDate) {
     thLabel.style.cssText = 'width:56px;padding:8px 12px;text-align:left;font-size:11px;font-weight:500;color:var(--t2);border-bottom:1px solid var(--glass-border-s);background:var(--glass-bg)';
     hRow.appendChild(thLabel);
     for (const gName of visibleGroups) {
-      const groupTotal = [...groupMap.get(gName).values()].reduce((s,c) => s+c.conv, 0);
+      const groupTotal = [...groupMap.get(gName).values()].reduce((s,cv) => s+(isBuyGc?(cv.pconv||0):cv.conv), 0);
       const th = document.createElement('th');
       th.style.cssText = 'width:120px;min-width:120px;padding:8px 0 6px;text-align:center;font-size:12px;font-weight:500;color:var(--tx);border-bottom:1px solid var(--glass-border-s);background:var(--glass-bg)';
       th.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:3px">
         <span>${gcShortName(gName)}</span>
-        <span style="font-size:11px;font-weight:500;color:${groupTotal>0?'var(--accent)':'var(--t4)'}">전환 ${Math.round(groupTotal)}건</span>
+        <span style="font-size:11px;font-weight:500;color:${groupTotal>0?(isBuyGc?'#185FA5':'#c0392b'):'var(--t4)'}">${isBuyGc?'구매전환':'전체전환'} ${Math.round(groupTotal)}건</span>
       </div>`;
       hRow.appendChild(th);
     }
@@ -3734,7 +4627,7 @@ async function renderGcCards(selDate) {
           nameEl.className = 'gc-name-label';
           nameEl.style.cssText = `font-size:10px;color:var(--t3);margin-top:2px;width:116px;text-align:center;line-height:1.5;display:${_gcNameOn ? 'block' : 'none'};word-break:keep-all`;
 
-          const convBadge = `<div style="font-size:9.5px;color:var(--accent);font-weight:600;margin-bottom:2px">전환 ${Math.round(c.conv)}건</div>`;
+          const convBadge = `<div style="font-size:9.5px;color:${isBuyGc?'#185FA5':'#c0392b'};font-weight:600;margin-bottom:2px">${isBuyGc?'구매전환':'전체전환'} ${Math.round(isBuyGc?(c.pconv||0):c.conv)}건</div>`;
           const nameLine = `<div onclick="event.stopPropagation();copyToClip('${c.name.replace(/'/g,"\\'")}',this)" title="클릭하면 이름 복사" style="font-size:10px;color:var(--t2);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:112px;cursor:pointer;padding:2px 5px;border-radius:4px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong)">${c.name}</div>`;
           const copyBtns = `<div style="display:flex;gap:3px;justify-content:center;margin-top:3px;flex-wrap:wrap">
             ${c.code ? `<button onclick="event.stopPropagation();copyToClip('${c.code}',this)" style="font-size:9px;padding:1px 5px;border-radius:4px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);cursor:pointer;color:var(--accent);line-height:1.6">${c.code}</button>` : ''}
@@ -3950,3 +4843,18 @@ window._adsFs = {
 </script>
 </body>
 </html>
+
+          <!-- 기간별 전체 올리기 뷰 -->
+          <div id="zgBatchView" style="display:none">
+            <div id="zgBatchZone" style="border:2px dashed var(--glass-border-s);border-radius:10px;padding:24px 16px;text-align:center;cursor:pointer;background:var(--glass-bg);transition:all .15s">
+              <div style="font-size:20px;margin-bottom:6px">📂</div>
+              <div style="font-size:13px;font-weight:500;color:var(--tx);margin-bottom:4px">파일을 여기에 드래그하거나 클릭해서 선택</div>
+              <div style="font-size:11px;color:var(--t3)">bk_260417.xlsx, gfa_260417.zip 등 여러 파일 동시 선택 가능</div>
+              <input type="file" id="zgBatchInput" multiple accept=".xlsx,.zip" style="display:none">
+            </div>
+            <div id="zgBatchList" style="margin-top:10px;display:none">
+              <div style="font-size:10.5px;font-weight:600;color:var(--t3);letter-spacing:.5px;margin-bottom:6px">업로드할 파일 목록</div>
+              <div id="zgBatchItems" style="display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto"></div>
+              <button id="zgBatchUploadBtn" onclick="zgBatchUpload()" style="width:100%;margin-top:10px;padding:10px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">🚀 전체 업로드</button>
+            </div>
+          </div>

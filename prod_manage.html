@@ -958,6 +958,55 @@ function stageSkuNew(){
 }
 function startSkuEdit(code){skuEditCode=code;renderSkuTable();}
 function cancelSkuEdit(){skuEditCode=null;renderSkuTable();}
+
+function collectOptItems(oi){
+  const container=document.getElementById(`eo-items-${oi}`);
+  if(!container) return [];
+  const spans=[...container.querySelectorAll('span[style*="inline-flex"]')];
+  return spans.map((span,ii)=>{
+    const nick=span.querySelector('span:first-child')?.textContent.trim()||'';
+    const qty=Number(document.getElementById(`eo-iqty-${oi}-${ii}`)?.value)||1;
+    return {nick,qty};
+  }).filter(x=>x.nick);
+}
+function collectNewOptItems(){
+  const container=document.getElementById('eo-new-items');
+  if(!container) return [];
+  const spans=[...container.querySelectorAll('span[style*="inline-flex"]')];
+  return spans.map((span,ii)=>{
+    const nick=span.querySelector('span:first-child')?.textContent.trim()||'';
+    const qty=Number(container.querySelector(`input[data-ii="${ii}"]`)?.value)||1;
+    return {nick,qty};
+  }).filter(x=>x.nick);
+}
+function addOptItem(oi,sel){
+  const nick=sel.value;if(!nick){return;}
+  const container=document.getElementById(`eo-items-${oi}`);
+  if(!container) return;
+  const ii=container.querySelectorAll('span[style*="inline-flex"]').length;
+  const span=document.createElement('span');
+  span.style.cssText='display:inline-flex;align-items:center;gap:3px;background:rgba(26,86,200,.08);border:0.5px solid rgba(26,86,200,.2);border-radius:4px;padding:2px 5px';
+  span.innerHTML=`<span style="font-size:11px;font-weight:600;color:#1a56c8">${nick}</span><input type="number" min="1" value="1" data-ii="${ii}" id="eo-iqty-${oi}-${ii}" inputmode="numeric" style="width:28px;font-size:11px;padding:1px 2px;border:0.5px solid rgba(26,86,200,.25);border-radius:3px;text-align:center;background:var(--bg);color:var(--tx)"><span onclick="this.closest('span[style]').remove()" style="cursor:pointer;font-size:10px;color:var(--t3)">✕</span>`;
+  container.insertBefore(span,sel.parentElement===container?sel:container.querySelector('select'));
+  sel.value='';
+}
+function removeOptItem(oi,ii){
+  const container=document.getElementById(`eo-items-${oi}`);
+  if(!container) return;
+  const spans=[...container.querySelectorAll('span[style*="inline-flex"]')];
+  if(spans[ii]) spans[ii].remove();
+}
+function addNewOptItem(sel){
+  const nick=sel.value;if(!nick) return;
+  const container=document.getElementById('eo-new-items');
+  if(!container) return;
+  const ii=container.querySelectorAll('span[style*="inline-flex"]').length;
+  const span=document.createElement('span');
+  span.style.cssText='display:inline-flex;align-items:center;gap:3px;background:rgba(26,86,200,.08);border:0.5px solid rgba(26,86,200,.2);border-radius:4px;padding:2px 5px';
+  span.innerHTML=`<span style="font-size:11px;font-weight:600;color:#1a56c8">${nick}</span><input type="number" min="1" value="1" data-ii="${ii}" inputmode="numeric" style="width:28px;font-size:11px;padding:1px 2px;border:0.5px solid rgba(26,86,200,.25);border-radius:3px;text-align:center;background:var(--bg);color:var(--tx)"><span onclick="this.closest('span[style]').remove()" style="cursor:pointer;font-size:10px;color:var(--t3)">✕</span>`;
+  container.insertBefore(span,sel.parentElement===container?sel:container.querySelector('select'));
+  sel.value='';
+}
 function stageSkuEdit(code){
   const sk=SKUS.find(x=>x.code===code);if(!sk)return;
   const newCode=document.getElementById('es-code').value.trim();
@@ -986,7 +1035,8 @@ function stageSkuEdit(code){
     const pa=Number(document.getElementById(`eo-pa-${oi}`)?.value)||null;
     const pf=pa?pa-1000:null;
     const memo=document.getElementById(`eo-memo-${oi}`)?.value.trim()||null;
-    if(nick||name) saved.push({nick:nick||'',name:name||'',status:sk.status,priceNormal:pn,priceDisc:pd,priceMax:pm,priceAlim:pa,priceFinal:pf,memo});
+    const items=collectOptItems(oi);
+    if(nick) saved.push({nick:nick||'',name:'',status:sk.status,items,priceNormal:pn,priceDisc:pd,priceMax:pm,priceAlim:pa,priceFinal:pf,memo});
   });
   sk.options=saved;
   sk.pending=true;skuEditCode=null;renderSkuTable();updatePendBar();
@@ -995,7 +1045,7 @@ function stageSkuEdit(code){
 function addSkuOpt(code){
   const sk=SKUS.find(x=>x.code===code);if(!sk)return;
   const nick=document.getElementById('eo-new-nick')?.value.trim();
-  const name=document.getElementById('eo-new-name')?.value.trim();
+  const newItems=collectNewOptItems();
   const status=document.getElementById('eo-new-status')?.value||'상시';
   const pn=Number(document.getElementById('eo-new-pn')?.value)||null;
   const pd=Number(document.getElementById('eo-new-pd')?.value)||null;
@@ -1019,7 +1069,7 @@ function addSkuOpt(code){
     const opf=opa?opa-1000:_.priceFinal||null;
     saved.push({nick:on,name:oname,status:sk.status,priceNormal:opn,priceDisc:opd,priceMax:opm,priceAlim:opa,priceFinal:opf,memo:omemo});
   });
-  saved.push({nick,name:name||'',status:sk.status,priceNormal:pn,priceDisc:pd,priceMax:pm,priceAlim:pa,priceFinal:pf,memo});
+  saved.push({nick,name:'',status:sk.status,items:newItems,priceNormal:pn,priceDisc:pd,priceMax:pm,priceAlim:pa,priceFinal:pf,memo});
   sk.options=saved;
   renderSkuTable();
 }
@@ -1039,7 +1089,8 @@ function removeSkuOpt(code,idx){
     const omemo=document.getElementById(`eo-memo-${oi}`)?.value.trim()||_.memo||null;
     const opa=Number(document.getElementById(`eo-pa-${oi}`)?.value)||_.priceAlim||null;
     const opf=opa?opa-1000:_.priceFinal||null;
-    saved.push({nick:on,name:oname,status:sk.status,priceNormal:opn,priceDisc:opd,priceMax:opm,priceAlim:opa,priceFinal:opf,memo:omemo});
+    const oitems=collectOptItems(oi)||_.items||[];
+    saved.push({nick:on,name:'',status:sk.status,items:oitems,priceNormal:opn,priceDisc:opd,priceMax:opm,priceAlim:opa,priceFinal:opf,memo:omemo});
   });
   sk.options=saved;
   renderSkuTable();
@@ -1145,7 +1196,18 @@ function renderSkuTable(q){
             <input class="e-input" id="eo-nick-${oi}" value="${opt.nick||''}" placeholder="닉네임" style="width:100%">
           </td>
           <td colspan="2" style="padding:4px 6px">
-            <input class="e-input" id="eo-name-${oi}" value="${opt.name||''}" placeholder="구성 설명" style="width:100%">
+            <div id="eo-items-${oi}" style="display:flex;flex-wrap:wrap;gap:3px;align-items:center">
+              ${(opt.items||[]).map((item,ii)=>`
+                <span style="display:inline-flex;align-items:center;gap:3px;background:rgba(26,86,200,.08);border:0.5px solid rgba(26,86,200,.2);border-radius:4px;padding:2px 5px">
+                  <span style="font-size:11px;font-weight:600;color:#1a56c8">\${item.nick}</span>
+                  <input type="number" min="1" value="\${item.qty}" id="eo-iqty-\${oi}-\${ii}" inputmode="numeric" style="width:28px;font-size:11px;padding:1px 2px;border:0.5px solid rgba(26,86,200,.25);border-radius:3px;text-align:center;background:var(--bg);color:var(--tx)">
+                  <span onclick="removeOptItem(\${oi},\${ii})" style="cursor:pointer;font-size:10px;color:var(--t3);line-height:1">✕</span>
+                </span>`).join('')}
+              <select id="eo-iadd-${oi}" onchange="addOptItem(${oi},this)" style="font-size:10px;padding:2px 4px;border:0.5px dashed var(--fc-d);border-radius:4px;background:var(--bg);color:var(--t2)">
+                <option value="">+ 품목</option>
+                ${ITEMS.filter(x=>x.status!=='단종').map(x=>`<option value="\${x.nick}">\${x.nick}</option>`).join('')}
+              </select>
+            </div>
           </td>
           <td style="padding:4px 6px"><select class="e-select" id="eo-status-${oi}">${sel(optStatusList,opt.status||sk.status)}</select></td>
           <td style="padding:4px 6px;position:relative">
@@ -1170,7 +1232,14 @@ function renderSkuTable(q){
         <td class="fix" style="left:68px"></td>
         <td class="fix" style="left:116px"></td>
         <td colspan="2" style="padding:4px 6px"><input class="e-input" id="eo-new-nick" placeholder="닉네임 (예: 플3+소3)"></td>
-        <td colspan="2" style="padding:4px 6px"><input class="e-input" id="eo-new-name" placeholder="구성 설명"></td>
+        <td colspan="2" style="padding:4px 6px">
+          <div id="eo-new-items" style="display:flex;flex-wrap:wrap;gap:3px;align-items:center">
+            <select id="eo-new-iadd" onchange="addNewOptItem(this)" style="font-size:10px;padding:2px 4px;border:0.5px dashed var(--fc-d);border-radius:4px;background:var(--bg);color:var(--t2)">
+              <option value="">+ 품목</option>
+              ${ITEMS.filter(x=>x.status!=='단종').map(x=>`<option value="\${x.nick}">\${x.nick}</option>`).join('')}
+            </select>
+          </div>
+        </td>
         <td style="padding:4px 8px"><span class="badge b-${sk.status}">${sk.status}</span></td>
         <td style="padding:4px 6px"><input class="e-input r" id="eo-new-pn" inputmode="numeric" placeholder="정상가"></td>
         <td style="padding:4px 6px"><input class="e-input r" id="eo-new-pd" inputmode="numeric" placeholder="상시할인가"></td>
@@ -1226,7 +1295,7 @@ function renderSkuTable(q){
             <td class="fix" style="left:68px"></td>
             <td class="fix" style="left:116px"></td>
             <td class="fix fix-last" style="left:240px;cursor:pointer" onclick="copyToClip('${opt.nick||''}',this,'sku')"><span class="opt-nick">${opt.nick||''}</span></td>
-            <td style="font-size:11.5px">${opt.name||''}</td>
+            <td>${(opt.items&&opt.items.length)?opt.items.map(i=>`<span style="display:inline-flex;align-items:center;gap:1px;background:rgba(26,86,200,.08);color:#1a56c8;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:600;margin-right:2px">${i.nick}<span style="font-size:10px;color:#185FA5;margin-left:1px">×${i.qty}</span></span>`).join(''):'<span style="color:var(--t4);font-size:11px">—</span>'}</td>
             <td></td>
             <td style="cursor:pointer" onclick="copyToClip('${opt.status||''}',this,'sku')">
               <span class="badge b-${opt.status||'상시'}">${opt.status||'상시'}</span>

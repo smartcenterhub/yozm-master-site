@@ -418,7 +418,8 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   <!-- ③ 행사 제안 샘플 (전체 너비) -->
     <div class="ptitle" style="margin-bottom:6px">행사 제안 샘플</div>
     <div id="reg-prod-list"><div style="text-align:center;padding:16px;color:var(--t3);font-size:12px">상품을 추가하세요</div></div>
-  </div><!-- p0 end -->
+  </div><!-- inner end -->
+</div><!-- p0 end -->
 <!-- ═══ 탭1: 행사 일괄 등록 ═══ -->
 <div class="pane" id="p1">
   <div class="pg-hd">
@@ -527,17 +528,18 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     </select>
     <div class="tfsep"></div>
     <button class="btn btn-sm btn-gh" onclick="resetFilters(2)" style="font-size:11px;padding:3px 9px;flex-shrink:0">↺ 초기화</button>
+    <span id="prop-total-cnt-2" style="font-size:11px;color:var(--t3);margin-left:2px"></span>
     <div class="tfsep"></div>
-    <button class="sfb sf-warning"  onclick="sfClick(this,'확인필요',2)">확인필요</button>
+    <button class="sfb sf-warning"  onclick="sfClick(this,'확인필요',2)">확인필요 <span id="cnt-확인필요-2" style="font-size:10px;opacity:.7"></span></button>
     <div class="tfsep"></div>
-    <button class="sfb" onclick="sfClick(this,'제안중',2)" style="color:var(--t3)">제안중</button>
-    <button class="sfb sf-done"     onclick="sfClick(this,'제안완료',2)">제안완료</button>
-    <button class="sfb sf-sel"  onclick="sfClick(this,'선정',2)">선정</button>
-    <button class="sfb sf-rej"  onclick="sfClick(this,'미선정',2)">미선정</button>
+    <button class="sfb" onclick="sfClick(this,'제안중',2)" style="color:var(--t3)">제안중 <span id="cnt-제안중-2" style="font-size:10px;opacity:.7"></span></button>
+    <button class="sfb sf-done"     onclick="sfClick(this,'제안완료',2)">제안완료 <span id="cnt-제안완료-2" style="font-size:10px;opacity:.7"></span></button>
+    <button class="sfb sf-sel"  onclick="sfClick(this,'선정',2)">선정 <span id="cnt-선정-2" style="font-size:10px;opacity:.7"></span></button>
+    <button class="sfb sf-rej"  onclick="sfClick(this,'미선정',2)">미선정 <span id="cnt-미선정-2" style="font-size:10px;opacity:.7"></span></button>
     <div class="tfsep"></div>
-    <button class="sfb sf-mid"  onclick="sfClick(this,'진행전',2)">진행전</button>
-    <button class="sfb sf-run"  onclick="sfClick(this,'진행중',2)">진행중</button>
-    <button class="sfb sf-end"  onclick="sfClick(this,'진행종료',2)">진행종료</button>
+    <button class="sfb sf-mid"  onclick="sfClick(this,'진행전',2)">진행전 <span id="cnt-진행전-2" style="font-size:10px;opacity:.7"></span></button>
+    <button class="sfb sf-run"  onclick="sfClick(this,'진행중',2)">진행중 <span id="cnt-진행중-2" style="font-size:10px;opacity:.7"></span></button>
+    <button class="sfb sf-end"  onclick="sfClick(this,'진행종료',2)">진행종료 <span id="cnt-진행종료-2" style="font-size:10px;opacity:.7"></span></button>
   </div>
   <div class="fbar">
     <input id="prop-search" placeholder="행사명 / 닉네임 검색" oninput="renderPropList(2)">
@@ -2071,6 +2073,17 @@ window.renderPropList=function(tabNum){
     const wCnt=PROPOSALS.filter(p=>!p._deleted&&p.status==='확인필요').length;
     const banner=document.getElementById('warn-banner-2');
     if(banner){if(wCnt>0){banner.innerHTML='⚠️ 확인필요 항목이 '+wCnt+'건 있습니다 <span style="font-size:11px;opacity:.7;text-decoration:underline;cursor:pointer">필터 보기</span>';banner.style.display='block';banner.style.cursor='pointer';banner.onclick=()=>{const btn=document.querySelector('.sfb.sf-warning');if(btn&&!btn.classList.contains('on'))btn.click();};}else banner.style.display='none';}
+    /* 버튼별 개수 업데이트 */
+    const allP=PROPOSALS.filter(p=>!p._deleted);
+    const statusCounts={};
+    allP.forEach(p=>{const cs=computeStatus(p);statusCounts[cs]=(statusCounts[cs]||0)+1;});
+    ['확인필요','제안중','제안완료','선정','미선정','진행전','진행중','진행종료'].forEach(s=>{
+      const el=document.getElementById('cnt-'+s+'-2');
+      if(el)el.textContent=statusCounts[s]?'('+statusCounts[s]+')':'';
+    });
+    /* 전체 카드 개수 (현재 표시된 그룹 수) */
+    const totalEl=document.getElementById('prop-total-cnt-2');
+    if(totalEl)totalEl.textContent='총 '+sortedEntries.length+'건';
   }
 };
 

@@ -1344,8 +1344,14 @@ function mailUpdateBk(moTotal, moKeywords, pcTotal, pcKeywords, date) {
   }
   if (_bkMailMode === 'all' && dayLines.length > 0) textLines.push('    ───');
   if (_bkMailMode === 'total' || _bkMailMode === 'all') {
-    textLines.push(`    → MO: ${moTotalText}`);
-    textLines.push(`       PC: ${pcTotalText}`);
+    const bkMode2 = (typeof _cardMailMode !== 'undefined' ? _cardMailMode.bk : null) || _mailMode || 'all';
+    if (bkMode2 === 'both') {
+      moTotalText.split('\n').forEach(l => textLines.push('    ' + l));
+      pcTotalText.split('\n').forEach(l => textLines.push('    ' + l));
+    } else {
+      textLines.push(`    → MO: ${moTotalText}`);
+      textLines.push(`       PC: ${pcTotalText}`);
+    }
   }
   _mailData.bkAuto = textLines.join('\n');
 
@@ -1368,7 +1374,13 @@ function mailUpdateBk(moTotal, moKeywords, pcTotal, pcKeywords, date) {
     html += `<div style="border-top:1px solid var(--glass-border-s);margin:3px 0"></div>`;
   }
   if (_bkMailMode === 'total' || _bkMailMode === 'all') {
-    html += `<div>→ MO: ${moTotalText}</div><div style="margin-left:2.8em">PC: ${pcTotalText}</div>`;
+    const bkMode3 = (typeof _cardMailMode !== 'undefined' ? _cardMailMode.bk : null) || _mailMode || 'all';
+    if (bkMode3 === 'both') {
+      moTotalText.split('\n').forEach(l => { html += `<div>${l}</div>`; });
+      pcTotalText.split('\n').forEach(l => { html += `<div>${l}</div>`; });
+    } else {
+      html += `<div>→ MO: ${moTotalText}</div><div style="margin-left:2.8em">PC: ${pcTotalText}</div>`;
+    }
   }
   html += '</div>';
   el.innerHTML = html;
@@ -1474,7 +1486,8 @@ function _buildGfaImgTbl(dateRows, images, globalSg, hideEmpty=true) {
     const totBuy  = creativeMap ? [...creativeMap.values()].reduce((s,v)=>s+(v.pconv||0),0) : 0;
     let subTxt = '';
     if (isBothImg) {
-      subTxt = `<div style="font-size:10.5px;font-weight:500;margin-top:1px"><span style="color:#c0392b">전체 ${Math.round(totAll)}건</span> / <span style="color:#185FA5">구매 ${Math.round(totBuy)}건</span></div>`;
+      subTxt = `<div style="font-size:10.5px;color:${totAll>0?'#c0392b':'#aaa'};font-weight:500;margin-top:1px">전체전환 ${Math.round(totAll)}건</div>` +
+               `<div style="font-size:10.5px;color:${totBuy>0?'#185FA5':'#aaa'};font-weight:500;margin-top:1px">구매전환 ${Math.round(totBuy)}건</div>`;
     } else if (isBuyImg) {
       subTxt = `<div style="font-size:10.5px;color:${totBuy>0?'#185FA5':'#aaa'};font-weight:500;margin-top:2px">구매전환 ${Math.round(totBuy)}건</div>`;
     } else {
@@ -2551,10 +2564,10 @@ function _aggregateBkKeywords() {
   const moBuyKwStr = kwStr((() => { const m={}; allDks.forEach(dk => { const parseKw2=(t,mp)=>{const sl=t?t.indexOf(' / '):-1;if(sl<0)return;t.slice(sl+3).split(', ').forEach(kw=>{const mm=kw.match(/^(.+)\((\d+)\)$/);if(mm)mp[mm[1]]=(mp[mm[1]]||0)+parseInt(mm[2]);}); }; parseKw2(_kwByDate.get(dk+'_MO')?.buySummaryText,m); }); return m; })());
   const pcBuyKwStr = kwStr((() => { const m={}; allDks.forEach(dk => { const parseKw2=(t,mp)=>{const sl=t?t.indexOf(' / '):-1;if(sl<0)return;t.slice(sl+3).split(', ').forEach(kw=>{const mm=kw.match(/^(.+)\((\d+)\)$/);if(mm)mp[mm[1]]=(mp[mm[1]]||0)+parseInt(mm[2]);}); }; parseKw2(_kwByDate.get(dk+'_PC')?.buySummaryText,m); }); return m; })());
   const moText = bkFinalMode === 'both'
-    ? `Total(${moTotAll})${moKwStr?' / '+moKwStr:''} / 구매 Total(${moPconvAll})${moBuyKwStr?' / '+moBuyKwStr:''}`
+    ? `→ MO구매: Total(${moPconvAll})${moBuyKwStr?' / '+moBuyKwStr:''}\n→ MO전체: Total(${moTotAll})${moKwStr?' / '+moKwStr:''}`
     : `${moLabel}${moKwStr ? ' / '+moKwStr : ''}${moPStr}`;
   const pcText = bkFinalMode === 'both'
-    ? `Total(${pcTotAll})${pcKwStr?' / '+pcKwStr:''} / 구매 Total(${pcPconvAll})${pcBuyKwStr?' / '+pcBuyKwStr:''}`
+    ? `→ PC구매: Total(${pcPconvAll})${pcBuyKwStr?' / '+pcBuyKwStr:''}\n→ PC전체: Total(${pcTotAll})${pcKwStr?' / '+pcKwStr:''}`
     : `${pcLabel}${pcKwStr ? ' / '+pcKwStr : ''}${pcPStr}`;
   return {
     allDks,

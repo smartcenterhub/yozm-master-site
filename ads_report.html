@@ -459,9 +459,9 @@ tr.empty-group{opacity:.35}
       <div style="display:flex;flex-direction:column;gap:12px">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
           <div style="display:flex;gap:5px">
-            <button id="mailModeAll" onclick="setMailMode('all')" style="padding:3px 11px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid rgba(192,57,43,.3);background:rgba(192,57,43,.08);color:#c0392b;font-weight:600;font-family:inherit;transition:all .12s">전체전환</button>
+            <button id="mailModeAll" onclick="setMailMode('all')" style="padding:3px 11px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit;transition:all .12s">전체전환</button>
             <button id="mailModeBuy" onclick="setMailMode('buy')" style="padding:3px 11px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit;transition:all .12s">구매전환</button>
-            <button id="mailModeBoth" onclick="setMailMode('both')" style="padding:3px 11px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit;transition:all .12s">전체+구매</button>
+            <button id="mailModeBoth" onclick="setMailMode('both')" style="padding:3px 11px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid rgba(58,58,240,.3);background:rgba(58,58,240,.08);color:var(--accent);font-weight:600;font-family:inherit;transition:all .12s">전체+구매</button>
           </div>
           <div style="display:flex;gap:6px">
             <button class="btn btn-ghost btn-sm" onclick="mailExpandAll()" style="font-size:11.5px">☑ 전체 열기</button>
@@ -473,9 +473,9 @@ tr.empty-group{opacity:.35}
         <div class="card mail-inactive" id="mailCardPerf">
           <div class="card-title" style="justify-content:space-between;cursor:pointer" onclick="mailToggleCard('mailCardPerfBody','mailChkPerf')">
             <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--accent)"></div>날짜별 성과 요약</span><div style="display:flex;gap:4px;margin-left:8px" onclick="event.stopPropagation()">
-                <button id="mailMode_perf_all" onclick="setCardMailMode('perf','all')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid rgba(192,57,43,.3);background:rgba(192,57,43,.08);color:#c0392b;font-weight:600;font-family:inherit">전체</button>
+                <button id="mailMode_perf_all" onclick="setCardMailMode('perf','all')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">전체</button>
                 <button id="mailMode_perf_buy" onclick="setCardMailMode('perf','buy')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">구매</button>
-                <button id="mailMode_perf_both" onclick="setCardMailMode('perf','both')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">전체+구매</button>
+                <button id="mailMode_perf_both" onclick="setCardMailMode('perf','both')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid rgba(58,58,240,.3);background:rgba(58,58,240,.08);color:var(--accent);font-weight:600;font-family:inherit">전체+구매</button>
               </div>
             <div style="display:flex;gap:6px;align-items:center" onclick="event.stopPropagation()">
               <span style="font-size:10.5px;color:var(--t3)">파일 업로드 시 자동</span>
@@ -496,9 +496,9 @@ tr.empty-group{opacity:.35}
         <div class="card mail-inactive" id="mailCardBk">
           <div class="card-title" style="justify-content:space-between;cursor:pointer" onclick="mailToggleCard('mailCardBkBody','mailChkBk')">
             <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--accent)"></div>* 브랜드검색</span><div style="display:flex;gap:4px;margin-left:8px" onclick="event.stopPropagation()">
-                <button id="mailMode_bk_all" onclick="setCardMailMode('bk','all')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid rgba(192,57,43,.3);background:rgba(192,57,43,.08);color:#c0392b;font-weight:600;font-family:inherit">전체</button>
+                <button id="mailMode_bk_all" onclick="setCardMailMode('bk','all')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">전체</button>
                 <button id="mailMode_bk_buy" onclick="setCardMailMode('bk','buy')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">구매</button>
-                <button id="mailMode_bk_both" onclick="setCardMailMode('bk','both')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">전체+구매</button>
+                <button id="mailMode_bk_both" onclick="setCardMailMode('bk','both')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid rgba(58,58,240,.3);background:rgba(58,58,240,.08);color:var(--accent);font-weight:600;font-family:inherit">전체+구매</button>
               </div>
             <div style="display:flex;gap:5px;align-items:center" onclick="event.stopPropagation()">
               <div style="display:flex;gap:3px" id="bkModeGroup">
@@ -517,9 +517,9 @@ tr.empty-group{opacity:.35}
         <div class="card mail-inactive" id="mailCardGfa">
           <div class="card-title" style="justify-content:space-between;cursor:pointer" onclick="mailToggleCard('mailCardGfaBody','mailChkGfa')">
             <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--blue)"></div>* 성과형DA(GFA)</span><div style="display:flex;gap:4px;margin-left:8px" onclick="event.stopPropagation()">
-                <button id="mailMode_gfa_all" onclick="setCardMailMode('gfa','all')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid rgba(192,57,43,.3);background:rgba(192,57,43,.08);color:#c0392b;font-weight:600;font-family:inherit">전체</button>
+                <button id="mailMode_gfa_all" onclick="setCardMailMode('gfa','all')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">전체</button>
                 <button id="mailMode_gfa_buy" onclick="setCardMailMode('gfa','buy')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">구매</button>
-                <button id="mailMode_gfa_both" onclick="setCardMailMode('gfa','both')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">전체+구매</button>
+                <button id="mailMode_gfa_both" onclick="setCardMailMode('gfa','both')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid rgba(58,58,240,.3);background:rgba(58,58,240,.08);color:var(--accent);font-weight:600;font-family:inherit">전체+구매</button>
               </div>
             <div style="display:flex;gap:6px;align-items:center" onclick="event.stopPropagation()">
               <button class="btn btn-ghost btn-sm" onclick="mailApplyCard('gfa')" title="이 카드만 미리보기 반영">↙ 적용</button>
@@ -556,9 +556,9 @@ tr.empty-group{opacity:.35}
         <div class="card mail-inactive" id="mailCardAdv">
           <div class="card-title" style="justify-content:space-between;cursor:pointer" onclick="mailToggleCard('mailCardAdvBody','mailChkAdv')">
             <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--green)"></div>* ADVoost</span><div style="display:flex;gap:4px;margin-left:8px" onclick="event.stopPropagation()">
-                <button id="mailMode_adv_all" onclick="setCardMailMode('adv','all')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid rgba(192,57,43,.3);background:rgba(192,57,43,.08);color:#c0392b;font-weight:600;font-family:inherit">전체</button>
+                <button id="mailMode_adv_all" onclick="setCardMailMode('adv','all')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">전체</button>
                 <button id="mailMode_adv_buy" onclick="setCardMailMode('adv','buy')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">구매</button>
-                <button id="mailMode_adv_both" onclick="setCardMailMode('adv','both')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">전체+구매</button>
+                <button id="mailMode_adv_both" onclick="setCardMailMode('adv','both')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid rgba(58,58,240,.3);background:rgba(58,58,240,.08);color:var(--accent);font-weight:600;font-family:inherit">전체+구매</button>
               </div>
             <div style="display:flex;gap:5px;align-items:center" onclick="event.stopPropagation()">
               <div style="display:flex;gap:3px" id="advModeGroup">
@@ -2220,7 +2220,7 @@ function sw(id, el) {
 
 
 
-const _cardMailMode = { perf: 'all', bk: 'all', gfa: 'all', adv: 'all' };
+const _cardMailMode = { perf: 'both', bk: 'both', gfa: 'both', adv: 'both' };
 
 function setCardMailMode(key, mode) {
   _cardMailMode[key] = mode;
@@ -2246,7 +2246,7 @@ function setCardMailMode(key, mode) {
   if (key === 'adv')  mailRefreshAdvCard();
 }
 
-let _mailMode = 'all'; // 'all' | 'buy' | 'both'
+let _mailMode = 'both'; // 'all' | 'buy' | 'both'
 
 function setMailMode(mode) {
   _mailMode = mode;

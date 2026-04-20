@@ -536,6 +536,8 @@ tr.empty-group{opacity:.35}
             <div style="display:flex;gap:6px;align-items:center" onclick="event.stopPropagation()">
               <span style="font-size:10.5px;color:var(--t3)">GFA 소재 업로드 시 자동</span>
               <button class="btn btn-ghost btn-sm" id="mailGfaEmptyBtn" onclick="toggleMailGfaEmpty()" style="display:none;font-size:11px;background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2)">전환 0 숨김</button>
+              <button id="mailGfaImgModeAll" onclick="setGfaImgMode('all')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid rgba(192,57,43,.3);background:rgba(192,57,43,.08);color:#c0392b;font-weight:600;font-family:inherit;display:none">전체</button>
+              <button id="mailGfaImgModeBuy" onclick="setGfaImgMode('buy')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit;display:none">구매</button>
               <button class="btn btn-ghost btn-sm" id="mailGfaImgBtn" onclick="mailCopyGfaImage()" style="display:none">🖼 이미지 복사</button>
               <span class="mail-card-chk on" id="mailChkGfaImg" onclick="mailToggleCard('mailCardGfaImgBody','mailChkGfaImg')">✓</span>
             </div>
@@ -978,21 +980,26 @@ async function zgUpload(e, ds) {
    하루치 ZIP 업로드
 ══════════════════════════ */
 async function processDailyZip(zipFile, forceDateKey) {
-  const nameMatch = zipFile.name.match(/(\d{6})/);
-  if (!nameMatch && !forceDateKey) { showToast('⚠️ ZIP명에 날짜 6자리 필요 (예: 260408.zip)'); return; }
-  const raw = forceDateKey ? forceDateKey.slice(2) : nameMatch[1];
-  const dateKey = '20' + raw;
+  const zip = await JSZip.loadAsync(zipFile);
 
-  // 날짜 바 범위 체크
-  if (_appliedStart && _appliedEnd) {
-    const dateStr = `${dateKey.slice(0,4)}-${dateKey.slice(4,6)}-${dateKey.slice(6,8)}`;
-    if (dateStr < _appliedStart || dateStr > _appliedEnd) {
-      showToast('⚠️ ZIP 날짜가 적용된 날짜 범위 밖입니다');
-      return;
-    }
+  // 내부 파일에서 날짜 자동 감지
+  const fileNames = Object.keys(zip.files).filter(n => !zip.files[n].dir).map(n => n.split('/').pop().toLowerCase());
+  const PREFIXES = ['bk','kwmo','kwpc','gfa','gc','da','sa'];
+  const detectedDates = new Set();
+  fileNames.forEach(fn => {
+    const m = fn.match(/(?:bk|kwmo|kwpc|gfa|gc|da|sa)_?(\d{6})/);
+    if (m) detectedDates.add(m[1]);
+  });
+
+  const isMultiDate = detectedDates.size > 1;
+
+  // 단일날짜면 기존 방식
+  const nameMatch = zipFile.name.match(/(\d{6})/);
+  if (!isMultiDate && !forceDateKey && !nameMatch && detectedDates.size === 0) {
+    showToast('⚠️ ZIP명에 날짜 6자리 필요 (예: 260408.zip)'); return;
   }
 
-  const PREFIX_MAP = {
+  const makePrefixMap = (dateKey) => ({
     'bk':   f => processBk(f, dateKey),
     'kwmo': f => processKw(f, dateKey, 'MO'),
     'kwpc': f => processKw(f, dateKey, 'PC'),
@@ -1000,32 +1007,54 @@ async function processDailyZip(zipFile, forceDateKey) {
     'gc':   f => processGc(f),
     'da':   f => processAdv(f, 1),
     'sa':   f => processAdv(f, 2),
-  };
+  });
 
-  const zip = await JSZip.loadAsync(zipFile);
   const done = [], fail = [];
+
   for (const [name, entry] of Object.entries(zip.files)) {
     if (entry.dir) continue;
-    const raw = name.split('/').pop().toLowerCase();
-    const prefix = Object.keys(PREFIX_MAP).find(p => raw.startsWith(p + '_') || raw.startsWith(p + '.'));
+    const rawName = name.split('/').pop().toLowerCase();
+    const parts = rawName.split('.');
+    const ext = parts[parts.length - 1];
+    const ext2 = parts.length >= 2 ? parts[parts.length - 2] : '';
+    const cleanName = (ext === ext2 && (ext === 'xlsx' || ext === 'zip')) ? parts.slice(0,-1).join('.') : rawName;
+    const mime = ext === 'xlsx' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'application/zip';
+
+    // 파일명에서 날짜 추출 (멀티날짜 모드)
+    let fileDate = null;
+    if (isMultiDate) {
+      const dm = cleanName.match(/(?:bk|kwmo|kwpc|gfa|gc|da|sa)_?(\d{6})/);
+      if (dm) fileDate = '20' + dm[1];
+    }
+
+    // 날짜 결정
+    const dateKey = fileDate ||
+      (forceDateKey ? forceDateKey : ('20' + (nameMatch?.[1] || [...detectedDates][0] || '')));
+
+    // 범위 체크
+    if (_appliedStart && _appliedEnd) {
+      const ds = `${dateKey.slice(0,4)}-${dateKey.slice(4,6)}-${dateKey.slice(6,8)}`;
+      if (ds < _appliedStart || ds > _appliedEnd) continue;
+    }
+
+    const PREFIX_MAP = makePrefixMap(dateKey);
+    const prefix = PREFIXES.find(p => cleanName.startsWith(p + '_') || cleanName.startsWith(p + '.'));
     if (!prefix) continue;
+
     try {
       const blob = await entry.async('blob');
-      // 이중 확장자 정규화: .xlsx.xlsx → .xlsx, .zip.zip → .zip
-      const parts = raw.split('.');
-      const ext = parts[parts.length - 1];
-      const ext2 = parts.length >= 2 ? parts[parts.length - 2] : '';
-      const realExt = (ext === ext2 && (ext === 'xlsx' || ext === 'zip')) ? ext : ext;
-      const mime = realExt === 'xlsx' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'application/zip';
-      // 파일명에서 이중 확장자 제거
-      const cleanName = (ext === ext2) ? parts.slice(0, -1).join('.') : raw;
       const file = new File([blob], cleanName, { type: mime });
       await PREFIX_MAP[prefix](file);
-      done.push(prefix);
+      done.push(`${prefix}(${dateKey.slice(2)})`);
     } catch(err) { fail.push(prefix); console.error(prefix, err); }
   }
-  const uniqueDone = [...new Set(done)];
-  let msg = uniqueDone.length ? `✅ ${perfDateDisplay(dateKey)} — ${uniqueDone.join(', ')} 완료` : '⚠️ 매칭 파일 없음 — prefix 확인';
+
+  const dateCount = new Set(done.map(d => d.match(/\((\d+)\)/)?.[1])).size;
+  let msg = done.length
+    ? isMultiDate
+      ? `✅ ${dateCount}일치 — ${[...new Set(done.map(d=>d.replace(/\(.*\)/,'')))].join(', ')} 완료`
+      : `✅ ${perfDateDisplay('20'+(nameMatch?.[1]||[...detectedDates][0]||''))} — ${[...new Set(done.map(d=>d.replace(/\(.*\)/,'')))].join(', ')} 완료`
+    : '⚠️ 매칭 파일 없음';
   if (fail.length) msg += ` ❌ 실패: ${[...new Set(fail)].join(', ')}`;
   showToast(msg);
 
@@ -1295,13 +1324,7 @@ function mailRefreshGfaCard() {
   });
 }
 function mailRefreshAdvCard() {
-  const mode = _cardMailMode.adv || 'all';
-  const advBody = document.getElementById('mailCardAdvBody');
-  if (!advBody) return;
-  advBody.querySelectorAll('[data-mail-mode]').forEach(el => {
-    const elMode = el.dataset.mailMode;
-    el.style.display = (elMode === mode || mode === 'both' || elMode === 'common') ? '' : 'none';
-  });
+  mailUpdateAdv();
 }
 
 function mailUpdateBk(moTotal, moKeywords, pcTotal, pcKeywords, date) {
@@ -1442,8 +1465,11 @@ function _buildGfaImgTbl(dateRows, images, globalSg, hideEmpty=true) {
 
   sg.forEach(g => {
     const creativeMap = gm.get(g);
-    const tot = creativeMap ? [...creativeMap.values()].reduce((s,v)=>s+v.conv,0) : 0;
-    h += `<th style="${thS}">${gcShortName(g)}<div style="font-size:10.5px;color:${tot>0?'#185FA5':'#aaa'};font-weight:500;margin-top:2px">전환 ${Math.round(tot)}건</div></th>`;
+    const isBuyImg = window._gcBuyMode === 'buy';
+    const tot = creativeMap ? [...creativeMap.values()].reduce((s,v)=>s+(isBuyImg?(v.pconv||0):v.conv),0) : 0;
+    const totColor = tot>0 ? (isBuyImg?'#185FA5':'#c0392b') : '#aaa';
+    const totLabel = isBuyImg ? '구매전환' : '전체전환';
+    h += `<th style="${thS}">${gcShortName(g)}<div style="font-size:10.5px;color:${totColor};font-weight:500;margin-top:2px">${totLabel} ${Math.round(tot)}건</div></th>`;
   });
   h += `</tr></thead><tbody>`;
 
@@ -1482,6 +1508,30 @@ function toggleMailGfaEmpty() {
   updateMailGfaImgCard();
 }
 
+let _gfaImgMode = 'all';
+
+async function setGfaImgMode(mode) {
+  _gfaImgMode = mode;
+  window._gcBuyMode = mode;
+  const allBtn = document.getElementById('mailGfaImgModeAll');
+  const buyBtn = document.getElementById('mailGfaImgModeBuy');
+  if (allBtn) {
+    const on = mode === 'all';
+    allBtn.style.borderColor = on ? 'rgba(192,57,43,.3)' : 'var(--glass-border-s)';
+    allBtn.style.background  = on ? 'rgba(192,57,43,.08)' : 'var(--glass-bg)';
+    allBtn.style.color       = on ? '#c0392b' : 'var(--t2)';
+    allBtn.style.fontWeight  = on ? '600' : '400';
+  }
+  if (buyBtn) {
+    const on = mode === 'buy';
+    buyBtn.style.borderColor = on ? 'rgba(24,95,165,.3)' : 'var(--glass-border-s)';
+    buyBtn.style.background  = on ? 'rgba(24,95,165,.08)' : 'var(--glass-bg)';
+    buyBtn.style.color       = on ? '#185FA5' : 'var(--t2)';
+    buyBtn.style.fontWeight  = on ? '600' : '400';
+  }
+  await updateMailGfaImgCard();
+}
+
 async function updateMailGfaImgCard() {
   const content = document.getElementById('mailGfaImgContent');
   const tabsEl = document.getElementById('mailGfaImgDateTabs');
@@ -1493,6 +1543,10 @@ async function updateMailGfaImgCard() {
   // 토글 버튼 표시
   const emptyBtn = document.getElementById('mailGfaEmptyBtn');
   if (emptyBtn) emptyBtn.style.display = '';
+  const imgModeAll = document.getElementById('mailGfaImgModeAll');
+  const imgModeBuy = document.getElementById('mailGfaImgModeBuy');
+  if (imgModeAll) imgModeAll.style.display = '';
+  if (imgModeBuy) imgModeBuy.style.display = '';
 
   // 날짜 탭 버튼 렌더
   const onS  = 'background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2);font-weight:500';
@@ -1634,62 +1688,85 @@ async function mailCopyGfaImage() {
 }
 
 function mailUpdateAdv(daConv, saConv) {
-  const daTot = Math.round(Object.values(_perfStore.da).reduce((s,v) => s+(v.conv||0), 0));
-  const saTot = Math.round(Object.values(_perfStore.sa).reduce((s,v) => s+(v.conv||0), 0));
-  const dates = [...new Set([...Object.keys(_perfStore.da), ...Object.keys(_perfStore.sa)])].sort();
+  const mode = (typeof _cardMailMode !== 'undefined' ? _cardMailMode.adv : null) || _mailMode || 'all';
+
+  const daTotAll   = Math.round(Object.values(_perfStore.da).reduce((s,v)=>s+(v.conv||0),0));
+  const saTotAll   = Math.round(Object.values(_perfStore.sa).reduce((s,v)=>s+(v.conv||0),0));
+  const daTotBuy   = Math.round(Object.values(_perfStore.da).reduce((s,v)=>s+(v.pconv||0),0));
+  const saTotBuy   = Math.round(Object.values(_perfStore.sa).reduce((s,v)=>s+(v.pconv||0),0));
+  const daPrev     = Object.values(_perfStore.da).reduce((s,v)=>s+(v.prev||0),0);
+  const saPrev     = Object.values(_perfStore.sa).reduce((s,v)=>s+(v.prev||0),0);
+  const daCost     = Object.values(_perfStore.da).reduce((s,v)=>s+(v.cost||0),0);
+  const saCost     = Object.values(_perfStore.sa).reduce((s,v)=>s+(v.cost||0),0);
+  const daRoas     = daCost>0 ? Math.round(daPrev/daCost*100) : 0;
+  const saRoas     = saCost>0 ? Math.round(saPrev/saCost*100) : 0;
+  const daAllRoas  = daCost>0 ? Math.round(Object.values(_perfStore.da).reduce((s,v)=>s+(v.rev||0),0)/daCost*100) : 0;
+  const saAllRoas  = saCost>0 ? Math.round(Object.values(_perfStore.sa).reduce((s,v)=>s+(v.rev||0),0)/saCost*100) : 0;
+
+  const dates = [...new Set([...Object.keys(_perfStore.da),...Object.keys(_perfStore.sa)])].sort();
   const dayLines = dates.map(dk => ({
     dk,
-    da: Math.round(_perfStore.da[dk]?.conv||0),
-    sa: Math.round(_perfStore.sa[dk]?.conv||0),
+    da:    Math.round(_perfStore.da[dk]?.conv||0),
+    sa:    Math.round(_perfStore.sa[dk]?.conv||0),
+    daBuy: Math.round(_perfStore.da[dk]?.pconv||0),
+    saBuy: Math.round(_perfStore.sa[dk]?.pconv||0),
   }));
 
-  // _mailData.advConv → mailBuildHtml 에서 사용
+  const fmtLine = (dk, da, sa, daB, saB) => {
+    if (mode === 'all')  return `    ${perfDateDisplay(dk)} → DA (${da}건) / SA (${sa}건)`;
+    if (mode === 'buy')  return `    ${perfDateDisplay(dk)} → DA 구매(${daB}건) / SA 구매(${saB}건)`;
+    if (mode === 'both') return `    ${perfDateDisplay(dk)} → DA (${da}건/구매${daB}건) / SA (${sa}건/구매${saB}건)`;
+  };
+  const fmtTotal = () => {
+    if (mode === 'all')  return `DA (${daTotAll}건 ROAS ${daAllRoas}%) / SA (${saTotAll}건 ROAS ${saAllRoas}%)`;
+    if (mode === 'buy')  return `DA 구매(${daTotBuy}건 ROAS ${daRoas}%) / SA 구매(${saTotBuy}건 ROAS ${saRoas}%)`;
+    if (mode === 'both') return `DA (${daTotAll}건/구매${daTotBuy}건 ROAS ${daRoas}%) / SA (${saTotAll}건/구매${saTotBuy}건 ROAS ${saRoas}%)`;
+  };
+
   const textLines = [];
   if (_advMailMode === 'daily' || _advMailMode === 'all') {
-    dayLines.forEach(({ dk, da, sa }) => {
-      textLines.push(`    ${perfDateDisplay(dk)} → DA (${da}건) / SA (${sa}건)`);
-    });
+    dayLines.forEach(({dk,da,sa,daBuy,saBuy}) => textLines.push(fmtLine(dk,da,sa,daBuy,saBuy)));
   }
   if (_advMailMode === 'all' && dayLines.length > 0) textLines.push('    ───');
-  if (_advMailMode === 'total' || _advMailMode === 'all') {
-    const daPconv = Math.round(Object.values(_perfStore.da||{}).reduce((s,v)=>s+(v.pconv||0),0));
-    const saPconv = Math.round(Object.values(_perfStore.sa||{}).reduce((s,v)=>s+(v.pconv||0),0));
-    const daPrev  = Object.values(_perfStore.da||{}).reduce((s,v)=>s+(v.prev||0),0);
-    const saPrev  = Object.values(_perfStore.sa||{}).reduce((s,v)=>s+(v.prev||0),0);
-    const daCost  = Object.values(_perfStore.da||{}).reduce((s,v)=>s+(v.cost||0),0);
-    const saCost  = Object.values(_perfStore.sa||{}).reduce((s,v)=>s+(v.cost||0),0);
-    const daRoas  = daCost>0 ? Math.round(daPrev/daCost*100) : 0;
-    const saRoas  = saCost>0 ? Math.round(saPrev/saCost*100) : 0;
-    const daPStr  = daPconv>0 ? ` / 구매 ${daPconv}건 ROAS ${daRoas}%` : '';
-    const saPStr  = saPconv>0 ? ` / 구매 ${saPconv}건 ROAS ${saRoas}%` : '';
-    textLines.push(`DA (${daTot}건${daPStr}) / SA (${saTot}건${saPStr})`);
-  }
+  if (_advMailMode === 'total' || _advMailMode === 'all') textLines.push(fmtTotal());
   _mailData.advConv = textLines.join('\n');
 
-  // 카드 HTML 렌더링
+  // 카드 렌더
   const el = document.getElementById('mailAdvAuto');
   if (!el) return;
   const D = 'var(--glass-border-s)', T = 'var(--t3)', TX = 'var(--tx)';
+  const RED = '#c0392b', BLUE = '#185FA5';
   const badge = `<span style="font-size:10px;background:rgba(58,58,240,0.08);color:var(--accent);border-radius:4px;padding:1px 6px;margin-right:6px">자동</span>`;
-  let html = badge + `광고계정 전환<div style="margin-left:12px;margin-top:4px;font-size:12px;color:${TX};line-height:2">`;
 
+  const mkVal = (conv, buy, roas, buyRoas, isD) => {
+    const name = isD ? 'DA' : 'SA';
+    if (mode === 'all')  return `${name} <span style="color:${RED};font-weight:600">${conv}건</span> ROAS ${roas}%`;
+    if (mode === 'buy')  return `${name} 구매 <span style="color:${BLUE};font-weight:600">${buy}건</span> ROAS ${buyRoas}%`;
+    if (mode === 'both') return `${name} <span style="color:${RED};font-weight:600">${conv}건</span>/<span style="color:${BLUE};font-weight:600">구매${buy}건</span> ROAS ${buyRoas}%`;
+  };
+  const mkDayLine = ({dk,da,sa,daBuy,saBuy}) => {
+    if (mode === 'all')  return `→ <span style="color:${RED}">DA(${da})</span> / <span style="color:${RED}">SA(${sa})</span>`;
+    if (mode === 'buy')  return `→ <span style="color:${BLUE}">DA구매(${daBuy})</span> / <span style="color:${BLUE}">SA구매(${saBuy})</span>`;
+    if (mode === 'both') return `→ DA(<span style="color:${RED}">${da}</span>/<span style="color:${BLUE}">구매${daBuy}</span>) / SA(<span style="color:${RED}">${sa}</span>/<span style="color:${BLUE}">구매${saBuy}</span>)`;
+  };
+
+  let html = badge + `광고계정 전환<div style="margin-left:12px;margin-top:4px;font-size:12px;color:${TX};line-height:2">`;
   if (_advMailMode === 'daily' || _advMailMode === 'all') {
-    dayLines.forEach(({ dk, da, sa }, i) => {
-      if (i > 0) html += `<div style="border-top:0.5px solid ${D};margin:1px 0"></div>`;
-      html += `<div><span style="font-size:11px;color:${T};margin-right:5px">${perfDateDisplay(dk)}</span>→ DA (${da}건) / SA (${sa}건)</div>`;
+    dayLines.forEach(({dk,da,sa,daBuy,saBuy},i) => {
+      if (i>0) html += `<div style="border-top:0.5px solid ${D};margin:1px 0"></div>`;
+      html += `<div><span style="font-size:11px;color:${T};margin-right:5px">${perfDateDisplay(dk)}</span>${mkDayLine({dk,da,sa,daBuy,saBuy})}</div>`;
     });
   }
-  if (_advMailMode === 'all' && dayLines.length > 0) {
-    html += `<div style="border-top:1px solid var(--glass-border-s);margin:3px 0"></div>`;
-  }
+  if (_advMailMode === 'all' && dayLines.length>0) html += `<div style="border-top:1px solid ${D};margin:3px 0"></div>`;
   if (_advMailMode === 'total' || _advMailMode === 'all') {
-    html += `<div>→ DA (${daTot}건) / SA (${saTot}건)</div>`;
+    html += `<div>${mkVal(daTotAll,daTotBuy,daAllRoas,daRoas,true)} / ${mkVal(saTotAll,saTotBuy,saAllRoas,saRoas,false)}</div>`;
   }
   html += '</div>';
   el.innerHTML = html;
   document.getElementById('mailCardAdv')?.classList.remove('mail-inactive');
   document.getElementById('mailCardAdv')?.classList.add('mail-active');
 }
+
 
 // 날짜별 성과 전역 저장소
 const _perfStore = {
@@ -1780,18 +1857,18 @@ function mailRefreshPerf() {
     const mode = (typeof _cardMailMode !== 'undefined' ? _cardMailMode.perf : null) || _mailMode || 'all';
     const thS = `background:#EEF2FF;color:#3D5A99;padding:3px 8px;text-align:center;font-weight:700;font-size:11px;white-space:nowrap;border:1px solid #C8D4F0;border-bottom:2px solid #B8C8EF`;
     const thL = `background:#EEF2FF;color:#3D5A99;padding:3px 8px;text-align:left;font-weight:700;font-size:11px;white-space:nowrap;border:1px solid #C8D4F0;border-bottom:2px solid #B8C8EF;width:82px`;
-    const thR = (col) => `background:#EEF2FF;color:#c0392b;padding:3px 8px;text-align:center;font-weight:700;font-size:11px;white-space:nowrap;border:1px solid #C8D4F0;border-bottom:2px solid #B8C8EF`;
-    const thB = (col) => `background:#EEF2FF;color:#185FA5;padding:3px 8px;text-align:center;font-weight:700;font-size:11px;white-space:nowrap;border:1px solid #C8D4F0;border-bottom:2px solid #B8C8EF`;
+    const thR = `background:#EEF2FF;color:#c0392b;padding:3px 8px;text-align:center;font-weight:700;font-size:11px;white-space:nowrap;border:1px solid #C8D4F0;border-bottom:2px solid #B8C8EF`;
+    const thB = `background:#EEF2FF;color:#185FA5;padding:3px 8px;text-align:center;font-weight:700;font-size:11px;white-space:nowrap;border:1px solid #C8D4F0;border-bottom:2px solid #B8C8EF`;
 
-    // 헤더 구성
+    // 헤더: 캠페인유형 노출 클릭 비용 [전환/구매] CTR CPC CPA [ROAS]
     let headHtml = `<th style="${thL}">캠페인 유형</th><th style="${thS}">노출</th><th style="${thS}">클릭</th><th style="${thS}">비용</th>`;
-    if (mode === 'all' || mode === 'both') {
-      headHtml += `<th style="${thR()}">전체전환</th><th style="${thR()}">전체매출</th><th style="${thR()}">전체ROAS</th>`;
-    }
+    if (mode === 'all')  headHtml += `<th style="${thR}">전체전환</th><th style="${thR}">전체매출</th>`;
+    if (mode === 'buy')  headHtml += `<th style="${thB}">구매전환</th><th style="${thB}">구매매출</th>`;
+    if (mode === 'both') headHtml += `<th style="${thB}">구매전환</th><th style="${thR}">전체전환</th><th style="${thB}">구매매출</th><th style="${thR}">전체매출</th>`;
     headHtml += `<th style="${thS}">CTR</th><th style="${thS}">CPC</th><th style="${thS}">CPA</th>`;
-    if (mode === 'buy' || mode === 'both') {
-      headHtml += `<th style="${thB()}">구매전환</th><th style="${thB()}">구매매출</th><th style="${thB()}">구매ROAS</th>`;
-    }
+    if (mode === 'all')  headHtml += `<th style="${thR}">전체ROAS</th>`;
+    if (mode === 'buy')  headHtml += `<th style="${thB}">구매ROAS</th>`;
+    if (mode === 'both') headHtml += `<th style="${thB}">구매ROAS</th><th style="${thR}">전체ROAS</th>`;
 
     let html = `<table style="width:100%;border-collapse:collapse;font-family:'Malgun Gothic',sans-serif"><thead><tr>${headHtml}</tr></thead><tbody>`;
 
@@ -1810,18 +1887,28 @@ function mailRefreshPerf() {
       row += `<td style="${cs()}">${r.imp.toLocaleString('ko-KR')}</td>`;
       row += `<td style="${cs()}">${r.clk.toLocaleString('ko-KR')}</td>`;
       row += `<td style="${costStyle}">${r.cost.toLocaleString('ko-KR')}</td>`;
-      if (mode === 'all' || mode === 'both') {
+      if (mode === 'all') {
         row += `<td style="${cs('color:#c0392b;font-weight:700;')}">${r.conv.toLocaleString('ko-KR')}</td>`;
         row += `<td style="${cs('color:#c0392b;font-weight:700;')}">${r.rev.toLocaleString('ko-KR')}</td>`;
-        row += `<td style="${cs('color:#c0392b;font-weight:700;')}">${r.roas}</td>`;
+      }
+      if (mode === 'buy') {
+        row += `<td style="${cs('color:#185FA5;font-weight:700;')}">${Math.round(d.pconv||0).toLocaleString('ko-KR')}</td>`;
+        row += `<td style="${cs('color:#185FA5;font-weight:700;')}">${Math.round(d.prev||0).toLocaleString('ko-KR')}</td>`;
+      }
+      if (mode === 'both') {
+        row += `<td style="${cs('color:#185FA5;font-weight:700;')}">${Math.round(d.pconv||0).toLocaleString('ko-KR')}</td>`;
+        row += `<td style="${cs('color:#c0392b;font-weight:700;')}">${r.conv.toLocaleString('ko-KR')}</td>`;
+        row += `<td style="${cs('color:#185FA5;font-weight:700;')}">${Math.round(d.prev||0).toLocaleString('ko-KR')}</td>`;
+        row += `<td style="${cs('color:#c0392b;font-weight:700;')}">${r.rev.toLocaleString('ko-KR')}</td>`;
       }
       row += `<td style="${cs('font-weight:700;')}">${r.ctr}</td>`;
       row += `<td style="${cs('font-weight:700;')}">${r.cpc}</td>`;
       row += `<td style="${cs('font-weight:700;')}">${r.cpa}</td>`;
-      if (mode === 'buy' || mode === 'both') {
-        row += `<td style="${cs('color:#185FA5;font-weight:700;')}">${Math.round(d.pconv||0).toLocaleString('ko-KR')}</td>`;
-        row += `<td style="${cs('color:#185FA5;font-weight:700;')}">${Math.round(d.prev||0).toLocaleString('ko-KR')}</td>`;
+      if (mode === 'all')  row += `<td style="${cs('color:#c0392b;font-weight:700;')}">${r.roas}</td>`;
+      if (mode === 'buy')  row += `<td style="${cs('color:#185FA5;font-weight:700;')}">${pRoas}</td>`;
+      if (mode === 'both') {
         row += `<td style="${cs('color:#185FA5;font-weight:700;')}">${pRoas}</td>`;
+        row += `<td style="${cs('color:#c0392b;font-weight:700;')}">${r.roas}</td>`;
       }
       html += `<tr>${row}</tr>`;
     });
@@ -2424,7 +2511,7 @@ function _aggregateBkKeywords() {
   const moKwCounts = {}, pcKwCounts = {};
   allDks.forEach(dk => {
     const bk = _bkByDate.get(dk);
-    if (bk) { moTotAll += Math.round(bk.moTot||0); pcTotAll += Math.round(bk.pcTot||0); moPconvAll += Math.round(bk.moPconv||0); pcPconvAll += Math.round(bk.pcPconv||0); moPrevAll += (bk.moPrev||0); pcPrevAll += (bk.pcPrev||0); }
+    if (bk) { const _useBuy2 = ((typeof _cardMailMode !== 'undefined' ? _cardMailMode.bk : null) || _mailMode || 'all') === 'buy'; moTotAll += _useBuy2 ? Math.round(bk.moPconv||0) : Math.round(bk.moTot||0); pcTotAll += _useBuy2 ? Math.round(bk.pcPconv||0) : Math.round(bk.pcTot||0); moPconvAll += Math.round(bk.moPconv||0); pcPconvAll += Math.round(bk.pcPconv||0); moPrevAll += (bk.moPrev||0); pcPrevAll += (bk.pcPrev||0); }
     const parseKw = (summaryText, map) => {
       const slash = summaryText ? summaryText.indexOf(' / ') : -1;
       if (slash < 0) return;
@@ -2433,20 +2520,25 @@ function _aggregateBkKeywords() {
         if (m) map[m[1]] = (map[m[1]]||0) + parseInt(m[2]);
       });
     };
-    parseKw(_kwByDate.get(dk+'_MO')?.summaryText, moKwCounts);
-    parseKw(_kwByDate.get(dk+'_PC')?.summaryText, pcKwCounts);
+    const bkCardMode = (typeof _cardMailMode !== 'undefined' ? _cardMailMode.bk : null) || _mailMode || 'all';
+    const useBuy = bkCardMode === 'buy';
+    parseKw(useBuy ? _kwByDate.get(dk+'_MO')?.buySummaryText : _kwByDate.get(dk+'_MO')?.summaryText, moKwCounts);
+    parseKw(useBuy ? _kwByDate.get(dk+'_PC')?.buySummaryText : _kwByDate.get(dk+'_PC')?.summaryText, pcKwCounts);
   });
   const kwStr = map => Object.entries(map).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k}(${v})`).join(', ');
   const moKwStr = kwStr(moKwCounts), pcKwStr = kwStr(pcKwCounts);
   const bkCostMo = bkCostGet().mo, bkCostPc = bkCostGet().pc;
   const moRoas = bkCostMo>0 ? Math.round(moPrevAll/bkCostMo*100) : 0;
   const pcRoas = bkCostPc>0 ? Math.round(pcPrevAll/bkCostPc*100) : 0;
-  const moPStr = moPconvAll>0 ? ` / 구매 ${moPconvAll}건 (ROAS ${moRoas}%)` : '';
+  const bkFinalMode = ((typeof _cardMailMode !== 'undefined' ? _cardMailMode.bk : null) || _mailMode || 'all');
+  const moPStr = (bkFinalMode === 'both' && moPconvAll>0) ? ` / 구매 ${moPconvAll}건 (ROAS ${moRoas}%)` : '';
   const pcPStr = pcPconvAll>0 ? ` / 구매 ${pcPconvAll}건 (ROAS ${pcRoas}%)` : '';
+  const moLabel = bkFinalMode === 'buy' ? `구매 Total(${moTotAll})` : `Total(${moTotAll})`;
+  const pcLabel = bkFinalMode === 'buy' ? `구매 Total(${pcTotAll})` : `Total(${pcTotAll})`;
   return {
     allDks,
-    moTotalText: `Total(${moTotAll})${moKwStr ? ' / '+moKwStr : ''}${moPStr}`,
-    pcTotalText: `Total(${pcTotAll})${pcKwStr ? ' / '+pcKwStr : ''}${pcPStr}`,
+    moTotalText: `${moLabel}${moKwStr ? ' / '+moKwStr : ''}${moPStr}`,
+    pcTotalText: `${pcLabel}${pcKwStr ? ' / '+pcKwStr : ''}${pcPStr}`,
   };
 }
 

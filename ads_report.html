@@ -538,6 +538,7 @@ tr.empty-group{opacity:.35}
               <button class="btn btn-ghost btn-sm" id="mailGfaEmptyBtn" onclick="toggleMailGfaEmpty()" style="display:none;font-size:11px;background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2)">전환 0 숨김</button>
               <button id="mailGfaImgModeAll" onclick="setGfaImgMode('all')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid rgba(192,57,43,.3);background:rgba(192,57,43,.08);color:#c0392b;font-weight:600;font-family:inherit;display:none">전체</button>
               <button id="mailGfaImgModeBuy" onclick="setGfaImgMode('buy')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit;display:none">구매</button>
+              <button id="mailGfaImgModeBoth" onclick="setGfaImgMode('both')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit;display:none">전체+구매</button>
               <button class="btn btn-ghost btn-sm" id="mailGfaImgBtn" onclick="mailCopyGfaImage()" style="display:none">🖼 이미지 복사</button>
               <span class="mail-card-chk on" id="mailChkGfaImg" onclick="mailToggleCard('mailCardGfaImgBody','mailChkGfaImg')">✓</span>
             </div>
@@ -1523,22 +1524,21 @@ let _gfaImgMode = 'all';
 async function setGfaImgMode(mode) {
   _gfaImgMode = mode;
   window._gcBuyMode = mode;
-  const allBtn = document.getElementById('mailGfaImgModeAll');
-  const buyBtn = document.getElementById('mailGfaImgModeBuy');
-  if (allBtn) {
-    const on = mode === 'all';
-    allBtn.style.borderColor = on ? 'rgba(192,57,43,.3)' : 'var(--glass-border-s)';
-    allBtn.style.background  = on ? 'rgba(192,57,43,.08)' : 'var(--glass-bg)';
-    allBtn.style.color       = on ? '#c0392b' : 'var(--t2)';
-    allBtn.style.fontWeight  = on ? '600' : '400';
-  }
-  if (buyBtn) {
-    const on = mode === 'buy';
-    buyBtn.style.borderColor = on ? 'rgba(24,95,165,.3)' : 'var(--glass-border-s)';
-    buyBtn.style.background  = on ? 'rgba(24,95,165,.08)' : 'var(--glass-bg)';
-    buyBtn.style.color       = on ? '#185FA5' : 'var(--t2)';
-    buyBtn.style.fontWeight  = on ? '600' : '400';
-  }
+  const styles = {
+    all:  {border:'rgba(192,57,43,.3)',  bg:'rgba(192,57,43,.08)',  color:'#c0392b'},
+    buy:  {border:'rgba(24,95,165,.3)',  bg:'rgba(24,95,165,.08)',  color:'#185FA5'},
+    both: {border:'rgba(58,58,240,.3)',  bg:'rgba(58,58,240,.08)',  color:'var(--accent)'},
+  };
+  ['all','buy','both'].forEach(m => {
+    const btn = document.getElementById(`mailGfaImgMode${m.charAt(0).toUpperCase()+m.slice(1)}`);
+    if (!btn) return;
+    const on = m === mode;
+    const s = styles[m];
+    btn.style.borderColor = on ? s.border : 'var(--glass-border-s)';
+    btn.style.background  = on ? s.bg     : 'var(--glass-bg)';
+    btn.style.color       = on ? s.color  : 'var(--t2)';
+    btn.style.fontWeight  = on ? '600'    : '400';
+  });
   await updateMailGfaImgCard();
 }
 
@@ -1557,6 +1557,8 @@ async function updateMailGfaImgCard() {
   const imgModeBuy = document.getElementById('mailGfaImgModeBuy');
   if (imgModeAll) imgModeAll.style.display = '';
   if (imgModeBuy) imgModeBuy.style.display = '';
+  const imgModeBoth = document.getElementById('mailGfaImgModeBoth');
+  if (imgModeBoth) imgModeBoth.style.display = '';
 
   // 날짜 탭 버튼 렌더
   const onS  = 'background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2);font-weight:500';
@@ -2549,10 +2551,10 @@ function _aggregateBkKeywords() {
   const moBuyKwStr = kwStr((() => { const m={}; allDks.forEach(dk => { const parseKw2=(t,mp)=>{const sl=t?t.indexOf(' / '):-1;if(sl<0)return;t.slice(sl+3).split(', ').forEach(kw=>{const mm=kw.match(/^(.+)\((\d+)\)$/);if(mm)mp[mm[1]]=(mp[mm[1]]||0)+parseInt(mm[2]);}); }; parseKw2(_kwByDate.get(dk+'_MO')?.buySummaryText,m); }); return m; })());
   const pcBuyKwStr = kwStr((() => { const m={}; allDks.forEach(dk => { const parseKw2=(t,mp)=>{const sl=t?t.indexOf(' / '):-1;if(sl<0)return;t.slice(sl+3).split(', ').forEach(kw=>{const mm=kw.match(/^(.+)\((\d+)\)$/);if(mm)mp[mm[1]]=(mp[mm[1]]||0)+parseInt(mm[2]);}); }; parseKw2(_kwByDate.get(dk+'_PC')?.buySummaryText,m); }); return m; })());
   const moText = bkFinalMode === 'both'
-    ? `${moLabel}${moKwStr?' / '+moKwStr:''}${moPconvAll>0?' | 구매 Total('+moPconvAll+')'+( moBuyKwStr?' / '+moBuyKwStr:''):''}` 
+    ? `Total(${moTotAll})${moKwStr?' / '+moKwStr:''} / 구매 Total(${moPconvAll})${moBuyKwStr?' / '+moBuyKwStr:''}`
     : `${moLabel}${moKwStr ? ' / '+moKwStr : ''}${moPStr}`;
   const pcText = bkFinalMode === 'both'
-    ? `${pcLabel}${pcKwStr?' / '+pcKwStr:''}${pcPconvAll>0?' | 구매 Total('+pcPconvAll+')'+( pcBuyKwStr?' / '+pcBuyKwStr:''):''}` 
+    ? `Total(${pcTotAll})${pcKwStr?' / '+pcKwStr:''} / 구매 Total(${pcPconvAll})${pcBuyKwStr?' / '+pcBuyKwStr:''}`
     : `${pcLabel}${pcKwStr ? ' / '+pcKwStr : ''}${pcPStr}`;
   return {
     allDks,

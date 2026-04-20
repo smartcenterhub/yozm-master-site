@@ -2623,17 +2623,20 @@ function mailCollapseAll() {
 let _mailSubjectEditing = false;
 
 function mailBuildSubject() {
-  // 날짜 적용된 경우 자동 생성
   if (_appliedStart) {
-    const dk = dateToKey(_appliedStart);
-    const d = new Date(_appliedStart + 'T00:00:00');
-    const m = d.getMonth() + 1;
-    const day = d.getDate();
-    const dow = ['일','월','화','수','목','금','토'][d.getDay()];
-    const yy = String(d.getFullYear()).slice(2);
-    const mm = String(m).padStart(2,'0');
-    const dd = String(day).padStart(2,'0');
-    return `[올리브파트너스] YOZM ${m}월 데일리리포트 _${yy}.${mm}.${dd}(${dow}) 광고실적`;
+    const fmt = (dateStr) => {
+      const d = new Date(dateStr + 'T00:00:00');
+      const yy = String(d.getFullYear()).slice(2);
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const dd = String(d.getDate()).padStart(2,'0');
+      const dow = ['일','월','화','수','목','금','토'][d.getDay()];
+      return `${yy}.${mm}.${dd}(${dow})`;
+    };
+    const s = fmt(_appliedStart);
+    const e = _appliedEnd && _appliedEnd !== _appliedStart ? fmt(_appliedEnd) : null;
+    const m = new Date(_appliedStart + 'T00:00:00').getMonth() + 1;
+    const dateStr = e ? `_${s}~${e}` : `_${s}`;
+    return `[올리브파트너스] YOZM ${m}월 데일리리포트 ${dateStr} 광고실적`;
   }
   return '[올리브파트너스] YOZM 데일리리포트 광고실적';
 }
@@ -3069,10 +3072,14 @@ function rptRefreshAutoBlocks() {
     const wrapper = document.querySelector('[style*="position:sticky"][style*="z-index:100"]');
     if (wrapper) {
       const h = wrapper.offsetHeight;
-      document.documentElement.style.setProperty('--sticky-top', h + 'px');
+      // 서브탭 바 높이도 포함
+      const subTabs = document.getElementById('subTabsWrap');
+      const subH = subTabs && subTabs.offsetHeight > 0 ? subTabs.offsetHeight : 0;
+      const total = h + subH;
+      document.documentElement.style.setProperty('--sticky-top', total + 'px');
       // 브검 내부 탭 높이 추가
       const bkInner = document.getElementById('bkInnerTabs');
-      const h2 = bkInner ? h + bkInner.offsetHeight : h + 40;
+      const h2 = bkInner ? total + bkInner.offsetHeight : total + 40;
       document.documentElement.style.setProperty('--sticky-top2', h2 + 'px');
     }
   }
@@ -3748,15 +3755,15 @@ function refreshGfaDateTable() {
     const pRoas = v.cost>0?Math.round((v.prev||0)/v.cost*100)+'%':'-';
     const tr = document.createElement('tr'); tr.className='tr-copyable';
     tr.innerHTML = isBuy
-      ? `<td style="cursor:default;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${label}">${label}</td><td>${fmt(v.imp)}</td><td>${fmt(v.clk)}</td><td>${fmt(v.cost)}</td><td style="color:#185FA5;font-weight:500">${fmt(v.pconv||0)}</td><td style="color:#185FA5;font-weight:500">${fmt(v.prev||0)}</td><td style="color:#185FA5;font-weight:500">${pRoas}</td><td></td>`
-      : `<td data-val="${label}" onclick="copyToClip('${label}',this)" style="cursor:default">${label}</td><td data-val="${raw(v.imp)}" onclick="copyToClip(${raw(v.imp)},this)">${fmt(v.imp)}</td><td data-val="${raw(v.clk)}" onclick="copyToClip(${raw(v.clk)},this)">${fmt(v.clk)}</td><td data-val="${raw(v.cost)}" onclick="copyToClip(${raw(v.cost)},this)">${fmt(v.cost)}</td><td data-val="${raw(v.conv)}" onclick="copyToClip(${raw(v.conv)},this)">${fmt(v.conv)}</td><td data-val="${raw(v.rev)}" onclick="copyToClip(${raw(v.rev)},this)">${fmt(v.rev)}</td><td style="font-weight:500;color:#c0392b">${roas}</td><td><button class="row-copy-btn" data-row="${[label,raw(v.imp),raw(v.clk),raw(v.cost),raw(v.conv),raw(v.rev),roas].join('\t')}">복사</button></td>`;
+      ? `<td style="cursor:default;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${label}">${label}</td><td>${fmt(v.imp)}</td><td>${fmt(v.clk)}</td><td>${fmt(v.cost)}</td><td style="color:#185FA5;font-weight:500">${fmt(v.pconv||0)}</td><td style="color:#185FA5;font-weight:500">${fmt(v.prev||0)}</td><td style="color:#185FA5;font-weight:500">${pRoas}</td><td style="white-space:nowrap;padding:3px 5px"><button class="row-copy-btn" title="행복사" style="width:22px;height:22px;border-radius:5px;border:0.5px solid var(--glass-border-s);background:var(--glass-bg);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--t2);padding:0;vertical-align:middle" data-row="${[label,raw(v.imp),raw(v.clk),raw(v.cost),raw(v.pconv||0),raw(v.prev||0),pRoas].join('\\t')}"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button> <button class="row-copy-btn" title="리포트용" style="width:22px;height:22px;border-radius:5px;border:0.5px solid rgba(24,95,165,.25);background:rgba(24,95,165,.05);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:#185FA5;padding:0;vertical-align:middle" data-row="${[raw(v.imp),raw(v.clk),raw(v.cost),raw(v.pconv||0),raw(v.prev||0)].join('\\t')}"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 5h6M5 8h4M5 11h3"/></svg></button></td>`
+      : `<td data-val="${label}" onclick="copyToClip('${label}',this)" style="cursor:default">${label}</td><td data-val="${raw(v.imp)}" onclick="copyToClip(${raw(v.imp)},this)">${fmt(v.imp)}</td><td data-val="${raw(v.clk)}" onclick="copyToClip(${raw(v.clk)},this)">${fmt(v.clk)}</td><td data-val="${raw(v.cost)}" onclick="copyToClip(${raw(v.cost)},this)">${fmt(v.cost)}</td><td data-val="${raw(v.conv)}" onclick="copyToClip(${raw(v.conv)},this)">${fmt(v.conv)}</td><td data-val="${raw(v.rev)}" onclick="copyToClip(${raw(v.rev)},this)">${fmt(v.rev)}</td><td style="font-weight:500;color:#c0392b">${roas}</td><td style="display:flex;gap:3px;padding:3px"><button class="row-copy-btn" style="font-size:10px;padding:2px 6px" data-row="${[label,raw(v.imp),raw(v.clk),raw(v.cost),raw(v.conv),raw(v.rev),roas].join('\t')}">행복사</button><button class="row-copy-btn" style="font-size:10px;padding:2px 6px" data-row="${[raw(v.imp),raw(v.clk),raw(v.cost),raw(v.conv),raw(v.rev)].join('\t')}">리포트용</button></td>`;
     dateBody.appendChild(tr);
   });
   const totRoas  = tCost>0?Math.round(tRev/tCost*100)+'%':'-';
   const totPRoas = tCost>0?Math.round(tPrev/tCost*100)+'%':'-';
   dateFoot.innerHTML = isBuy
-    ? `<tr><td>합계</td><td>${fmt(tImp)}</td><td>${fmt(tClk)}</td><td>${fmt(tCost)}</td><td style="color:#185FA5;font-weight:600">${fmt(tPconv)}</td><td style="color:#185FA5;font-weight:600">${fmt(tPrev)}</td><td style="color:#185FA5;font-weight:600">${totPRoas}</td><td><button class="row-copy-btn">복사</button></td></tr>`
-    : `<tr><td>합계</td><td>${fmt(tImp)}</td><td>${fmt(tClk)}</td><td>${fmt(tCost)}</td><td>${fmt(tConv)}</td><td>${fmt(tRev)}</td><td style="font-weight:600">${totRoas}</td><td><button class="row-copy-btn">복사</button></td></tr>`;
+    ? `<tr><td>합계</td><td>${fmt(tImp)}</td><td>${fmt(tClk)}</td><td>${fmt(tCost)}</td><td style="color:#185FA5;font-weight:600">${fmt(tPconv)}</td><td style="color:#185FA5;font-weight:600">${fmt(tPrev)}</td><td style="color:#185FA5;font-weight:600">${totPRoas}</td><td style="display:flex;gap:3px;padding:3px"><button class="row-copy-btn" style="font-size:10px;padding:2px 6px" data-row="${[raw(tImp),raw(tClk),raw(tCost),raw(tPconv),raw(tPrev),totPRoas].join('\t')}">행복사</button><button class="row-copy-btn" style="font-size:10px;padding:2px 6px" data-row="${[raw(tImp),raw(tClk),raw(tCost),raw(tPconv),raw(tPrev)].join('\t')}">리포트용</button></td></tr>`
+    : `<tr><td>합계</td><td>${fmt(tImp)}</td><td>${fmt(tClk)}</td><td>${fmt(tCost)}</td><td>${fmt(tConv)}</td><td>${fmt(tRev)}</td><td style="font-weight:600">${totRoas}</td><td style="display:flex;gap:3px;padding:3px"><button class="row-copy-btn" style="font-size:10px;padding:2px 6px" data-row="${[raw(tImp),raw(tClk),raw(tCost),raw(tConv),raw(tRev),totRoas].join('\t')}">행복사</button><button class="row-copy-btn" style="font-size:10px;padding:2px 6px" data-row="${[raw(tImp),raw(tClk),raw(tCost),raw(tConv),raw(tRev)].join('\t')}">리포트용</button></td></tr>`;
   bindCellCopy(dateBody); bindCellCopy(dateFoot);
 }
 
@@ -4041,13 +4048,13 @@ function renderAdvPanel(num, selDate) {
         const tr = document.createElement('tr'); tr.className = 'tr-copyable';
         tr.innerHTML = isBuy
           ? `<td style="cursor:default;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${label}">${label}</td><td>${fmt(v.imp)}</td><td>${fmt(v.clk)}</td><td>${fmt(v.cost)}</td><td style="color:#185FA5;font-weight:500">${fmt(v.pconv||0)}</td><td style="color:#185FA5;font-weight:500">${fmt(v.prev||0)}</td><td style="color:#185FA5;font-weight:500">${pRoas}</td><td><button class="row-copy-btn" data-row="${[label,raw(v.imp),raw(v.clk),raw(v.cost),raw(v.pconv||0)].join('\t')}">복사</button></td>`
-          : `<td style="cursor:default;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${label}">${label}</td><td data-val="${raw(v.imp)}" onclick="copyToClip(${raw(v.imp)},this)">${fmt(v.imp)}</td><td data-val="${raw(v.clk)}" onclick="copyToClip(${raw(v.clk)},this)">${fmt(v.clk)}</td><td data-val="${raw(v.cost)}" onclick="copyToClip(${raw(v.cost)},this)">${fmt(v.cost)}</td><td style="color:#c0392b;font-weight:500" data-val="${raw(v.conv)}" onclick="copyToClip(${raw(v.conv)},this)">${fmt(v.conv)}</td><td style="color:#c0392b;font-weight:500" data-val="${raw(v.rev)}" onclick="copyToClip(${raw(v.rev)},this)">${fmt(v.rev)}</td><td style="font-weight:500;color:#c0392b">${v.cost>0?Math.round(v.rev/v.cost*100)+'%':'-'}</td><td><button class="row-copy-btn" data-row="${[label,raw(v.imp),raw(v.clk),raw(v.cost),raw(v.conv),raw(v.rev)].join('\t')}">복사</button></td>`;
+          : `<td style="cursor:default;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${label}">${label}</td><td data-val="${raw(v.imp)}" onclick="copyToClip(${raw(v.imp)},this)">${fmt(v.imp)}</td><td data-val="${raw(v.clk)}" onclick="copyToClip(${raw(v.clk)},this)">${fmt(v.clk)}</td><td data-val="${raw(v.cost)}" onclick="copyToClip(${raw(v.cost)},this)">${fmt(v.cost)}</td><td style="color:#c0392b;font-weight:500" data-val="${raw(v.conv)}" onclick="copyToClip(${raw(v.conv)},this)">${fmt(v.conv)}</td><td style="color:#c0392b;font-weight:500" data-val="${raw(v.rev)}" onclick="copyToClip(${raw(v.rev)},this)">${fmt(v.rev)}</td><td style="font-weight:500;color:#c0392b">${v.cost>0?Math.round(v.rev/v.cost*100)+'%':'-'}</td><td style="white-space:nowrap;padding:3px 5px"><button class="row-copy-btn" title="행복사" style="width:22px;height:22px;border-radius:5px;border:0.5px solid var(--glass-border-s);background:var(--glass-bg);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--t2);padding:0;vertical-align:middle" data-row="${[label,raw(v.imp),raw(v.clk),raw(v.cost),raw(v.conv),raw(v.rev)].join('\\t')}"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button> <button class="row-copy-btn" title="리포트용" style="width:22px;height:22px;border-radius:5px;border:0.5px solid rgba(24,95,165,.25);background:rgba(24,95,165,.05);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:#185FA5;padding:0;vertical-align:middle" data-row="${[raw(v.imp),raw(v.clk),raw(v.cost),raw(v.conv),raw(v.rev)].join('\\t')}"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 5h6M5 8h4M5 11h3"/></svg></button></td>`;
         tbody2.appendChild(tr);
       });
       const tPR = totV.cost>0?Math.round(totV.prev/totV.cost*100)+'%':'-';
       tfoot2.innerHTML = isBuy
-        ? `<tr><td>합계</td><td>${fmt(totV.imp)}</td><td>${fmt(totV.clk)}</td><td>${fmt(totV.cost)}</td><td style="color:#185FA5;font-weight:600">${fmt(totV.pconv)}</td><td style="color:#185FA5;font-weight:600">${fmt(totV.prev)}</td><td style="color:#185FA5;font-weight:600">${tPR}</td><td><button class="row-copy-btn">복사</button></td></tr>`
-        : `<tr class="tr-copyable"><td>합계</td>${[totV.imp,totV.clk,totV.cost].map(n=>`<td data-val="${raw(n)}" onclick="copyToClip(${raw(n)},this)">${fmt(n)}</td>`).join('')}${[totV.conv,totV.rev].map(n=>`<td style="color:#c0392b;font-weight:600" data-val="${raw(n)}" onclick="copyToClip(${raw(n)},this)">${fmt(n)}</td>`).join('')}<td style="font-weight:600;color:#c0392b">${totV.cost>0?Math.round(totV.rev/totV.cost*100)+'%':'-'}</td><td><button class="row-copy-btn">복사</button></td></tr>`;
+        ? `<tr><td>합계</td><td>${fmt(totV.imp)}</td><td>${fmt(totV.clk)}</td><td>${fmt(totV.cost)}</td><td style="color:#185FA5;font-weight:600">${fmt(totV.pconv)}</td><td style="color:#185FA5;font-weight:600">${fmt(totV.prev)}</td><td style="color:#185FA5;font-weight:600">${tPR}</td><td style="white-space:nowrap;padding:3px 5px"><button class="row-copy-btn" title="행복사" style="width:22px;height:22px;border-radius:5px;border:0.5px solid var(--glass-border-s);background:var(--glass-bg);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--t2);padding:0;vertical-align:middle" data-row="${[raw(totV.imp),raw(totV.clk),raw(totV.cost),raw(totV.pconv),raw(totV.prev),tPR].join('\\t')}"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button> <button class="row-copy-btn" title="리포트용" style="width:22px;height:22px;border-radius:5px;border:0.5px solid rgba(24,95,165,.25);background:rgba(24,95,165,.05);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:#185FA5;padding:0;vertical-align:middle" data-row="${[raw(totV.imp),raw(totV.clk),raw(totV.cost),raw(totV.pconv),raw(totV.prev)].join('\\t')}"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 5h6M5 8h4M5 11h3"/></svg></button></td></tr>`
+        : `<tr class="tr-copyable"><td>합계</td>${[totV.imp,totV.clk,totV.cost].map(n=>`<td data-val="${raw(n)}" onclick="copyToClip(${raw(n)},this)">${fmt(n)}</td>`).join('')}${[totV.conv,totV.rev].map(n=>`<td style="color:#c0392b;font-weight:600" data-val="${raw(n)}" onclick="copyToClip(${raw(n)},this)">${fmt(n)}</td>`).join('')}<td style="font-weight:600;color:#c0392b">${totV.cost>0?Math.round(totV.rev/totV.cost*100)+'%':'-'}</td><td style="white-space:nowrap;padding:3px 5px"><button class="row-copy-btn" title="행복사" style="width:22px;height:22px;border-radius:5px;border:0.5px solid var(--glass-border-s);background:var(--glass-bg);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--t2);padding:0;vertical-align:middle" data-row="${[raw(totV.imp),raw(totV.clk),raw(totV.cost),raw(totV.conv),raw(totV.rev)].join('\\t')}"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="8" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h7"/></svg></button> <button class="row-copy-btn" title="리포트용" style="width:22px;height:22px;border-radius:5px;border:0.5px solid rgba(24,95,165,.25);background:rgba(24,95,165,.05);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:#185FA5;padding:0;vertical-align:middle" data-row="${[raw(totV.imp),raw(totV.clk),raw(totV.cost),raw(totV.conv),raw(totV.rev)].join('\\t')}"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="1.5"/><path d="M5 5h6M5 8h4M5 11h3"/></svg></button></td></tr>`;
       tbl.appendChild(tbody2); tbl.appendChild(tfoot2); return tbl;
     };
     const allDiv = document.createElement('div');

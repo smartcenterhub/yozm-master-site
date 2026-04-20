@@ -478,8 +478,8 @@ document.getElementById('addBtn').onclick = async function() {
     const ex = isUpd ? _cr[docId] : {};
     const data = {
       pcId: pcId, moId: moId, name: name, startAt: startAt, endAt: endAt,
-      pcImgUrl: pcId ? GH_BASE + pcId : (ex.pcImgUrl || null),
-      moImgUrl: moId ? GH_BASE + moId : (ex.moImgUrl || null),
+      pcImgUrl: pcId ? GH_BASE + pcId + '.png' : (ex.pcImgUrl || null),
+      moImgUrl: moId ? GH_BASE + moId + '.png' : (ex.moImgUrl || null),
       createdAt: isUpd ? (ex.createdAt || new Date().toISOString()) : new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -799,8 +799,8 @@ async function bulkSaveToFirebase() {
     const data = {
       pcId: r.pcId, moId: r.moId, name: r.name,
       startAt: r.startAt, endAt: r.endAt,
-      pcImgUrl: r.pcId ? GH_BASE + r.pcId : (ex.pcImgUrl || null),
-      moImgUrl: r.moId ? GH_BASE + r.moId : (ex.moImgUrl || null),
+      pcImgUrl: r.pcId ? GH_BASE + r.pcId + '.png' : (ex.pcImgUrl || null),
+      moImgUrl: r.moId ? GH_BASE + r.moId + '.png' : (ex.moImgUrl || null),
       createdAt: isUpd ? (ex.createdAt || new Date().toISOString()) : new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };

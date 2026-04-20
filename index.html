@@ -162,6 +162,72 @@ body{
     <div class="l1-dot" style="background:var(--t3)"></div>
     <span class="l1-label" style="color:var(--t2)">홈</span>
   </div>
+  <div class="sb-divider"></div>
+
+  <!-- 1. 광고 리포트 관리 -->
+  <div class="l1-block">
+    <div class="l1-hdr l1-link" onclick="goL1('ads_report.html','광고 리포트 관리',this)">
+      <div class="l1-dot" style="background:var(--blue)"></div>
+      <span class="l1-label" style="color:var(--blue)">광고 리포트 관리</span>
+    </div>
+  </div>
+  <div class="sb-divider"></div>
+
+  <!-- 2. 상품 관리 -->
+  <div class="l1-block">
+    <div class="l1-hdr l1-link" onclick="goL1('prod_manage.html','상품 관리',this)">
+      <div class="l1-dot" style="background:var(--green)"></div>
+      <span class="l1-label" style="color:var(--green)">상품 관리</span>
+    </div>
+  </div>
+  <div class="sb-divider"></div>
+
+  <!-- 3. 행사 관리 -->
+  <div class="l1-block">
+    <div class="l1-hdr l1-link" onclick="goL1('evt_manage.html','행사 관리',this)">
+      <div class="l1-dot" style="background:var(--orange)"></div>
+      <span class="l1-label" style="color:var(--orange)">행사 관리</span>
+    </div>
+  </div>
+  <div class="sb-divider"></div>
+
+  <!-- 4. 출고 배분기 -->
+  <div class="l1-block">
+    <div class="l1-hdr l1-link" onclick="goL1('shipment_tool.html','출고 배분기',this)">
+      <div class="l1-dot" style="background:var(--purple)"></div>
+      <span class="l1-label" style="color:var(--purple)">출고 배분기</span>
+    </div>
+  </div>
+  <div class="sb-divider"></div>
+
+  <!-- 5. 물량 관리 -->
+  <div class="l1-block">
+    <div class="l1-hdr" onclick="tL1(this)">
+      <div class="l1-dot" style="background:var(--accent)"></div>
+      <span class="l1-label" style="color:var(--accent)">물량 관리</span>
+      <span class="l1-chev">▶</span>
+    </div>
+    <div class="l1-body">
+      <div class="l2-hdr" onclick="goL2('vol_upload.html','물량 관리','데이터 업로드',this)">
+        <div class="l2-dot"></div>데이터 업로드
+      </div>
+      <div class="l2-hdr" onclick="goL2('vol_view.html','물량 관리','데이터 조회',this)">
+        <div class="l2-dot"></div>데이터 조회
+      </div>
+      <div class="l2-block">
+        <div class="l2-hdr" onclick="tL2(this)">
+          <div class="l2-dot"></div>물량 대시보드<span class="l2-chev">▶</span>
+        </div>
+        <div class="l2-body">
+          <div class="l3-item" onclick="goL3('vol_weekly.html','물량 관리','물량 대시보드','주간 대시보드',this)"><div class="l3-dot"></div>주간 대시보드</div>
+          <div class="l3-item" onclick="goL3('vol_monthly.html','물량 관리','물량 대시보드','월간 대시보드',this)"><div class="l3-dot"></div>월간 대시보드</div>
+        </div>
+      </div>
+      <div class="l2-hdr" onclick="goL2('vol_analytics.html','물량 관리','물량 데이터 관리',this)">
+        <div class="l2-dot"></div>물량 데이터 관리 <span class="l2-tag tag-plan">예정</span>
+      </div>
+    </div>
+  </div>
 
   <div class="sb-spacer"></div>
   <div class="sb-bottom">

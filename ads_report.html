@@ -199,6 +199,7 @@ tr.empty-group{opacity:.35}
           <div style="display:flex;background:var(--glass-bg);border-radius:8px;padding:3px;gap:3px">
             <button id="zgSegDay" onclick="zgSwSeg('day')" style="flex:1;padding:5px 0;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);font-size:12px;font-weight:500;cursor:pointer;color:var(--tx)">하루별</button>
             <button id="zgSegFile" onclick="zgSwSeg('file')" style="flex:1;padding:5px 0;border-radius:6px;border:none;background:transparent;font-size:12px;font-weight:400;cursor:pointer;color:var(--t2)">파일별</button>
+            <button id="zgSegBatch" onclick="zgSwSeg('batch')" style="flex:1;padding:5px 0;border-radius:6px;border:none;background:transparent;font-size:12px;font-weight:400;cursor:pointer;color:var(--t2)">기간별</button>
           </div>
 
           <!-- 하루별 뷰 -->
@@ -779,8 +780,9 @@ let _zgFileKey = null;
 
 function zgSwSeg(mode) {
   _zgSeg = mode;
-  const dayBtn  = document.getElementById('zgSegDay');
-  const fileBtn = document.getElementById('zgSegFile');
+  const dayBtn   = document.getElementById('zgSegDay');
+  const fileBtn  = document.getElementById('zgSegFile');
+  const batchBtn = document.getElementById('zgSegBatch');
   if (dayBtn) {
     dayBtn.style.background  = mode==='day' ? 'var(--glass-bg-strong)' : 'transparent';
     dayBtn.style.border      = mode==='day' ? '1px solid var(--glass-border-s)' : 'none';
@@ -793,9 +795,18 @@ function zgSwSeg(mode) {
     fileBtn.style.fontWeight = mode==='file' ? '500' : '400';
     fileBtn.style.color      = mode==='file' ? 'var(--tx)' : 'var(--t2)';
   }
-  document.getElementById('zgDayView').style.display  = mode==='day'  ? '' : 'none';
-  document.getElementById('zgFileView').style.display = mode==='file' ? '' : 'none';
+  document.getElementById('zgDayView').style.display   = mode==='day'   ? '' : 'none';
+  document.getElementById('zgFileView').style.display  = mode==='file'  ? '' : 'none';
+  document.getElementById('zgBatchView').style.display = mode==='batch' ? '' : 'none';
+  if (batchBtn) {
+    const on = mode === 'batch';
+    batchBtn.style.background  = on ? 'var(--glass-bg-strong)' : 'transparent';
+    batchBtn.style.border      = on ? '1px solid var(--glass-border-s)' : 'none';
+    batchBtn.style.fontWeight  = on ? '500' : '400';
+    batchBtn.style.color       = on ? 'var(--tx)' : 'var(--t2)';
+  }
   if (mode === 'file') zgBuildFileView(_zgFileKey || ZG_ROWS[0]?.key);
+  if (mode === 'batch') zgInitBatch();
 }
 
 function zgBuildFileView(key) {
@@ -853,6 +864,74 @@ function zgFileCopy(spanEl, fname) {
       }
     }
   });
+}
+
+
+let _zgBatchFiles = [];
+
+function zgInitBatch() {
+  const zone = document.getElementById('zgBatchZone');
+  const input = document.getElementById('zgBatchInput');
+  if (!zone || zone._batchInited) return;
+  zone._batchInited = true;
+
+  zone.onclick = () => input.click();
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor='var(--accent)'; zone.style.background='rgba(58,58,240,0.04)'; });
+  zone.addEventListener('dragleave', () => { zone.style.borderColor='var(--glass-border-s)'; zone.style.background='var(--glass-bg)'; });
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.style.borderColor='var(--glass-border-s)'; zone.style.background='var(--glass-bg)';
+    zgBatchSetFiles([...e.dataTransfer.files]);
+  });
+  input.onchange = e => zgBatchSetFiles([...e.target.files]);
+}
+
+const PREFIXES_BATCH = ['bk','kwmo','kwpc','gfa','gc','da','sa'];
+
+function zgBatchSetFiles(files) {
+  _zgBatchFiles = files;
+  const listEl = document.getElementById('zgBatchList');
+  const itemsEl = document.getElementById('zgBatchItems');
+  if (!itemsEl) return;
+
+  itemsEl.innerHTML = '';
+  files.forEach(f => {
+    const name = f.name.toLowerCase().replace(/\.xlsx$|\.zip$/, '');
+    const prefix = PREFIXES_BATCH.find(p => name.startsWith(p + '_') || name.startsWith(p + '.'));
+    const dateM = name.match(/\d{6}/);
+    const date = dateM ? `20${dateM[0].slice(0,2)}.${dateM[0].slice(2,4)}.${dateM[0].slice(4,6)}` : '날짜미상';
+    const label = prefix ? `${prefix.toUpperCase()}` : '?';
+    const color = prefix ? 'var(--green)' : 'var(--orange)';
+    const item = document.createElement('div');
+    item.style.cssText = 'display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:7px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);font-size:11.5px';
+    item.innerHTML = `<span style="font-size:10px;color:${color};font-weight:600;min-width:36px">${label}</span><span style="color:var(--t3);min-width:56px">${date}</span><span style="color:var(--tx);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.name}</span><span id="zbStat_${f.name.replace(/[^a-z0-9]/gi,'_')}" style="font-size:10px;color:var(--t3)">대기</span>`;
+    itemsEl.appendChild(item);
+  });
+  listEl.style.display = files.length ? '' : 'none';
+}
+
+async function zgBatchUpload() {
+  if (!_zgBatchFiles.length) return;
+  const btn = document.getElementById('zgBatchUploadBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '업로드 중...'; }
+  let done = 0, fail = 0;
+
+  for (const file of _zgBatchFiles) {
+    const statId = 'zbStat_' + file.name.replace(/[^a-z0-9]/gi,'_');
+    const statEl = document.getElementById(statId);
+    if (statEl) statEl.textContent = '처리중...';
+    try {
+      await processDailyZip(file);
+      done++;
+      if (statEl) { statEl.textContent = '✓'; statEl.style.color = 'var(--green)'; }
+    } catch(e) {
+      fail++;
+      if (statEl) { statEl.textContent = '실패'; statEl.style.color = 'var(--orange)'; }
+    }
+  }
+
+  showToast(`✅ ${done}개 완료${fail ? ' / ❌ ' + fail + '개 실패' : ''}`);
+  if (btn) { btn.disabled = false; btn.textContent = '🚀 전체 업로드'; }
+  zgBuild();
 }
 
 function zgBuild() {
@@ -2444,7 +2523,7 @@ function bindCellCopy(container) {
       const btn = e.target.closest('.row-copy-btn');
       if (btn) {
         const row = btn.dataset.row;
-        if (row) navigator.clipboard.writeText(row.replace(/\\t/g, '\t')).then(() => {
+        if (row) navigator.clipboard.writeText(row.split('\\t').join('\t')).then(() => {
           tr.classList.add('tr-flash');
           setTimeout(() => tr.classList.remove('tr-flash'), 400);
           showToast('📋 복사됨');
@@ -4764,3 +4843,18 @@ window._adsFs = {
 </script>
 </body>
 </html>
+
+          <!-- 기간별 전체 올리기 뷰 -->
+          <div id="zgBatchView" style="display:none">
+            <div id="zgBatchZone" style="border:2px dashed var(--glass-border-s);border-radius:10px;padding:24px 16px;text-align:center;cursor:pointer;background:var(--glass-bg);transition:all .15s">
+              <div style="font-size:20px;margin-bottom:6px">📂</div>
+              <div style="font-size:13px;font-weight:500;color:var(--tx);margin-bottom:4px">파일을 여기에 드래그하거나 클릭해서 선택</div>
+              <div style="font-size:11px;color:var(--t3)">bk_260417.xlsx, gfa_260417.zip 등 여러 파일 동시 선택 가능</div>
+              <input type="file" id="zgBatchInput" multiple accept=".xlsx,.zip" style="display:none">
+            </div>
+            <div id="zgBatchList" style="margin-top:10px;display:none">
+              <div style="font-size:10.5px;font-weight:600;color:var(--t3);letter-spacing:.5px;margin-bottom:6px">업로드할 파일 목록</div>
+              <div id="zgBatchItems" style="display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto"></div>
+              <button id="zgBatchUploadBtn" onclick="zgBatchUpload()" style="width:100%;margin-top:10px;padding:10px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">🚀 전체 업로드</button>
+            </div>
+          </div>

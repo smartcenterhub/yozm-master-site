@@ -1376,8 +1376,15 @@ function mailUpdateBk(moTotal, moKeywords, pcTotal, pcKeywords, date) {
   if (_bkMailMode === 'total' || _bkMailMode === 'all') {
     const bkMode3 = (typeof _cardMailMode !== 'undefined' ? _cardMailMode.bk : null) || _mailMode || 'all';
     if (bkMode3 === 'both') {
-      moTotalText.split('\n').forEach(l => { html += `<div>${l}</div>`; });
-      pcTotalText.split('\n').forEach(l => { html += `<div>${l}</div>`; });
+      // [구매 전환] / [전체 전환] 섹션 분리 렌더
+      const allLines = [...moTotalText.split('\n'), ...pcTotalText.split('\n')];
+      allLines.forEach(l => {
+        if (l.startsWith('[')) {
+          html += `<div style="font-weight:600;font-size:11px;color:${l.includes('구매')?'#185FA5':'#c0392b'};margin-top:4px">${l}</div>`;
+        } else {
+          html += `<div>${l}</div>`;
+        }
+      });
     } else {
       html += `<div>→ MO: ${moTotalText}</div><div style="margin-left:2.8em">PC: ${pcTotalText}</div>`;
     }
@@ -2564,7 +2571,7 @@ function _aggregateBkKeywords() {
   const moBuyKwStr = kwStr((() => { const m={}; allDks.forEach(dk => { const parseKw2=(t,mp)=>{const sl=t?t.indexOf(' / '):-1;if(sl<0)return;t.slice(sl+3).split(', ').forEach(kw=>{const mm=kw.match(/^(.+)\((\d+)\)$/);if(mm)mp[mm[1]]=(mp[mm[1]]||0)+parseInt(mm[2]);}); }; parseKw2(_kwByDate.get(dk+'_MO')?.buySummaryText,m); }); return m; })());
   const pcBuyKwStr = kwStr((() => { const m={}; allDks.forEach(dk => { const parseKw2=(t,mp)=>{const sl=t?t.indexOf(' / '):-1;if(sl<0)return;t.slice(sl+3).split(', ').forEach(kw=>{const mm=kw.match(/^(.+)\((\d+)\)$/);if(mm)mp[mm[1]]=(mp[mm[1]]||0)+parseInt(mm[2]);}); }; parseKw2(_kwByDate.get(dk+'_PC')?.buySummaryText,m); }); return m; })());
   const moText = bkFinalMode === 'both'
-    ? `→ MO구매: Total(${moPconvAll})${moBuyKwStr?' / '+moBuyKwStr:''}\n→ MO전체: Total(${moTotAll})${moKwStr?' / '+moKwStr:''}`
+    ? `[구매 전환]\n→ MO구매: Total(${moPconvAll})${moBuyKwStr?' / '+moBuyKwStr:''}\n[전체 전환]\n→ MO전체: Total(${moTotAll})${moKwStr?' / '+moKwStr:''}`
     : `${moLabel}${moKwStr ? ' / '+moKwStr : ''}${moPStr}`;
   const pcText = bkFinalMode === 'both'
     ? `→ PC구매: Total(${pcPconvAll})${pcBuyKwStr?' / '+pcBuyKwStr:''}\n→ PC전체: Total(${pcTotAll})${pcKwStr?' / '+pcKwStr:''}`

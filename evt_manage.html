@@ -25,7 +25,8 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
 .tab{padding:8px 14px;font-size:12px;color:var(--t3);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;border-radius:4px 4px 0 0;user-select:none;white-space:nowrap;transition:all .15s}
 .tab:hover{color:var(--t2);background:rgba(255,255,255,.5)}
 .tab.on{color:var(--or);font-weight:600;border-bottom-color:var(--or)}
-.pane{display:none}.pane.on{display:block}
+.pane{display:none;overflow:hidden}.pane.on{display:block;overflow:visible}
+.pane:not(.on) .sticky-hd{display:none}
 
 /* ── 공통 ── */
 .pg-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
@@ -2081,9 +2082,9 @@ window.renderPropList=function(tabNum){
       const el=document.getElementById('cnt-'+s+'-2');
       if(el)el.textContent=statusCounts[s]?'('+statusCounts[s]+')':'';
     });
-    /* 전체 카드 개수 (현재 표시된 그룹 수) */
+    /* 전체 카드 개수 (현재 표시된 상품 수) */
     const totalEl=document.getElementById('prop-total-cnt-2');
-    if(totalEl)totalEl.textContent='총 '+sortedEntries.length+'건';
+    if(totalEl)totalEl.textContent='총 '+list.length+'건';
   }
 };
 

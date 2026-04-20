@@ -1448,8 +1448,8 @@ function _buildGfaImgTbl(dateRows, images, globalSg, hideEmpty=true) {
     if (!r.group || !r.creative) continue;
     if (!gm.has(r.group)) gm.set(r.group, new Map());
     const cm = gm.get(r.group);
-    if (!cm.has(r.creative)) cm.set(r.creative, { name:r.creative, code:r.code||'', conv:0, imp:0 });
-    const cv = cm.get(r.creative); cv.conv+=r.conv; cv.imp+=r.imp;
+    if (!cm.has(r.creative)) cm.set(r.creative, { name:r.creative, code:r.code||'', conv:0, imp:0, pconv:0, prev:0 });
+    const cv = cm.get(r.creative); cv.conv+=r.conv; cv.imp+=r.imp; cv.pconv+=(r.pconv||0); cv.prev+=(r.prev||0);
   }
   // 열 순서: globalSg 기준으로 정렬 (hideEmpty=true면 데이터 없는 열 숨김)
   const base = globalSg || [...GFA_ORDER.filter(k=>gm.has(k)), ...[...gm.keys()].filter(k=>!GFA_ORDER.includes(k))];
@@ -1718,9 +1718,9 @@ function mailUpdateAdv(daConv, saConv) {
     if (mode === 'both') return `    ${perfDateDisplay(dk)} → DA (${da}건/구매${daB}건) / SA (${sa}건/구매${saB}건)`;
   };
   const fmtTotal = () => {
-    if (mode === 'all')  return `DA (${daTotAll}건 ROAS ${daAllRoas}%) / SA (${saTotAll}건 ROAS ${saAllRoas}%)`;
-    if (mode === 'buy')  return `DA 구매(${daTotBuy}건 ROAS ${daRoas}%) / SA 구매(${saTotBuy}건 ROAS ${saRoas}%)`;
-    if (mode === 'both') return `DA (${daTotAll}건/구매${daTotBuy}건 ROAS ${daRoas}%) / SA (${saTotAll}건/구매${saTotBuy}건 ROAS ${saRoas}%)`;
+    if (mode === 'all')  return `DA (${daTotAll}건) / SA (${saTotAll}건)`;
+    if (mode === 'buy')  return `DA 구매(${daTotBuy}건) / SA 구매(${saTotBuy}건)`;
+    if (mode === 'both') return `DA (${daTotAll}건/구매${daTotBuy}건) / SA (${saTotAll}건/구매${saTotBuy}건)`;
   };
 
   const textLines = [];
@@ -1740,9 +1740,9 @@ function mailUpdateAdv(daConv, saConv) {
 
   const mkVal = (conv, buy, roas, buyRoas, isD) => {
     const name = isD ? 'DA' : 'SA';
-    if (mode === 'all')  return `${name} <span style="color:${RED};font-weight:600">${conv}건</span> ROAS ${roas}%`;
-    if (mode === 'buy')  return `${name} 구매 <span style="color:${BLUE};font-weight:600">${buy}건</span> ROAS ${buyRoas}%`;
-    if (mode === 'both') return `${name} <span style="color:${RED};font-weight:600">${conv}건</span>/<span style="color:${BLUE};font-weight:600">구매${buy}건</span> ROAS ${buyRoas}%`;
+    if (mode === 'all')  return `${name} <span style="color:${RED};font-weight:600">${conv}건</span>`;
+    if (mode === 'buy')  return `${name} 구매 <span style="color:${BLUE};font-weight:600">${buy}건</span>`;
+    if (mode === 'both') return `${name} <span style="color:${RED};font-weight:600">${conv}건</span>/<span style="color:${BLUE};font-weight:600">구매${buy}건</span>`;
   };
   const mkDayLine = ({dk,da,sa,daBuy,saBuy}) => {
     if (mode === 'all')  return `→ <span style="color:${RED}">DA(${da})</span> / <span style="color:${RED}">SA(${sa})</span>`;
@@ -4174,8 +4174,8 @@ async function processAdv(file, num) {
   const allDateMap = new Map();
   _advData[num].forEach(r => {
     if (!r.date) return;
-    if (!allDateMap.has(r.date)) allDateMap.set(r.date, {imp:0,clk:0,cost:0,conv:0,rev:0});
-    const d = allDateMap.get(r.date); d.imp+=r.imp; d.clk+=r.clk; d.cost+=r.cost; d.conv+=r.conv; d.rev+=r.rev;
+    if (!allDateMap.has(r.date)) allDateMap.set(r.date, {imp:0,clk:0,cost:0,conv:0,rev:0,pconv:0,prev:0});
+    const d = allDateMap.get(r.date); d.imp+=r.imp; d.clk+=r.clk; d.cost+=r.cost; d.conv+=r.conv; d.rev+=r.rev; d.pconv+=(r.pconv||0); d.prev+=(r.prev||0);
   });
   allDateMap.forEach((v, dk) => { store[normalizeDateKey(dk)] = {...v}; });
   const totalConv = [...allDateMap.values()].reduce((s,v) => s+v.conv, 0);

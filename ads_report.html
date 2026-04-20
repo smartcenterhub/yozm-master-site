@@ -195,12 +195,29 @@ tr.empty-group{opacity:.35}
           <button onclick="toggleZipGuide()" style="width:24px;height:24px;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg);cursor:pointer;font-size:13px;color:var(--t2);display:flex;align-items:center;justify-content:center">✕</button>
         </div>
         <div style="padding:14px 16px;display:flex;flex-direction:column;gap:12px;max-height:72vh;overflow-y:auto">
-          <div id="zgDateTabsWrap">
-            <div style="font-size:10.5px;font-weight:600;color:var(--t3);letter-spacing:.5px;margin-bottom:6px">날짜</div>
-            <div style="display:flex;gap:5px;flex-wrap:wrap" id="zgDateTabs"></div>
+          <!-- 세그먼트 탭 -->
+          <div style="display:flex;background:var(--glass-bg);border-radius:8px;padding:3px;gap:3px">
+            <button id="zgSegDay" onclick="zgSwSeg('day')" style="flex:1;padding:5px 0;border-radius:6px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);font-size:12px;font-weight:500;cursor:pointer;color:var(--tx)">하루별</button>
+            <button id="zgSegFile" onclick="zgSwSeg('file')" style="flex:1;padding:5px 0;border-radius:6px;border:none;background:transparent;font-size:12px;font-weight:400;cursor:pointer;color:var(--t2)">파일별</button>
           </div>
-          <div style="height:1px;background:var(--glass-border-s)"></div>
-          <div id="zgPanels"></div>
+
+          <!-- 하루별 뷰 -->
+          <div id="zgDayView">
+            <div id="zgDateTabsWrap">
+              <div style="font-size:10.5px;font-weight:600;color:var(--t3);letter-spacing:.5px;margin-bottom:6px">날짜</div>
+              <div style="display:flex;gap:5px;flex-wrap:wrap" id="zgDateTabs"></div>
+            </div>
+            <div style="height:1px;background:var(--glass-border-s)"></div>
+            <div id="zgPanels"></div>
+          </div>
+
+          <!-- 파일별 뷰 -->
+          <div id="zgFileView" style="display:none">
+            <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px" id="zgFileTabs"></div>
+            <div style="height:1px;background:var(--glass-border-s);margin-bottom:10px"></div>
+            <div style="font-size:10.5px;font-weight:600;color:var(--t3);letter-spacing:.5px;margin-bottom:8px" id="zgFileViewLabel">파일명 복사 — 기간별</div>
+            <div id="zgFileRows"></div>
+          </div>
           <div id="zgAllDone" style="display:none;background:rgba(58,58,240,0.07);border-radius:9px;padding:10px 14px;font-size:12.5px;color:var(--accent);font-weight:500">✅ 모든 날짜 업로드 완료!</div>
           <div id="zgNoDate" style="font-size:12px;color:var(--t3);text-align:center;padding:16px 0">날짜 바에서 날짜를 먼저 적용해주세요</div>
         </div>
@@ -753,6 +770,78 @@ document.addEventListener('click', e => {
   }
 });
 
+
+let _zgSeg = 'day';
+let _zgFileKey = null;
+
+function zgSwSeg(mode) {
+  _zgSeg = mode;
+  const dayBtn  = document.getElementById('zgSegDay');
+  const fileBtn = document.getElementById('zgSegFile');
+  if (dayBtn) {
+    dayBtn.style.background  = mode==='day' ? 'var(--glass-bg-strong)' : 'transparent';
+    dayBtn.style.border      = mode==='day' ? '1px solid var(--glass-border-s)' : 'none';
+    dayBtn.style.fontWeight  = mode==='day' ? '500' : '400';
+    dayBtn.style.color       = mode==='day' ? 'var(--tx)' : 'var(--t2)';
+  }
+  if (fileBtn) {
+    fileBtn.style.background = mode==='file' ? 'var(--glass-bg-strong)' : 'transparent';
+    fileBtn.style.border     = mode==='file' ? '1px solid var(--glass-border-s)' : 'none';
+    fileBtn.style.fontWeight = mode==='file' ? '500' : '400';
+    fileBtn.style.color      = mode==='file' ? 'var(--tx)' : 'var(--t2)';
+  }
+  document.getElementById('zgDayView').style.display  = mode==='day'  ? '' : 'none';
+  document.getElementById('zgFileView').style.display = mode==='file' ? '' : 'none';
+  if (mode === 'file') zgBuildFileView(_zgFileKey || ZG_ROWS[0]?.key);
+}
+
+function zgBuildFileView(key) {
+  if (!_appliedStart) return;
+  _zgFileKey = key;
+  const dates = getDateRange(_appliedStart, _appliedEnd);
+
+  // 파일 탭
+  const tabsEl = document.getElementById('zgFileTabs');
+  tabsEl.innerHTML = '';
+  ZG_ROWS.forEach(r => {
+    const t = document.createElement('div');
+    t.style.cssText = `padding:4px 11px;border-radius:20px;font-size:11.5px;border:1px solid ${r.key===key?r.border:'var(--glass-border-s)'};background:${r.key===key?r.bg:'var(--glass-bg-strong)'};color:${r.key===key?r.lc:'var(--t2)'};cursor:pointer;font-weight:${r.key===key?'500':'400'};transition:all .12s`;
+    t.textContent = r.lbl;
+    t.onclick = () => zgBuildFileView(r.key);
+    tabsEl.appendChild(t);
+  });
+
+  // 레이블
+  const row = ZG_ROWS.find(r => r.key === key);
+  const lbl = document.getElementById('zgFileViewLabel');
+  if (lbl && row) lbl.textContent = `${row.lbl} 파일명 — 기간별`;
+
+  // 행 렌더
+  const rowsEl = document.getElementById('zgFileRows');
+  rowsEl.innerHTML = '';
+  dates.forEach(ds => {
+    const dk = dateToKey(ds);
+    const short = dk.slice(2);
+    const disp = perfDateDisplay(dk);
+    const fnameRaw = row.pf ? row.pf + short : short;
+    const fname = fnameRaw;
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:7px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);margin-bottom:3px';
+    div.innerHTML = `
+      <span style="font-size:11px;color:var(--t2);margin-right:8px;min-width:64px;flex-shrink:0">${disp}</span>
+      <span style="font-size:12px;font-family:monospace;color:var(--tx);flex:1;cursor:pointer" title="클릭하여 복사" onclick="zgFileCopy(this,'${fname}')">${fname}</span>
+      <button onclick="zgFileCopy(this.previousElementSibling,'${fname}')" style="padding:4px 10px;border-radius:6px;border:1px solid rgba(0,0,0,0.1);background:rgba(255,255,255,0.5);cursor:pointer;font-size:11.5px;color:${row.lc};white-space:nowrap;flex-shrink:0">복사</button>`;
+    rowsEl.appendChild(div);
+  });
+}
+
+function zgFileCopy(spanEl, fname) {
+  navigator.clipboard.writeText(fname).then(() => {
+    showToast('📋 복사됨');
+    if (spanEl) { const orig = spanEl.style.color; spanEl.style.color='#1D9E75'; setTimeout(()=>spanEl.style.color=orig,1000); }
+  });
+}
+
 function zgBuild() {
   const noDate = document.getElementById('zgNoDate');
   const tabsWrap = document.getElementById('zgDateTabsWrap');
@@ -800,7 +889,7 @@ function zgBuild() {
       const fname = fnameRaw.split('.').slice(0, -1).join('.'); // 확장자 제거
       const copied = _zgCopied[ds].has(r.key);
       html += `<div id="zgRow_${ds}_${r.key}" style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:7px;border:1px solid ${r.border};background:${copied ? r.border : r.bg};margin-bottom:3px">
-        <div><span style="font-size:11px;color:${r.lc};margin-right:8px;min-width:60px;display:inline-block;font-weight:500">${r.lbl}</span><span style="font-size:12px;font-family:monospace;color:${r.nc}">${fname}</span></div>
+        <div><span style="font-size:11px;color:${r.lc};margin-right:8px;min-width:60px;display:inline-block;font-weight:500">${r.lbl}</span><span style="font-size:12px;font-family:monospace;color:${r.nc};cursor:pointer" title="클릭하여 복사" onclick="zgCopy('${ds}','${r.key}','${fname}')">${fname}</span></div>
         <button onclick="zgCopy('${ds}','${r.key}','${fname}')" style="padding:4px 10px;border-radius:6px;border:1px solid rgba(0,0,0,0.1);background:rgba(255,255,255,0.5);cursor:pointer;font-size:11.5px;color:${r.lc};white-space:nowrap" id="zgBtn_${ds}_${r.key}">${copied ? '✓' : '복사'}</button>
       </div>`;
     });

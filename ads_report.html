@@ -1305,15 +1305,7 @@ const MAIL_LOG_KEY = 'yozm_mail_log_v1';
 
 // 각 카드의 콘텐츠를 자동 텍스트로 업데이트하는 함수 (타 탭에서 호출)
 function mailRefreshBkCard() {
-  // BK 카드는 mailUpdateBk로 이미 렌더됨 - 모드만 갱신
-  const mode = _cardMailMode.bk || 'all';
-  const bkBody = document.getElementById('mailCardBkBody');
-  if (!bkBody) return;
-  // 텍스트 색상 갱신
-  bkBody.querySelectorAll('[data-mail-mode]').forEach(el => {
-    const elMode = el.dataset.mailMode;
-    el.style.display = (elMode === mode || mode === 'both' || elMode === 'common') ? '' : 'none';
-  });
+  mailUpdateBk(0,'',0,'','');
 }
 function mailRefreshGfaCard() {
   const mode = _cardMailMode.gfa || 'all';
@@ -2386,6 +2378,8 @@ function swBkInner(id, el) {
       innerTabs.style.position = 'sticky';
       innerTabs.style.top = 'var(--sticky-top,88px)';
       innerTabs.style.zIndex = '60';
+      // 탭 전환 시 내부탭이 보이도록 스크롤
+      setTimeout(() => innerTabs.scrollIntoView({behavior:'smooth', block:'nearest'}), 50);
     }
   }
   el.closest('.inner-tabs').querySelectorAll('.inner-tab').forEach(t => {

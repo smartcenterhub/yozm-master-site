@@ -472,16 +472,14 @@ document.getElementById('addBtn').onclick = async function() {
   if (!startAt || !endAt) { showToast('⚠️ 시작/종료 일시를 입력해주세요'); return; }
   if (new Date(startAt) >= new Date(endAt)) { showToast('⚠️ 종료 일시가 시작보다 늦어야 합니다'); return; }
   const rawKey = pcId || moId;
-  const docId = rawKey.replace(/[^a-zA-Z0-9\-_]/g, '_');
+  const docId = rawKey.replace(/[^a-zA-Z0-9\-_]/g,'_');
   try {
-    const pcImg = await compressFile(_pendingPc);
-    const moImg = await compressFile(_pendingMo);
     const isUpd = !!_cr[docId];
     const ex = isUpd ? _cr[docId] : {};
     const data = {
       pcId: pcId, moId: moId, name: name, startAt: startAt, endAt: endAt,
-      pcImg: pcImg !== null ? pcImg : (ex.pcImg || null),
-      moImg: moImg !== null ? moImg : (ex.moImg || null),
+      pcImgUrl: pcId ? GH_BASE + pcId : (ex.pcImgUrl || null),
+      moImgUrl: moId ? GH_BASE + moId : (ex.moImgUrl || null),
       createdAt: isUpd ? (ex.createdAt || new Date().toISOString()) : new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -801,8 +799,8 @@ async function bulkSaveToFirebase() {
     const data = {
       pcId: r.pcId, moId: r.moId, name: r.name,
       startAt: r.startAt, endAt: r.endAt,
-      pcImgUrl: r.pcId ? GH_BASE + r.pcId + '.png' : (ex.pcImgUrl || null),
-      moImgUrl: r.moId ? GH_BASE + r.moId + '.png' : (ex.moImgUrl || null),
+      pcImgUrl: r.pcId ? GH_BASE + r.pcId : (ex.pcImgUrl || null),
+      moImgUrl: r.moId ? GH_BASE + r.moId : (ex.moImgUrl || null),
       createdAt: isUpd ? (ex.createdAt || new Date().toISOString()) : new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };

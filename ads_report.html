@@ -830,7 +830,7 @@ function zgBuildFileView(key) {
     div.innerHTML = `
       <span style="font-size:11px;color:var(--t2);margin-right:8px;min-width:64px;flex-shrink:0">${disp}</span>
       <span style="font-size:12px;font-family:monospace;color:var(--tx);flex:1;cursor:pointer" title="클릭하여 복사" onclick="zgFileCopy(this,'${fname}')">${fname}</span>
-      <button onclick="zgFileCopy(this.previousElementSibling,'${fname}')" style="padding:4px 10px;border-radius:6px;border:1px solid rgba(0,0,0,0.1);background:rgba(255,255,255,0.5);cursor:pointer;font-size:11.5px;color:${row.lc};white-space:nowrap;flex-shrink:0">복사</button>`;
+      <button onclick="zgFileCopy(this,'${fname}')" style="padding:4px 10px;border-radius:6px;border:1px solid rgba(0,0,0,0.1);background:rgba(255,255,255,0.5);cursor:pointer;font-size:11.5px;color:${row.lc};white-space:nowrap;flex-shrink:0">복사</button>`;
     rowsEl.appendChild(div);
   });
 }
@@ -838,7 +838,17 @@ function zgBuildFileView(key) {
 function zgFileCopy(spanEl, fname) {
   navigator.clipboard.writeText(fname).then(() => {
     showToast('📋 복사됨');
-    if (spanEl) { const orig = spanEl.style.color; spanEl.style.color='#1D9E75'; setTimeout(()=>spanEl.style.color=orig,1000); }
+    // 행 전체 색 변경 (하루별 탭과 동일한 r.border 색)
+    const row = spanEl ? spanEl.closest('div[style*="border-radius:7px"]') || spanEl.parentElement : null;
+    if (row) {
+      const key = _zgFileKey;
+      const r = ZG_ROWS.find(x => x.key === key);
+      if (r) {
+        row.style.background = r.border;
+        const btn = row.querySelector('button');
+        if (btn) btn.textContent = '✓';
+      }
+    }
   });
 }
 

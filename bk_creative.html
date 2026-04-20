@@ -245,7 +245,8 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 <!-- ── 탭3: 소재 이력 ── -->
 <div class="bk-pane" id="bkPane3">
 <div class="card">
-  <div class="card-title"><div class="cdot" style="background:var(--bl)"></div>등록된 소재 전체<button class="btn btn-g btn-sm" onclick="refreshThumbs()" style="margin-left:auto">🖼 썸네일 갱신</button></div>
+  <div class="card-title"><div class="cdot" style="background:var(--bl)"></div>등록된 소재 전체<div style="display:flex;gap:8px;margin-left:auto"><button class="btn btn-g btn-sm" onclick="refreshThumbs()">🖼 썸네일 갱신</button><button class="btn btn-g btn-sm" onclick="toggleGuide()">📋 등록 가이드</button></div></div>
+  <div id="guidePanel" style="display:none;margin:10px 0 14px;padding:14px 18px;background:#F4F5FF;border-radius:8px;border:1px solid rgba(58,58,240,0.15);font-size:12px;line-height:2;color:var(--t1);width:1132px"></div>
   <div id="histTable"><div class="empty-state"><div class="empty-icon">📋</div><div>등록된 소재가 없습니다</div></div></div>
 </div>
 </div>
@@ -298,6 +299,27 @@ let _toastTmr;
 /* ── GitHub URL 자동 완성 ── */
 const GH_BASE = 'https://smartcenterhub.github.io/yozm-master-site/images/bk/';
 function autoGenUrls() {}
+
+function toggleGuide() {
+  const p = document.getElementById('guidePanel');
+  if (p.style.display !== 'none') { p.style.display = 'none'; return; }
+  p.innerHTML = [
+    '<b style="font-size:13px">브검 소재 등록 가이드</b>',
+    '<div style="height:8px"></div>',
+    '<b>1. 이미지 GitHub에 올리기</b>',
+    '파일명을 소재 ID로 변경 후 <code style="background:rgba(0,0,0,0.07);padding:1px 5px;border-radius:3px">images/bk/</code> 폴더에 넣고 GitHub Desktop → Commit → Push',
+    '<span style="color:var(--t3)">예) nad-a001-04-000000493777435.png</span>',
+    '<div style="height:6px"></div>',
+    '<b>2. 소재 등록</b>',
+    '· 일괄: 소재 등록 탭 → 일괄 등록 → 엑셀 업로드 → N개 등록',
+    '· 개별: 소재 등록 탭 → 소재명 / 기간 / PC ID / MO ID 입력 → ＋ 등록',
+    '<span style="color:var(--t3)">이미지 URL은 소재 ID 기준으로 자동 생성됩니다</span>',
+    '<div style="height:6px"></div>',
+    '<b>3. 이미지 확인</b>',
+    '소재 현황 또는 소재 이력 탭에서 확인 — 안 뜨면 🖼 썸네일 갱신 클릭',
+  ].join('<br>');
+  p.style.display = '';
+}
 
 /* ── 단축 날짜 파서 ── */
 function checkDt(rawId, targetId) {

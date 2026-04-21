@@ -1618,6 +1618,12 @@ function autoCloseExpired(){
   Object.entries(grpMap).forEach(([eName,prods])=>{
     if(prods.every(p=>p.status==='선정'||p.status==='미선정'))return;
     const ev=EVENTS.find(e=>e._id===eName)||EVENTS.find(e=>e.eventName===eName);
+    /* 행사 종료일 지났는데 선정/미선정 아닌 것 → 미선정 */
+    if(ev?.endDate&&ev.endDate<today){
+      prods.filter(p=>p.status!=='선정'&&p.status!=='미선정').forEach(p=>{p.status='미선정';markDirty('proposalItems',p._id,{status:'미선정'});});
+      warnCnt++;
+      return;
+    }
     if(ev?.startDate&&ev.startDate<=today&&prods.some(p=>p.status==='제안완료')){
       prods.filter(p=>p.status==='제안완료').forEach(p=>{p.status='확인필요';markDirty('proposalItems',p._id,{status:'확인필요'});});
       warnCnt++;
@@ -1629,7 +1635,7 @@ function autoCloseExpired(){
       warnCnt++;
     }
   });
-  if(warnCnt)toast(`⚠️ ${warnCnt}개 행사 확인필요 전환 (저장 필요)`,'ok');
+  if(warnCnt)toast(`⚠️ ${warnCnt}개 행사 상태 자동 변경 (저장 필요)`,'ok');
 }
 
 /* ══ SKU 버튼 ══ */
@@ -1757,7 +1763,7 @@ function renderRegProds(){
       <td style="text-align:center;cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span style="color:var(--rd);font-size:10px;font-weight:600">${bRate}</span></td>
       <td style="text-align:center;cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span data-f="prate" class="re" style="color:var(--or)">${pRate}</span></td>
       <td style="text-align:center;cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span data-f="mrate" style="color:var(--bl);font-size:10px;font-weight:600">${mRate}</span></td>
-      <td style="text-align:center;font-size:11px;color:var(--t2)">${p.ship||'무료배송'}</td>
+      <td style="text-align:center;font-size:11px;color:var(--t2)">${shipLabel(p)}</td>
       <td style="text-align:center"><button class="btn btn-xs" style="color:var(--pu);border-color:rgba(108,53,204,.3)" onclick="event.stopPropagation()">소구</button></td>
       <td style="width:28px"><button class="btn btn-xs" style="color:var(--rd)" onclick="regRemoveProd('${p.skuCode}')">×</button></td>
     </tr>`;
@@ -2071,6 +2077,7 @@ window.renderPropList=function(tabNum){
   if(tabNum===2){
     /* 월별 그룹핑 */
     const today=new Date().toISOString().substring(0,7); /* YYYY-MM */
+    const nextMonth=(()=>{const d=new Date();d.setMonth(d.getMonth()+1);return d.toISOString().substring(0,7);})();
     const monthGroups={};
     sortedEntries.forEach(([eName,grp])=>{
       const ev=EVENTS.find(e=>e._id===(grp.meta.eventSID||eName));
@@ -2084,7 +2091,7 @@ window.renderPropList=function(tabNum){
     if(!window._monthOpen)window._monthOpen={};
     /* 현재 월만 기본 오픈 */
     sortedMonths.forEach(m=>{
-      if(window._monthOpen[m]===undefined)window._monthOpen[m]=(m===today);
+      if(window._monthOpen[m]===undefined)window._monthOpen[m]=(m===today||m===nextMonth);
     });
     el.innerHTML=sortedMonths.map(m=>{
       const entries=monthGroups[m];
@@ -2169,6 +2176,11 @@ function buildDateChips(startDate,startTime,endDate,endTime,uploadDate,deadline,
   const adChip=addDisc?`<span style="display:inline-flex;align-items:center;margin-left:auto;padding:2px 9px;font-size:10.5px;border:0.5px solid rgba(186,117,23,.4);border-radius:20px;background:rgba(186,117,23,.1);color:var(--or);font-weight:600;white-space:nowrap;flex-shrink:0">${addDisc}</span>`:'';
   if(!startDate)return`<span style="font-size:10.5px;color:var(--t3)">기간 미설정</span>`+(adChip?` ${adChip}`:'');
   return[wChip,sChip,arrow,eChip,dChip,sep,lbl,uChip,dline,adChip].filter(Boolean).join('');
+}
+function shipLabel(p){
+  const s=(p.ship||'무료배송').replace('배송','').replace('조건부 무료','조건부').trim();
+  const t=p.shipType||'일반';
+  return s+' / '+t;
 }
 function buildGroupHtml(eName,grp,tabNum){
   const m=grp.meta;
@@ -2366,7 +2378,7 @@ function buildProdRow(p,tabNum,grpEnded,lbl){
     <td style="text-align:right"><span style="color:var(--rd);font-size:10px">${bRate2}</span></td>
     <td style="text-align:right"><span class="re" style="color:var(--or)">${eRate}</span></td>
     <td style="text-align:right"><span class="rm" style="color:var(--bl)">${mRate}</span></td>
-    <td style="text-align:center;font-size:11px;color:var(--t2)">${p.ship||'—'}</td>
+    <td style="text-align:center;font-size:11px;color:var(--t2)">${shipLabel(p)}</td>
     <td style="text-align:center"><button class="btn btn-xs" style="color:var(--pu);border-color:rgba(108,53,204,.3)" onclick="event.stopPropagation()">소구</button></td>
     <td style="text-align:center">${hasOpts?`<span id="opt-tog-${p._id}" style="font-size:10px;color:var(--t3);cursor:pointer">▶</span>`:''}</td>
   </tr>${optRows}`;
@@ -2414,7 +2426,7 @@ function buildSelGroupEditBlock(eName,evId,grpId,grpItems,ev,lbl,tabNum){
       <td style="text-align:right;padding:5px 8px">
         <span id="semx-${grpId}-${i}" style="${lockSt};padding:2px 6px;border-radius:4px;font-size:11.5px;color:var(--ac);font-weight:600">${comma(mx||null)}</span>
       </td>
-      <td style="font-size:11px;color:var(--t2);padding:5px 8px">${p.ship||'무료배송'}</td>
+      <td style="font-size:11px;color:var(--t2);padding:5px 8px">${shipLabel(p)}</td>
       <td style="padding:3px 6px"><button class="btn btn-xs" style="color:var(--rd)" onclick="editRemoveProd('${grpId}',${i})">×</button></td>
     </tr>`;
   }).join('');
@@ -2608,7 +2620,10 @@ function buildEditPanel(p,tabNum){
           <option ${p.isMain==='메인'?'selected':''}>메인</option><option ${p.isMain==='서브'?'selected':''}>서브</option></select></div>
       <div class="fg"><div class="fl">배송</div>
         <select class="fi" onchange="localMod('${p._id}','proposalItems',{ship:this.value})">
-          <option ${p.ship==='무료배송'?'selected':''}>무료배송</option><option ${p.ship==='조건부 무료'?'selected':''}>조건부 무료</option></select></div>
+          <option ${p.ship==='무료배송'?'selected':''}>무료배송</option><option ${p.ship==='조건부 무료'?'selected':''}>조건부 무료</option><option ${p.ship==='유료배송'?'selected':''}>유료배송</option></select></div>
+      <div class="fg"><div class="fl">배송유형</div>
+        <select class="fi" onchange="localMod('${p._id}','proposalItems',{shipType:this.value})">
+          <option ${(p.shipType||'일반')==='일반'?'selected':''}>일반</option><option ${p.shipType==='오늘'?'selected':''}>오늘</option></select></div>
       <div class="fg"><div class="fl">상태</div>
         <select class="fi" onchange="localMod('${p._id}','proposalItems',{status:this.value});renderPropList(${tabNum})">
           <option ${p.status==='제안중'?'selected':''}>제안중</option><option ${p.status==='제안완료'?'selected':''}>제안완료</option>
@@ -3046,7 +3061,7 @@ function buildSelCard(ev){
       <td style="text-align:right"><span class="da-bl">${mDA}</span></td>
       <td><span class="re">${eRate}</span></td>
       <td><span class="rm">${mRate}</span></td>
-      <td style="font-size:11px;color:var(--t2)">${p.ship||'무료배송'}</td>
+      <td style="font-size:11px;color:var(--t2)">${shipLabel(p)}</td>
     </tr>`;
   }).join('');
 
@@ -3134,7 +3149,7 @@ function buildSelEditBlock(ev,grpId){
       <td style="text-align:right;padding:5px 8px">
         <span id="semxe-${grpId}-${i}" style="${lockSt};color:var(--ac);font-weight:600">${comma(mx||null)}</span>
       </td>
-      <td style="font-size:11px;color:var(--t2);padding:5px 8px">${p.ship||'무료배송'}</td>
+      <td style="font-size:11px;color:var(--t2);padding:5px 8px">${shipLabel(p)}</td>
       <td style="padding:3px 6px"><button class="btn btn-xs" style="color:var(--rd)" onclick="editRemoveProd('${grpId}',${i})">×</button></td>
     </tr>`;
   }).join('');

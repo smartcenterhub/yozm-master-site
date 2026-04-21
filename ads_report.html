@@ -541,6 +541,7 @@ tr.empty-group{opacity:.35}
               <button id="mailGfaImgModeAll" onclick="setGfaImgMode('all')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid rgba(192,57,43,.3);background:rgba(192,57,43,.08);color:#c0392b;font-weight:600;font-family:inherit;display:none">전체</button>
               <button id="mailGfaImgModeBuy" onclick="setGfaImgMode('buy')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit;display:none">구매</button>
               <button id="mailGfaImgModeBoth" onclick="setGfaImgMode('both')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit;display:none">전체+구매</button>
+              <button class="btn btn-ghost btn-sm" id="mailGfaRefreshBtn" onclick="updateMailGfaImgCard()" style="display:none;font-size:11px">🔄 새로고침</button>
               <button class="btn btn-ghost btn-sm" id="mailGfaImgBtn" onclick="mailCopyGfaImage()" style="display:none">🖼 이미지 복사</button>
               <span class="mail-card-chk on" id="mailChkGfaImg" onclick="mailToggleCard('mailCardGfaImgBody','mailChkGfaImg')">✓</span>
             </div>
@@ -1661,6 +1662,8 @@ async function updateMailGfaImgCard() {
   if (imgModeBuy) imgModeBuy.style.display = '';
   const imgModeBoth = document.getElementById('mailGfaImgModeBoth');
   if (imgModeBoth) imgModeBoth.style.display = '';
+  const refreshBtn = document.getElementById('mailGfaRefreshBtn');
+  if (refreshBtn) refreshBtn.style.display = '';
 
   // 날짜 탭 버튼 렌더
   const onS  = 'background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2);font-weight:500';
@@ -2310,10 +2313,12 @@ function swToImgReg(el) {
   });
   var imgreg = document.getElementById('t-img_reg');
   if (imgreg) { imgreg.classList.add('active'); imgreg.style.display = 'block'; }
+  // subTabsWrap 숨김 후 sticky-top 재계산
   setTimeout(function() {
+    if (typeof updateStickyTop === 'function') updateStickyTop();
     var bkTab = document.getElementById('imgRegTabBk');
     if (bkTab) swImgReg('bk', bkTab);
-  }, 100);
+  }, 50);
 }
 
 function swImgReg(id, el) {
@@ -2344,6 +2349,7 @@ function sw(id, el) {
   el.classList.add('active');
   var target = document.getElementById('t-' + id);
   if (target) { target.classList.add('active'); target.style.display = 'block'; }
+  setTimeout(function() { if (typeof updateStickyTop === 'function') updateStickyTop(); }, 50);
 }
 
 
@@ -2546,6 +2552,12 @@ function swBkInner(id, el) {
 }
 
 function swGfaInner(id, el) {
+  // gfaSojai가 imgRegContent로 이동됐으면 원래 위치(s-gfa)로 복귀
+  const _gfaSojai = document.getElementById('gfaSojai');
+  const _gfaContainer = document.getElementById('s-gfa');
+  if (_gfaSojai && _gfaContainer && _gfaSojai.parentNode !== _gfaContainer && _gfaSojai.parentNode.id !== 's-gfa') {
+    _gfaContainer.appendChild(_gfaSojai);
+  }
   ['gfaPerf','gfaSojai'].forEach(p => { const el2=document.getElementById(p); if(el2) el2.style.display='none'; });
   el.closest('.inner-tabs').querySelectorAll('.inner-tab').forEach(t => {
     t.classList.remove('active');
@@ -2605,6 +2617,19 @@ function bindCellCopy(container) {
     });
   });
 }
+
+// 전역 row-copy-btn 핸들러 (tr-copyable 없는 행도 커버)
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.row-copy-btn');
+  if (!btn) return;
+  const row = btn.dataset.row;
+  if (!row) return;
+  navigator.clipboard.writeText(row.split('\\t').join('\t')).then(function() {
+    const tr = btn.closest('tr');
+    if (tr) { tr.classList.add('tr-flash'); setTimeout(function() { tr.classList.remove('tr-flash'); }, 400); }
+    showToast('📋 복사됨');
+  }).catch(function() {});
+});
 
 function buildTableRows(tbody, rows, dateKey) {
   tbody.innerHTML = '';
@@ -3219,7 +3244,7 @@ function rptRefreshAutoBlocks() {
 })();
 // 초기 로드// sticky 높이 동적 계산
 (function() {
-  function updateStickyTop() {
+  window.updateStickyTop = function updateStickyTop() {
     const wrapper = document.querySelector('[style*="position:sticky"][style*="z-index:100"]');
     if (wrapper) {
       const h = wrapper.offsetHeight;
@@ -3233,7 +3258,7 @@ function rptRefreshAutoBlocks() {
       const h2 = bkInner ? total + bkInner.offsetHeight : total + 40;
       document.documentElement.style.setProperty('--sticky-top2', h2 + 'px');
     }
-  }
+  };
   window.addEventListener('load', updateStickyTop);
   window.addEventListener('resize', updateStickyTop);
   setTimeout(updateStickyTop, 300);

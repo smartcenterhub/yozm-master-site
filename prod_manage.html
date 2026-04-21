@@ -251,6 +251,8 @@ code{font-family:monospace;font-size:11px;background:rgba(0,0,0,.05);padding:1px
 .pi.cat-굿즈:hover,.pi.cat-굿즈.on{background:#475569;border-color:#475569;color:#fff}
 .pi.cat-off{background:rgba(235,235,235,0.6);border:1px solid rgba(100,100,100,.18);color:#999}
 .pi.cat-off:hover,.pi.cat-off.on{background:#888;border-color:#888;color:#fff}
+.fp.cat-off{opacity:.45}
+.fp.cat-off.on{opacity:1}
 .opt-cnt{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:20px;padding:0 6px;border-radius:10px;font-size:11px;font-weight:600;cursor:pointer;user-select:none;transition:all .1s;border:none;font-family:inherit}
 .opt-cnt.one{background:rgba(0,0,0,.05);color:var(--t3);cursor:default;pointer-events:none}
 .opt-cnt.many{background:var(--fc-l);color:var(--accent)}
@@ -558,7 +560,9 @@ function renderSkuNickFilters(){
   let html=`<span class="filter-lbl">닉네임</span><span class="fp ${SF.nick==='전체'?'on':''}" onclick="setSkuNickFilter(this,'전체')">전체</span>`;
   nicks.forEach(nick=>{
     const isOn=SF.nick===nick;
-    html+=`<span class="fp ${isOn?'on':''}" data-v="${nick}" onclick="setSkuNickFilter(this,'${nick}')">${nick}</span>`;
+    const sk=SKUS.find(x=>x.nick===nick);
+    const isOff=sk&&OFF_STATUS.includes(sk.status);
+    html+=`<span class="fp ${isOn?'on':''} ${isOff?'cat-off':''}" data-v="${nick}" onclick="setSkuNickFilter(this,'${nick}')">${nick}</span>`;
   });
   row.innerHTML=html;
 }
@@ -983,9 +987,9 @@ function collectOptItems(oi){
   const container=document.getElementById(`eo-items-${oi}`);
   if(!container) return [];
   const spans=[...container.querySelectorAll('span[style*="inline-flex"]')];
-  return spans.map((span,ii)=>{
+  return spans.map(span=>{
     const nick=span.querySelector('span:first-child')?.textContent.trim()||'';
-    const qty=Number(document.getElementById(`eo-iqty-${oi}-${ii}`)?.value)||1;
+    const qty=Number(span.querySelector('input[type="number"]')?.value)||1;
     return {nick,qty};
   }).filter(x=>x.nick);
 }
@@ -993,9 +997,9 @@ function collectNewOptItems(){
   const container=document.getElementById('eo-new-items');
   if(!container) return [];
   const spans=[...container.querySelectorAll('span[style*="inline-flex"]')];
-  return spans.map((span,ii)=>{
+  return spans.map(span=>{
     const nick=span.querySelector('span:first-child')?.textContent.trim()||'';
-    const qty=Number(container.querySelector(`input[data-ii="${ii}"]`)?.value)||1;
+    const qty=Number(span.querySelector('input[type="number"]')?.value)||1;
     return {nick,qty};
   }).filter(x=>x.nick);
 }

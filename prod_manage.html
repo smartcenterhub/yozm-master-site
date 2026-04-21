@@ -417,7 +417,7 @@ tr.opt-row.editing-row td.fix{background:rgba(240,240,255,0.98)}
         <input class="search-box" placeholder="닉네임 · 상품코드 · 상품명 검색" oninput="renderSkuTable(this.value)"><span onclick="resetSkuFilters()" title="필터 초기화" style="cursor:pointer;font-size:15px;margin-left:4px;user-select:none;opacity:.6" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.6">↺</span>
         <span class="cnt" id="skuCnt"></span>
         <span class="cnt" id="skuPendLbl" style="color:var(--amber);display:none"></span>
-        <span class="copy-toggle" id="skuCopyToggle" onclick="toggleCopy('sku')"><span class="dot"></span>복사 OFF</span>
+        <span class="copy-toggle on" id="skuCopyToggle" onclick="toggleCopy('sku')"><span class="dot"></span>복사 ON</span>
         <span class="copy-toggle" id="skuPriceToggle" onclick="toggleSkuPrice()" style="margin-left:4px">가격 접기</span>
         <span class="copy-toggle" id="skuOptToggle" onclick="toggleAllOpts()" style="margin-left:4px">옵션 전체 열기</span>
         <span class="filter-toggle" id="sFilterToggle" onclick="toggleFilterBody('sku')">
@@ -671,7 +671,7 @@ function toast(msg,type){
   t.style.color='#fff';t.style.opacity='1';t.textContent=msg;
   clearTimeout(t._tid);t._tid=setTimeout(()=>t.style.opacity='0',1600);
 }
-const copyState={item:false,sku:false};
+const copyState={item:false,sku:true};
 function toggleCopy(tab){
   copyState[tab]=!copyState[tab];
   const el=document.getElementById(tab+'CopyToggle');
@@ -875,6 +875,16 @@ function toggleFilterBody(tab){
 }
 
 function initFilterBodies(){
+  // 가격열 접힌 상태로 초기화
+  ['sc-pn','sc-pd','sc-pm','sc-pa','sc-pf','sc-da','sc-db','sc-dc','sc-ra','sc-rb','sc-rc'].forEach(id=>{
+    const col=document.getElementById(id);
+    if(col) col.style.visibility='collapse';
+    const chip=document.querySelector(`[data-col="${id}"]`);
+    if(chip) chip.classList.remove('on');
+  });
+  const btn=document.getElementById('skuPriceToggle');
+  if(btn){btn.textContent='가격 펼치기';btn.classList.add('on');}
+  skuPriceVisible=false;
   ['iFilterBody','sFilterBody'].forEach(id=>{
     const el=document.getElementById(id);
     const btn=document.getElementById(id==='iFilterBody'?'iFilterToggle':'sFilterToggle');
@@ -919,7 +929,7 @@ function toggleColChip(el){
   col.style.visibility=isOn?'':'collapse';
 }
 
-let skuPriceVisible=true;
+let skuPriceVisible=false;
 function copySkuPriceToOpt(code){
   const sk=SKUS.find(x=>x.code===code);if(!sk)return;
   const set=(id,v)=>{const el=document.getElementById(id);if(el&&v!=null)el.value=v;};
@@ -1046,7 +1056,7 @@ function stageSkuEdit(code){
     const pf=pa?pa-1000:null;
     const memo=document.getElementById(`eo-memo-${oi}`)?.value.trim()||null;
     const items=collectOptItems(oi);
-    if(nick) saved.push({nick:nick||'',name:'',status:sk.status,items,priceNormal:pn,priceDisc:pd,priceMax:pm,priceAlim:pa,priceFinal:pf,memo});
+    if(nick) saved.push({nick:nick||'',name:'',status:status,items,priceNormal:pn,priceDisc:pd,priceMax:pm,priceAlim:pa,priceFinal:pf,memo});
   });
   sk.options=saved;
   sk.pending=true;skuEditCode=null;renderSkuTable();updatePendBar();

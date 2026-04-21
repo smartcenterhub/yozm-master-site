@@ -553,6 +553,31 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
   <span class="danger-text">등록된 이미지를 모두 삭제합니다</span>
   <button class="btn btn-red btn-sm" id="clearAllBtn">🗑 전체 삭제</button>
 </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 월간 리포트 -->
+<div class="tab-content" id="t-monthly" style="display:none">
+  <div class="pg-header">
+    <div>
+      <div class="pg-title">월간 리포트</div>
+      <div class="pg-desc">월별 광고 성과 리포트를 집계하고 관리합니다.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 이미지 등록 -->
+<div class="tab-content" id="t-img_reg" style="display:none">
+  <div style="display:flex;gap:0;border-bottom:1.5px solid var(--glass-border-s);background:var(--body-bg);position:sticky;top:var(--sticky-top,88px);z-index:60">
+    <div class="inner-tab active" id="imgRegTabBk" onclick="swImgReg('bk',this)" style="padding:8px 20px;font-size:13px">🔍 브검 이미지</div>
+    <div class="inner-tab" id="imgRegTabGfa" onclick="swImgReg('gfa',this)" style="padding:8px 20px;font-size:13px">🖼 GFA 이미지</div>
+  </div>
+  <div id="imgRegContent" style="padding:0"></div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -4147,7 +4172,7 @@ async function processAdv(file, num) {
     tabsEl = document.createElement('div');
     tabsEl.id = tabsId;
     tabsEl.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;padding:6px 0 2px';
-    panel.insertBefore(tabsEl, document.getElementById(`advUpload${num}`));
+    const _advRef = document.getElementById(`advUpload${num}`); if (_advRef) panel.insertBefore(tabsEl, _advRef); else panel.appendChild(tabsEl);
   }
   if (!window._advBuyMode) window._advBuyMode = {1:'all', 2:'all'};
   buildDateTabs(tabsId, allDates, 'all', (d) => {

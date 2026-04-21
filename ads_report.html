@@ -174,7 +174,7 @@ tr.empty-group{opacity:.35}
 <div class="tabs">
   <div class="tab active" onclick="sw('daily',this)">데일리 리포트</div>
   <div class="tab" onclick="sw('monthly',this)">월간 리포트</div>
-  <div class="tab" onclick="sw('img_reg',this)" id="mainTabImgReg">이미지 등록</div>
+  <div class="tab" id="mainTabImgReg" onclick="swToImgReg(this)">이미지 등록</div>
 </div>
 
 <!-- 데일리 리포트 -->
@@ -417,293 +417,141 @@ tr.empty-group{opacity:.35}
 
     <!-- 이미지 관리 -->
     <div class="inner-content" id="gc-img">
-      <iframe id="gcImageFrame" src="gfa_creative.html"
-        style="width:100%;height:660px;border:1px solid var(--glass-border-s);border-radius:12px;display:block;max-width:920px"></iframe>
-    </div>
-    </div>
+<style id="gfaCreativeStyle">
+
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --glass-bg:rgba(255,255,255,0.74);
+  --glass-bg-strong:rgba(255,255,255,0.92);
+  --glass-border-s:rgba(0,0,0,0.07);
+  --tx:#0a0a0f;--t2:#4a4a5a;--t3:#9898a8;--t4:#c4c4d0;
+  --accent:#3a3af0;--green:#1a8a4a;--red:#d42020;--blue:#1a56c8;
+}
+html{height:100%;background:linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#eef0f8 100%) fixed;}
+body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;line-height:1.5;color:var(--tx);padding:20px 24px 32px;}
+
+.pg-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px}
+.pg-title{font-size:15px;font-weight:700;color:var(--tx)}
+.pg-desc{font-size:11.5px;color:var(--t3);margin-top:3px;line-height:1.6}
+
+.card{background:var(--glass-bg);border:1px solid var(--glass-border-s);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+.card-title{font-size:12.5px;font-weight:600;color:var(--tx);margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.card-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.count-badge{background:rgba(58,58,240,0.08);color:var(--accent);border-radius:10px;padding:2px 9px;font-size:11.5px;font-weight:500;margin-left:4px}
+
+/* 등록 폼 */
+.form-row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:11.5px;font-weight:500;color:var(--t2)}
+.yozm-input{border:1px solid var(--glass-border-s);border-radius:7px;padding:7px 12px;font-size:12.5px;color:var(--tx);background:var(--glass-bg-strong);font-family:inherit;outline:none;width:300px}
+.yozm-input:focus{border-color:rgba(58,58,240,0.3);box-shadow:0 0 0 3px rgba(58,58,240,0.06)}
+.yozm-input::placeholder{color:var(--t4)}
+
+/* 파일 드롭존 */
+.file-drop{border:1.5px dashed rgba(58,58,240,0.2);border-radius:8px;padding:10px 14px;text-align:center;cursor:pointer;transition:all .15s;background:rgba(58,58,240,0.02);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:200px;height:68px}
+.file-drop:hover,.file-drop.drag-over{border-color:rgba(58,58,240,0.4);background:rgba(58,58,240,0.04)}
+.file-drop-icon{font-size:18px;opacity:.5}
+.file-drop-text{font-size:11.5px;color:var(--t3)}
+.file-drop-name{font-size:11px;font-weight:600;color:var(--accent);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* 버튼 */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:7px;font-size:12px;cursor:pointer;font-family:inherit;border:none;transition:all .12s}
+.btn-primary{background:var(--accent);color:#fff;font-weight:500}.btn-primary:hover{background:#2a2ad8}
+.btn-ghost{background:var(--glass-bg-strong);border:1px solid var(--glass-border-s);color:var(--t2)}.btn-ghost:hover{color:var(--tx)}
+.btn-red{background:rgba(212,32,32,0.06);border:1px solid rgba(212,32,32,0.14);color:var(--red)}.btn-red:hover{background:rgba(212,32,32,0.1)}
+.btn-sm{padding:4px 10px;font-size:11px}
+
+/* 검색바 */
+.search-wrap{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.search-input{border:1px solid var(--glass-border-s);border-radius:7px;padding:5px 11px;font-size:12px;color:var(--tx);background:var(--glass-bg-strong);font-family:inherit;outline:none;width:220px}
+.search-input:focus{border-color:rgba(58,58,240,0.3)}
+.search-input::placeholder{color:var(--t4)}
+
+/* 이미지 그리드 */
+.img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.img-card{background:var(--glass-bg-strong);border:1px solid var(--glass-border-s);border-radius:10px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.img-thumb-wrap{width:130px;height:100px;display:flex;align-items:center;justify-content:center;border-radius:6px;overflow:hidden;border:1px solid var(--glass-border-s);background:#fff;flex-shrink:0}
+.img-thumb{max-width:130px;max-height:100px;object-fit:contain;cursor:pointer;display:block;transition:opacity .12s}
+.img-thumb:hover{opacity:.85}
+.img-name{font-size:10.5px;color:var(--t2);text-align:center;word-break:break-all;line-height:1.4;width:100%;max-height:30px;overflow:hidden}
+.img-btns{display:flex;gap:5px}
+
+/* 빈 상태 */
+.empty-state{text-align:center;padding:36px 20px;color:var(--t3)}
+.empty-icon{font-size:26px;opacity:.4;margin-bottom:8px}
+.empty-text{font-size:12.5px}
+
+/* toast */
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(60px);background:rgba(10,10,15,0.88);color:#fff;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:500;transition:transform .2s ease;z-index:9999;pointer-events:none;backdrop-filter:blur(8px)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* 전체 삭제 확인 영역 */
+.danger-zone{background:rgba(212,32,32,0.04);border:1px solid rgba(212,32,32,0.1);border-radius:10px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+.danger-text{font-size:12px;color:var(--t2)}
+
+</style>
+<div id="gfaCreativeWrap">
+<div class="pg-header">
+  <div>
+    <div class="pg-title">🎨 GFA 소재 이미지 관리</div>
+    <div class="pg-desc">소재 이름과 이미지를 등록해두면 GFA 소재 탭에서 자동으로 불러옵니다</div>
   </div>
+</div>
 
-  <!-- ⑤ ADVoost -->
-  <div class="sub-content" id="s-adv">
-    <div class="panel-grid">
-      <div class="panel-card" id="advPanel1">
-        <div class="panel-header">
-          <div class="panel-title"><div class="panel-title-dot"></div>DA 매체</div>
-        </div>
-        <div class="upload-zone" id="advUpload1" onclick="document.getElementById('advInput1').click()">
-          <div class="upload-icon">📁</div>
-          <div class="upload-title">ZIP 파일 업로드</div>
-          <div class="upload-desc">ADVoost DA 성과 리포트 ZIP</div>
-        </div>
-        <input type="file" id="advInput1" accept=".zip" style="display:none">
-        <div id="advContent1" style="display:none;flex-direction:column;gap:14px"></div>
-      </div>
-      <div class="panel-card" id="advPanel2">
-        <div class="panel-header">
-          <div class="panel-title"><div class="panel-title-dot" style="background:var(--blue)"></div>SA 매체</div>
-        </div>
-        <div class="upload-zone" id="advUpload2" onclick="document.getElementById('advInput2').click()">
-          <div class="upload-icon">📁</div>
-          <div class="upload-title">ZIP 파일 업로드</div>
-          <div class="upload-desc">ADVoost SA 성과 리포트 ZIP</div>
-        </div>
-        <input type="file" id="advInput2" accept=".zip" style="display:none">
-        <div id="advContent2" style="display:none;flex-direction:column;gap:14px"></div>
-      </div>
-    </div>
+<!-- 등록 폼 -->
+<div class="card">
+  <div class="card-title">
+    <div class="card-dot" style="background:var(--accent)"></div>소재 이미지 등록
   </div>
-
-  <!-- ⑥ 메일쓰기 -->
-  <div class="sub-content" id="s-mail">
-    <div style="display:grid;grid-template-columns:1fr 380px;gap:16px">
-
-      <!-- 왼쪽: 섹션 카드들 -->
-      <div style="display:flex;flex-direction:column;gap:12px">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
-          <div style="display:flex;gap:5px">
-            <button id="mailModeAll" onclick="setMailMode('all')" style="padding:3px 11px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit;transition:all .12s">전체전환</button>
-            <button id="mailModeBuy" onclick="setMailMode('buy')" style="padding:3px 11px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit;transition:all .12s">구매전환</button>
-            <button id="mailModeBoth" onclick="setMailMode('both')" style="padding:3px 11px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid rgba(58,58,240,.3);background:rgba(58,58,240,.08);color:var(--accent);font-weight:600;font-family:inherit;transition:all .12s">전체+구매</button>
-          </div>
-          <div style="display:flex;gap:6px">
-            <button class="btn btn-ghost btn-sm" onclick="mailExpandAll()" style="font-size:11.5px">☑ 전체 열기</button>
-            <button class="btn btn-ghost btn-sm" onclick="mailCollapseAll()" style="font-size:11.5px">☐ 전체 닫기</button>
-          </div>
-        </div>
-
-        <!-- 성과 테이블 카드 -->
-        <div class="card mail-inactive" id="mailCardPerf">
-          <div class="card-title" style="justify-content:space-between;cursor:pointer" onclick="mailToggleCard('mailCardPerfBody','mailChkPerf')">
-            <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--accent)"></div>날짜별 성과 요약</span><div style="display:flex;gap:4px;margin-left:8px" onclick="event.stopPropagation()">
-                <button id="mailMode_perf_all" onclick="setCardMailMode('perf','all')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">전체</button>
-                <button id="mailMode_perf_buy" onclick="setCardMailMode('perf','buy')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">구매</button>
-                <button id="mailMode_perf_both" onclick="setCardMailMode('perf','both')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid rgba(58,58,240,.3);background:rgba(58,58,240,.08);color:var(--accent);font-weight:600;font-family:inherit">전체+구매</button>
-              </div>
-            <div style="display:flex;gap:6px;align-items:center" onclick="event.stopPropagation()">
-              <span style="font-size:10.5px;color:var(--t3)">파일 업로드 시 자동</span>
-              <button class="btn btn-ghost btn-sm" id="mailPerfImgBtn" onclick="mailCopyPerfImage()" style="display:none">🖼 이미지 복사</button>
-              <button class="btn btn-ghost btn-sm" onclick="mailApplyCard('perf')" title="이 카드만 미리보기 반영">↙ 적용</button>
-              <span class="mail-card-chk on" id="mailChkPerf" onclick="mailToggleCard('mailCardPerfBody','mailChkPerf')">✓</span>
-            </div>
-          </div>
-          <div id="mailCardPerfBody"><div id="mailPerfContent">
-            <div style="font-size:12px;color:var(--t3);padding:12px 0;text-align:center">브검 / GFA / ADV 파일 업로드 후 자동으로 채워집니다</div>
-          </div>
-          <!-- 이미지 캡처용 숨김 렌더링 영역 -->
-          <div id="mailPerfImageArea" style="display:none;font-family:'Malgun Gothic',sans-serif;font-size:12px;background:#fff;padding:0;color:#222"></div>
-          </div><!-- /mailCardPerfBody -->
-        </div>
-
-        <!-- 브검 카드 -->
-        <div class="card mail-inactive" id="mailCardBk">
-          <div class="card-title" style="justify-content:space-between;cursor:pointer" onclick="mailToggleCard('mailCardBkBody','mailChkBk')">
-            <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--accent)"></div>* 브랜드검색</span><div style="display:flex;gap:4px;margin-left:8px" onclick="event.stopPropagation()">
-                <button id="mailMode_bk_all" onclick="setCardMailMode('bk','all')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">전체</button>
-                <button id="mailMode_bk_buy" onclick="setCardMailMode('bk','buy')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">구매</button>
-                <button id="mailMode_bk_both" onclick="setCardMailMode('bk','both')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid rgba(58,58,240,.3);background:rgba(58,58,240,.08);color:var(--accent);font-weight:600;font-family:inherit">전체+구매</button>
-              </div>
-            <div style="display:flex;gap:5px;align-items:center" onclick="event.stopPropagation()">
-              <div style="display:flex;gap:3px" id="bkModeGroup">
-                <button class="btn btn-ghost btn-sm" onclick="setBkMode('total')" id="bkModeTotal" style="font-size:11px;padding:3px 8px;background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2)">합계만</button>
-                <button class="btn btn-ghost btn-sm" onclick="setBkMode('daily')" id="bkModeDaily" style="font-size:11px;padding:3px 8px">일별</button>
-                <button class="btn btn-ghost btn-sm" onclick="setBkMode('all')"   id="bkModeAll"   style="font-size:11px;padding:3px 8px">전체</button>
-              </div>
-              <button class="btn btn-ghost btn-sm" onclick="mailApplyCard('bk')" title="이 카드만 미리보기 반영">↙ 적용</button>
-              <span class="mail-card-chk on" id="mailChkBk" onclick="mailToggleCard('mailCardBkBody','mailChkBk')">✓</span>
-            </div>
-          </div>
-          <div id="mailCardBkBody"><div id="mailBkAuto" style="font-size:12px;color:var(--t3);background:var(--glass-bg);border-radius:8px;padding:10px 12px;line-height:1.9">브검 파일 업로드 시 자동 채워짐</div></div>
-        </div>
-
-        <!-- GFA 카드 -->
-        <div class="card mail-inactive" id="mailCardGfa">
-          <div class="card-title" style="justify-content:space-between;cursor:pointer" onclick="mailToggleCard('mailCardGfaBody','mailChkGfa')">
-            <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--blue)"></div>* 성과형DA(GFA)</span><div style="display:flex;gap:4px;margin-left:8px" onclick="event.stopPropagation()">
-                <button id="mailMode_gfa_all" onclick="setCardMailMode('gfa','all')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">전체</button>
-                <button id="mailMode_gfa_buy" onclick="setCardMailMode('gfa','buy')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">구매</button>
-                <button id="mailMode_gfa_both" onclick="setCardMailMode('gfa','both')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid rgba(58,58,240,.3);background:rgba(58,58,240,.08);color:var(--accent);font-weight:600;font-family:inherit">전체+구매</button>
-              </div>
-            <div style="display:flex;gap:6px;align-items:center" onclick="event.stopPropagation()">
-              <button class="btn btn-ghost btn-sm" onclick="mailApplyCard('gfa')" title="이 카드만 미리보기 반영">↙ 적용</button>
-              <span class="mail-card-chk on" id="mailChkGfa" onclick="mailToggleCard('mailCardGfaBody','mailChkGfa')">✓</span>
-            </div>
-          </div>
-          <div id="mailCardGfaBody"><div id="mailGfaAuto" style="font-size:12px;color:var(--t3);background:var(--glass-bg);border-radius:8px;padding:10px 12px;line-height:1.9">GFA 소재 파일 업로드 시 자동 채워짐</div></div>
-        </div>
-
-        <!-- 전일 상위성과소재 이미지 카드 -->
-        <div class="card mail-inactive" id="mailCardGfaImg">
-          <div class="card-title" style="justify-content:space-between;cursor:pointer" onclick="mailToggleCard('mailCardGfaImgBody','mailChkGfaImg')">
-            <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--blue)"></div>전일 상위성과소재 이미지</span>
-            <div style="display:flex;gap:6px;align-items:center" onclick="event.stopPropagation()">
-              <span style="font-size:10.5px;color:var(--t3)">GFA 소재 업로드 시 자동</span>
-              <button class="btn btn-ghost btn-sm" id="mailGfaEmptyBtn" onclick="toggleMailGfaEmpty()" style="display:none;font-size:11px;background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2)">전환 0 숨김</button>
-              <button id="mailGfaImgModeAll" onclick="setGfaImgMode('all')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid rgba(192,57,43,.3);background:rgba(192,57,43,.08);color:#c0392b;font-weight:600;font-family:inherit;display:none">전체</button>
-              <button id="mailGfaImgModeBuy" onclick="setGfaImgMode('buy')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit;display:none">구매</button>
-              <button id="mailGfaImgModeBoth" onclick="setGfaImgMode('both')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit;display:none">전체+구매</button>
-              <button class="btn btn-ghost btn-sm" id="mailGfaImgBtn" onclick="mailCopyGfaImage()" style="display:none">🖼 이미지 복사</button>
-              <span class="mail-card-chk on" id="mailChkGfaImg" onclick="mailToggleCard('mailCardGfaImgBody','mailChkGfaImg')">✓</span>
-            </div>
-          </div>
-          <div id="mailCardGfaImgBody">
-          <div id="mailGfaImgDateTabs" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px"></div>
-          <div id="mailGfaImgContent">
-            <div style="font-size:12px;color:var(--t3);padding:12px 0;text-align:center">GFA 소재 파일 업로드 후 자동으로 채워집니다</div>
-          </div>
-          <div id="mailGfaImageArea" style="display:none;font-family:'Malgun Gothic',sans-serif;background:#fff;padding:12px"></div>
-          </div><!-- /mailCardGfaImgBody -->
-        </div>
-
-        <!-- ADV 카드 -->
-        <div class="card mail-inactive" id="mailCardAdv">
-          <div class="card-title" style="justify-content:space-between;cursor:pointer" onclick="mailToggleCard('mailCardAdvBody','mailChkAdv')">
-            <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--green)"></div>* ADVoost</span><div style="display:flex;gap:4px;margin-left:8px" onclick="event.stopPropagation()">
-                <button id="mailMode_adv_all" onclick="setCardMailMode('adv','all')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">전체</button>
-                <button id="mailMode_adv_buy" onclick="setCardMailMode('adv','buy')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit">구매</button>
-                <button id="mailMode_adv_both" onclick="setCardMailMode('adv','both')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid rgba(58,58,240,.3);background:rgba(58,58,240,.08);color:var(--accent);font-weight:600;font-family:inherit">전체+구매</button>
-              </div>
-            <div style="display:flex;gap:5px;align-items:center" onclick="event.stopPropagation()">
-              <div style="display:flex;gap:3px" id="advModeGroup">
-                <button class="btn btn-ghost btn-sm" onclick="setAdvMode('total')" id="advModeTotal" style="font-size:11px;padding:3px 8px;background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2)">합계만</button>
-                <button class="btn btn-ghost btn-sm" onclick="setAdvMode('daily')" id="advModeDaily" style="font-size:11px;padding:3px 8px">일별</button>
-                <button class="btn btn-ghost btn-sm" onclick="setAdvMode('all')"   id="advModeAll"   style="font-size:11px;padding:3px 8px">전체</button>
-              </div>
-              <button class="btn btn-ghost btn-sm" onclick="mailApplyCard('adv')" title="이 카드만 미리보기 반영">↙ 적용</button>
-              <span class="mail-card-chk on" id="mailChkAdv" onclick="mailToggleCard('mailCardAdvBody','mailChkAdv')">✓</span>
-            </div>
-          </div>
-          <div id="mailCardAdvBody"><div id="mailAdvAuto" style="font-size:12px;color:var(--t3);background:var(--glass-bg);border-radius:8px;padding:10px 12px;line-height:1.9">ADV 파일 업로드 시 자동 채워짐</div></div>
-        </div>
-
-        <!-- 리포트 양식 블럭 에디터 -->
-        <div class="card" id="mailCardRpt">
-          <div class="card-title" style="justify-content:space-between;margin-bottom:0;cursor:pointer;padding-bottom:8px" onclick="mailToggleCard('mailCardRptBody','mailChkRpt')">
-            <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--t2)"></div>리포트 양식</span>
-            <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap" onclick="event.stopPropagation()">
-              <button class="btn btn-ghost btn-sm" onclick="rptRefreshAutoBlocks()" style="font-size:11px;padding:3px 8px">🔄</button>
-              <button class="btn btn-ghost btn-sm" onclick="rptSave()" style="font-size:11px;padding:3px 8px;border-color:rgba(26,138,74,.3);color:#1a8a4a;background:rgba(26,138,74,.06)">💾 저장</button>
-              <button class="btn btn-ghost btn-sm" onclick="rptApplyAll()" style="font-size:11px;padding:3px 8px;background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2)">⚡ 전체 적용</button>
-              <button class="btn btn-ghost btn-sm" onclick="rptApplyOnce()" style="font-size:11px;padding:3px 8px;border-color:rgba(186,117,23,.3);color:#854F0B;background:rgba(186,117,23,.06)">↙ 이번만</button>
-              <button class="btn btn-ghost btn-sm" onclick="rptCopyBlocks()" style="font-size:11px;padding:3px 8px">📋 복사</button>
-              <button class="btn btn-ghost btn-sm" onclick="rptAddBlock()" style="font-size:11px;padding:3px 8px">+ 블럭</button>
-              <span id="rptSavedAt" style="font-size:10.5px;color:var(--t3)"></span>
-              <span class="mail-card-chk" id="mailChkRpt" onclick="mailToggleCard('mailCardRptBody','mailChkRpt')"></span>
-            </div>
-          </div>
-          <div id="mailCardRptBody" style="display:none">
-          <!-- 데이터 연동 상태 -->
-          <div id="rptDataStatus" style="background:var(--glass-bg);border-radius:7px;padding:7px 10px;margin-bottom:10px;border:0.5px solid var(--glass-border-s)"></div>
-          <div id="rptBlocks"></div>
-          <div onclick="rptAddBlock()" style="display:flex;align-items:center;gap:6px;padding:8px 0 2px;cursor:pointer;opacity:.4" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=.4">
-            <div style="flex:1;height:0.5px;background:var(--glass-border-s)"></div>
-            <span style="font-size:12px;color:var(--t2);padding:0 4px;white-space:nowrap">+ 블럭 추가</span>
-            <div style="flex:1;height:0.5px;background:var(--glass-border-s)"></div>
-          </div>
-          <!-- 가이드 토글 -->
-          <div onclick="rptToggleGuide()" style="display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;padding:4px 0">
-            <span id="rptGuideArrow" style="font-size:11px;color:var(--t3);transition:transform .18s;display:inline-block">▶</span>
-            <span style="font-size:12px;color:var(--t3)">사용 가이드</span>
-          </div>
-          <div id="rptGuideBody" style="display:none;font-size:12px;color:var(--t2);line-height:1.9;background:var(--glass-bg);border-radius:8px;padding:10px 14px;margin-top:6px">
-            <div>· 블럭 클릭 → 텍스트 수정 &nbsp;|&nbsp; <b>⠿</b> 드래그 — 순서 변경</div>
-            <div>· <b>B</b> — 볼드 &nbsp;|&nbsp; <b>← →</b> — 들여쓰기 &nbsp;|&nbsp; <b>✕</b> — 삭제</div>
-            <div>· 뱃지 클릭 — 타입 변경 (<b>텍스트 → 자동:BK MO → 자동:BK PC → 자동:GFA → 자동:ADV</b>)</div>
-            <div>· <b>자동 타입</b> — 파일 업로드 데이터로 자동 치환. 직접 수정 불가</div>
-            <div>· 빈 블럭 추가 — 공란(줄바꿈) 처리</div>
-            <div style="margin-top:4px">· <b style="color:#1a8a4a">저장하기</b> — Firebase 저장 (다음에도 유지)</div>
-            <div>· <b style="color:var(--accent)">전체 적용하기</b> — 저장 + 자동 데이터 치환 + 미리보기 반영</div>
-            <div>· <b style="color:#854F0B">이번만 적용하기</b> — 저장 없이 자동 치환 + 미리보기 반영</div>
-            <div>· <b>복사하기</b> — 치환된 본문 클립보드 복사</div>
-          </div>
-          </div><!-- /mailCardRptBody -->
-        </div>
-
-      </div>
-
-      <!-- 오른쪽: 미리보기 + 변경 로그 -->
-      <div style="display:flex;flex-direction:column;gap:12px;position:sticky;top:0;align-self:start">
-
-        <!-- 미리보기 -->
-        <div class="card" style="display:flex;flex-direction:column;gap:10px">
-          <div style="display:flex;align-items:center;justify-content:space-between">
-            <div class="card-title" style="margin-bottom:0"><div class="card-dot" style="background:var(--accent)"></div>미리보기</div>
-            <div style="display:flex;gap:6px">
-              <button class="btn btn-ghost btn-sm" onclick="mailApplyAll()" title="전체 카드 한 번에 반영">⚡ 전체 적용</button>
-              <button class="btn btn-primary btn-sm" onclick="mailCopy()">📋 메일 본문 복사</button>
-            </div>
-          </div>
-          <!-- 메일 제목 -->
-          <div style="display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--glass-bg);border-radius:8px;border:0.5px solid var(--glass-border-s)" id="mailSubjectRow">
-            <span style="font-size:10px;padding:1px 6px;border-radius:8px;background:rgba(58,58,240,0.08);color:var(--accent);border:0.5px solid rgba(58,58,240,0.2);white-space:nowrap;flex-shrink:0">제목</span>
-            <span id="mailSubjectText" style="flex:1;font-size:12px;color:var(--tx);font-family:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer" title="클릭해서 복사" onclick="mailCopySubject()"></span>
-            <input id="mailSubjectInput" style="flex:1;font-size:12px;color:var(--tx);font-family:inherit;border:none;outline:none;background:transparent;display:none;min-width:0">
-            <button class="btn btn-ghost btn-sm" id="mailSubjectEditBtn" onclick="mailToggleSubjectEdit()" style="font-size:11px;padding:2px 8px;flex-shrink:0">✏️ 수정</button>
-            <button class="btn btn-ghost btn-sm" onclick="mailCopySubject()" style="font-size:11px;padding:2px 8px;flex-shrink:0;background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2)" id="mailSubjectCopyBtn">복사</button>
-          </div>
-          <div id="mailPreview" style="background:var(--glass-bg);border-radius:8px;padding:14px 16px;font-size:12px;line-height:2;color:var(--tx);min-height:320px;max-height:520px;overflow-y:auto;font-family:'Malgun Gothic',sans-serif">안녕하세요.<br>올리브파트너스 김규빈입니다.<br>광고 실적 보고 드립니다.</div>
-        </div>
-
-        <!-- 변경 로그 -->
-        <div class="card">
-          <div class="card-title" style="justify-content:space-between;margin-bottom:10px">
-            <span style="display:flex;align-items:center;gap:7px"><div class="card-dot" style="background:var(--t3)"></div>변경 로그</span>
-            <button class="btn btn-ghost btn-sm" onclick="mailShowLog()" style="font-size:10.5px">전체 보기</button>
-          </div>
-          <div id="mailLogList">
-            <div style="font-size:11.5px;color:var(--t3);text-align:center;padding:12px 0">저장된 로그가 없습니다</div>
-          </div>
-          <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">
-            <div>
-              <div style="font-size:11px;color:var(--t2);margin-bottom:4px">로그 메모</div>
-              <textarea id="mailLogMemo" class="mail-textarea" placeholder="예) GFA 말차상시 소재 교체" style="min-height:36px"></textarea>
-            </div>
-            <button class="btn btn-ghost btn-sm" onclick="mailSaveLog()" style="align-self:flex-end">💾 로그 저장</button>
-          </div>
-        </div>
-
-      </div>
+  <div class="form-row">
+    <div class="form-group">
+      <div class="form-label">소재 코드 (CSV 소재 코드 컬럼 기준)</div>
+      <input type="text" id="codeInput" class="yozm-input" placeholder="예) 28056501" style="width:160px">
+    </div>
+    <div class="form-group">
+      <div class="form-label">소재 이름 (참고용)</div>
+      <input type="text" id="nameInput" class="yozm-input" placeholder="예) 매출상위_NI_A 2_2">
+    </div>
+    <div class="form-group">
+      <div class="form-label">이미지 파일 (최대 2MB · 300px 자동 압축)</div>
+      <label class="file-drop" id="fileDrop">
+        <div class="file-drop-icon">🖼</div>
+        <div id="fileDropText" class="file-drop-text">클릭 또는 드래그</div>
+        <input type="file" id="fileInput" accept="image/*" style="display:none">
+      </label>
+    </div>
+    <div class="form-group">
+      <div class="form-label" style="visibility:hidden">_</div>
+      <button class="btn btn-primary" id="addBtn" style="height:68px;padding:0 20px">＋ 등록</button>
     </div>
   </div>
 </div>
 
-<div class="tab-content" id="t-monthly">
-  <div class="pg-header">
-    <div>
-      <div class="pg-title">월간 리포트</div>
-      <div class="pg-desc">월별 광고 성과 리포트를 관리합니다</div>
-    </div>
+<!-- 등록된 이미지 목록 -->
+<div class="card">
+  <div class="card-title">
+    <div class="card-dot" style="background:var(--blue)"></div>
+    등록된 소재
+    <span class="count-badge" id="countBadge">0개</span>
   </div>
-  <div class="notice notice-plan"><b>🗓 개발 예정</b> — 월간 리포트는 추후 별도 HTML 파일로 제작됩니다.</div>
-  <div class="ph-box">
-    <div class="ph-icon">📊</div>
-    <div class="ph-title">월간 리포트 관리 (예정)</div>
-    <div class="ph-desc">월별 광고 성과 리포트를 집계하고 관리합니다.</div>
+
+  <div class="search-wrap">
+    <input type="text" id="searchInput" class="search-input" placeholder="소재 이름 검색...">
+    <span style="font-size:11.5px;color:var(--t4)" id="searchCount"></span>
+  </div>
+
+  <div id="imgGrid" class="img-grid">
+    <div class="empty-state">
+      <div class="empty-icon">🖼</div>
+      <div class="empty-text">아직 등록된 소재 이미지가 없습니다</div>
+    </div>
   </div>
 </div>
 
-
-<div class="tab-content" id="t-img_reg">
-  <div class="pg-header" style="margin-bottom:14px">
-    <div>
-      <div class="pg-title">이미지 등록</div>
-      <div class="pg-desc">브랜드검색/GFA 소재 이미지를 관리합니다.</div>
-    </div>
-  </div>
-  <!-- 서브탭 -->
-  <div class="inner-tabs" id="imgRegTabs" style="position:sticky;top:var(--sticky-top,88px);z-index:60;background:var(--glass-bg);border-bottom:1.5px solid var(--glass-border-s);margin-bottom:0">
-    <div class="inner-tab active" id="imgRegTabBk" onclick="swImgReg('bk',this)">🔍 브검 소재</div>
-    <div class="inner-tab" id="imgRegTabGfa" onclick="swImgReg('gfa',this)">🖼 GFA 소재</div>
-  </div>
-  <!-- 브검 소재 -->
-  <div id="imgRegBk" style="padding:0">
-    <iframe id="bkImageFrameNew" src="bk_creative.html"
-      style="width:100%;height:calc(100vh - 180px);border:none;border-radius:0 0 12px 12px;display:block"
-      allow="clipboard-write"></iframe>
-  </div>
-  <!-- GFA 소재 -->
-  <div id="imgRegGfa" style="display:none;padding:14px">
-    <div id="imgRegGfaContent"></div>
-  </div>
+<!-- 전체 삭제 -->
+<div class="danger-zone" id="dangerZone" style="display:none">
+  <span class="danger-text">등록된 이미지를 모두 삭제합니다</span>
+  <button class="btn btn-red btn-sm" id="clearAllBtn">🗑 전체 삭제</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -2315,12 +2163,40 @@ function showToast(msg) {
   _toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
 }
 
+function swToImgReg(el) {
+  document.querySelectorAll('.tabs .tab').forEach(function(t) { t.classList.remove('active'); });
+  el.classList.add('active');
+  var daily = document.getElementById('t-daily');
+  var monthly = document.getElementById('t-monthly');
+  var imgreg = document.getElementById('t-img_reg');
+  if (daily)   { daily.style.display   = 'none'; daily.classList.remove('active'); }
+  if (monthly) { monthly.style.display = 'none'; monthly.classList.remove('active'); }
+  if (imgreg)  { imgreg.style.display  = 'block'; imgreg.classList.add('active'); }
+  setTimeout(function() {
+    var bkTab = document.getElementById('imgRegTabBk');
+    if (bkTab) swImgReg('bk', bkTab);
+  }, 100);
+}
+
 function sw(id, el) {
+  // 모든 탭 비활성화
   document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  ['t-daily','t-monthly','t-img_reg'].forEach(tid => {
+    const el2 = document.getElementById(tid);
+    if (el2) { el2.classList.remove('active'); el2.style.display = 'none'; }
+  });
   el.classList.add('active');
   const target = document.getElementById('t-' + id);
-  if (target) target.classList.add('active');
+  if (target) {
+    target.classList.add('active');
+    target.style.display = 'block';
+    if (id === 'img_reg') {
+      setTimeout(() => {
+        const bkTab = document.getElementById('imgRegTabBk');
+        if (bkTab) swImgReg('bk', bkTab);
+      }, 100);
+    }
+  }
 }
 
 
@@ -2462,24 +2338,23 @@ function setGlobalMode(mode) {
 
 
 function swImgReg(id, el) {
-  document.querySelectorAll('#imgRegTabs .inner-tab').forEach(t => {
-    t.classList.remove('active');
-    t.style.borderBottomColor = 'transparent';
-    t.style.color = 'var(--t2)';
+  ['imgRegTabBk','imgRegTabGfa'].forEach(function(tid) {
+    var t = document.getElementById(tid);
+    if (t) t.classList.remove('active');
   });
   el.classList.add('active');
-  document.getElementById('imgRegBk').style.display = id === 'bk' ? '' : 'none';
-  document.getElementById('imgRegGfa').style.display = id === 'gfa' ? '' : 'none';
-  if (id === 'gfa') {
-    // GFA 소재 내용을 imgRegGfaContent로 이동 (처음 한 번만)
-    const src = document.getElementById('gfaSojai');
-    const dst = document.getElementById('imgRegGfaContent');
-    if (dst && src && !dst._moved) {
-      dst.appendChild(src);
-      src.style.display = '';
-      dst._moved = true;
-    }
-  }
+  var dst = document.getElementById('imgRegContent');
+  if (!dst) return;
+  // 기존 내용 숨기기
+  ['bkImg','gfaSojai'].forEach(function(sid) {
+    var el2 = document.getElementById(sid);
+    if (el2) el2.style.display = 'none';
+  });
+  var srcId = (id === 'bk') ? 'bkImg' : 'gfaSojai';
+  var src = document.getElementById(srcId);
+  if (!src) return;
+  if (src.parentNode !== dst) dst.appendChild(src);
+  src.style.display = 'block';
 }
 
 function swSub(id, el) {
@@ -3898,6 +3773,7 @@ function refreshGfaDateTable() {
 (function() {
   const uz = document.getElementById('gfaUpload');
   const fi = document.getElementById('gfaInput');
+  if (!uz || !fi) return;
   uz.addEventListener('dragover', e => { e.preventDefault(); uz.classList.add('drag-over'); });
   uz.addEventListener('dragleave', () => uz.classList.remove('drag-over'));
   uz.addEventListener('drop', e => { e.preventDefault(); uz.classList.remove('drag-over'); if(e.dataTransfer.files[0]) processGfa(e.dataTransfer.files[0]); });
@@ -4112,6 +3988,7 @@ let _advCurDate = {1:'all', 2:'all'}; // 패널별 선택 날짜
 function setupAdvPanel(num) {
   const uz = document.getElementById(`advUpload${num}`);
   const fi = document.getElementById(`advInput${num}`);
+  if (!uz || !fi) return;
   uz.addEventListener('dragover', e => { e.preventDefault(); uz.classList.add('drag-over'); });
   uz.addEventListener('dragleave', () => uz.classList.remove('drag-over'));
   uz.addEventListener('drop', e => { e.preventDefault(); uz.classList.remove('drag-over'); if(e.dataTransfer.files[0]) processAdv(e.dataTransfer.files[0], num); });
@@ -4428,6 +4305,7 @@ async function getGcImages() {
 (function() {
   const uz = document.getElementById('gcUpload');
   const fi = document.getElementById('gcInput');
+  if (!uz || !fi) return;
   uz.addEventListener('dragover', e => { e.preventDefault(); uz.classList.add('drag-over'); });
   uz.addEventListener('dragleave', () => uz.classList.remove('drag-over'));
   uz.addEventListener('drop', e => { e.preventDefault(); uz.classList.remove('drag-over'); if(e.dataTransfer.files[0]) processGc(e.dataTransfer.files[0]); });

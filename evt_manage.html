@@ -2067,7 +2067,45 @@ window.renderPropList=function(tabNum){
   });
   const el=document.getElementById('prop-list-'+tabNum);
   if(!sortedEntries.length){el.innerHTML='<div style="text-align:center;padding:28px;color:var(--t3)">해당하는 항목이 없습니다</div>';return;}
-  el.innerHTML=sortedEntries.map(([eName,grp])=>buildGroupHtml(eName,grp,tabNum)).join('');
+
+  if(tabNum===2){
+    /* 월별 그룹핑 */
+    const today=new Date().toISOString().substring(0,7); /* YYYY-MM */
+    const monthGroups={};
+    sortedEntries.forEach(([eName,grp])=>{
+      const ev=EVENTS.find(e=>e._id===(grp.meta.eventSID||eName));
+      const sd=(ev?.startDate||grp.meta.startDate||'');
+      const monthKey=sd?sd.substring(0,7):'날짜없음';
+      if(!monthGroups[monthKey])monthGroups[monthKey]=[];
+      monthGroups[monthKey].push([eName,grp]);
+    });
+    /* 월 정렬: 최신순 */
+    const sortedMonths=Object.keys(monthGroups).sort((a,b)=>b.localeCompare(a));
+    if(!window._monthOpen)window._monthOpen={};
+    /* 현재 월만 기본 오픈 */
+    sortedMonths.forEach(m=>{
+      if(window._monthOpen[m]===undefined)window._monthOpen[m]=(m===today);
+    });
+    el.innerHTML=sortedMonths.map(m=>{
+      const entries=monthGroups[m];
+      const cnt=entries.length;
+      const isOpen=window._monthOpen[m];
+      const label=m==='날짜없음'?'날짜 미설정':(()=>{
+        const [y,mo]=m.split('-');return `${y}년 ${parseInt(mo)}월`;
+      })();
+      const cardsHtml=entries.map(([eName,grp])=>buildGroupHtml(eName,grp,tabNum)).join('');
+      return `<div class="month-section" style="margin-bottom:4px">
+        <div onclick="toggleMonthSection('${m}')" id="month-hd-${m}" style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:rgba(58,58,240,.04);border:0.5px solid var(--bd);border-radius:8px;cursor:pointer;margin-bottom:${isOpen?'6px':'0'}">
+          <span style="font-size:11px;color:var(--t3);transition:transform .15s;display:inline-block;transform:rotate(${isOpen?'90deg':'0deg'})" id="month-arrow-${m}">▶</span>
+          <span style="font-size:12.5px;font-weight:600;color:var(--t2)">${label}</span>
+          <span style="font-size:11px;color:var(--t3);margin-left:2px">행사 ${cnt}건</span>
+        </div>
+        <div id="month-body-${m}" style="display:${isOpen?'block':'none'}">${cardsHtml}</div>
+      </div>`;
+    }).join('');
+  } else {
+    el.innerHTML=sortedEntries.map(([eName,grp])=>buildGroupHtml(eName,grp,tabNum)).join('');
+  }
   /* 확인필요 배너 */
   if(tabNum===2){
     const wCnt=PROPOSALS.filter(p=>!p._deleted&&p.status==='확인필요').length;
@@ -2858,6 +2896,16 @@ window.dfClick=function(el,field,tab){
   if(el.classList.contains('on'))dateFilter[tab].add(field);
   else dateFilter[tab].delete(field);
   renderPropList(tab);
+};
+window.toggleMonthSection=function(m){
+  if(!window._monthOpen)window._monthOpen={};
+  window._monthOpen[m]=!window._monthOpen[m];
+  const body=document.getElementById('month-body-'+m);
+  const arrow=document.getElementById('month-arrow-'+m);
+  const hd=document.getElementById('month-hd-'+m);
+  if(body)body.style.display=window._monthOpen[m]?'block':'none';
+  if(arrow)arrow.style.transform=window._monthOpen[m]?'rotate(90deg)':'rotate(0deg)';
+  if(hd)hd.style.marginBottom=window._monthOpen[m]?'6px':'0';
 };
 window.toggleMissFilter=function(field,el,tab){dfClick(el,field,tab);};
 let skuSearchFilter={2:null,3:null,5:null}; /* null=전체, string=닉네임 */

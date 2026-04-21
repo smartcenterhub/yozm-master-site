@@ -147,7 +147,7 @@ tr.is-pending td{background:rgba(180,120,0,.03)}
 tr.is-pending:hover td{background:rgba(180,120,0,.06)}
 /* edit/new */
 /* ── 편집 행 — 시안 B 인라인 밑줄 ── */
-tr.editing-row td{background:#fff;padding:0 6px;height:34px;border-top:1.5px solid #3a3af0;vertical-align:middle}
+tr.editing-row td{background:#fff;padding:0 6px;height:34px;border-top:0.5px solid #3a3af0;vertical-align:middle}
 tr.new-row td{background:#fff;padding:0 6px;height:34px;border-top:1.5px solid rgba(26,86,200,.4);vertical-align:middle}
 tr.editing-row td.fix{background:#fff}
 tr.new-row td.fix{background:#fff}
@@ -260,7 +260,7 @@ code{font-family:monospace;font-size:11px;background:rgba(0,0,0,.05);padding:1px
 tr.opt-row td{padding:5px 10px;border-bottom:0.5px solid rgba(0,0,0,.03);background:rgba(248,248,255,0.95);color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
 tr.opt-row td.r{text-align:right;font-variant-numeric:tabular-nums}
 tr.opt-row:hover td{background:rgba(242,243,255,1)}
-tr.opt-row.opt-last td{border-bottom:1px solid rgba(58,58,240,.12)}
+tr.opt-row.opt-last td{border-bottom:0.5px solid rgba(58,58,240,.12)}
 tr.opt-row td.fix{position:sticky;background:rgba(248,248,255,0.98);z-index:2}
 tr.opt-row:hover td.fix{background:rgba(242,243,255,1)}
 tr.opt-row.editing-row td.fix{background:rgba(240,240,255,0.98)}
@@ -959,6 +959,16 @@ function stageSkuNew(){
 function startSkuEdit(code){skuEditCode=code;renderSkuTable();}
 function cancelSkuEdit(){skuEditCode=null;renderSkuTable();}
 
+function buildOptItemTags(items, oi){
+  return (items||[]).map((item,ii)=>
+    `<span style="display:inline-flex;align-items:center;gap:3px;background:rgba(26,86,200,.08);border:0.5px solid rgba(26,86,200,.2);border-radius:4px;padding:2px 5px">`+
+    `<span style="font-size:11px;font-weight:600;color:#1a56c8">${item.nick}</span>`+
+    `<input type="number" min="1" value="${item.qty}" id="eo-iqty-${oi}-${ii}" inputmode="numeric" style="width:28px;font-size:11px;padding:1px 2px;border:0.5px solid rgba(26,86,200,.25);border-radius:3px;text-align:center;background:var(--bg);color:var(--tx)">`+
+    `<span onclick="removeOptItem(${oi},${ii})" style="cursor:pointer;font-size:10px;color:var(--t3);line-height:1">✕</span>`+
+    `</span>`
+  ).join('');
+}
+
 function collectOptItems(oi){
   const container=document.getElementById(`eo-items-${oi}`);
   if(!container) return [];
@@ -1104,7 +1114,7 @@ function renderSkuTable(q){
     const sTy=SF.type;if(sTy!=='전체'&&!(Array.isArray(sTy)?sTy.includes(x.type):x.type===sTy)) return false;
     if(SF.item!=='전체'){
       const item=SF.item;
-      const match=x.options?.some(opt=>
+      const match=x.options?.filter(o=>o.status!=='단종'&&o.status!=='비운영').some(opt=>
         opt.items?.some(i=>i.nick===item) ||
         (opt.nick||'').split(/[+×]/).some(p=>p.trim()===item)
       );
@@ -1197,15 +1207,10 @@ function renderSkuTable(q){
           </td>
           <td colspan="2" style="padding:4px 6px">
             <div id="eo-items-${oi}" style="display:flex;flex-wrap:wrap;gap:3px;align-items:center">
-              ${(opt.items||[]).map((item,ii)=>`
-                <span style="display:inline-flex;align-items:center;gap:3px;background:rgba(26,86,200,.08);border:0.5px solid rgba(26,86,200,.2);border-radius:4px;padding:2px 5px">
-                  <span style="font-size:11px;font-weight:600;color:#1a56c8">\${item.nick}</span>
-                  <input type="number" min="1" value="\${item.qty}" id="eo-iqty-\${oi}-\${ii}" inputmode="numeric" style="width:28px;font-size:11px;padding:1px 2px;border:0.5px solid rgba(26,86,200,.25);border-radius:3px;text-align:center;background:var(--bg);color:var(--tx)">
-                  <span onclick="removeOptItem(\${oi},\${ii})" style="cursor:pointer;font-size:10px;color:var(--t3);line-height:1">✕</span>
-                </span>`).join('')}
+              ${buildOptItemTags(opt.items||[], oi)}
               <select id="eo-iadd-${oi}" onchange="addOptItem(${oi},this)" style="font-size:10px;padding:2px 4px;border:0.5px dashed var(--fc-d);border-radius:4px;background:var(--bg);color:var(--t2)">
                 <option value="">+ 품목</option>
-                ${ITEMS.filter(x=>x.status!=='단종').map(x=>`<option value="\${x.nick}">\${x.nick}</option>`).join('')}
+                ${ITEMS.filter(x=>x.status!=='단종').map(x=>`<option value="${x.nick}">${x.nick}</option>`).join('')}
               </select>
             </div>
           </td>
@@ -1236,7 +1241,7 @@ function renderSkuTable(q){
           <div id="eo-new-items" style="display:flex;flex-wrap:wrap;gap:3px;align-items:center">
             <select id="eo-new-iadd" onchange="addNewOptItem(this)" style="font-size:10px;padding:2px 4px;border:0.5px dashed var(--fc-d);border-radius:4px;background:var(--bg);color:var(--t2)">
               <option value="">+ 품목</option>
-              ${ITEMS.filter(x=>x.status!=='단종').map(x=>`<option value="\${x.nick}">\${x.nick}</option>`).join('')}
+              ${ITEMS.filter(x=>x.status!=='단종').map(x=>`<option value="${x.nick}">${x.nick}</option>`).join('')}
             </select>
           </div>
         </td>
@@ -1278,9 +1283,10 @@ function renderSkuTable(q){
         <td class="memo-cell" style="color:var(--t3)" onclick="copyToClip('${(sk.memo||'').replace(/'/g,"\\'")}',this,'sku')">${dash(sk.memo)}${sk.memo?'<span class="memo-tip-data" style="display:none">'+sk.memo.replace(/</g,'&lt;')+'</span>':''}</td>
         <td class="c-act">${(()=>{
           const opts=sk.options||[];
+          const activeOpts=opts.filter(o=>o.status!=='단종'&&o.status!=='비운영');
           const isOpen=skuOpenSet.has(sk.code);
           if(!opts.length) return '<span class="opt-cnt one">—</span>';
-          return `<button class="opt-cnt ${isOpen?'open':'many'}" onclick="toggleSkuOpts('${sk.code}')">${opts.length}</button>`;
+          return `<button class="opt-cnt ${isOpen?'open':'many'}" onclick="toggleSkuOpts('${sk.code}')">${activeOpts.length}</button>`;
         })()}</td>
         <td class="c-act"><button class="icon-btn" onclick="startSkuEdit('${sk.code}')" title="수정" ${skuEditCode?'disabled':''}>${ICO_EDIT}</button></td>
         <td style="color:var(--t4);font-size:11px;cursor:pointer" onclick="copyToClip('${(sk.updatedAt||'').slice(0,10)}',this,'sku')">${(sk.updatedAt||'').slice(0,10)}</td>
@@ -1299,8 +1305,8 @@ function renderSkuTable(q){
             <td></td>
             <td style="cursor:pointer" onclick="copyToClip('${opt.status||''}',this,'sku')">
               <span class="badge b-${opt.status||'상시'}">${opt.status||'상시'}</span>
-              <span style="margin-left:4px;display:inline-flex;align-items:center;height:16px;padding:0 6px;border-radius:8px;font-size:10px;font-weight:600;${(opt.status||sk.status)===sk.status?'background:rgba(26,138,74,.1);color:#0d6b35':'background:#ebebeb;color:#888'}">
-                ${(opt.status||sk.status)===sk.status?'ON':'OFF'}
+              <span style="margin-left:4px;display:inline-flex;align-items:center;height:16px;padding:0 6px;border-radius:8px;font-size:10px;font-weight:600;${['단종','비운영'].includes(opt.status)?'background:#ebebeb;color:#888':(opt.status||sk.status)===sk.status?'background:rgba(26,138,74,.1);color:#0d6b35':'background:#ebebeb;color:#888'}">
+                ${['단종','비운영'].includes(opt.status)?'OFF':(opt.status||sk.status)===sk.status?'ON':'OFF'}
               </span>
             </td>
             <td class="r" style="color:var(--t2)">${fmtP(opt.priceNormal)}</td>

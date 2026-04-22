@@ -89,7 +89,7 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 .sb-active{background:rgba(26,138,74,0.1);color:var(--gr)}
 .sb-done{background:rgba(152,152,168,0.15);color:var(--t3)}
 .sb-future{background:rgba(58,58,240,0.08);color:var(--ac)}
-.hist-card{background:var(--gb);border:0.5px solid var(--gbd);border-radius:10px;padding:12px 14px;margin-bottom:10px;transition:border-color .15s}
+.hist-card{background:var(--gb);border:0.5px solid var(--gbd);border-radius:10px;padding:12px 14px;transition:border-color .15s}
 .hist-card.checked{border-color:#AFA9EC;background:#FAFAFE}
 .hist-month-hdr{display:flex;align-items:center;gap:8px;padding:7px 12px;background:#EEF2FF;border-radius:8px;cursor:pointer;margin-bottom:10px;border:0.5px solid #c8d0f0;user-select:none}
 .hist-month-hdr:hover{background:#e4e8ff}
@@ -118,13 +118,13 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 <div class="pg-desc">소재 ID 기준으로 PC/MO 이미지를 등록하고 기간별 운영 현황을 확인합니다</div>
 
 <div class="bk-tabs">
-  <div class="bk-tab active" id="bkTab1" onclick="swTab(1)">➕ 소재 등록</div>
+  <div class="bk-tab active" id="bkTab3" onclick="swTab(3)">📋 소재 이력</div>
   <div class="bk-tab" id="bkTab2" onclick="swTab(2)">📊 소재 현황</div>
-  <div class="bk-tab" id="bkTab3" onclick="swTab(3)">📋 소재 이력</div>
+  <div class="bk-tab" id="bkTab1" onclick="swTab(1)">➕ 소재 등록</div>
 </div>
 
 <!-- ── 탭1: 소재 등록 ── -->
-<div class="bk-pane active" id="bkPane1">
+<div class="bk-pane" id="bkPane1">
 <div class="card" id="bulkCard">
   <div class="card-title"><div class="cdot" style="background:var(--bl)"></div>일괄 등록</div>
 
@@ -256,13 +256,17 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 </div>
 
 <!-- ── 탭3: 소재 이력 ── -->
-<div class="bk-pane" id="bkPane3">
+<div class="bk-pane active" id="bkPane3">
 <div class="card">
   <div class="card-title"><div class="cdot" style="background:var(--bl)"></div>등록된 소재 전체<div style="display:flex;gap:8px;margin-left:auto"><button class="btn btn-g btn-sm" onclick="refreshThumbs()">🖼 썸네일 갱신</button><button class="btn btn-g btn-sm" onclick="toggleGuide()">📋 등록 가이드</button></div></div>
   <div id="guidePanel" style="display:none;margin:10px 0 14px;padding:14px 18px;background:#F4F5FF;border-radius:8px;border:1px solid rgba(58,58,240,0.15);font-size:12px;line-height:2;color:var(--t1)"></div>
   <div class="hist-filter-bar">
     <input type="checkbox" class="hcb" id="histAllCb">
     <label for="histAllCb" style="font-size:11.5px;color:var(--t2);cursor:pointer">전체 선택</label>
+    <div style="width:0.5px;height:16px;background:var(--gbd);margin:0 4px"></div>
+    <select id="histMonthFilter" class="inp" style="width:100px;font-size:11.5px" onchange="renderHist()">
+      <option value="">전체 월</option>
+    </select>
   </div>
   <div class="hist-action-bar" id="histActionBar" style="display:none">
     <span style="font-size:12px;font-weight:600;color:#3C3489;min-width:60px" id="histSelCnt">0건 선택</span>
@@ -642,33 +646,33 @@ function renderDetail() {
 
 function editCr(id) {
   const c = _cr[id]; if (!c) return;
-  const row = document.getElementById('hist-row-' + id);
-  if (!row) return;
+  const card = document.getElementById('hist-card-' + id);
+  if (!card) return;
   const fmtRaw = function(iso) {
     if (!iso) return '';
-    return iso.replace('T','-').replace(':','').slice(0,15).replace(/-(\d{2}):?(\d{2})$/,'-$1$2');
+    const d = new Date(iso);
+    const pad = function(n){return String(n).padStart(2,'0');};
+    return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + '-' + pad(d.getHours()) + pad(d.getMinutes());
   };
-  row.innerHTML =
-    '<td><div style="width:8px;height:8px;border-radius:50%;background:' + getColor(id) + ';margin:auto"></div></td>' +
-    '<td><input class="inp" id="ei-name" value="' + (c.name||'') + '" style="width:100%;font-size:11px"></td>' +
-    '<td style="font-size:11px">' +
-      '<input class="inp" id="ei-start" value="' + fmtRaw(c.startAt) + '" placeholder="YYYY-MM-DD-HHMM" style="width:100%;font-size:10px;margin-bottom:3px">' +
-      '<input class="inp" id="ei-end"   value="' + fmtRaw(c.endAt)   + '" placeholder="YYYY-MM-DD-HHMM" style="width:100%;font-size:10px">' +
-    '</td>' +
-    '<td style="font-size:10px;color:var(--t2)">' +
-      '<input class="inp" id="ei-pcId"     value="' + (c.pcId||'')     + '" placeholder="PC 소재 ID" style="width:100%;font-size:10px;margin-bottom:3px">' +
-      '<input class="inp" id="ei-pcImgUrl" value="' + (c.pcImgUrl||'') + '" placeholder="PC URL (비우면 자동)" style="width:100%;font-size:10px">' +
-    '</td>' +
-    '<td style="font-size:10px;color:var(--t2)">' +
-      '<input class="inp" id="ei-moId"     value="' + (c.moId||'')     + '" placeholder="MO 소재 ID" style="width:100%;font-size:10px;margin-bottom:3px">' +
-      '<input class="inp" id="ei-moImgUrl" value="' + (c.moImgUrl||'') + '" placeholder="MO URL (비우면 자동)" style="width:100%;font-size:10px">' +
-    '</td>' +
-    '<td></td>' +
-    '<td><div style="display:flex;flex-direction:column;gap:4px">' +
-      '<button class="btn btn-p btn-sm" onclick="saveInlineEdit(\'' + id + '\')">💾</button>' +
-      '<button class="btn btn-g btn-sm" onclick="renderHist()">✕</button>' +
-    '</div></td>';
+  card.innerHTML =
+    '<div style="font-size:11px;font-weight:500;margin-bottom:8px;color:var(--ac)">✏️ 수정 중</div>' +
+    '<div style="display:flex;flex-direction:column;gap:6px">' +
+    '<div><div style="font-size:10px;color:var(--t2);margin-bottom:2px">소재명</div><input class="inp" id="ei-name" value="' + (c.name||'') + '" style="width:100%;font-size:11px"></div>' +
+    '<div style="display:flex;gap:6px">' +
+      '<div style="flex:1"><div style="font-size:10px;color:var(--t2);margin-bottom:2px">시작일시</div><input class="inp" id="ei-start" value="' + fmtRaw(c.startAt) + '" placeholder="YYYY-MM-DD-HHMM" style="width:100%;font-size:10px"></div>' +
+      '<div style="flex:1"><div style="font-size:10px;color:var(--t2);margin-bottom:2px">종료일시</div><input class="inp" id="ei-end" value="' + fmtRaw(c.endAt) + '" placeholder="YYYY-MM-DD-HHMM" style="width:100%;font-size:10px"></div>' +
+    '</div>' +
+    '<div style="display:flex;gap:6px">' +
+      '<div style="flex:1"><div style="font-size:10px;color:var(--t2);margin-bottom:2px">PC 소재 ID</div><input class="inp" id="ei-pcId" value="' + (c.pcId||'') + '" style="width:100%;font-size:10px"></div>' +
+      '<div style="flex:1"><div style="font-size:10px;color:var(--t2);margin-bottom:2px">MO 소재 ID</div><input class="inp" id="ei-moId" value="' + (c.moId||'') + '" style="width:100%;font-size:10px"></div>' +
+    '</div>' +
+    '<div><div style="font-size:10px;color:var(--t2);margin-bottom:2px">랜딩링크</div><input class="inp" id="ei-landingUrl" value="' + (c.landingUrl||'') + '" placeholder="https://..." style="width:100%;font-size:10px"></div>' +
+    '<div style="display:flex;gap:6px;margin-top:4px">' +
+      '<button class="btn btn-p" onclick="saveInlineEdit(\'' + id + '\')">💾 저장</button>' +
+      '<button class="btn btn-g" onclick="renderHist()">✕ 취소</button>' +
+    '</div></div>';
 }
+
 
 async function saveInlineEdit(id) {
   const name  = document.getElementById('ei-name').value.trim();
@@ -710,45 +714,197 @@ function deleteCr(id) {
 }
 
 /* ── 탭3: 소재 이력 ── */
+/* ── 소재이력 헬퍼 ── */
+function _autoStatus(cr) {
+  if (cr.manualStatus) return cr.manualStatus;
+  const now = new Date(), s = new Date(cr.startAt), en = new Date(cr.endAt);
+  if (now < s) return '예정';
+  if (now > en) return '종료';
+  return '운영 중';
+}
+function _stCls(s) {
+  return s === '운영 중' ? 'sb-active' : s === '종료' ? 'sb-done' : 'sb-future';
+}
+function _dur(s, e) {
+  try { const d = Math.round((new Date(e) - new Date(s)) / 86400000); return d > 0 ? d + '일간' : ''; } catch(_){return '';}
+}
+function toggleHistMonth(secId) {
+  const sec = document.getElementById(secId);
+  const arr = document.getElementById('ha-' + secId);
+  if (!sec) return;
+  const open = sec.style.display !== 'none';
+  sec.style.display = open ? 'none' : '';
+  if (arr) arr.textContent = open ? '▼' : '▲';
+}
+function copyHistLink(el) {
+  const txt = el.textContent.trim();
+  navigator.clipboard.writeText(txt).then(function() {
+    el.style.background = '#d4edda';
+    setTimeout(function(){ el.style.background = ''; }, 800);
+    showToast('✅ 링크 복사됨');
+  }).catch(function(){ showToast('❌ 복사 실패'); });
+}
+function _initHistCb() {
+  const allCb = document.getElementById('histAllCb');
+  const bar = document.getElementById('histActionBar');
+  const cnt = document.getElementById('histSelCnt');
+  if (!allCb || !bar || !cnt) return;
+  function getChk(){ return [...document.querySelectorAll('.hcard-cb')].filter(function(cb){return cb.checked;}); }
+  function update(){
+    const all = document.querySelectorAll('.hcard-cb');
+    const chk = getChk();
+    allCb.indeterminate = chk.length > 0 && chk.length < all.length;
+    allCb.checked = all.length > 0 && chk.length === all.length;
+    bar.style.display = chk.length > 0 ? 'flex' : 'none';
+    cnt.textContent = chk.length + '건 선택';
+    document.querySelectorAll('.hist-card').forEach(function(card){ card.classList.remove('checked'); });
+    chk.forEach(function(cb){ const card = document.getElementById('hist-card-' + cb.dataset.id); if(card) card.classList.add('checked'); });
+  }
+  allCb.onchange = function(){
+    document.querySelectorAll('.hcard-cb').forEach(function(cb){
+      cb.checked = allCb.checked;
+      const card = document.getElementById('hist-card-' + cb.dataset.id);
+      if (card) card.classList.toggle('checked', allCb.checked);
+    });
+    update();
+  };
+  document.querySelectorAll('.hcard-cb').forEach(function(cb){
+    cb.onchange = function(){
+      const card = document.getElementById('hist-card-' + cb.dataset.id);
+      if (card) card.classList.toggle('checked', cb.checked);
+      update();
+    };
+  });
+  const cancelEl = document.getElementById('histCancelSel');
+  if (cancelEl) cancelEl.onclick = function(){
+    document.querySelectorAll('.hcard-cb').forEach(function(cb){
+      cb.checked = false;
+      const card = document.getElementById('hist-card-' + cb.dataset.id);
+      if (card) card.classList.remove('checked');
+    });
+    allCb.checked = false; allCb.indeterminate = false;
+    bar.style.display = 'none';
+  };
+}
+async function histBulkStatus(s) {
+  const chk = [...document.querySelectorAll('.hcard-cb')].filter(function(cb){return cb.checked;});
+  if (!chk.length || !confirm(chk.length + '개 소재 상태를 [' + s + ']로 변경할까요?')) return;
+  for (const cb of chk) {
+    const id = cb.dataset.id;
+    if (_cr[id]) {
+      _cr[id].manualStatus = s;
+      const el = document.getElementById('hst-' + id);
+      if (el) { el.className = 'status-badge ' + _stCls(s); el.textContent = s; }
+      try { await window._bkFs.save(id, _cr[id]); } catch(e){}
+    }
+  }
+  showToast('✅ 상태 변경 완료');
+}
+async function histBulkDelete() {
+  const chk = [...document.querySelectorAll('.hcard-cb')].filter(function(cb){return cb.checked;});
+  if (!chk.length || !confirm(chk.length + '개 소재를 삭제할까요?')) return;
+  for (const cb of chk) {
+    const id = cb.dataset.id;
+    try { await window._bkFs.remove(id); delete _cr[id]; const card = document.getElementById('hist-card-' + id); if (card) card.remove(); } catch(e){}
+  }
+  const allCb = document.getElementById('histAllCb');
+  if (allCb) { allCb.checked = false; allCb.indeterminate = false; }
+  const bar = document.getElementById('histActionBar');
+  if (bar) bar.style.display = 'none';
+  showToast('🗑 삭제 완료');
+  renderToday(); renderCal();
+}
+
 function renderHist() {
-  const entries = Object.entries(_cr).sort(function(a, b) { return new Date(b[1].startAt) - new Date(a[1].startAt); });
-  
+  const allEntries = Object.entries(_cr).sort(function(a, b) { return new Date(b[1].startAt) - new Date(a[1].startAt); });
   const wrap = document.getElementById('histTable');
+  // 월 필터 select 옵션 동적 생성
+  const monthSel = document.getElementById('histMonthFilter');
+  if (monthSel) {
+    const selVal = monthSel.value;
+    const monthSet = {};
+    allEntries.forEach(function(e) {
+      const d = new Date(e[1].startAt);
+      const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+      const label = (d.getFullYear() - 2000) + '년 ' + (d.getMonth()+1) + '월';
+      monthSet[key] = label;
+    });
+    monthSel.innerHTML = '<option value="">전체 월</option>';
+    Object.keys(monthSet).sort().reverse().forEach(function(k) {
+      const opt = document.createElement('option');
+      opt.value = k; opt.textContent = monthSet[k];
+      if (k === selVal) opt.selected = true;
+      monthSel.appendChild(opt);
+    });
+  }
+  const filterVal = monthSel ? monthSel.value : '';
+  const entries = filterVal ? allEntries.filter(function(e) {
+    const d = new Date(e[1].startAt);
+    return (d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0')) === filterVal;
+  }) : allEntries;
   if (!entries.length) {
     wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div>등록된 소재가 없습니다</div></div>';
-    return;
+    _initHistCb(); return;
   }
-  const now = new Date();
-  let html = '<table class="hist-table"><colgroup><col style="width:16px"><col><col style="width:110px"><col style="width:22%"><col style="width:22%"><col style="width:62px"><col style="width:70px"></colgroup><thead><tr><th></th><th>소재명</th><th>기간</th><th><span class="pcb">PC</span> 이미지 / 소재 ID</th><th><span class="mob">MO</span> 이미지 / 소재 ID</th><th style="text-align:center">상태</th><th>관리</th></tr></thead><tbody>';
+  const iStyle = 'width:100%;height:200px;object-fit:contain;border-radius:6px;border:1px solid var(--gbd);background:#fff;cursor:pointer;display:block';
+  const noImg = '<div style="width:100%;height:200px;border-radius:6px;border:1px solid var(--gbd);background:var(--gbs);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--t3)">없음</div>';
+  const months = {};
   entries.forEach(function(e) {
-    const id = e[0], c = e[1];
-    const col = getColor(id);
-    const s = new Date(c.startAt), en = new Date(c.endAt);
-    let statusHtml = '';
-    if (now < s) statusHtml = '<span class="status-badge sb-future">예정</span>';
-    else if (now > en) statusHtml = '<span class="status-badge sb-done">종료</span>';
-    else statusHtml = '<span class="status-badge sb-active">운영 중</span>';
-    const iStyle = 'width:100%;height:150px;object-fit:contain;border-radius:4px;border:1px solid var(--gbd);background:#fff;cursor:pointer;display:block';
-    const noImgCell = '<div style="width:100%;height:150px;border-radius:4px;border:1px solid var(--gbd);background:var(--gbs);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--t3)">없음</div>';
-    const pcCell = '<div>'
-      + (c.pcImgUrl ? '<img src="' + c.pcImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" title="클릭하면 복사" onclick="copyGhImg(\'' + c.pcImgUrl + '\')" style="' + iStyle + '">' : noImgCell)
-      + '<div style="font-size:10px;color:var(--t2);line-height:1.5;word-break:break-all;margin-top:4px">' + (c.pcId || '—') + '</div></div>';
-    const moCell = '<div>'
-      + (c.moImgUrl ? '<img src="' + c.moImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" title="클릭하면 복사" onclick="copyGhImg(\'' + c.moImgUrl + '\')" style="' + iStyle + '">' : noImgCell)
-      + '<div style="font-size:10px;color:var(--t2);line-height:1.5;word-break:break-all;margin-top:4px">' + (c.moId || '—') + '</div></div>';
-    html += '<tr id="hist-row-' + id + '">';
-    html += '<td><div style="width:8px;height:8px;border-radius:50%;background:' + col + ';margin:auto"></div></td>';
-    html += '<td style="font-weight:500">' + c.name + '</td>';
-    html += '<td style="font-size:11.5px;color:var(--t2)">' + fmtDt(c.startAt) + '<br>' + fmtDt(c.endAt) + '</td>';
-    html += '<td>' + pcCell + '</td>';
-    html += '<td>' + moCell + '</td>';
-    html += '<td>' + statusHtml + '</td>';
-    html += '<td><div style="display:flex;gap:5px"><button class="btn btn-g btn-sm" onclick="editCr(\'' + id + '\')">✏️</button><button class="btn btn-r btn-sm" onclick="deleteCr(\'' + id + '\')">🗑</button></div></td>';
-    html += '</tr>';
+    const id = e[0], cr = e[1];
+    const d = new Date(cr.startAt);
+    const mk = (d.getFullYear() - 2000) * 100 + (d.getMonth() + 1);
+    if (!months[mk]) months[mk] = { label: (d.getMonth()+1) + '월', items: [] };
+    months[mk].items.push([id, cr]);
   });
-  html += '</tbody></table>';
+  let html = '';
+  Object.keys(months).sort(function(a,b){return b-a}).forEach(function(mk) {
+    const mo = months[mk];
+    const secId = 'hms' + mk;
+    html += '<div class="hist-month-hdr" onclick="toggleHistMonth(\'' + secId + '\')">'
+      + '<span style="font-size:12px;font-weight:600;color:#3D5A99">' + mo.label + '</span>'
+      + '<span style="font-size:11px;color:#7a7ab0;margin-left:4px">' + mo.items.length + '개</span>'
+      + '<span style="margin-left:auto;font-size:11px;color:#7a7ab0" id="ha-' + secId + '">▲</span>'
+      + '</div><div id="' + secId + '">';
+    mo.items.forEach(function(e) {
+      const id = e[0], cr = e[1];
+      const col = getColor(id);
+      const st = _autoStatus(cr);
+      const dur = _dur(cr.startAt, cr.endAt);
+      const link = cr.landingUrl || '';
+      html += '<div class="hist-card" id="hist-card-' + id + '">';
+      html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">';
+      html += '<input type="checkbox" class="hcb hcard-cb" data-id="' + id + '">';
+      html += '<div style="width:8px;height:8px;border-radius:50%;background:' + col + ';flex-shrink:0"></div>';
+      html += '<div style="font-size:12.5px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + cr.name + '</div>';
+      html += '<span class="status-badge ' + _stCls(st) + '" style="margin-left:auto;flex-shrink:0" id="hst-' + id + '">' + st + '</span>';
+      html += '<button class="btn btn-g btn-sm" onclick="editCr(\'' + id + '\')">✏️</button>';
+      html += '<button class="btn btn-r btn-sm" onclick="deleteCr(\'' + id + '\')">🗑</button>';
+      html += '</div>';
+      html += '<div style="margin-bottom:6px"><span style="font-size:10.5px;color:var(--t2);background:rgba(58,58,240,0.05);border-radius:5px;padding:2px 8px;display:inline-block">'
+        + fmtDt(cr.startAt) + ' ~ ' + fmtDt(cr.endAt)
+        + (dur ? '<span style="font-size:10px;color:var(--t3);margin-left:6px">' + dur + '</span>' : '')
+        + '</span></div>';
+      html += '<div style="display:flex;align-items:center;gap:6px;margin:7px 0 10px">';
+      html += '<span style="font-size:10px;font-weight:500;color:var(--t3);white-space:nowrap">랜딩링크</span>';
+      html += link
+        ? '<div class="hist-link-url" onclick="copyHistLink(this)" title="클릭하면 복사">' + link + '</div>'
+        : '<div class="hist-link-url empty">링크 없음</div>';
+      html += '</div>';
+      html += '<div style="display:flex;gap:10px">';
+      html += '<div style="flex:1"><div style="font-size:10px;font-weight:500;margin-bottom:5px"><span class="pcb">PC</span></div>'
+        + (cr.pcImgUrl ? '<img src="' + cr.pcImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" onclick="copyGhImg(\'' + cr.pcImgUrl + '\')" title="클릭하면 복사" style="' + iStyle + '">' : noImg)
+        + '<div style="font-size:9px;color:var(--t3);word-break:break-all;margin-top:4px;text-align:center">' + (cr.pcId||'—') + '</div></div>';
+      html += '<div style="flex:1"><div style="font-size:10px;font-weight:500;margin-bottom:5px"><span class="mob">MO</span></div>'
+        + (cr.moImgUrl ? '<img src="' + cr.moImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" onclick="copyGhImg(\'' + cr.moImgUrl + '\')" title="클릭하면 복사" style="' + iStyle + '">' : noImg)
+        + '<div style="font-size:9px;color:var(--t3);word-break:break-all;margin-top:4px;text-align:center">' + (cr.moId||'—') + '</div></div>';
+      html += '</div></div>';
+    });
+    html += '</div>';
+  });
   wrap.innerHTML = html;
+  _initHistCb();
 }
+
 
 /* ── 일괄 등록 ── */
 let _bulkRows = [];
@@ -971,6 +1127,7 @@ function swTab(n) {
   });
   if (n === 2) { renderToday(); autoSelNowCr(); renderCal(); renderDetail(); }
   if (n === 3) renderHist();
+  if (n === 1) { /* 소재 등록 */ }
 }
 
 /* ── 전체 렌더 ── */

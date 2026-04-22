@@ -173,12 +173,11 @@ tr.empty-group{opacity:.35}
 <!-- 메인 탭 -->
 <div class="tabs">
   <div class="tab active" onclick="sw('daily',this)">데일리 리포트</div>
-  <div class="tab" onclick="sw('monthly',this)">월간 리포트</div>
-  <div class="tab" onclick="sw('img_reg',this)" id="mainTabImgReg">이미지 등록</div>
+  <div class="tab" onclick="swToImgReg(this)" id="mainTabImgReg">이미지 등록</div>
 </div>
 
 <!-- 데일리 리포트 -->
-<div class="tab-content active" id="t-daily">
+<div class="tab-content active" id="t-daily" style="display:block">
   <div class="pg-header">
     <div>
       <div class="pg-title">데일리 리포트</div>
@@ -274,6 +273,7 @@ tr.empty-group{opacity:.35}
     <div class="sub-tab active" onclick="swSub('bk',this)" id="mainTabBk">[1] 브검</div>
     <div class="sub-tab" onclick="swSub('gfa',this)" id="mainTabGfa">[2] GFA</div>
     <div class="sub-tab" onclick="swSub('adv',this)" id="mainTabAdv">[3] ADVoost</div>
+    <div class="sub-tab" onclick="swSub('copier',this)" id="mainTabCopier" style="background:rgba(58,58,240,0.06);color:var(--accent);border-color:rgba(58,58,240,0.2)">📋 복사기</div>
     <div style="margin-left:auto;display:flex;gap:5px;align-items:center">
         <button id="globalModeAll" onclick="setGlobalMode('all')" style="padding:3px 11px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid rgba(192,57,43,.3);background:rgba(192,57,43,.08);color:#c0392b;font-weight:600;font-family:inherit;transition:all .12s">전체전환</button>
         <button id="globalModeBuy" onclick="setGlobalMode('buy')" style="padding:3px 11px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit;transition:all .12s">구매전환</button>
@@ -292,7 +292,7 @@ tr.empty-group{opacity:.35}
     <div class="inner-tabs" id="bkInnerTabs" style="position:sticky;top:var(--sticky-top,88px);z-index:60;display:flex;gap:0;border-bottom:1.5px solid var(--glass-border-s);margin-bottom:0;margin-top:0;padding-top:0;background:var(--body-bg,#f0f2f8)">
       <div class="inner-tab active" id="innerTabBkPerf" onclick="swBkInner('bkPerf',this)" style="padding:5px 16px;font-size:12.5px;color:var(--accent);cursor:pointer;border-bottom:2.5px solid var(--accent);margin-bottom:-1.5px">📊 브검 성과</div>
       <div class="inner-tab" id="innerTabBkKw" onclick="swBkInner('bkKw',this)" style="padding:5px 16px;font-size:12.5px;color:var(--t2);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px">🔑 브검 키워드</div>
-      <div class="inner-tab" id="innerTabBkImg" style="display:none" onclick="swBkInner('bkImg',this)" style="padding:5px 16px;font-size:12.5px;color:var(--t2);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px">🖼 이미지 관리</div>
+      <div class="inner-tab" id="innerTabBkImg" style="display:none" style="display:none" onclick="swBkInner('bkImg',this)" style="padding:5px 16px;font-size:12.5px;color:var(--t2);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px">🖼 이미지 관리</div>
     </div>
 
     <!-- 일비용 -->
@@ -331,7 +331,7 @@ tr.empty-group{opacity:.35}
     <!-- 내부 탭 -->
     <div class="inner-tabs" style="display:flex;gap:0;border-bottom:1.5px solid var(--glass-border-s);margin-bottom:14px">
       <div class="inner-tab active" id="innerTabGfaPerf" onclick="swGfaInner('gfaPerf',this)" style="padding:5px 16px;font-size:12.5px;color:var(--accent);cursor:pointer;border-bottom:2.5px solid var(--accent);margin-bottom:-1.5px">GFA 성과</div>
-      <div class="inner-tab" id="innerTabGfaSojai" style="display:none" onclick="swGfaInner('gfaSojai',this)" style="padding:5px 16px;font-size:12.5px;color:var(--t2);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px">GFA 소재</div>
+      <div class="inner-tab" id="innerTabGfaSojai" onclick="swGfaInner('gfaSojai',this)" style="padding:5px 16px;font-size:12.5px;color:var(--t2);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px">GFA 소재</div>
     </div>
     <div id="gfaPerf">
     <div class="upload-zone" id="gfaUpload" style="max-width:920px" onclick="document.getElementById('gfaInput').click()">
@@ -451,6 +451,58 @@ tr.empty-group{opacity:.35}
         <div id="advContent2" style="display:none;flex-direction:column;gap:14px"></div>
       </div>
     </div>
+
+
+  </div>
+
+  <!-- ④ 복사기 -->
+  <div class="sub-content" id="s-copier">
+    <div style="max-width:680px;margin:0 auto;padding:20px 0">
+      <div class="sec-label" style="margin-bottom:16px">📋 리포트용 복사기</div>
+
+      <!-- 브검 성과 -->
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-title" style="margin-bottom:12px">
+          <div class="card-dot" style="background:var(--accent)"></div>브검 성과 합계
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="copierClick('bkPerfMo')" style="font-size:12px;padding:6px 14px">📋 MO 복사</button>
+          <button class="btn btn-ghost btn-sm" onclick="copierClick('bkPerfPc')" style="font-size:12px;padding:6px 14px">📋 PC 복사</button>
+        </div>
+      </div>
+
+      <!-- 브검 키워드 -->
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-title" style="margin-bottom:12px">
+          <div class="card-dot" style="background:var(--accent)"></div>브검 키워드 리포트용
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="copierClick('kwMo')" style="font-size:12px;padding:6px 14px">📋 MO 리포트용</button>
+          <button class="btn btn-ghost btn-sm" onclick="copierClick('kwPc')" style="font-size:12px;padding:6px 14px">📋 PC 리포트용</button>
+        </div>
+      </div>
+
+      <!-- GFA -->
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-title" style="margin-bottom:12px">
+          <div class="card-dot" style="background:var(--green)"></div>GFA 날짜별 합계 리포트용
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="copierClick('gfaDate')" style="font-size:12px;padding:6px 14px">📋 GFA 합계 복사</button>
+        </div>
+      </div>
+
+      <!-- ADV -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px">
+          <div class="card-dot" style="background:var(--blue)"></div>ADVoost 합계 리포트용
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="copierClick('advDa')" style="font-size:12px;padding:6px 14px">📋 DA 리포트용</button>
+          <button class="btn btn-ghost btn-sm" onclick="copierClick('advSa')" style="font-size:12px;padding:6px 14px">📋 SA 리포트용</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- ⑥ 메일쓰기 -->
@@ -541,6 +593,7 @@ tr.empty-group{opacity:.35}
               <button id="mailGfaImgModeAll" onclick="setGfaImgMode('all')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid rgba(192,57,43,.3);background:rgba(192,57,43,.08);color:#c0392b;font-weight:600;font-family:inherit;display:none">전체</button>
               <button id="mailGfaImgModeBuy" onclick="setGfaImgMode('buy')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit;display:none">구매</button>
               <button id="mailGfaImgModeBoth" onclick="setGfaImgMode('both')" style="padding:2px 8px;border-radius:12px;font-size:10.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit;display:none">전체+구매</button>
+              <button class="btn btn-ghost btn-sm" id="mailGfaRefreshBtn" onclick="updateMailGfaImgCard()" style="display:none;font-size:11px">🔄 새로고침</button>
               <button class="btn btn-ghost btn-sm" id="mailGfaImgBtn" onclick="mailCopyGfaImage()" style="display:none">🖼 이미지 복사</button>
               <span class="mail-card-chk on" id="mailChkGfaImg" onclick="mailToggleCard('mailCardGfaImgBody','mailChkGfaImg')">✓</span>
             </div>
@@ -665,44 +718,21 @@ tr.empty-group{opacity:.35}
     </div>
   </div>
 </div>
-
-<div class="tab-content" id="t-monthly">
-  <div class="pg-header">
-    <div>
-      <div class="pg-title">월간 리포트</div>
-      <div class="pg-desc">월별 광고 성과 리포트를 관리합니다</div>
-    </div>
-  </div>
-  <div class="notice notice-plan"><b>🗓 개발 예정</b> — 월간 리포트는 추후 별도 HTML 파일로 제작됩니다.</div>
-  <div class="ph-box">
-    <div class="ph-icon">📊</div>
-    <div class="ph-title">월간 리포트 관리 (예정)</div>
-    <div class="ph-desc">월별 광고 성과 리포트를 집계하고 관리합니다.</div>
-  </div>
 </div>
 
-
-<div class="tab-content" id="t-img_reg">
-  <div class="pg-header" style="margin-bottom:14px">
-    <div>
-      <div class="pg-title">이미지 등록</div>
-      <div class="pg-desc">브랜드검색/GFA 소재 이미지를 관리합니다.</div>
+<div class="tab-content" id="t-img_reg" style="display:none">
+  <div style="display:flex;gap:0;border-bottom:1.5px solid var(--glass-border-s);background:var(--body-bg);position:sticky;top:var(--sticky-top,88px);z-index:60">
+    <div class="inner-tab active" id="imgRegTabBk" onclick="swImgReg('bk',this)" style="padding:8px 20px;font-size:13px">🔍 브검 이미지</div>
+    <div class="inner-tab" id="imgRegTabGfa" onclick="swImgReg('gfa',this)" style="padding:8px 20px;font-size:13px">🖼 GFA 이미지</div>
+    <div style="margin-left:auto;display:flex;align-items:center;padding-right:12px">
+      <button onclick="navigator.clipboard.writeText('https://ads.naver.com/manage/ad-accounts/2011692/da/report/performance?adUnit=CREATIVE&showColList=schedule%2Cimp_count%2Cclick_count%2Csales%2Cconv_count%2Cconv_sales_krw%2Cpurchase_conv_count%2Cpurchase_conv_sales_krw%2Croas&dateRange=2026-04-21%2C2026-04-21&dateUnit=DAY&placeUnit=TOTAL&audience=TOTAL&period=yesterday&page=1&filterOptions=%5B%5D').then(function(){showToast('📋 GFA 링크 복사됨');})" style="font-size:11.5px;padding:3px 10px;border-radius:6px;border:1px solid rgba(58,58,240,0.25);background:rgba(58,58,240,0.07);color:var(--accent);cursor:pointer;font-family:inherit;white-space:nowrap">🔗 GFA 바로가기 링크복사</button>
     </div>
   </div>
-  <!-- 서브탭 -->
-  <div class="inner-tabs" id="imgRegTabs" style="position:sticky;top:var(--sticky-top,88px);z-index:60;background:var(--glass-bg);border-bottom:1.5px solid var(--glass-border-s);margin-bottom:0">
-    <div class="inner-tab active" id="imgRegTabBk" onclick="swImgReg('bk',this)">🔍 브검 소재</div>
-    <div class="inner-tab" id="imgRegTabGfa" onclick="swImgReg('gfa',this)">🖼 GFA 소재</div>
+  <div id="imgRegBkPane" style="padding:0">
+    <iframe src="bk_creative.html" style="width:100%;height:calc(100vh - 140px);border:none;display:block"></iframe>
   </div>
-  <!-- 브검 소재 -->
-  <div id="imgRegBk" style="padding:0">
-    <iframe id="bkImageFrameNew" src="bk_creative.html"
-      style="width:100%;height:calc(100vh - 180px);border:none;border-radius:0 0 12px 12px;display:block"
-      allow="clipboard-write"></iframe>
-  </div>
-  <!-- GFA 소재 -->
-  <div id="imgRegGfa" style="display:none;padding:14px">
-    <div id="imgRegGfaContent"></div>
+  <div id="imgRegGfaPane" style="padding:0;display:none">
+    <iframe src="gfa_creative.html" style="width:100%;height:calc(100vh - 140px);border:none;display:block"></iframe>
   </div>
 </div>
 
@@ -821,9 +851,9 @@ function zgSwSeg(mode) {
     fileBtn.style.fontWeight = mode==='file' ? '500' : '400';
     fileBtn.style.color      = mode==='file' ? 'var(--tx)' : 'var(--t2)';
   }
-  document.getElementById('zgDayView').style.display   = mode==='day'   ? '' : 'none';
-  document.getElementById('zgFileView').style.display  = mode==='file'  ? '' : 'none';
-  document.getElementById('zgBatchView').style.display = mode==='batch' ? '' : 'none';
+  const _zgD=document.getElementById('zgDayView');   if(_zgD) _zgD.style.display   = mode==='day'   ? '' : 'none';
+  const _zgF=document.getElementById('zgFileView');  if(_zgF) _zgF.style.display  = mode==='file'  ? '' : 'none';
+  const _zgB=document.getElementById('zgBatchView'); if(_zgB) _zgB.style.display = mode==='batch' ? '' : 'none';
   if (batchBtn) {
     const on = mode === 'batch';
     batchBtn.style.background  = on ? 'var(--glass-bg-strong)' : 'transparent';
@@ -1676,6 +1706,8 @@ async function updateMailGfaImgCard() {
   if (imgModeBuy) imgModeBuy.style.display = '';
   const imgModeBoth = document.getElementById('mailGfaImgModeBoth');
   if (imgModeBoth) imgModeBoth.style.display = '';
+  const refreshBtn = document.getElementById('mailGfaRefreshBtn');
+  if (refreshBtn) refreshBtn.style.display = '';
 
   // 날짜 탭 버튼 렌더
   const onS  = 'background:rgba(58,58,240,0.08);color:var(--accent);border-color:rgba(58,58,240,0.2);font-weight:500';
@@ -2306,6 +2338,45 @@ function buildPerfTable(rows, slotCost, isBuy, ths, thL) {
 }
 
 
+function copierClick(type) {
+  var btn = null;
+  if (type === 'bkPerfMo') {
+    // BK 성과 MO 합계행 복사 버튼 (첫 번째 panel-card)
+    var cards = document.querySelectorAll('#bkDateList .panel-grid .panel-card');
+    if (cards.length > 0) btn = cards[0].querySelector('tfoot .row-copy-btn');
+  } else if (type === 'bkPerfPc') {
+    // BK 성과 PC 합계행 복사 버튼 (두 번째 panel-card)
+    var cards = document.querySelectorAll('#bkDateList .panel-grid .panel-card');
+    if (cards.length > 1) btn = cards[1].querySelector('tfoot .row-copy-btn');
+  } else if (type === 'kwMo') {
+    btn = document.querySelector('[id^="kwRptBtn_"][id$="_MO"]');
+  } else if (type === 'kwPc') {
+    btn = document.querySelector('[id^="kwRptBtn_"][id$="_PC"]');
+  } else if (type === 'gfaDate') {
+    // GFA 날짜별 합계행 리포트용 버튼 (텍스트 "리포트용")
+    var foot = document.getElementById('gfaDateFoot');
+    if (foot) {
+      var btns = foot.querySelectorAll('.row-copy-btn');
+      btns.forEach(function(b) { if (b.textContent.trim() === '리포트용') btn = b; });
+    }
+  } else if (type === 'advDa') {
+    var panel = document.getElementById('advPanel1');
+    if (panel) {
+      var btns = panel.querySelectorAll('.row-copy-btn[title="리포트용"]');
+      if (btns.length) btn = btns[btns.length - 1]; // 합계행
+    }
+  } else if (type === 'advSa') {
+    var panel = document.getElementById('advPanel2');
+    if (panel) {
+      var btns = panel.querySelectorAll('.row-copy-btn[title="리포트용"]');
+      if (btns.length) btn = btns[btns.length - 1];
+    }
+  }
+  if (btn) { btn.click(); }
+  else { showToast('⚠️ 데이터 없음 — 먼저 파일을 업로드해주세요'); }
+}
+
+
 function showToast(msg) {
   const el = document.getElementById('toast');
   if (!el) return;
@@ -2315,14 +2386,35 @@ function showToast(msg) {
   _toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
 }
 
-function sw(id, el) {
-  document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+function swToImgReg(el) {
+  document.querySelectorAll('.tabs .tab').forEach(function(t) { t.classList.remove('active'); });
   el.classList.add('active');
-  const target = document.getElementById('t-' + id);
-  if (target) target.classList.add('active');
+  ['t-daily','t-monthly'].forEach(function(tid) {
+    var e = document.getElementById(tid);
+    if (e) { e.classList.remove('active'); e.style.display = 'none'; }
+  });
+  var imgreg = document.getElementById('t-img_reg');
+  if (imgreg) { imgreg.classList.add('active'); imgreg.style.display = 'block'; }
+  setTimeout(function() {
+    if (typeof updateStickyTop === 'function') updateStickyTop();
+    var bkTab = document.getElementById('imgRegTabBk');
+    if (bkTab) swImgReg('bk', bkTab);
+  }, 50);
 }
 
+
+function sw(id, el) {
+  document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+  ['t-daily','t-monthly','t-img_reg'].forEach(function(tid) {
+    var e = document.getElementById(tid);
+    if (e) { e.classList.remove('active'); e.style.display = 'none'; }
+  });
+  el.classList.add('active');
+  var target = document.getElementById('t-' + id);
+  if (target) { target.classList.add('active'); target.style.display = 'block'; }
+  setTimeout(function() { if (typeof updateStickyTop === 'function') updateStickyTop(); }, 50);
+}
 
 
 
@@ -2462,31 +2554,23 @@ function setGlobalMode(mode) {
 
 
 function swImgReg(id, el) {
-  document.querySelectorAll('#imgRegTabs .inner-tab').forEach(t => {
-    t.classList.remove('active');
-    t.style.borderBottomColor = 'transparent';
-    t.style.color = 'var(--t2)';
+  ['imgRegTabBk','imgRegTabGfa'].forEach(function(tid) {
+    var t = document.getElementById(tid);
+    if (t) t.classList.remove('active');
   });
-  el.classList.add('active');
-  document.getElementById('imgRegBk').style.display = id === 'bk' ? '' : 'none';
-  document.getElementById('imgRegGfa').style.display = id === 'gfa' ? '' : 'none';
-  if (id === 'gfa') {
-    // GFA 소재 내용을 imgRegGfaContent로 이동 (처음 한 번만)
-    const src = document.getElementById('gfaSojai');
-    const dst = document.getElementById('imgRegGfaContent');
-    if (dst && src && !dst._moved) {
-      dst.appendChild(src);
-      src.style.display = '';
-      dst._moved = true;
-    }
-  }
+  if (el) el.classList.add('active');
+  var bkPane = document.getElementById('imgRegBkPane');
+  var gfaPane = document.getElementById('imgRegGfaPane');
+  if (bkPane) bkPane.style.display = id === 'bk' ? '' : 'none';
+  if (gfaPane) gfaPane.style.display = id === 'gfa' ? '' : 'none';
 }
 
 function swSub(id, el) {
   document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
   el.classList.add('active');
-  document.getElementById('s-' + id).classList.add('active');
+  const _sc = document.getElementById('s-' + id);
+  if (_sc) _sc.classList.add('active');
   if (id === 'mail') setTimeout(mailInitSubject, 0);
 }
 
@@ -2523,6 +2607,11 @@ function swBkInner(id, el) {
 }
 
 function swGfaInner(id, el) {
+  const _gfaSojai = document.getElementById('gfaSojai');
+  const _gfaContainer = document.getElementById('s-gfa');
+  if (_gfaSojai && _gfaContainer && _gfaSojai.parentNode !== _gfaContainer) {
+    _gfaContainer.appendChild(_gfaSojai);
+  }
   ['gfaPerf','gfaSojai'].forEach(p => { const el2=document.getElementById(p); if(el2) el2.style.display='none'; });
   el.closest('.inner-tabs').querySelectorAll('.inner-tab').forEach(t => {
     t.classList.remove('active');
@@ -2565,6 +2654,20 @@ function copyToClip(val, el) {
     setTimeout(() => el.style.background = orig, 600);
   }).catch(() => {});
 }
+
+
+// 전역 row-copy-btn 핸들러
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.row-copy-btn');
+  if (!btn) return;
+  const row = btn.dataset.row;
+  if (!row) return;
+  navigator.clipboard.writeText(row.split('\\t').join('\t')).then(function() {
+    const tr = btn.closest('tr');
+    if (tr) { tr.classList.add('tr-flash'); setTimeout(function() { tr.classList.remove('tr-flash'); }, 400); }
+    showToast('📋 복사됨');
+  }).catch(function() {});
+});
 
 function bindCellCopy(container) {
   container.querySelectorAll('tr.tr-copyable').forEach(tr => {
@@ -2693,10 +2796,10 @@ function _aggregateBkKeywords() {
   const moBuyKwStr = kwStr((() => { const m={}; allDks.forEach(dk => { const parseKw2=(t,mp)=>{const sl=t?t.indexOf(' / '):-1;if(sl<0)return;t.slice(sl+3).split(', ').forEach(kw=>{const mm=kw.match(/^(.+)\((\d+)\)$/);if(mm)mp[mm[1]]=(mp[mm[1]]||0)+parseInt(mm[2]);}); }; parseKw2(_kwByDate.get(dk+'_MO')?.buySummaryText,m); }); return m; })());
   const pcBuyKwStr = kwStr((() => { const m={}; allDks.forEach(dk => { const parseKw2=(t,mp)=>{const sl=t?t.indexOf(' / '):-1;if(sl<0)return;t.slice(sl+3).split(', ').forEach(kw=>{const mm=kw.match(/^(.+)\((\d+)\)$/);if(mm)mp[mm[1]]=(mp[mm[1]]||0)+parseInt(mm[2]);}); }; parseKw2(_kwByDate.get(dk+'_PC')?.buySummaryText,m); }); return m; })());
   const moText = bkFinalMode === 'both'
-    ? `[구매 전환]\n→ MO구매: Total(${moPconvAll})${moBuyKwStr?' / '+moBuyKwStr:''}\n[전체 전환]\n→ MO전체: Total(${moTotAll})${moKwStr?' / '+moKwStr:''}`
+    ? `[구매 전환]\n→ MO구매: Total(${moPconvAll})${moBuyKwStr?' / '+moBuyKwStr:''}\n→ PC구매: Total(${pcPconvAll})${pcBuyKwStr?' / '+pcBuyKwStr:''}\n[전체 전환]\n→ MO전체: Total(${moTotAll})${moKwStr?' / '+moKwStr:''}`
     : `${moLabel}${moKwStr ? ' / '+moKwStr : ''}${moPStr}`;
   const pcText = bkFinalMode === 'both'
-    ? `→ PC구매: Total(${pcPconvAll})${pcBuyKwStr?' / '+pcBuyKwStr:''}\n→ PC전체: Total(${pcTotAll})${pcKwStr?' / '+pcKwStr:''}`
+    ? `→ PC전체: Total(${pcTotAll})${pcKwStr?' / '+pcKwStr:''}`
     : `${pcLabel}${pcKwStr ? ' / '+pcKwStr : ''}${pcPStr}`;
   return {
     allDks,
@@ -2959,19 +3062,33 @@ function rptMakeRow(blk) {
   const isAuto = type !== 'text';
   const row = document.createElement('div');
   row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:2px 0';
-  row.draggable = true;
-  row.addEventListener('dragstart', e => { _rptDragSrc = row; e.dataTransfer.effectAllowed = 'move'; });
-  row.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; row.style.borderTop = '2px solid var(--accent)'; });
+  row.addEventListener('dragover', e => { if(!_rptDragSrc) return; e.preventDefault(); e.dataTransfer.dropEffect = 'move'; row.style.borderTop = '2px solid var(--accent)'; });
   row.addEventListener('dragleave', () => row.style.borderTop = '');
   row.addEventListener('drop', e => {
+    if(!_rptDragSrc) return;
     e.preventDefault(); row.style.borderTop = '';
-    if (_rptDragSrc && _rptDragSrc !== row) row.parentNode.insertBefore(_rptDragSrc, row);
+    if (_rptDragSrc !== row) row.parentNode.insertBefore(_rptDragSrc, row);
   });
-  row.addEventListener('dragend', () => { _rptDragSrc = null; document.querySelectorAll('#rptBlocks > div').forEach(r => r.style.borderTop = ''); });
 
   const handle = document.createElement('span');
   handle.textContent = '⠿';
+  handle.draggable = true;
   handle.style.cssText = 'font-size:13px;color:var(--t3);cursor:grab;padding:0 2px;opacity:.3;user-select:none;flex-shrink:0';
+  handle.addEventListener('mouseenter', () => { handle.style.opacity = '.7'; });
+  handle.addEventListener('mouseleave', () => { handle.style.opacity = '.3'; });
+  handle.addEventListener('dragstart', e => {
+    _rptDragSrc = row;
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', 'rpt-block'); } catch(_) {}
+    row.style.opacity = '0.5';
+    handle.style.cursor = 'grabbing';
+  });
+  handle.addEventListener('dragend', () => {
+    _rptDragSrc = null;
+    row.style.opacity = '';
+    handle.style.cursor = 'grab';
+    document.querySelectorAll('#rptBlocks > div').forEach(r => r.style.borderTop = '');
+  });
 
   const textEl = document.createElement('div');
   textEl.contentEditable = isAuto ? 'false' : 'true';
@@ -3196,7 +3313,7 @@ function rptRefreshAutoBlocks() {
 })();
 // 초기 로드// sticky 높이 동적 계산
 (function() {
-  function updateStickyTop() {
+  window.updateStickyTop = function updateStickyTop() {
     const wrapper = document.querySelector('[style*="position:sticky"][style*="z-index:100"]');
     if (wrapper) {
       const h = wrapper.offsetHeight;
@@ -3210,7 +3327,7 @@ function rptRefreshAutoBlocks() {
       const h2 = bkInner ? total + bkInner.offsetHeight : total + 40;
       document.documentElement.style.setProperty('--sticky-top2', h2 + 'px');
     }
-  }
+  };
   window.addEventListener('load', updateStickyTop);
   window.addEventListener('resize', updateStickyTop);
   setTimeout(updateStickyTop, 300);
@@ -3903,7 +4020,7 @@ function refreshGfaDateTable() {
   uz.addEventListener('drop', e => { e.preventDefault(); uz.classList.remove('drag-over'); if(e.dataTransfer.files[0]) processGfa(e.dataTransfer.files[0]); });
   fi.addEventListener('change', e => { if(e.target.files[0]) processGfa(e.target.files[0]); });
   document.getElementById('gfaReset').onclick = () => {
-    document.getElementById('gfaResults').style.display = 'none';
+    const _gr1=document.getElementById('gfaResults'); if(_gr1) _gr1.style.display='none';
     uz.style.display = ''; fi.value = ''; _gfaData = []; _gfaHideEmpty = true; _gfaSelectedGroups = new Set();
     document.getElementById('gfaDateTabs').innerHTML = '';
     _gfaCurDate = 'all';
@@ -3973,8 +4090,8 @@ async function processGfa(file) {
   buildDateTabs('gfaDateTabs', allDatesForTabs, 'all', (d) => { _gfaCurDate = d; renderGfaGroup(d); });
   renderGfaGroup('all');
   document.getElementById('gfaBadge').textContent = '📄 ' + file.name;
-  document.getElementById('gfaResults').style.display = 'block';
-  document.getElementById('gfaUpload').style.display = 'none';
+  const _gr2=document.getElementById('gfaResults'); if(_gr2) _gr2.style.display='block';
+  const _gu=document.getElementById('gfaUpload'); if(_gu) _gu.style.display='none';
   document.getElementById('mainTabGfa')?.classList.add('done');
   document.getElementById('innerTabGfaPerf')?.classList.add('done');
   renderGfaMailCard(); // GFA 성과 업로드 시 메일 카드 즉시 반영
@@ -4361,7 +4478,7 @@ function resetAdvPanel(num) {
   document.getElementById(`advInput${num}`).value = '';
   const content = document.getElementById(`advContent${num}`);
   content.innerHTML = ''; content.style.display = 'none';
-  document.getElementById(`advUpload${num}`).style.display = '';
+  const _au=document.getElementById(`advUpload${num}`); if(_au) _au.style.display='';
   const tabsEl = document.getElementById(`advDateTabs${num}`);
   if (tabsEl) tabsEl.remove();
   _advData[num] = []; _advCurDate[num] = 'all';
@@ -4434,7 +4551,7 @@ async function getGcImages() {
   fi.addEventListener('change', e => { if(e.target.files[0]) processGc(e.target.files[0]); });
 
   document.getElementById('gcReset').onclick = () => {
-    document.getElementById('gcResults').style.display = 'none';
+    const _gcr1=document.getElementById('gcResults'); if(_gcr1) _gcr1.style.display='none';
     uz.style.display = ''; fi.value = ''; _gcAllData = [];
     document.getElementById('gcDateTabs').innerHTML = '';
     document.getElementById('gcCards').innerHTML = '';
@@ -4500,8 +4617,8 @@ async function processGc(file) {
 
   // UI 먼저 처리 (renderGcCards 실패해도 화면은 유지)
   document.getElementById('gcBadge').textContent = '📄 ' + file.name;
-  document.getElementById('gcResults').style.display = 'block';
-  document.getElementById('gcUpload').style.display = 'none';
+  const _gcr2=document.getElementById('gcResults'); if(_gcr2) _gcr2.style.display='block';
+  const _gcu=document.getElementById('gcUpload'); if(_gcu) _gcu.style.display='none';
   document.getElementById('mainTabGfa')?.classList.add('done');
   document.getElementById('innerTabGfaSojai')?.classList.add('done');
   await renderGcCards('all');

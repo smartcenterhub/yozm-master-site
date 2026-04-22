@@ -350,7 +350,7 @@ function addDays(d, n) { const r = new Date(d); r.setDate(r.getDate() + n); retu
 function fmtDt(s) {
   if (!s) return '';
   const d = new Date(s);
-  return (d.getMonth()+1) + '/' + String(d.getDate()).padStart(2,'0') + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  return (d.getMonth()+1) + '/' + String(d.getDate()).padStart(2,'0') + '(' + ['일','월','화','수','목','금','토'][d.getDay()] + ') ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
 }
 function fmtDateHdr(d) {
   return String(d.getDate()) + '<br><span style="font-size:9px;font-weight:400">' + DOW[d.getDay()] + '</span>';

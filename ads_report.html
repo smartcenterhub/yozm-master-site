@@ -2796,10 +2796,10 @@ function _aggregateBkKeywords() {
   const moBuyKwStr = kwStr((() => { const m={}; allDks.forEach(dk => { const parseKw2=(t,mp)=>{const sl=t?t.indexOf(' / '):-1;if(sl<0)return;t.slice(sl+3).split(', ').forEach(kw=>{const mm=kw.match(/^(.+)\((\d+)\)$/);if(mm)mp[mm[1]]=(mp[mm[1]]||0)+parseInt(mm[2]);}); }; parseKw2(_kwByDate.get(dk+'_MO')?.buySummaryText,m); }); return m; })());
   const pcBuyKwStr = kwStr((() => { const m={}; allDks.forEach(dk => { const parseKw2=(t,mp)=>{const sl=t?t.indexOf(' / '):-1;if(sl<0)return;t.slice(sl+3).split(', ').forEach(kw=>{const mm=kw.match(/^(.+)\((\d+)\)$/);if(mm)mp[mm[1]]=(mp[mm[1]]||0)+parseInt(mm[2]);}); }; parseKw2(_kwByDate.get(dk+'_PC')?.buySummaryText,m); }); return m; })());
   const moText = bkFinalMode === 'both'
-    ? `[구매 전환]\n→ MO구매: Total(${moPconvAll})${moBuyKwStr?' / '+moBuyKwStr:''}\n[전체 전환]\n→ MO전체: Total(${moTotAll})${moKwStr?' / '+moKwStr:''}`
+    ? `[구매 전환]\n→ MO구매: Total(${moPconvAll})${moBuyKwStr?' / '+moBuyKwStr:''}\n→ PC구매: Total(${pcPconvAll})${pcBuyKwStr?' / '+pcBuyKwStr:''}\n[전체 전환]\n→ MO전체: Total(${moTotAll})${moKwStr?' / '+moKwStr:''}`
     : `${moLabel}${moKwStr ? ' / '+moKwStr : ''}${moPStr}`;
   const pcText = bkFinalMode === 'both'
-    ? `→ PC구매: Total(${pcPconvAll})${pcBuyKwStr?' / '+pcBuyKwStr:''}\n→ PC전체: Total(${pcTotAll})${pcKwStr?' / '+pcKwStr:''}`
+    ? `→ PC전체: Total(${pcTotAll})${pcKwStr?' / '+pcKwStr:''}`
     : `${pcLabel}${pcKwStr ? ' / '+pcKwStr : ''}${pcPStr}`;
   return {
     allDks,

@@ -315,7 +315,7 @@ document.getElementById('today-date').textContent =
 
 const now = new Date();
 document.getElementById('sync-time').textContent =
-  `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')} ✅`;
+  `${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}(${days[now.getDay()]}) ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')} ✅`;
 </script>
 </body>
 </html>

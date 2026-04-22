@@ -572,29 +572,32 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
       <button id="sort-btn-2-propDate"   class="sort-crit-btn"     onclick="setSortCrit(2,'propDate',this)">제안일 <span id="sort-dir-2-propDate">↓</span></button>
     </div>
   </div>
-  </div>
-  <!-- 상품으로 검색하기 토글 -->
-  <div style="margin-bottom:6px">
-    <button onclick="toggleSkuSearch2()" id="sku-search-tog-2" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:5px">
-      <span>상품으로 검색하기</span><span id="sku-search-arrow-2" style="font-size:10px">▶</span>
-    </button>
-    <div id="sku-search-panel-2" style="display:none;margin-top:8px;padding:12px 14px;background:var(--gb);border:0.5px solid var(--bd);border-radius:var(--rl)">
-      <div id="sku-search-btns-2"></div>
-      <div style="margin-top:8px;font-size:11px;color:var(--t3)">선택됨: <span id="sku-search-selected-2" style="color:var(--ac);font-weight:600">없음</span></div>
+  </div><!-- sticky-hd end -->
+  <!-- 상품으로 검색하기 토글 + 액션바: sticky 고정 -->
+  <div class="sticky-hd" style="padding-top:4px;padding-bottom:4px">
+    <!-- 상품으로 검색하기 토글 -->
+    <div style="margin-bottom:6px">
+      <button onclick="toggleSkuSearch2()" id="sku-search-tog-2" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:5px">
+        <span>상품으로 검색하기</span><span id="sku-search-arrow-2" style="font-size:10px">▶</span>
+      </button>
+      <div id="sku-search-panel-2" style="display:none;margin-top:8px;padding:12px 14px;background:var(--gb);border:0.5px solid var(--bd);border-radius:var(--rl)">
+        <div id="sku-search-btns-2"></div>
+        <div style="margin-top:8px;font-size:11px;color:var(--t3)">선택됨: <span id="sku-search-selected-2" style="color:var(--ac);font-weight:600">없음</span></div>
+      </div>
     </div>
-  </div>
-  <!-- 일괄 처리 액션바 -->
-  <div class="bulk-action-bar" id="bulk-action-bar-2">
-    <span class="bulk-sel-cnt" id="bulk-cnt-2">0건 선택</span>
-    <div class="bulk-sep"></div>
-    <button class="bab-btn" onclick="bulkStatus(2,'제안중')">제안중</button>
-    <button class="bab-btn" onclick="bulkStatus(2,'제안완료')">제안완료</button>
-    <button class="bab-btn warn" onclick="bulkStatus(2,'확인필요')">확인필요</button>
-    <button class="bab-btn sel" onclick="bulkStatus(2,'선정')">선정</button>
-    <button class="bab-btn rej" onclick="bulkStatus(2,'미선정')">미선정</button>
-    <div class="bulk-sep"></div>
-    <button class="bab-btn del" onclick="bulkDelete(2)">삭제</button>
-    <span style="margin-left:auto;font-size:11px;color:#888;cursor:pointer;text-decoration:underline" onclick="clearBulkSelect(2)">선택 해제</span>
+    <!-- 일괄 처리 액션바 (상시 표시) -->
+    <div class="bulk-action-bar on" id="bulk-action-bar-2">
+      <span class="bulk-sel-cnt" id="bulk-cnt-2">0건 선택</span>
+      <div class="bulk-sep"></div>
+      <button class="bab-btn" onclick="bulkStatus(2,'제안중')">제안중</button>
+      <button class="bab-btn" onclick="bulkStatus(2,'제안완료')">제안완료</button>
+      <button class="bab-btn warn" onclick="bulkStatus(2,'확인필요')">확인필요</button>
+      <button class="bab-btn sel" onclick="bulkStatus(2,'선정')">선정</button>
+      <button class="bab-btn rej" onclick="bulkStatus(2,'미선정')">미선정</button>
+      <div class="bulk-sep"></div>
+      <button class="bab-btn del" onclick="bulkDelete(2)">삭제</button>
+      <span style="margin-left:auto;font-size:11px;color:#888;cursor:pointer;text-decoration:underline" onclick="clearBulkSelect(2)">선택 해제</span>
+    </div>
   </div>
   <div id="warn-banner-2" style="display:none;padding:8px 13px;background:rgba(196,90,16,.08);border:1px solid rgba(196,90,16,.25);border-radius:8px;margin-bottom:4px;font-size:12px;font-weight:600;color:var(--or)"></div>
   <div id="prop-list-2"><div class="loading"><span class="spin">⟳</span> 불러오는 중...</div></div>
@@ -2944,9 +2947,7 @@ function getCheckedGrpIds(tab){
 }
 function updateBulkBar(tab){
   const ids=getCheckedGrpIds(tab);
-  const bar=document.getElementById('bulk-action-bar-'+tab);
   const cnt=document.getElementById('bulk-cnt-'+tab);
-  if(bar)bar.classList.toggle('on',ids.length>0);
   if(cnt)cnt.textContent=ids.length+'건 선택';
   /* 전체선택 체크박스 상태 */
   const allCb=document.getElementById('bulk-all-cb-'+tab);

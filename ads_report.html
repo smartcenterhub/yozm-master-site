@@ -3062,19 +3062,33 @@ function rptMakeRow(blk) {
   const isAuto = type !== 'text';
   const row = document.createElement('div');
   row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:2px 0';
-  row.draggable = true;
-  row.addEventListener('dragstart', e => { _rptDragSrc = row; e.dataTransfer.effectAllowed = 'move'; });
-  row.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; row.style.borderTop = '2px solid var(--accent)'; });
+  row.addEventListener('dragover', e => { if(!_rptDragSrc) return; e.preventDefault(); e.dataTransfer.dropEffect = 'move'; row.style.borderTop = '2px solid var(--accent)'; });
   row.addEventListener('dragleave', () => row.style.borderTop = '');
   row.addEventListener('drop', e => {
+    if(!_rptDragSrc) return;
     e.preventDefault(); row.style.borderTop = '';
-    if (_rptDragSrc && _rptDragSrc !== row) row.parentNode.insertBefore(_rptDragSrc, row);
+    if (_rptDragSrc !== row) row.parentNode.insertBefore(_rptDragSrc, row);
   });
-  row.addEventListener('dragend', () => { _rptDragSrc = null; document.querySelectorAll('#rptBlocks > div').forEach(r => r.style.borderTop = ''); });
 
   const handle = document.createElement('span');
   handle.textContent = '⠿';
+  handle.draggable = true;
   handle.style.cssText = 'font-size:13px;color:var(--t3);cursor:grab;padding:0 2px;opacity:.3;user-select:none;flex-shrink:0';
+  handle.addEventListener('mouseenter', () => { handle.style.opacity = '.7'; });
+  handle.addEventListener('mouseleave', () => { handle.style.opacity = '.3'; });
+  handle.addEventListener('dragstart', e => {
+    _rptDragSrc = row;
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', 'rpt-block'); } catch(_) {}
+    row.style.opacity = '0.5';
+    handle.style.cursor = 'grabbing';
+  });
+  handle.addEventListener('dragend', () => {
+    _rptDragSrc = null;
+    row.style.opacity = '';
+    handle.style.cursor = 'grab';
+    document.querySelectorAll('#rptBlocks > div').forEach(r => r.style.borderTop = '');
+  });
 
   const textEl = document.createElement('div');
   textEl.contentEditable = isAuto ? 'false' : 'true';

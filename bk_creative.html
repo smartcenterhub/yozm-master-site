@@ -84,15 +84,26 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 .d-img{max-width:100%;max-height:120px;object-fit:contain;border-radius:6px;border:1px solid var(--gbd);background:#fff;cursor:pointer;display:block}
 .d-img:hover{opacity:.85}
 .d-btns{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:0.5px solid var(--gbd)}
-/* 소재 이력 테이블 */
-.hist-table{width:856px;border-collapse:collapse;table-layout:fixed}
-.hist-table th{background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:8px 10px;border:0.5px solid var(--gbd);text-align:left;white-space:nowrap}
-.hist-table td{border:0.5px solid var(--gbd);padding:8px 10px;font-size:12px;vertical-align:middle}
-.hist-table tr:hover td{background:rgba(58,58,240,0.02)}
-.status-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10.5px;font-weight:500}
+/* 소재 이력 카드 */
+.status-badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:10.5px;font-weight:500}
 .sb-active{background:rgba(26,138,74,0.1);color:var(--gr)}
 .sb-done{background:rgba(152,152,168,0.15);color:var(--t3)}
 .sb-future{background:rgba(58,58,240,0.08);color:var(--ac)}
+.hist-card{background:var(--gb);border:0.5px solid var(--gbd);border-radius:10px;padding:12px 14px;margin-bottom:10px;transition:border-color .15s}
+.hist-card.checked{border-color:#AFA9EC;background:#FAFAFE}
+.hist-month-hdr{display:flex;align-items:center;gap:8px;padding:7px 12px;background:#EEF2FF;border-radius:8px;cursor:pointer;margin-bottom:10px;border:0.5px solid #c8d0f0;user-select:none}
+.hist-month-hdr:hover{background:#e4e8ff}
+.hist-filter-bar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--gb);border:0.5px solid var(--gbd);border-radius:8px;margin-bottom:8px}
+.hist-action-bar{display:flex;align-items:center;gap:7px;padding:9px 14px;background:#EEEDFE;border:0.5px solid #AFA9EC;border-radius:8px;margin-bottom:10px}
+.hist-act-btn{padding:4px 11px;font-size:11.5px;border:0.5px solid #bbb;border-radius:20px;background:#fff;color:#444;cursor:pointer;white-space:nowrap}
+.hist-act-btn:hover{background:#f5f5f5}
+.hist-act-btn.run{color:#1a8a4a;border-color:#86efac}
+.hist-act-btn.end{color:#888;border-color:#ccc}
+.hist-act-btn.del{color:#fff;background:#dc2626;border-color:#dc2626}
+.hist-link-url{font-size:10px;color:var(--ac);background:#f0f4ff;border-radius:4px;padding:2px 8px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;border:0.5px solid #b5d4f4}
+.hist-link-url:hover{background:#e0e8ff}
+.hist-link-url.empty{color:var(--t3);cursor:default;background:var(--gbs);border-color:var(--gbd)}
+.hcb{width:14px;height:14px;cursor:pointer;accent-color:#3a3af0;flex-shrink:0}
 .empty-state{text-align:center;padding:32px;color:var(--t3)}
 .empty-icon{font-size:22px;opacity:.4;margin-bottom:6px}
 .toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(60px);background:rgba(10,10,15,0.88);color:#fff;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:500;transition:transform .2s ease;z-index:9999;pointer-events:none;backdrop-filter:blur(8px)}
@@ -207,6 +218,12 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
       <input type="text" id="moIdInput" class="inp" placeholder="nad-a001-04-..." style="width:400px" oninput="this.value=this.value.replace(/\s/g,'')" onpaste="setTimeout(()=>{this.value=this.value.replace(/\s/g,'')},0)">
     </div>
   </div>
+  <div style="display:flex;gap:12px;align-items:flex-end;width:1132px;margin-bottom:10px">
+    <div class="fg">
+      <div class="fl">랜딩링크 <span style="font-size:10px;color:var(--t3);font-weight:400">URL</span></div>
+      <input type="text" id="landingUrlInput" class="inp" placeholder="https://brand.naver.com/..." style="width:700px">
+    </div>
+  </div>
   <div style="display:flex;gap:12px;align-items:flex-end;width:1132px;margin-bottom:8px">
     <div style="font-size:11px;color:var(--t3);padding:6px 10px;background:rgba(58,58,240,0.04);border-radius:6px;border:1px solid rgba(58,58,240,0.1)">
       🖼 이미지 URL은 소재 ID 기준으로 자동 생성됩니다 — <code style="font-size:10.5px">images/bk/{소재ID}.png</code>
@@ -230,10 +247,6 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
     <button class="cnbtn" id="calNext">다음 ▶</button>
     <button class="cnbtn" id="calNow" onclick="calGoNow()" style="margin-left:4px">↺ 지금</button>
     <button class="cnbtn" onclick="refreshThumbs()" style="margin-left:4px">🖼 썸네일 갱신</button>
-    <div class="cvtog">
-      <button class="cvbtn active" id="cvWeek" onclick="setCalView('week')">주</button>
-      <button class="cvbtn" id="cvMonth" onclick="setCalView('month')">월</button>
-    </div>
   </div>
   <div class="legend" id="calLegend"></div>
   <div class="cal-layout">
@@ -246,7 +259,21 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 <div class="bk-pane" id="bkPane3">
 <div class="card">
   <div class="card-title"><div class="cdot" style="background:var(--bl)"></div>등록된 소재 전체<div style="display:flex;gap:8px;margin-left:auto"><button class="btn btn-g btn-sm" onclick="refreshThumbs()">🖼 썸네일 갱신</button><button class="btn btn-g btn-sm" onclick="toggleGuide()">📋 등록 가이드</button></div></div>
-  <div id="guidePanel" style="display:none;margin:10px 0 14px;padding:14px 18px;background:#F4F5FF;border-radius:8px;border:1px solid rgba(58,58,240,0.15);font-size:12px;line-height:2;color:var(--t1);width:1132px"></div>
+  <div id="guidePanel" style="display:none;margin:10px 0 14px;padding:14px 18px;background:#F4F5FF;border-radius:8px;border:1px solid rgba(58,58,240,0.15);font-size:12px;line-height:2;color:var(--t1)"></div>
+  <div class="hist-filter-bar">
+    <input type="checkbox" class="hcb" id="histAllCb">
+    <label for="histAllCb" style="font-size:11.5px;color:var(--t2);cursor:pointer">전체 선택</label>
+  </div>
+  <div class="hist-action-bar" id="histActionBar" style="display:none">
+    <span style="font-size:12px;font-weight:600;color:#3C3489;min-width:60px" id="histSelCnt">0건 선택</span>
+    <div style="width:0.5px;height:16px;background:#AFA9EC;margin:0 2px"></div>
+    <button class="hist-act-btn run" onclick="histBulkStatus('운영 중')">운영 중</button>
+    <button class="hist-act-btn end" onclick="histBulkStatus('종료')">종료</button>
+    <button class="hist-act-btn" onclick="histBulkStatus('예정')">예정</button>
+    <div style="width:0.5px;height:16px;background:#AFA9EC;margin:0 2px"></div>
+    <button class="hist-act-btn del" onclick="histBulkDelete()">🗑 삭제</button>
+    <span style="margin-left:auto;font-size:11px;color:#888;cursor:pointer;text-decoration:underline" id="histCancelSel">선택 해제</span>
+  </div>
   <div id="histTable"><div class="empty-state"><div class="empty-icon">📋</div><div>등록된 소재가 없습니다</div></div></div>
 </div>
 </div>
@@ -411,7 +438,7 @@ function setCalView(v) {
 
 /* ── 파일 드롭 ── */
 function resetForm() {
-  ['pcIdInput','moIdInput','nameInput','startInput','endInput','startRaw','endRaw','pcImgUrlInput','moImgUrlInput'].forEach(function(id) { var el=document.getElementById(id); if(el) el.value=''; });
+  ['pcIdInput','moIdInput','nameInput','startInput','endInput','startRaw','endRaw','pcImgUrlInput','moImgUrlInput','landingUrlInput'].forEach(function(id) { var el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('startRaw').style.borderColor=''; document.getElementById('endRaw').style.borderColor='';
   document.getElementById('pcDropText').textContent = '클릭 또는 드래그'; document.getElementById('pcDropText').className = 'fdrop-t';
   document.getElementById('moDropText').textContent = '클릭 또는 드래그'; document.getElementById('moDropText').className = 'fdrop-t';
@@ -478,6 +505,7 @@ document.getElementById('addBtn').onclick = async function() {
     const ex = isUpd ? _cr[docId] : {};
     const data = {
       pcId: pcId, moId: moId, name: name, startAt: startAt, endAt: endAt,
+      landingUrl: landingUrl || (ex.landingUrl || null),
       pcImgUrl: pcId ? GH_BASE + pcId + '.png' : (ex.pcImgUrl || null),
       moImgUrl: moId ? GH_BASE + moId + '.png' : (ex.moImgUrl || null),
       createdAt: isUpd ? (ex.createdAt || new Date().toISOString()) : new Date().toISOString(),
@@ -593,19 +621,20 @@ function renderDetail() {
   const col = getColor(id);
   let html = '<div style="display:flex;align-items:center;gap:7px;margin-bottom:6px"><div style="width:10px;height:10px;border-radius:50%;background:' + col + ';flex-shrink:0"></div><div class="d-name">' + c.name + '</div></div>';
 
-  html += '<div class="d-period">▶ <b>' + fmtDt(c.startAt) + '</b><br>◀ <b>' + fmtDt(c.endAt) + '</b></div>';
-  const imgH = 'height:120px;width:100%;object-fit:contain;border-radius:6px;border:1px solid var(--gbd);background:#fff;cursor:pointer;display:block';
-  const noImg = '<div style="height:120px;width:100%;border-radius:6px;border:1px solid var(--gbd);background:var(--gbs);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t3)">이미지 없음</div>';
-  html += '<div style="margin-bottom:10px">';
-  html += '<div style="font-size:11px;margin-bottom:6px"><span class="pcb">PC</span></div>';
+  html += '<div class="d-period"><b>' + fmtDt(c.startAt) + '</b> ~ <b>' + fmtDt(c.endAt) + '</b></div>';
+  const imgH = 'height:100px;width:100%;object-fit:contain;border-radius:6px;border:1px solid var(--gbd);background:#fff;cursor:pointer;display:block';
+  const noImg = '<div style="height:100px;width:100%;border-radius:6px;border:1px solid var(--gbd);background:var(--gbs);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t3)">없음</div>';
+  html += '<div style="display:flex;gap:10px;margin-bottom:12px">';
+  html += '<div style="flex:1">';
+  html += '<div style="font-size:10.5px;margin-bottom:5px"><span class="pcb">PC</span></div>';
   html += (c.pcImgUrl ? '<img style="' + imgH + '" src="' + c.pcImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" title="클릭하면 이미지 복사" onclick="copyGhImg(\'" + c.pcImgUrl + "\')">': noImg);
-  html += '<div style="font-size:10px;color:var(--t3);margin-top:4px">' + (c.pcId || '—') + '</div>';
+  html += '<div style="font-size:9.5px;color:var(--t3);margin-top:4px;text-align:center;word-break:break-all">' + (c.pcId || '—') + '</div>';
   html += '</div>';
-  html += '<div style="height:0.5px;background:var(--gbd);margin:10px 0"></div>';
-  html += '<div style="margin-bottom:10px">';
-  html += '<div style="font-size:11px;margin-bottom:6px"><span class="mob">MO</span></div>';
+  html += '<div style="flex:1">';
+  html += '<div style="font-size:10.5px;margin-bottom:5px"><span class="mob">MO</span></div>';
   html += (c.moImgUrl ? '<img style="' + imgH + '" src="' + c.moImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" title="클릭하면 이미지 복사" onclick="copyGhImg(\'" + c.moImgUrl + "\')">': noImg);
-  html += '<div style="font-size:10px;color:var(--t3);margin-top:4px">' + (c.moId || '—') + '</div>';
+  html += '<div style="font-size:9.5px;color:var(--t3);margin-top:4px;text-align:center;word-break:break-all">' + (c.moId || '—') + '</div>';
+  html += '</div>';
   html += '</div>';
   html += '<div class="d-btns"><button class="btn btn-g btn-sm" onclick="editCr(\'' + id + '\')">✏️ 수정</button><button class="btn btn-r btn-sm" onclick="deleteCr(\'' + id + '\')">🗑 삭제</button></div>';
   panel.innerHTML = html;
@@ -647,6 +676,7 @@ async function saveInlineEdit(id) {
   const endRaw   = document.getElementById('ei-end').value.trim();
   const pcId  = document.getElementById('ei-pcId').value.trim();
   const moId  = document.getElementById('ei-moId').value.trim();
+  const landingUrl = document.getElementById('ei-landingUrl') ? document.getElementById('ei-landingUrl').value.trim() : (ex.landingUrl || null);
   const pcImgUrl = document.getElementById('ei-pcImgUrl').value.trim() || (pcId ? GH_BASE + pcId + '.png' : null);
   const moImgUrl = document.getElementById('ei-moImgUrl').value.trim() || (moId ? GH_BASE + moId + '.png' : null);
   const parseInlineDt = function(v) {
@@ -659,7 +689,7 @@ async function saveInlineEdit(id) {
   if (!name) { showToast('⚠️ 소재명 필수'); return; }
   if (!startAt || !endAt) { showToast('⚠️ 일시 형식: YYYY-MM-DD-HHMM'); return; }
   const ex = _cr[id] || {};
-  const data = Object.assign({}, ex, { name, startAt, endAt, pcId, moId, pcImgUrl, moImgUrl, updatedAt: new Date().toISOString() });
+  const data = Object.assign({}, ex, { name, startAt, endAt, pcId, moId, landingUrl, pcImgUrl, moImgUrl, updatedAt: new Date().toISOString() });
   try {
     await window._bkFs.save(id, data);
     _cr[id] = data;
@@ -689,7 +719,7 @@ function renderHist() {
     return;
   }
   const now = new Date();
-  let html = '<table class="hist-table"><colgroup><col style="width:16px"><col style="width:200px"><col style="width:110px"><col style="width:180px"><col style="width:180px"><col style="width:70px"><col style="width:80px"></colgroup><thead><tr><th></th><th>소재명</th><th>기간</th><th><span class="pcb">PC</span> 이미지 / 소재 ID</th><th><span class="mob">MO</span> 이미지 / 소재 ID</th><th style="text-align:center">상태</th><th>관리</th></tr></thead><tbody>';
+  let html = '<table class="hist-table"><colgroup><col style="width:16px"><col><col style="width:110px"><col style="width:22%"><col style="width:22%"><col style="width:62px"><col style="width:70px"></colgroup><thead><tr><th></th><th>소재명</th><th>기간</th><th><span class="pcb">PC</span> 이미지 / 소재 ID</th><th><span class="mob">MO</span> 이미지 / 소재 ID</th><th style="text-align:center">상태</th><th>관리</th></tr></thead><tbody>';
   entries.forEach(function(e) {
     const id = e[0], c = e[1];
     const col = getColor(id);
@@ -698,8 +728,8 @@ function renderHist() {
     if (now < s) statusHtml = '<span class="status-badge sb-future">예정</span>';
     else if (now > en) statusHtml = '<span class="status-badge sb-done">종료</span>';
     else statusHtml = '<span class="status-badge sb-active">운영 중</span>';
-    const iStyle = 'width:100%;height:50px;object-fit:contain;border-radius:4px;border:1px solid var(--gbd);background:#fff;cursor:pointer;display:block';
-    const noImgCell = '<div style="width:100%;height:50px;border-radius:4px;border:1px solid var(--gbd);background:var(--gbs);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--t3)">없음</div>';
+    const iStyle = 'width:100%;height:150px;object-fit:contain;border-radius:4px;border:1px solid var(--gbd);background:#fff;cursor:pointer;display:block';
+    const noImgCell = '<div style="width:100%;height:150px;border-radius:4px;border:1px solid var(--gbd);background:var(--gbs);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--t3)">없음</div>';
     const pcCell = '<div>'
       + (c.pcImgUrl ? '<img src="' + c.pcImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" title="클릭하면 복사" onclick="copyGhImg(\'' + c.pcImgUrl + '\')" style="' + iStyle + '">' : noImgCell)
       + '<div style="font-size:10px;color:var(--t2);line-height:1.5;word-break:break-all;margin-top:4px">' + (c.pcId || '—') + '</div></div>';
@@ -840,6 +870,7 @@ async function bulkSaveToFirebase() {
     const data = {
       pcId: r.pcId, moId: r.moId, name: r.name,
       startAt: r.startAt, endAt: r.endAt,
+      landingUrl: r.landingUrl || (ex.landingUrl || null),
       pcImgUrl: r.pcId ? GH_BASE + r.pcId + '.png' : (ex.pcImgUrl || null),
       moImgUrl: r.moId ? GH_BASE + r.moId + '.png' : (ex.moImgUrl || null),
       createdAt: isUpd ? (ex.createdAt || new Date().toISOString()) : new Date().toISOString(),

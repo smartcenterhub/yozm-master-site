@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>메모 뷰어 · Master Dashboard</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#e8eef8;
+  --surface:rgba(255,255,255,0.55);
+  --surface-solid:#fff;
+  --border:rgba(100,100,180,0.18);
+  --border-s:rgba(100,100,180,0.1);
+  --tx:rgba(20,20,55,0.9);
+  --tx2:rgba(40,40,90,0.74);
+  --tx3:rgba(70,70,130,0.5);
+  --tx4:rgba(100,100,160,0.3);
+  --accent:#3a3a7a;
+  --accent-soft:rgba(80,70,180,0.08);
+  --accent-border:rgba(80,70,180,0.24);
+  --warn:#e8a0b4;
+  --danger:#e53935;
+  --success:#34C759;
+  --a-color:#b85a73;
+  --a-bg:rgba(232,160,180,0.14);
+  --b-color:#3a6ab0;
+  --b-bg:rgba(100,140,200,0.12);
+  --c-color:#7a5a2a;
+  --c-bg:rgba(200,160,90,0.13);
+  --glass-blur:blur(40px) saturate(200%);
+  --glass-border:1px solid rgba(255,255,255,0.6);
+  --glass-shadow:0 2px 8px rgba(100,100,200,0.08),0 8px 28px rgba(100,100,200,0.07);
+  --radius:14px;--radius-sm:9px;
+  --ease:cubic-bezier(0.22,1,0.36,1);
+}
+body{
+  font-family:-apple-system,'SF Pro Display','SF Pro Text','Inter',system-ui,sans-serif;
+  font-size:14px;line-height:1.6;background:var(--bg);color:var(--tx);
+  min-height:100vh;-webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 60% at 25% 0%,#c9e8ff 0%,transparent 55%),
+    radial-gradient(ellipse 60% 50% at 80% 8%,#ddd6fe 0%,transparent 50%),
+    radial-gradient(ellipse 50% 40% at 60% 40%,#fce7f3 0%,transparent 50%),
+    radial-gradient(ellipse 70% 60% at 8% 65%,#e0f2fe 0%,transparent 55%),
+    radial-gradient(ellipse 80% 70% at 92% 80%,#ede9fe 0%,transparent 60%),
+    linear-gradient(160deg,#dbeafe 0%,#ede9fe 35%,#fce7f3 60%,#e0f9f6 100%);
+}
+.wrap{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:32px 24px 80px}
+
+/* HEADER */
+.hdr{margin-bottom:24px;padding:24px 28px;background:rgba(255,255,255,0.4);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:var(--glass-border);border-radius:var(--radius);box-shadow:var(--glass-shadow)}
+.hdr-top{display:flex;align-items:baseline;gap:12px;margin-bottom:4px}
+.hdr-title{font-size:22px;font-weight:700;letter-spacing:-0.02em;color:var(--tx)}
+.hdr-sub{font-size:12px;color:var(--tx3)}
+.hdr-desc{font-size:12.5px;color:var(--tx2);margin-bottom:18px}
+
+.form-row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.form-row label{font-size:11px;font-weight:600;color:var(--tx3);letter-spacing:.04em;text-transform:uppercase;min-width:70px;display:flex;align-items:center;padding-top:2px}
+.input{flex:1;min-width:180px;padding:8px 12px;border-radius:var(--radius-sm);border:1px solid rgba(255,255,255,0.7);background:rgba(255,255,255,0.6);font-size:13px;font-family:'SF Mono',Menlo,monospace;color:var(--tx);outline:none;transition:all .15s var(--ease);backdrop-filter:blur(12px)}
+.input:focus{border-color:var(--accent-border);background:rgba(255,255,255,0.9);box-shadow:0 0 0 3px var(--accent-soft)}
+.btn{padding:8px 18px;border-radius:var(--radius-sm);border:1px solid rgba(255,255,255,0.7);background:rgba(255,255,255,0.55);backdrop-filter:blur(12px);font-size:12.5px;cursor:pointer;font-weight:600;color:var(--tx);white-space:nowrap;transition:all .15s var(--ease);box-shadow:0 1px 3px rgba(100,100,200,0.1);font-family:inherit}
+.btn:hover{background:rgba(255,255,255,0.8);box-shadow:0 2px 8px rgba(100,100,200,0.12);transform:translateY(-0.5px)}
+.btn.primary{background:rgba(40,40,90,0.82);color:rgba(255,255,255,0.95);border-color:transparent;box-shadow:0 2px 10px rgba(40,40,120,0.2)}
+.btn.primary:hover{opacity:.92}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+.hint{font-size:11px;color:var(--tx3);line-height:1.5;margin-top:8px;padding:8px 10px;background:rgba(255,255,255,0.3);border-radius:8px;border:1px dashed rgba(100,100,180,0.15)}
+
+/* STATUS / STATS */
+.status-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;font-size:11px;font-weight:500;background:rgba(255,255,255,0.5);color:var(--tx2);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.55)}
+.pill .n{font-weight:700;color:var(--tx);font-variant-numeric:tabular-nums}
+.search-row{margin-top:14px;display:flex;gap:8px;align-items:center}
+.search-row input{flex:1}
+
+/* CONTENT */
+.empty{text-align:center;padding:80px 20px;color:var(--tx3);font-size:14px}
+.empty-ico{font-size:40px;margin-bottom:12px;opacity:.5}
+
+.err{background:rgba(229,57,53,0.08);border:1px solid rgba(229,57,53,0.2);color:var(--danger);padding:14px 18px;border-radius:var(--radius-sm);margin:10px 0;font-size:13px;line-height:1.5}
+.err strong{font-weight:700}
+
+.proj{margin-bottom:18px;background:rgba(255,255,255,0.35);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:var(--glass-border);border-radius:var(--radius);box-shadow:var(--glass-shadow);overflow:hidden}
+.proj-hdr{padding:14px 20px;display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;border-bottom:1px solid var(--border-s);transition:background .12s}
+.proj-hdr:hover{background:rgba(255,255,255,0.2)}
+.proj-hdr .chev{font-size:10px;color:var(--tx3);transition:transform .2s var(--ease);width:10px;flex-shrink:0}
+.proj.collapsed .chev{transform:rotate(-90deg)}
+.proj-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.12)}
+.proj-name{font-size:15px;font-weight:700;flex:1;letter-spacing:-0.01em;color:var(--tx)}
+.proj-count{font-size:11px;color:var(--tx3);font-variant-numeric:tabular-nums;background:rgba(0,0,0,0.04);padding:2px 9px;border-radius:99px}
+.proj.collapsed .proj-body{display:none}
+
+.card{padding:16px 20px;border-bottom:1px solid var(--border-s)}
+.card:last-child{border-bottom:none}
+.card-hdr{display:flex;align-items:baseline;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.card-title{font-size:14px;font-weight:600;color:var(--tx);letter-spacing:-0.005em}
+.card-meta{font-size:10.5px;color:var(--tx3);font-family:'SF Mono',Menlo,monospace}
+.card-status{font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--accent-soft);color:var(--accent);letter-spacing:.03em;text-transform:uppercase}
+.card-status.ended{background:rgba(0,0,0,0.05);color:var(--tx3)}
+.card-pin{font-size:11px;color:var(--warn)}
+.card-desc{font-size:12.5px;color:var(--tx2);line-height:1.55;margin-bottom:12px;padding:8px 11px;background:rgba(255,255,255,0.3);border-radius:8px;font-style:italic;border-left:2px solid var(--border)}
+
+.sec{margin-bottom:10px}
+.sec:last-child{margin-bottom:0}
+.sec-lbl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px;display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:99px}
+.sec-lbl.a{color:var(--a-color);background:var(--a-bg)}
+.sec-lbl.b{color:var(--b-color);background:var(--b-bg)}
+.sec-lbl.c{color:var(--c-color);background:var(--c-bg)}
+.sec-empty{font-size:11.5px;color:var(--tx4);font-style:italic;padding:2px 4px}
+.entry{background:rgba(255,255,255,0.55);border:1px solid rgba(255,255,255,0.7);border-radius:10px;padding:9px 13px;margin-bottom:5px;font-size:12.5px;color:var(--tx);line-height:1.6;transition:all .15s var(--ease);box-shadow:0 1px 2px rgba(100,100,200,0.04)}
+.entry:hover{background:rgba(255,255,255,0.75);box-shadow:0 2px 6px rgba(100,100,200,0.08)}
+.entry .ts{font-size:10px;color:var(--tx3);margin-right:9px;font-family:'SF Mono',Menlo,monospace;font-variant-numeric:tabular-nums}
+.entry .cat{font-size:9.5px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:6px;padding:1px 6px;margin-right:7px}
+.entry .body{display:inline;white-space:pre-wrap;word-break:break-word}
+.entry.hit{background:rgba(255,240,180,0.5);border-color:rgba(230,180,40,0.25)}
+mark{background:rgba(230,180,40,0.4);padding:0 2px;border-radius:3px;color:inherit}
+
+.card-empty-hint{font-size:11px;color:var(--tx4);font-style:italic}
+
+.qm-sec{margin-top:24px;background:rgba(255,255,255,0.35);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:var(--glass-border);border-radius:var(--radius);box-shadow:var(--glass-shadow);padding:16px 20px}
+.qm-title{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px;letter-spacing:.02em;display:flex;align-items:center;gap:6px}
+.qm-entry{background:rgba(255,255,255,0.55);border-radius:10px;padding:8px 12px;margin-bottom:4px;font-size:12.5px}
+
+.loading{display:inline-block;width:14px;height:14px;border:2px solid rgba(60,60,120,0.18);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+footer{margin-top:40px;text-align:center;font-size:10.5px;color:var(--tx4);line-height:1.6}
+footer a{color:var(--tx3);text-decoration:none;border-bottom:0.5px dotted var(--tx4)}
+
+@media(max-width:640px){
+  .wrap{padding:18px 14px 60px}
+  .hdr{padding:18px 18px}
+  .hdr-title{font-size:19px}
+  .form-row label{min-width:auto;width:100%;margin-bottom:-4px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hdr">
+    <div class="hdr-top">
+      <div class="hdr-title">📓 메모 뷰어</div>
+      <div class="hdr-sub">Master Dashboard · 읽기 전용</div>
+    </div>
+    <div class="hdr-desc">Gist ID를 넣고 불러오기를 누르면 저장된 프로젝트·카드·메모를 모두 읽기 전용으로 보여드려요.</div>
+
+    <div class="form-row">
+      <label>Gist ID</label>
+      <input class="input" id="gistId" placeholder="32자리 Gist ID" value="0123c74ea511ad5c9c0c0c057822fd38" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="form-row">
+      <label>토큰 <span style="font-weight:400;text-transform:none;color:var(--tx4);letter-spacing:0">(선택)</span></label>
+      <input class="input" id="gistToken" type="password" placeholder="비공개 Gist면 GitHub 토큰 필요" autocomplete="off">
+      <button class="btn primary" id="loadBtn" onclick="load()">불러오기</button>
+    </div>
+    <div class="hint">
+      💡 <b>Secret Gist</b>는 대부분 토큰 없이 ID만으로 읽을 수 있어요. 접근이 거부되면(404) GitHub에서 <a href="https://github.com/settings/tokens" target="_blank" style="color:var(--accent)">Personal Access Token</a>을 발급해서 넣어보세요. (scope: <code>gist</code>)
+    </div>
+
+    <div class="status-row" id="statusRow" style="display:none">
+      <span class="pill">🗂 프로젝트 <span class="n" id="stProj">0</span></span>
+      <span class="pill">🃏 카드 <span class="n" id="stCard">0</span></span>
+      <span class="pill">📝 메모 <span class="n" id="stMemo">0</span></span>
+      <span class="pill" id="stTime" style="margin-left:auto"></span>
+    </div>
+
+    <div class="search-row" id="searchRow" style="display:none">
+      <input class="input" id="search" placeholder="🔍 키워드로 메모 검색... (빈칸이면 전체 표시)" oninput="applyFilter()">
+      <label style="min-width:auto;font-weight:500;color:var(--tx2);display:flex;align-items:center;gap:5px;font-size:11.5px;text-transform:none;letter-spacing:0;cursor:pointer">
+        <input type="checkbox" id="showEnded" onchange="render()"> 종료 포함
+      </label>
+    </div>
+  </div>
+
+  <div id="errorBox"></div>
+  <div id="content"></div>
+
+  <footer>
+    데이터는 브라우저에서 직접 GitHub API로 읽어오며, 토큰은 서버에 전송·저장되지 않아요.<br>
+    <a href="https://github.com/settings/tokens" target="_blank">토큰 발급</a> · 
+    원본은 <code style="font-size:10px">dashboard.json</code> 파일로 Gist에 저장돼요
+  </footer>
+</div>
+
+<script>
+let DATA = null;          // parsed dashboard.json
+let PROJ_ORDER = [];      // ordering
+let QM = [];              // quick memos (if present)
+
+// Color palette from the original dashboard
+const PROJ_COLORS=['#6366f1','#0891b2','#059669','#d97706','#dc2626','#636366','#db2777','#0284c7','#ca8a04','#0e7490'];
+const _colorIdx={};
+function projColor(id){
+  if(_colorIdx[id]!==undefined)return PROJ_COLORS[_colorIdx[id]%PROJ_COLORS.length];
+  _colorIdx[id]=Object.keys(_colorIdx).length;
+  return PROJ_COLORS[_colorIdx[id]%PROJ_COLORS.length];
+}
+
+function esc(s){
+  return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function showErr(html){
+  document.getElementById('errorBox').innerHTML = html ? `<div class="err">${html}</div>` : '';
+}
+
+async function load(){
+  const gid = document.getElementById('gistId').value.trim();
+  const tok = document.getElementById('gistToken').value.trim();
+  if(!gid){ showErr('Gist ID를 넣어주세요.'); return; }
+  showErr('');
+  const btn = document.getElementById('loadBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"></span>읽는 중...';
+  document.getElementById('content').innerHTML = '';
+  try {
+    const headers = {'Accept':'application/vnd.github.v3+json'};
+    if(tok) headers['Authorization'] = 'token ' + tok;
+    const r = await fetch(`https://api.github.com/gists/${gid}`, {headers});
+    if(r.status === 404){
+      throw new Error('Gist를 찾을 수 없어요 (404). ID가 맞는지, 비공개라면 토큰이 필요한지 확인해주세요.');
+    }
+    if(r.status === 401 || r.status === 403){
+      throw new Error('접근이 거부됐어요 ('+r.status+'). 토큰을 확인해주세요. (scope에 gist 포함 필요)');
+    }
+    if(!r.ok) throw new Error('GitHub API 오류: HTTP ' + r.status);
+    const g = await r.json();
+    // try dashboard.json first, then any .json file
+    let content = g.files?.['dashboard.json']?.content;
+    if(!content){
+      const jsonFile = Object.values(g.files || {}).find(f => f.filename?.endsWith('.json'));
+      if(jsonFile) content = jsonFile.content;
+    }
+    if(!content){
+      const filenames = Object.keys(g.files||{}).join(', ') || '(없음)';
+      throw new Error('Gist에 dashboard.json이 없어요. 포함된 파일: ' + esc(filenames));
+    }
+    let parsed;
+    try { parsed = JSON.parse(content); }
+    catch(e){ throw new Error('JSON 파싱 실패: ' + e.message); }
+
+    // Separate projectOrder & QM from actual projects
+    PROJ_ORDER = parsed._projectOrder || null;
+    delete parsed._projectOrder;
+    DATA = parsed;
+
+    // Pull quickMemos if present
+    QM = [];
+    if(DATA._qm){
+      if(Array.isArray(DATA._qm)) QM = DATA._qm;
+      else if(DATA._qm.memos && Array.isArray(DATA._qm.memos)) QM = DATA._qm.memos;
+      else if(DATA._qm.items && Array.isArray(DATA._qm.items)) QM = DATA._qm.items;
+    }
+
+    // If no projectOrder, derive it
+    if(!PROJ_ORDER){
+      PROJ_ORDER = Object.keys(DATA).filter(id => !id.startsWith('_') && DATA[id] && !DATA[id]._isLogs && !DATA[id]._isQm);
+    }
+
+    document.getElementById('statusRow').style.display = 'flex';
+    document.getElementById('searchRow').style.display = 'flex';
+    document.getElementById('stTime').textContent = '⏱ ' + new Date().toLocaleTimeString('ko-KR');
+
+    render();
+  } catch(e){
+    showErr('<strong>불러오기 실패</strong><br>' + esc(e.message));
+    document.getElementById('statusRow').style.display = 'none';
+    document.getElementById('searchRow').style.display = 'none';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '다시 불러오기';
+  }
+}
+
+function applyFilter(){ render(); }
+
+function highlight(text, q){
+  if(!q) return esc(text);
+  const escText = esc(text);
+  const escQ = q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  return escText.replace(new RegExp(escQ,'gi'), m => `<mark>${m}</mark>`);
+}
+
+function entryMatches(e, q){
+  if(!q) return true;
+  const hay = ((e.text||'') + ' ' + (e.category||'') + ' ' + (e.ts||'')).toLowerCase();
+  return hay.includes(q.toLowerCase());
+}
+
+function render(){
+  if(!DATA){ return; }
+  const q = document.getElementById('search').value.trim();
+  const showEnded = document.getElementById('showEnded').checked;
+
+  let totalProj = 0, totalCard = 0, totalMemo = 0;
+  const out = [];
+
+  for(const pid of PROJ_ORDER){
+    const proj = DATA[pid];
+    if(!proj || proj._isLogs || proj._isQm || pid.startsWith('_')) continue;
+    const projName = proj.meta?.name || pid;
+    const cards = proj.cards || {};
+    const cardEntries = Object.entries(cards);
+    if(cardEntries.length === 0 && q) continue;
+
+    // Sort: pinned first, then by updatedAt desc
+    cardEntries.sort((a,b)=>{
+      const [,ca]=a,[,cb]=b;
+      if(!!cb.pinned - !!ca.pinned !== 0) return !!cb.pinned - !!ca.pinned;
+      return (cb.updatedAt||'').localeCompare(ca.updatedAt||'');
+    });
+
+    const cardHtmls = [];
+    let projCardCount = 0, projMemoCount = 0;
+
+    for(const [cid, c] of cardEntries){
+      const ended = c.status === '종료' || c.status === 'ended';
+      if(ended && !showEnded && !q) continue;
+
+      const logA = Array.isArray(c.memoLogA) ? c.memoLogA : [];
+      const logB = Array.isArray(c.memoLogB) ? c.memoLogB : [];
+      const logC = Array.isArray(c.memoLogC) ? c.memoLogC : [];
+      const allLogs = [...logA,...logB,...logC];
+
+      // Filter by query
+      let show = true;
+      if(q){
+        const titleMatch = (c.title||'').toLowerCase().includes(q.toLowerCase())
+          || (c.description||'').toLowerCase().includes(q.toLowerCase());
+        const anyMemo = allLogs.some(e => entryMatches(e,q));
+        show = titleMatch || anyMemo;
+      }
+      if(!show) continue;
+
+      projCardCount++;
+      projMemoCount += allLogs.length;
+      totalMemo += allLogs.length;
+
+      const renderSec = (arr, key, label) => {
+        const filtered = q ? arr.filter(e=>entryMatches(e,q)) : arr;
+        if(arr.length === 0 && !q) return ''; // hide empty sections when not searching
+        if(q && filtered.length === 0 && arr.length > 0) return ''; // skip if query filtered out all
+        if(arr.length === 0 && q) return '';
+        const items = (q ? filtered : arr).slice().reverse().map(e=>{
+          const ts = e.ts ? `<span class="ts">${esc(e.ts)}</span>` : '';
+          const cat = e.category ? `<span class="cat">${esc(e.category)}</span>` : '';
+          const body = `<span class="body">${highlight(e.text||'', q)}</span>`;
+          return `<div class="entry${q&&entryMatches(e,q)?' hit':''}">${ts}${cat}${body}</div>`;
+        }).join('');
+        return `<div class="sec">
+          <div class="sec-lbl ${key}">${label} <span style="opacity:.7">· ${filtered.length}${q && filtered.length!==arr.length?'/'+arr.length:''}</span></div>
+          ${items}
+        </div>`;
+      };
+
+      const secA = renderSec(logA,'a','지금 단계');
+      const secB = renderSec(logB,'b','다음 단계');
+      const secC = renderSec(logC,'c','추가 단계');
+      const hasAny = (secA || secB || secC);
+
+      const endedHtml = ended ? `<span class="card-status ended">종료${c.endedAt?' · '+new Date(c.endedAt).toLocaleDateString('ko-KR'):''}</span>` : '';
+      const pinHtml = c.pinned ? `<span class="card-pin" title="고정됨">📌</span>` : '';
+      const updHtml = c.updatedAt ? `<span class="card-meta">· ${new Date(c.updatedAt).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}</span>` : '';
+
+      cardHtmls.push(`
+        <div class="card">
+          <div class="card-hdr">
+            ${pinHtml}
+            <span class="card-title">${highlight(c.title||'이름 없음', q)}</span>
+            ${endedHtml}
+            ${updHtml}
+          </div>
+          ${c.description ? `<div class="card-desc">${highlight(c.description, q)}</div>` : ''}
+          ${hasAny ? (secA + secB + secC) : '<div class="card-empty-hint">메모 없음</div>'}
+        </div>
+      `);
+    }
+
+    if(cardHtmls.length === 0) continue;
+    totalProj++;
+    totalCard += projCardCount;
+    const color = projColor(pid);
+
+    out.push(`
+      <div class="proj" data-pid="${esc(pid)}">
+        <div class="proj-hdr" onclick="this.parentElement.classList.toggle('collapsed')">
+          <span class="chev">▼</span>
+          <span class="proj-dot" style="background:${color}"></span>
+          <span class="proj-name">${highlight(projName, q)}</span>
+          <span class="proj-count">${projCardCount} 카드 · ${projMemoCount} 메모</span>
+        </div>
+        <div class="proj-body">${cardHtmls.join('')}</div>
+      </div>
+    `);
+  }
+
+  // Quick memos section
+  if(QM.length > 0){
+    const filtered = q ? QM.filter(m => {
+      const t = (m.text||m.content||m.body||'') + ' ' + (m.ts||m.timestamp||'');
+      return t.toLowerCase().includes(q.toLowerCase());
+    }) : QM;
+    if(filtered.length > 0){
+      out.push(`
+        <div class="qm-sec">
+          <div class="qm-title">⚡ 퀵 메모 <span style="opacity:.6;font-weight:400">· ${filtered.length}${q && filtered.length!==QM.length?'/'+QM.length:''}</span></div>
+          ${filtered.slice().reverse().map(m=>{
+            const ts = m.ts||m.timestamp||'';
+            const body = m.text||m.content||m.body||JSON.stringify(m);
+            return `<div class="qm-entry">${ts?`<span class="entry"><span class="ts">${esc(ts)}</span></span>`:''}${highlight(body, q)}</div>`;
+          }).join('')}
+        </div>
+      `);
+      totalMemo += filtered.length;
+    }
+  }
+
+  document.getElementById('stProj').textContent = totalProj;
+  document.getElementById('stCard').textContent = totalCard;
+  document.getElementById('stMemo').textContent = totalMemo;
+
+  const content = document.getElementById('content');
+  if(out.length === 0){
+    content.innerHTML = `<div class="empty">
+      <div class="empty-ico">${q ? '🔍' : '📭'}</div>
+      ${q ? `"${esc(q)}"에 해당하는 메모가 없어요.` : '표시할 메모가 없어요. (종료된 카드만 있다면 ‘종료 포함’을 체크해보세요)'}
+    </div>`;
+  } else {
+    content.innerHTML = out.join('');
+  }
+}
+
+// Enter key to load
+document.getElementById('gistId').addEventListener('keydown', e=>{ if(e.key==='Enter'){ load(); }});
+document.getElementById('gistToken').addEventListener('keydown', e=>{ if(e.key==='Enter'){ load(); }});
+</script>
+</body>
+</html>

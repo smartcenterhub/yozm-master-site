@@ -585,15 +585,17 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   <!-- 일괄 처리 액션바 (상시 표시) -->
   <div class="bulk-action-bar on" id="bulk-action-bar-2">
     <span class="bulk-sel-cnt" id="bulk-cnt-2">0건 선택</span>
-    <div class="bulk-sep"></div>
-    <button class="bab-btn" onclick="bulkStatus(2,'제안중')">제안중</button>
-    <button class="bab-btn" onclick="bulkStatus(2,'제안완료')">제안완료</button>
-    <button class="bab-btn warn" onclick="bulkStatus(2,'확인필요')">확인필요</button>
-    <button class="bab-btn sel" onclick="bulkStatus(2,'선정')">선정</button>
-    <button class="bab-btn rej" onclick="bulkStatus(2,'미선정')">미선정</button>
-    <div class="bulk-sep"></div>
-    <button class="bab-btn del" onclick="bulkDelete(2)">삭제</button>
-    <span style="margin-left:auto;font-size:11px;color:#888;cursor:pointer;text-decoration:underline" onclick="clearBulkSelect(2)">선택 해제</span>
+    <span id="bulk-actions-2" style="display:none;align-items:center;gap:7px" class="bulk-actions-wrap">
+      <div class="bulk-sep"></div>
+      <button class="bab-btn" onclick="bulkStatus(2,'제안중')">제안중</button>
+      <button class="bab-btn" onclick="bulkStatus(2,'제안완료')">제안완료</button>
+      <button class="bab-btn warn" onclick="bulkStatus(2,'확인필요')">확인필요</button>
+      <button class="bab-btn sel" onclick="bulkStatus(2,'선정')">선정</button>
+      <button class="bab-btn rej" onclick="bulkStatus(2,'미선정')">미선정</button>
+      <div class="bulk-sep"></div>
+      <button class="bab-btn del" onclick="bulkDelete(2)">삭제</button>
+    </span>
+    <span style="margin-left:auto;display:flex;gap:8px;align-items:center"><span style="font-size:11px;color:#3a3af0;cursor:pointer;text-decoration:underline;font-weight:500" onclick="toggleAllBulk(2,{checked:true})">전체 선택</span><span style="font-size:11px;color:#888;cursor:pointer;text-decoration:underline" onclick="clearBulkSelect(2)">선택 해제</span></span>
   </div>
   </div><!-- sticky-hd end -->
   <div id="warn-banner-2" style="display:none;padding:8px 13px;background:rgba(196,90,16,.08);border:1px solid rgba(196,90,16,.25);border-radius:8px;margin-bottom:4px;font-size:12px;font-weight:600;color:var(--or)"></div>
@@ -648,13 +650,15 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   </div>
   <div class="bulk-action-bar on" id="bulk-action-bar-3">
     <span class="bulk-sel-cnt" id="bulk-cnt-3">0건 선택</span>
-    <div class="bulk-sep"></div>
-    <button class="bab-btn sf-mid" onclick="bulkStatus(3,'진행전')">진행전</button>
-    <button class="bab-btn sf-run" onclick="bulkStatus(3,'진행중')">진행중</button>
-    <button class="bab-btn sf-end" onclick="bulkStatus(3,'진행종료')">진행종료</button>
-    <div class="bulk-sep"></div>
-    <button class="bab-btn del" onclick="bulkDelete(3)">삭제</button>
-    <span style="margin-left:auto;font-size:11px;color:#888;cursor:pointer;text-decoration:underline" onclick="clearBulkSelect(3)">선택 해제</span>
+    <span id="bulk-actions-3" style="display:none;align-items:center;gap:7px" class="bulk-actions-wrap">
+      <div class="bulk-sep"></div>
+      <button class="bab-btn sf-mid" onclick="bulkStatus(3,'진행전')">진행전</button>
+      <button class="bab-btn sf-run" onclick="bulkStatus(3,'진행중')">진행중</button>
+      <button class="bab-btn sf-end" onclick="bulkStatus(3,'진행종료')">진행종료</button>
+      <div class="bulk-sep"></div>
+      <button class="bab-btn del" onclick="bulkDelete(3)">삭제</button>
+    </span>
+    <span style="margin-left:auto;display:flex;gap:8px;align-items:center"><span style="font-size:11px;color:#3a3af0;cursor:pointer;text-decoration:underline;font-weight:500" onclick="toggleAllBulk(3,{checked:true})">전체 선택</span><span style="font-size:11px;color:#888;cursor:pointer;text-decoration:underline" onclick="clearBulkSelect(3)">선택 해제</span></span>
   </div>
   </div>
   <div id="prop-list-3"><div class="loading"><span class="spin">⟳</span> 불러오는 중...</div></div>
@@ -730,9 +734,11 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   </div>
   <div class="bulk-action-bar on" id="bulk-action-bar-5">
     <span class="bulk-sel-cnt" id="bulk-cnt-5">0건 선택</span>
-    <div class="bulk-sep"></div>
-    <button class="bab-btn del" onclick="bulkDelete(5)">삭제</button>
-    <span style="margin-left:auto;font-size:11px;color:#888;cursor:pointer;text-decoration:underline" onclick="clearBulkSelect(5)">선택 해제</span>
+    <span id="bulk-actions-5" style="display:none;align-items:center;gap:7px" class="bulk-actions-wrap">
+      <div class="bulk-sep"></div>
+      <button class="bab-btn del" onclick="bulkDelete(5)">삭제</button>
+    </span>
+    <span style="margin-left:auto;display:flex;gap:8px;align-items:center"><span style="font-size:11px;color:#3a3af0;cursor:pointer;text-decoration:underline;font-weight:500" onclick="toggleAllBulk(5,{checked:true})">전체 선택</span><span style="font-size:11px;color:#888;cursor:pointer;text-decoration:underline" onclick="clearBulkSelect(5)">선택 해제</span></span>
   </div>
   </div>
   <div id="prop-list-5"><div class="loading"><span class="spin">⟳</span> 불러오는 중...</div></div>
@@ -2081,7 +2087,10 @@ window.renderPropList=function(tabNum){
     if(tabNum===2){
       if(sf.size>0&&!sf.has(cStatus)&&!sf.has(p.status))return false;
     }
-    if(tabNum===3){if(p.status!=='선정')return false;}
+    if(tabNum===3){
+      if(p.status!=='선정')return false;
+      if(sf.size>0&&!sf.has(cStatus))return false;
+    }
     if(tabNum===5){if(p.status!=='선정')return false;const ev=EVENTS.find(e=>e._id===p.eventSID)||(p.eventName?EVENTS.find(e=>e.eventName===p.eventName):null);if(!isEvEnded(ev))return false;}
     const evType=(()=>{const ev5=EVENTS.find(e=>e._id===p.eventSID);return ev5?.eventType||p.eventType||detectType({eventName:ev5?.eventName||p.eventName});})();
     if(tFilter.length>0&&!tFilter.includes(evType))return false;
@@ -2981,6 +2990,9 @@ function updateBulkBar(tab){
   const ids=getCheckedGrpIds(tab);
   const cnt=document.getElementById('bulk-cnt-'+tab);
   if(cnt)cnt.textContent=ids.length+'건 선택';
+  /* 버튼 표시/숨김 */
+  const actions=document.getElementById('bulk-actions-'+tab);
+  if(actions)actions.style.display=ids.length>0?'inline-flex':'none';
   /* 전체선택 체크박스 상태 */
   const allCb=document.getElementById('bulk-all-cb-'+tab);
   const allCbs=document.querySelectorAll(`.grp-cb-${tab}[data-grp]`);
@@ -2998,6 +3010,8 @@ window.clearBulkSelect=function(tab){
   document.querySelectorAll(`.grp-cb-${tab}`).forEach(cb=>{cb.checked=false;});
   const allCb=document.getElementById('bulk-all-cb-'+tab);
   if(allCb){allCb.checked=false;allCb.indeterminate=false;}
+  const actions=document.getElementById('bulk-actions-'+tab);
+  if(actions)actions.style.display='none';
   updateBulkBar(tab);
 };
 window.bulkStatus=async function(tab,status){

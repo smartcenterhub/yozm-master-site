@@ -632,15 +632,6 @@ function renderDetail() {
   html += '<div class="d-period"><b>' + fmtDt(c.startAt) + '</b> ~ <b>' + fmtDt(c.endAt) + '</b></div>';
   const imgH = 'height:100px;width:100%;object-fit:contain;border-radius:6px;border:1px solid var(--gbd);background:#fff;cursor:pointer;display:block';
   const noImg = '<div style="height:100px;width:100%;border-radius:6px;border:1px solid var(--gbd);background:var(--gbs);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t3)">없음</div>';
-      html += '<div style="display:flex;gap:10px;">';
-      const pcIdBtn = cr.pcId ? ' <span onclick="copyToClip(\'' + cr.pcId + '\')" style="font-size:9px;background:#E6F1FB;color:#0C447C;border-radius:4px;padding:1px 7px;cursor:pointer;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px;display:inline-block;vertical-align:middle" title="클릭하면 복사">' + cr.pcId + '</span>' : '';
-      const moIdBtn = cr.moId ? ' <span onclick="copyToClip(\'' + cr.moId + '\')" style="font-size:9px;background:#FAEEDA;color:#633806;border-radius:4px;padding:1px 7px;cursor:pointer;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px;display:inline-block;vertical-align:middle" title="클릭하면 복사">' + cr.moId + '</span>' : '';
-      html += '<div style="flex:1"><div style="font-size:10px;font-weight:500;margin-bottom:5px;display:flex;align-items:center;gap:5px;flex-wrap:wrap"><span class="pcb">PC</span>' + pcIdBtn + '</div>'
-        + (cr.pcImgUrl ? '<img src="' + cr.pcImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" onclick="copyGhImg(\'' + cr.pcImgUrl + '\')" title="클릭하면 복사" style="' + iStyle + '">' : noImg)
-        + '</div>';
-      html += '<div style="flex:1"><div style="font-size:10px;font-weight:500;margin-bottom:5px;display:flex;align-items:center;gap:5px;flex-wrap:wrap"><span class="mob">MO</span>' + moIdBtn + '</div>'
-        + (cr.moImgUrl ? '<img src="' + cr.moImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" onclick="copyGhImg(\'' + cr.moImgUrl + '\')" title="클릭하면 복사" style="' + iStyle + '">' : noImg)
-        + '</div></div>';
   html += '<div style="flex:1">';
   html += '<div style="font-size:10.5px;margin-bottom:5px"><span class="pcb">PC</span></div>';
   html += (c.pcImgUrl ? '<img style="' + imgH + '" src="' + c.pcImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" title="클릭하면 이미지 복사" onclick="copyGhImg(\'" + c.pcImgUrl + "\')">': noImg);
@@ -903,13 +894,17 @@ function renderHist() {
         : '<div class="hist-link-url empty">링크 없음</div>';
       html += '</div>';
       html += '<div style="display:flex;gap:10px">';
-      html += '<div style="flex:1"><div style="font-size:10px;font-weight:500;margin-bottom:5px"><span class="pcb">PC</span></div>'
+      html += '<div style="flex:1">'
+        + '<div style="font-size:10px;font-weight:500;margin-bottom:5px;display:flex;align-items:center;gap:5px;flex-wrap:wrap"><span class="pcb">PC</span>'
+        + (cr.pcId ? '<span onclick="copyToClip(&quot;' + cr.pcId + '&quot;)" style="font-size:9px;background:#E6F1FB;color:#0C447C;border-radius:4px;padding:1px 7px;cursor:pointer;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;display:inline-block" title="클릭하면 복사">' + cr.pcId + '</span>' : '')
+        + '</div>'
         + (cr.pcImgUrl ? '<img src="' + cr.pcImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" onclick="copyGhImg(\'' + cr.pcImgUrl + '\')" title="클릭하면 복사" style="' + iStyle + '">' : noImg)
-        + (cr.pcId ? '<div onclick="copyToClip(this.textContent.trim())" style="margin-top:5px;padding:3px 8px;background:#FFE500;color:#1a1a2e;border-radius:5px;font-size:9px;font-weight:600;cursor:pointer;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="클릭하면 복사">' + cr.pcId + '</div>' : '<div style="font-size:9px;color:var(--t3);margin-top:4px;text-align:center">—</div>')
         + '</div>';
-      html += '<div style="flex:1"><div style="font-size:10px;font-weight:500;margin-bottom:5px"><span class="mob">MO</span></div>'
+      html += '<div style="flex:1">'
+        + '<div style="font-size:10px;font-weight:500;margin-bottom:5px;display:flex;align-items:center;gap:5px;flex-wrap:wrap"><span class="mob">MO</span>'
+        + (cr.moId ? '<span onclick="copyToClip(&quot;' + cr.moId + '&quot;)" style="font-size:9px;background:#FAEEDA;color:#633806;border-radius:4px;padding:1px 7px;cursor:pointer;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;display:inline-block" title="클릭하면 복사">' + cr.moId + '</span>' : '')
+        + '</div>'
         + (cr.moImgUrl ? '<img src="' + cr.moImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" onclick="copyGhImg(\'' + cr.moImgUrl + '\')" title="클릭하면 복사" style="' + iStyle + '">' : noImg)
-        + (cr.moId ? '<div onclick="copyToClip(this.textContent.trim())" style="margin-top:5px;padding:3px 8px;background:#FFE500;color:#1a1a2e;border-radius:5px;font-size:9px;font-weight:600;cursor:pointer;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="클릭하면 복사">' + cr.moId + '</div>' : '<div style="font-size:9px;color:var(--t3);margin-top:4px;text-align:center">—</div>')
         + '</div></div>';
       html += '</div></div>';
     });

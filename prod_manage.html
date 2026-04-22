@@ -840,7 +840,7 @@ function renderItemTable(q){
       html+=`<tr class="${pCls}">
         <td class="fix" style="left:0px;text-align:center;padding:7px 4px">${dot(it.pending)}</td>
         <td class="fix" style="left:24px;color:var(--t3);font-size:11px;cursor:pointer" onclick="copyToClip('${it.no}',this,'item')">${it.no}</td>
-        <td class="fix" style="left:68px;padding:3px;text-align:center"><img src="https://smartcenterhub.github.io/yozm-master-site/images/items/${encodeURIComponent(it.nick)}.png" style="width:40px;height:40px;object-fit:cover;border-radius:4px;display:block" referrerpolicy="no-referrer" onerror="this.style.opacity=.15;this.style.filter='grayscale(1)'"></td>
+        <td class="fix" style="left:68px;padding:3px;text-align:center"><img src="https://smartcenterhub.github.io/yozm-master-site/images/items/${encodeURIComponent(it.nick)}.png" style="width:40px;height:40px;object-fit:cover;border-radius:4px;display:block" referrerpolicy="no-referrer" onerror="if(!this.dataset.jpgTried){this.dataset.jpgTried='1';this.src='https://smartcenterhub.github.io/yozm-master-site/images/items/${encodeURIComponent(it.nick)}.jpg';}else{this.style.opacity=.15;this.style.filter='grayscale(1)';}"></td>
         <td class="fix" style="left:116px;cursor:pointer" onclick="copyToClip('${it.code}',this,'item')"><span class="code-val">${it.code}</span></td>
         <td class="fix fix-last" style="left:216px;cursor:pointer" onclick="copyToClip('${it.nick}',this,'item')"><span class="nick${isOff?' off':''}">${it.nick}</span></td>
         <td style="font-weight:500;color:var(--tx);cursor:pointer" onclick="copyToClip('${it.name}',this,'item')">${it.name}</td>
@@ -1275,7 +1275,7 @@ function renderSkuTable(q){
       html+=`<tr class="${pCls}">
         <td class="fix" style="left:0px;text-align:center;padding:7px 4px">${dot(sk.pending)}</td>
         <td class="fix" style="left:24px;color:var(--t3);font-size:11px;cursor:pointer" onclick="copyToClip('${sk.no}',this,'sku')">${sk.no}</td>
-        <td class="fix" style="left:68px;padding:3px;text-align:center"><img src="https://smartcenterhub.github.io/yozm-master-site/images/skus/${sk.code}.jpg" style="width:40px;height:40px;object-fit:cover;border-radius:4px;display:block" referrerpolicy="no-referrer" onerror="this.style.opacity=.15;this.style.filter='grayscale(1)'"></td>
+        <td class="fix" style="left:68px;padding:3px;text-align:center"><img src="https://smartcenterhub.github.io/yozm-master-site/images/skus/${sk.code}.jpg" style="width:40px;height:40px;object-fit:cover;border-radius:4px;display:block" referrerpolicy="no-referrer" onerror="if(!this.dataset.pngTried){this.dataset.pngTried='1';this.src='https://smartcenterhub.github.io/yozm-master-site/images/skus/${sk.code}.png';}else{this.style.opacity=.15;this.style.filter='grayscale(1)';}"></td>
         <td class="fix" style="left:116px;cursor:pointer" onclick="copyToClip('${sk.code}',this,'sku')"><span class="code-val">${sk.code}</span></td>
         <td class="fix fix-last" style="left:240px;cursor:pointer" onclick="copyToClip('${sk.nick}',this,'sku')"><span class="nick${isOff?' off':''}">${sk.nick}</span></td>
         <td style="font-weight:500;color:var(--tx);cursor:pointer" onclick="copyToClip('${sk.name}',this,'sku')">${sk.name}</td>

@@ -166,6 +166,17 @@ tr.empty-group{opacity:.35}
 .mail-log-date{color:var(--t3);white-space:nowrap;font-size:11px}
 .mail-log-section{color:var(--accent);font-weight:500;white-space:nowrap;font-size:11px}
 
+/* ── 복사기 상태표시 (B + C 조합) ── */
+/* B. 버튼 상태 */
+#s-copier .btn.copier-ready{border-color:rgba(58,58,240,.35);background:rgba(58,58,240,.05);color:var(--accent);font-weight:500}
+#s-copier .btn.copier-ready:hover{background:rgba(58,58,240,.1)}
+#s-copier .btn.copier-empty{opacity:.4;border-style:dashed;cursor:not-allowed;background:transparent;color:var(--t3)}
+#s-copier .btn.copier-empty:hover{background:transparent}
+/* C. 카드 전체 톤 */
+#s-copier .card.copier-all-ready{border-color:rgba(45,159,95,.35);background:rgba(45,159,95,.04);transition:all .15s}
+#s-copier .card.copier-all-ready .card-title::after{content:'✓';margin-left:auto;color:#2D9F5F;font-size:13px;font-weight:700}
+#s-copier .card.copier-all-empty{opacity:.5;background:transparent;transition:all .15s}
+
 </style>
 </head>
 <body>
@@ -466,8 +477,8 @@ tr.empty-group{opacity:.35}
           <div class="card-dot" style="background:var(--accent)"></div>브검 성과 합계
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-ghost btn-sm" onclick="copierClick('bkPerfMo')" style="font-size:12px;padding:6px 14px">📋 MO 복사</button>
-          <button class="btn btn-ghost btn-sm" onclick="copierClick('bkPerfPc')" style="font-size:12px;padding:6px 14px">📋 PC 복사</button>
+          <button class="btn btn-ghost btn-sm" data-copier-type="bkPerfMo" onclick="copierClick('bkPerfMo')" style="font-size:12px;padding:6px 14px">📋 MO 복사</button>
+          <button class="btn btn-ghost btn-sm" data-copier-type="bkPerfPc" onclick="copierClick('bkPerfPc')" style="font-size:12px;padding:6px 14px">📋 PC 복사</button>
         </div>
       </div>
 
@@ -477,8 +488,8 @@ tr.empty-group{opacity:.35}
           <div class="card-dot" style="background:var(--accent)"></div>브검 키워드 리포트용
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-ghost btn-sm" onclick="copierClick('kwMo')" style="font-size:12px;padding:6px 14px">📋 MO 리포트용</button>
-          <button class="btn btn-ghost btn-sm" onclick="copierClick('kwPc')" style="font-size:12px;padding:6px 14px">📋 PC 리포트용</button>
+          <button class="btn btn-ghost btn-sm" data-copier-type="kwMo" onclick="copierClick('kwMo')" style="font-size:12px;padding:6px 14px">📋 MO 리포트용</button>
+          <button class="btn btn-ghost btn-sm" data-copier-type="kwPc" onclick="copierClick('kwPc')" style="font-size:12px;padding:6px 14px">📋 PC 리포트용</button>
         </div>
       </div>
 
@@ -488,7 +499,7 @@ tr.empty-group{opacity:.35}
           <div class="card-dot" style="background:var(--green)"></div>GFA 날짜별 합계 리포트용
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-ghost btn-sm" onclick="copierClick('gfaDate')" style="font-size:12px;padding:6px 14px">📋 GFA 합계 복사</button>
+          <button class="btn btn-ghost btn-sm" data-copier-type="gfaDate" onclick="copierClick('gfaDate')" style="font-size:12px;padding:6px 14px">📋 GFA 합계 복사</button>
         </div>
       </div>
 
@@ -498,8 +509,8 @@ tr.empty-group{opacity:.35}
           <div class="card-dot" style="background:var(--blue)"></div>ADVoost 합계 리포트용
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-ghost btn-sm" onclick="copierClick('advDa')" style="font-size:12px;padding:6px 14px">📋 DA 리포트용</button>
-          <button class="btn btn-ghost btn-sm" onclick="copierClick('advSa')" style="font-size:12px;padding:6px 14px">📋 SA 리포트용</button>
+          <button class="btn btn-ghost btn-sm" data-copier-type="advDa" onclick="copierClick('advDa')" style="font-size:12px;padding:6px 14px">📋 DA 리포트용</button>
+          <button class="btn btn-ghost btn-sm" data-copier-type="advSa" onclick="copierClick('advSa')" style="font-size:12px;padding:6px 14px">📋 SA 리포트용</button>
         </div>
       </div>
     </div>
@@ -2376,6 +2387,58 @@ function copierClick(type) {
   else { showToast('⚠️ 데이터 없음 — 먼저 파일을 업로드해주세요'); }
 }
 
+/* ══════════════════════════
+   복사기 상태표시 (B + C)
+══════════════════════════ */
+function copierCheckReady(type) {
+  // copierClick과 동일한 DOM 체크 로직 (btn 존재 여부만 반환)
+  if (type === 'bkPerfMo') {
+    var cards = document.querySelectorAll('#bkDateList .panel-grid .panel-card');
+    return !!(cards.length > 0 && cards[0].querySelector('tfoot .row-copy-btn'));
+  } else if (type === 'bkPerfPc') {
+    var cards = document.querySelectorAll('#bkDateList .panel-grid .panel-card');
+    return !!(cards.length > 1 && cards[1].querySelector('tfoot .row-copy-btn'));
+  } else if (type === 'kwMo') {
+    return !!document.querySelector('[id^="kwRptBtn_"][id$="_MO"]');
+  } else if (type === 'kwPc') {
+    return !!document.querySelector('[id^="kwRptBtn_"][id$="_PC"]');
+  } else if (type === 'gfaDate') {
+    var foot = document.getElementById('gfaDateFoot');
+    if (!foot) return false;
+    var btns = foot.querySelectorAll('.row-copy-btn');
+    for (var i=0; i<btns.length; i++) {
+      if (btns[i].textContent.trim() === '리포트용') return true;
+    }
+    return false;
+  } else if (type === 'advDa') {
+    var panel = document.getElementById('advPanel1');
+    return !!(panel && panel.querySelectorAll('.row-copy-btn[title="리포트용"]').length);
+  } else if (type === 'advSa') {
+    var panel = document.getElementById('advPanel2');
+    return !!(panel && panel.querySelectorAll('.row-copy-btn[title="리포트용"]').length);
+  }
+  return false;
+}
+
+function refreshCopierState() {
+  var sc = document.getElementById('s-copier');
+  if (!sc) return;
+  // 버튼별 상태
+  sc.querySelectorAll('[data-copier-type]').forEach(function(btn) {
+    var ready = copierCheckReady(btn.dataset.copierType);
+    btn.classList.toggle('copier-ready', ready);
+    btn.classList.toggle('copier-empty', !ready);
+  });
+  // 카드별 집계 (모두 있으면 all-ready, 모두 없으면 all-empty, 부분은 중립)
+  sc.querySelectorAll('.card').forEach(function(card) {
+    var btns = card.querySelectorAll('[data-copier-type]');
+    if (!btns.length) return;
+    var rdy = card.querySelectorAll('[data-copier-type].copier-ready').length;
+    card.classList.toggle('copier-all-ready', rdy === btns.length);
+    card.classList.toggle('copier-all-empty', rdy === 0);
+  });
+}
+
 
 function showToast(msg) {
   const el = document.getElementById('toast');
@@ -2572,6 +2635,7 @@ function swSub(id, el) {
   const _sc = document.getElementById('s-' + id);
   if (_sc) _sc.classList.add('active');
   if (id === 'mail') setTimeout(mailInitSubject, 0);
+  if (id === 'copier') setTimeout(refreshCopierState, 0);
 }
 
 function swBkInner(id, el) {
@@ -3331,6 +3395,8 @@ function rptRefreshAutoBlocks() {
   window.addEventListener('load', updateStickyTop);
   window.addEventListener('resize', updateStickyTop);
   setTimeout(updateStickyTop, 300);
+  // 초기 로드 시 복사기 상태 표시 (기본 탭이 복사기이므로)
+  window.addEventListener('load', function(){ setTimeout(refreshCopierState, 100); });
 })();
 
 // 변경 로그

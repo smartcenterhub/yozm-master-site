@@ -846,8 +846,8 @@ function renderHist() {
     wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div>등록된 소재가 없습니다</div></div>';
     _initHistCb(); return;
   }
-  const iStyle = 'width:100%;height:200px;object-fit:contain;border-radius:6px;border:1px solid var(--gbd);background:#fff;cursor:pointer;display:block';
-  const noImg = '<div style="width:100%;height:200px;border-radius:6px;border:1px solid var(--gbd);background:var(--gbs);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--t3)">없음</div>';
+  const iStyle = 'width:100%;height:160px;object-fit:contain;border-radius:6px;border:1px solid var(--gbd);background:#fff;cursor:pointer;display:block';
+  const noImg = '<div style="width:100%;height:160px;border-radius:6px;border:1px solid var(--gbd);background:var(--gbs);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--t3)">없음</div>';
   const months = {};
   entries.forEach(function(e) {
     const id = e[0], cr = e[1];
@@ -864,7 +864,7 @@ function renderHist() {
       + '<span style="font-size:12px;font-weight:600;color:#3D5A99">' + mo.label + '</span>'
       + '<span style="font-size:11px;color:#7a7ab0;margin-left:4px">' + mo.items.length + '개</span>'
       + '<span style="margin-left:auto;font-size:11px;color:#7a7ab0" id="ha-' + secId + '">▲</span>'
-      + '</div><div id="' + secId + '">';
+      + '</div><div id="' + secId + '" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
     mo.items.forEach(function(e) {
       const id = e[0], cr = e[1];
       const col = getColor(id);

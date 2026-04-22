@@ -1,0 +1,2314 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>스티커 메모</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f4ebd8;
+    --ink: #3a2e1f;
+    --ink-dim: #6b5333;
+    --ink-soft: #8a7454;
+    --line: rgba(120, 90, 50, 0.18);
+    --line-soft: rgba(120, 90, 50, 0.1);
+    --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo",
+            "Malgun Gothic", "맑은 고딕", Roboto, sans-serif;
+    --shadow-note: 0 1px 2px rgba(0,0,0,0.06), 0 5px 14px rgba(80,50,20,0.1), 0 14px 28px rgba(80,50,20,0.07);
+    --shadow-hover: 0 2px 4px rgba(0,0,0,0.08), 0 8px 20px rgba(80,50,20,0.15), 0 20px 40px rgba(80,50,20,0.1);
+    --shadow-drag: 0 2px 5px rgba(0,0,0,0.08), 0 10px 22px rgba(80,50,20,0.14), 0 22px 44px rgba(80,50,20,0.08);
+  }
+
+  html, body { height: 100%; }
+  body {
+    font-family: var(--font);
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--board, #f4ebd8);
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition: background 0.3s ease;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.025) 0 1px, transparent 1px 4px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.025) 0 1px, transparent 1px 4px);
+    pointer-events: none;
+    z-index: 1;
+  }
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(255,255,255,0.18) 0%, transparent 50%),
+      radial-gradient(1000px 500px at 110% 10%, rgba(0,0,0,0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ===== Topbar ===== */
+  .topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 10px 16px 0;
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(14px) saturate(1.4);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    border-bottom: 1px solid var(--line);
+  }
+  .topbar-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 8px;
+  }
+  .brand {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .brand .dot {
+    width: 7px; height: 7px;
+    background: #d9a441;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px rgba(217, 164, 65, 0.18);
+  }
+  .sync-status {
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-weight: 400;
+    margin-left: 4px;
+  }
+  .sync-status.ok { color: #5a7d4d; }
+  .sync-status.err { color: #a55c3e; }
+  .tools { display: flex; gap: 6px; }
+  .icon-btn {
+    width: 28px; height: 28px;
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.5);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--ink-dim);
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+  .icon-btn:hover {
+    background: rgba(255,255,255,0.9);
+    color: var(--ink);
+  }
+
+  /* ===== Tabbar ===== */
+  .tabbar {
+    display: flex;
+    gap: 2px 4px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    row-gap: 2px;
+  }
+  .tab {
+    padding: 6px 11px;
+    border: 1px solid transparent;
+    border-bottom: none;
+    background: transparent;
+    color: var(--ink-dim);
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 7px 7px 0 0;
+    transition: background 0.12s ease, color 0.12s ease;
+    white-space: nowrap;
+    position: relative;
+    top: 1px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 180px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tab .tab-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  .tab:hover { color: var(--ink); background: rgba(255,255,255,0.4); }
+  .tab.active {
+    background: var(--board, #f4ebd8);
+    border-color: var(--line);
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .tab-swatch {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.12);
+    background: var(--swatch);
+    flex-shrink: 0;
+  }
+  .tab-count {
+    font-size: 10px;
+    opacity: 0.6;
+    font-variant-numeric: tabular-nums;
+    margin-left: -2px;
+  }
+  .tab-add {
+    padding: 6px 10px;
+    border: 1px dashed var(--line);
+    background: transparent;
+    color: var(--ink-dim);
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 7px 7px 0 0;
+    position: relative;
+    top: 1px;
+    white-space: nowrap;
+  }
+  .tab-add:hover { color: var(--ink); border-color: var(--ink-dim); }
+
+  /* ===== Canvas ===== */
+  .canvas {
+    position: relative;
+    min-height: 100vh;
+    padding-top: 100px;
+    padding-bottom: 80px;
+    z-index: 2;
+  }
+
+  /* ===== Post-it ===== */
+  .postit-note {
+    position: absolute;
+    width: 240px;
+    background: var(--paper, #fff8cc);
+    box-shadow: var(--shadow-note);
+    transform: rotate(var(--rot, 0deg));
+    transition: box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    max-height: 320px;
+  }
+  .postit-note:hover { box-shadow: var(--shadow-hover); }
+  .postit-note.dragging {
+    transition: none;
+    box-shadow: var(--shadow-drag);
+    cursor: grabbing !important;
+  }
+  /* Tape = drag handle */
+  .note-tape {
+    position: absolute;
+    top: -9px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-3deg);
+    width: 62px;
+    height: 20px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.1) 100%),
+      rgba(245, 225, 175, 0.75);
+    border-left: 1px dashed rgba(120, 90, 50, 0.25);
+    border-right: 1px dashed rgba(120, 90, 50, 0.25);
+    box-shadow:
+      0 2px 4px rgba(80, 50, 20, 0.15),
+      inset 0 1px 0 rgba(255,255,255,0.4);
+    cursor: grab;
+    z-index: 2;
+    transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .note-tape::after {
+    /* subtle texture lines */
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      90deg,
+      transparent 0 3px,
+      rgba(120, 90, 50, 0.05) 3px 4px
+    );
+    pointer-events: none;
+  }
+  .note-tape:hover {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.15) 100%),
+      rgba(245, 215, 150, 0.9);
+    transform: translateX(-50%) rotate(-3deg) scale(1.08);
+    box-shadow:
+      0 3px 6px rgba(80, 50, 20, 0.2),
+      inset 0 1px 0 rgba(255,255,255,0.5);
+  }
+  .note-tape:active { cursor: grabbing; }
+  .postit-note.dragging .note-tape { cursor: grabbing; }
+
+  /* Note head */
+  .note-head {
+    padding: 12px 12px 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 6px;
+    border-bottom: 1px dashed rgba(0,0,0,0.11);
+    flex-shrink: 0;
+  }
+  .note-title {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--ink);
+    flex: 1;
+    letter-spacing: -0.01em;
+    outline: none;
+    cursor: text;
+    padding: 1px 3px;
+    margin: -1px -3px;
+    border-radius: 3px;
+    min-height: 17px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .note-title:hover { background: rgba(0,0,0,0.04); }
+  .note-title[contenteditable="true"] {
+    cursor: text;
+    background: rgba(0,0,0,0.05);
+  }
+  .note-actions {
+    display: flex;
+    gap: 1px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    flex-shrink: 0;
+  }
+  .postit-note:hover .note-actions { opacity: 1; }
+  .note-btn {
+    width: 20px; height: 20px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--ink-dim);
+    border-radius: 3px;
+    font-family: inherit;
+    line-height: 1;
+  }
+  .note-btn:hover { background: rgba(0,0,0,0.08); color: var(--ink); }
+
+  /* Note body */
+  .note-body {
+    padding: 6px 12px 12px;
+    overflow-y: auto;
+    flex: 1;
+    cursor: text;
+    min-height: 24px;
+  }
+  .note-body::-webkit-scrollbar { width: 5px; }
+  .note-body::-webkit-scrollbar-track { background: transparent; }
+  .note-body::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.15);
+    border-radius: 3px;
+  }
+  .note-body::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.28); }
+
+  .body-line {
+    font-size: 12px;
+    line-height: 1.4;
+    padding: 1px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+    color: var(--ink);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .body-line.line-empty { height: 6px; }
+  .body-line.line-check .check-box {
+    width: 10px; height: 10px;
+    border: 1.5px solid rgba(0,0,0,0.35);
+    border-radius: 2px;
+    flex-shrink: 0;
+    margin-top: 3px;
+    background: rgba(255,255,255,0.45);
+    cursor: pointer;
+    transition: background 0.1s ease;
+  }
+  .body-line.line-check.done .check-box {
+    background: rgba(0,0,0,0.7);
+    border-color: rgba(0,0,0,0.7);
+    position: relative;
+  }
+  .body-line.line-check.done .check-box::after {
+    content: '';
+    position: absolute;
+    left: 2px; top: 0px;
+    width: 3px; height: 6px;
+    border: solid white;
+    border-width: 0 1.5px 1.5px 0;
+    transform: rotate(45deg);
+  }
+  .body-line.line-check.done .line-text {
+    text-decoration: line-through;
+    opacity: 0.5;
+  }
+  .body-line.line-text::before {
+    content: '·';
+    font-weight: 700;
+    flex-shrink: 0;
+    line-height: 1.4;
+    margin-left: 2px;
+  }
+  .body-line.line-plain {
+    padding-left: 0;
+  }
+
+  .body-edit {
+    width: 100%;
+    min-height: 60px;
+    max-height: 240px;
+    border: none;
+    background: rgba(255,255,255,0.4);
+    border-radius: 3px;
+    font-family: inherit;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--ink);
+    outline: none;
+    resize: none;
+    padding: 4px 6px;
+  }
+  .edit-hint {
+    font-size: 10px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+    opacity: 0.7;
+  }
+
+  /* ===== List view (전체 탭) ===== */
+  .list-view {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  .list-section {
+    margin-bottom: 28px;
+  }
+  .list-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 8px 10px;
+    margin: 0 -8px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 8px;
+    cursor: pointer;
+    border-radius: 5px 5px 0 0;
+    transition: background 0.12s ease;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .list-header:hover {
+    background: rgba(255,255,255,0.5);
+  }
+  .list-header:hover .list-go {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  .list-chevron {
+    font-size: 9px;
+    color: var(--ink-soft);
+    width: 12px;
+    text-align: center;
+    transition: transform 0.15s ease;
+    flex-shrink: 0;
+  }
+  .list-section.expanded .list-chevron {
+    transform: rotate(90deg);
+  }
+  .list-section.expanded .list-header {
+    margin-bottom: 0;
+    border-bottom-color: transparent;
+  }
+  .list-go {
+    margin-left: auto;
+    padding: 3px 8px;
+    font-size: 11px;
+    color: var(--ink-soft);
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: opacity 0.15s ease, transform 0.15s ease, background 0.12s ease, color 0.12s ease;
+    font-weight: 500;
+    font-family: inherit;
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .list-go:hover {
+    background: rgba(255,255,255,0.8);
+    color: var(--ink);
+  }
+  /* Always show on touch devices (no hover) */
+  @media (hover: none) {
+    .list-go { opacity: 1; transform: translateX(0); }
+  }
+  .list-items {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    padding-top: 8px;
+    border-top: 1px dashed var(--line);
+    margin-top: 0;
+    animation: list-expand 0.2s ease;
+  }
+  @keyframes list-expand {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .list-swatch {
+    width: 11px; height: 11px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.12);
+  }
+  .list-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .list-count {
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  .list-item {
+    padding: 8px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--ink);
+    transition: background 0.1s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .list-item:hover {
+    background: rgba(255,255,255,0.55);
+  }
+  .list-item .bullet {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--ink-soft);
+    flex-shrink: 0;
+    opacity: 0.5;
+  }
+  .list-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--ink-soft);
+    font-size: 13px;
+    opacity: 0.7;
+    line-height: 1.6;
+  }
+
+  /* ===== Empty state ===== */
+  .empty-state {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 13px;
+    line-height: 1.7;
+    opacity: 0.7;
+  }
+
+  /* ===== FABs ===== */
+  .add-note {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 50;
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    border: none;
+    background: var(--ink);
+    color: #fff9e8;
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.18), 0 10px 28px rgba(0,0,0,0.14);
+    transition: transform 0.15s ease;
+    font-family: inherit;
+    line-height: 1;
+  }
+  .add-note:hover { transform: scale(1.08); }
+  .add-note:active { transform: scale(0.96); }
+
+  .add-tape {
+    position: fixed;
+    bottom: 20px;
+    right: 78px; /* sits to the left of add-note */
+    z-index: 50;
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(80, 60, 20, 0.35);
+    background:
+      linear-gradient(180deg,
+        transparent 30%,
+        #fff176 30%,
+        #fff176 70%,
+        transparent 70%),
+      #faf3e2;
+    color: #3a2e1f;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(80,50,20,0.15), 0 8px 20px rgba(80,50,20,0.12);
+    transition: transform 0.15s ease;
+    font-family: inherit;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+  .add-tape:hover { transform: scale(1.1); }
+  .add-tape:active { transform: scale(0.94); }
+
+  /* ===== Label tape (highlighter style) ===== */
+  .label-tape {
+    position: absolute;
+    min-width: 60px;
+    max-width: 280px;
+    padding: 2px 10px;
+    background:
+      linear-gradient(180deg,
+        transparent 20%,
+        var(--tape-color, #fff176) 20%,
+        var(--tape-color, #fff176) 80%,
+        transparent 80%);
+    transform: rotate(var(--rot, 0deg));
+    cursor: grab;
+    z-index: 5;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #3a2e1f;
+    letter-spacing: -0.01em;
+    transition: filter 0.2s ease;
+  }
+  .label-tape:hover {
+    filter: brightness(1.05) saturate(1.1);
+  }
+  .label-tape:active { cursor: grabbing; }
+  .label-tape.dragging {
+    transition: none;
+    filter: brightness(1.08) saturate(1.15);
+    cursor: grabbing;
+  }
+  .label-tape.locked { cursor: default; }
+  .label-tape.locked:active { cursor: default; }
+  .label-tape-text {
+    flex: 1;
+    outline: none;
+    padding: 0 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 20px;
+  }
+  .label-tape-text[contenteditable="true"] {
+    background: rgba(255,255,255,0.5);
+    border-radius: 2px;
+    cursor: text;
+    overflow: visible;
+    text-overflow: unset;
+  }
+  .label-tape-actions {
+    display: flex;
+    gap: 1px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    flex-shrink: 0;
+  }
+  .label-tape:hover .label-tape-actions { opacity: 1; }
+  .label-tape-btn {
+    width: 18px; height: 18px;
+    border: none;
+    background: rgba(255,255,255,0.6);
+    cursor: pointer;
+    font-size: 11px;
+    color: rgba(60, 40, 20, 0.75);
+    border-radius: 3px;
+    font-family: inherit;
+    line-height: 1;
+    padding: 0;
+  }
+  .label-tape-btn:hover {
+    background: rgba(255,255,255,0.95);
+    color: rgba(60, 40, 20, 1);
+  }
+
+  /* Lock icon on notes */
+  .note-lock {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 18px; height: 18px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 11px;
+    color: var(--ink-dim);
+    border-radius: 3px;
+    z-index: 3;
+    opacity: 0;
+    transition: opacity 0.15s ease, background 0.12s ease;
+    font-family: inherit;
+    line-height: 1;
+    padding: 0;
+  }
+  .postit-note:hover .note-lock { opacity: 0.6; }
+  .note-lock:hover { opacity: 1 !important; background: rgba(0,0,0,0.08); }
+  .postit-note.locked .note-lock { opacity: 1; color: var(--ink); }
+  .postit-note.locked .note-tape { cursor: not-allowed; }
+  .postit-note.locked .note-tape:hover { transform: translateX(-50%) rotate(-3deg); background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.1) 100%), rgba(245, 225, 175, 0.75); box-shadow: 0 2px 4px rgba(80, 50, 20, 0.15), inset 0 1px 0 rgba(255,255,255,0.4); }
+
+  /* ===== Modal (settings) ===== */
+  .modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(0,0,0,0.25);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  .modal.open { display: flex; }
+  .modal-content {
+    background: #faf3e2;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 24px;
+    max-width: 440px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  }
+  .modal-content h2 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+  .modal-content .subtitle {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 20px;
+  }
+  .setting-group {
+    margin-bottom: 16px;
+  }
+  .setting-group label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink-dim);
+    margin-bottom: 5px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .setting-group input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.6);
+    border-radius: 5px;
+    font-size: 12px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .setting-group input:focus { border-color: var(--ink-dim); }
+  .setting-group .hint {
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+  .setting-group .hint a {
+    color: var(--ink-dim);
+    text-decoration: underline;
+  }
+  .setting-group .hint code {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    background: rgba(0,0,0,0.06);
+    padding: 1px 4px;
+    border-radius: 2px;
+    font-size: 10px;
+  }
+  .gist-row {
+    display: flex;
+    gap: 6px;
+  }
+  .gist-row input { flex: 1; }
+  .btn {
+    padding: 7px 12px;
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.5);
+    border-radius: 5px;
+    font-size: 12px;
+    font-family: inherit;
+    color: var(--ink);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+  }
+  .btn:hover { background: rgba(255,255,255,0.9); }
+  .btn-primary {
+    background: var(--ink);
+    color: #fff9e8;
+    border-color: var(--ink);
+  }
+  .btn-primary:hover { background: #4a3820; }
+  .setting-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+  .setting-status {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    min-height: 16px;
+  }
+  .setting-status.ok { color: #5a7d4d; }
+  .setting-status.err { color: #a55c3e; }
+
+  /* Context menu */
+  .menu {
+    display: none;
+    position: fixed;
+    z-index: 300;
+    background: #faf3e2;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    padding: 4px;
+    min-width: 140px;
+  }
+  .menu button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 6px 10px;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--ink);
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  .menu button:hover { background: rgba(0,0,0,0.06); }
+  .menu button.danger { color: #a55c3e; }
+  .menu button.danger:hover { background: rgba(165, 92, 62, 0.1); }
+
+  /* Color picker */
+  .color-picker {
+    display: none;
+    position: fixed;
+    z-index: 310;
+    background: #faf3e2;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    padding: 8px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .color-picker.open { display: grid; }
+  .swatch {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.12);
+    cursor: pointer;
+    transition: transform 0.1s ease;
+    position: relative;
+    padding: 0;
+  }
+  .swatch:hover { transform: scale(1.15); }
+  .swatch.selected {
+    border: 2px solid var(--ink);
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.5), 0 0 0 3px var(--ink);
+  }
+  .swatch-reset {
+    background: transparent !important;
+    border: 1.5px dashed rgba(0,0,0,0.35) !important;
+    color: rgba(0,0,0,0.55);
+    font-size: 14px;
+    line-height: 0;
+    font-family: inherit;
+  }
+  .swatch-reset:hover { color: var(--ink); border-color: var(--ink) !important; }
+
+  /* Board picker (in settings) */
+  .board-picker {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+  .board-swatch {
+    position: relative;
+    aspect-ratio: 1.4 / 1;
+    border: 1.5px solid rgba(0,0,0,0.1);
+    border-radius: 6px;
+    cursor: pointer;
+    overflow: hidden;
+    padding: 0;
+    transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+  }
+  .board-swatch::before {
+    /* subtle grid preview */
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.04) 0 1px, transparent 1px 4px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.04) 0 1px, transparent 1px 4px);
+  }
+  .board-swatch::after {
+    /* mini sticky note preview */
+    content: '';
+    position: absolute;
+    left: 22%;
+    top: 25%;
+    width: 36%;
+    height: 45%;
+    background: #fff8cc;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    transform: rotate(-6deg);
+    border-radius: 1px;
+  }
+  .board-swatch:hover {
+    transform: scale(1.05);
+    border-color: rgba(0,0,0,0.25);
+  }
+  .board-swatch.selected {
+    border-color: var(--ink);
+    box-shadow: 0 0 0 2px rgba(58,46,31,0.15);
+  }
+  .board-swatch-label {
+    position: absolute;
+    bottom: 2px;
+    left: 4px;
+    font-size: 9px;
+    color: rgba(0,0,0,0.55);
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(255,255,255,0.5);
+    z-index: 2;
+    letter-spacing: -0.02em;
+  }
+
+  /* ===== Toasts ===== */
+  .toast-container {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 400;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 8px;
+    pointer-events: none;
+    max-width: calc(100vw - 40px);
+  }
+  .toast {
+    min-width: 200px;
+    max-width: 340px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.4;
+    background: rgba(58, 46, 31, 0.95);
+    color: #fff9e8;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18), 0 10px 28px rgba(0,0,0,0.12);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    pointer-events: auto;
+    animation: toast-in 0.25s cubic-bezier(0.34, 1.3, 0.64, 1) forwards;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .toast.leaving {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  .toast-icon {
+    font-size: 13px;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .toast-msg { flex: 1; }
+  .toast.success {
+    background: rgba(90, 125, 77, 0.95);
+    border-color: rgba(255,255,255,0.1);
+  }
+  .toast.error {
+    background: rgba(165, 92, 62, 0.95);
+    border-color: rgba(255,255,255,0.1);
+  }
+  .toast.info {
+    background: rgba(74, 99, 125, 0.93);
+    border-color: rgba(255,255,255,0.1);
+  }
+  @keyframes toast-in {
+    from { opacity: 0; transform: translateY(12px) translateX(-8px); }
+    to { opacity: 1; transform: translateY(0) translateX(0); }
+  }
+
+  /* Save button active pulse */
+  .icon-btn.pulse {
+    animation: save-pulse 0.5s ease;
+  }
+  @keyframes save-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); background: rgba(90, 125, 77, 0.3); }
+  }
+
+  @media (max-width: 500px) {
+    .postit-note {
+      position: relative !important;
+      width: calc(100% - 30px) !important;
+      max-width: 340px;
+      max-height: none;
+      margin: 14px auto !important;
+      top: auto !important;
+      left: auto !important;
+      transform: rotate(var(--rot, 0deg));
+    }
+    .note-tape { display: none; }
+    .note-actions { opacity: 1; }
+    .note-lock { opacity: 0.6; }
+    .label-tape-actions { opacity: 1; }
+    .canvas { padding-left: 12px; padding-right: 12px; }
+    .add-note { bottom: 16px; right: 16px; }
+    .add-tape { bottom: 16px; right: 70px; }
+    .label-tape { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-row">
+    <div class="brand">
+      <span class="dot"></span>
+      <span>스티커 메모</span>
+      <span class="sync-status" id="syncStatus"></span>
+    </div>
+    <div class="tools">
+      <button class="icon-btn" id="saveBtn" title="저장 (Ctrl+S)">💾</button>
+      <button class="icon-btn" id="settingsBtn" title="설정">⚙</button>
+    </div>
+  </div>
+  <div class="tabbar" id="tabbar"></div>
+</div>
+
+<main class="canvas" id="canvas"></main>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<button class="add-tape" id="addTapeBtn" title="새 테이프 라벨">＋</button>
+<button class="add-note" id="addNoteBtn" title="새 메모">＋</button>
+
+<!-- Settings Modal -->
+<div class="modal" id="settingsModal">
+  <div class="modal-content">
+    <h2>설정</h2>
+    <div class="subtitle">GitHub Gist에 메모를 저장하면 다른 기기에서도 열어볼 수 있어요.</div>
+
+    <div class="setting-group">
+      <label>메모판 색상</label>
+      <div class="board-picker" id="boardPicker"></div>
+    </div>
+
+    <div class="setting-group">
+      <label>GitHub Personal Access Token</label>
+      <input type="password" id="tokenInput" placeholder="ghp_..." autocomplete="off">
+      <div class="hint">
+        <a href="https://github.com/settings/tokens/new?scopes=gist&description=Sticky+Memo" target="_blank" rel="noopener">토큰 발급하기 →</a>
+        &nbsp;필요한 권한: <code>gist</code>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <label>Gist ID</label>
+      <div class="gist-row">
+        <input type="text" id="gistIdInput" placeholder="(없으면 새로 생성)">
+        <button class="btn" id="createGistBtn">새로 생성</button>
+      </div>
+      <div class="hint">비어있으면 "새로 생성" 버튼으로 프라이빗 Gist를 만들어줍니다. 다른 기기에서는 같은 Gist ID를 입력하세요.</div>
+    </div>
+
+    <div class="setting-group">
+      <button class="btn" id="pullGistBtn">지금 불러오기 (덮어쓰기)</button>
+    </div>
+
+    <div class="setting-status" id="settingsStatus"></div>
+
+    <div class="setting-actions">
+      <button class="btn" id="closeSettingsBtn">닫기</button>
+      <button class="btn btn-primary" id="saveSettingsBtn">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tab context menu -->
+<div class="menu" id="tabMenu">
+  <button data-action="rename">이름 변경</button>
+  <button data-action="color">색상 변경</button>
+  <button data-action="delete" class="danger">탭 삭제</button>
+</div>
+
+<!-- Color picker -->
+<div class="color-picker" id="colorPicker"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ===== Palette =====
+  const COLORS = [
+    '#fff8cc', // butter yellow
+    '#ffd9e3', // cotton pink
+    '#d4edda', // mint
+    '#d9e8ff', // sky
+    '#ffe4c7', // peach
+    '#eadcf8', // lavender
+    '#d6ede9', // seafoam
+    '#f5e1c4', // sand
+  ];
+
+  // Minimum viewport Y so tape (at -9px from note) stays visible below topbar
+  function getMinY() {
+    const topbar = document.querySelector('.topbar');
+    const h = topbar ? topbar.getBoundingClientRect().height : 90;
+    return h + 15; // topbar height + margin so tape is clearly visible
+  }
+
+  // ===== Default state =====
+  const uid = (p) => p + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const DEFAULT_STATE = () => ({
+    tabs: [
+      { id: uid('t'), name: '업무', color: COLORS[0] },
+      { id: uid('t'), name: '개인', color: COLORS[1] },
+      { id: uid('t'), name: '아이디어', color: COLORS[3] },
+    ],
+    notes: [],
+    tapes: [],
+    activeTab: null,
+    gistId: null,
+    boardColor: '#f4ebd8',
+  });
+
+  // Tape label colors (highlighter palette)
+  const TAPE_COLORS = [
+    '#fff176', // yellow
+    '#ffb3d9', // pink
+    '#b3ffd9', // mint green
+    '#b3d9ff', // sky blue
+    '#ffcc80', // orange
+    '#d9b3ff', // purple
+    '#ff9999', // red/coral
+    '#a8f0a8', // lime
+  ];
+
+  // Board color presets
+  const BOARDS = [
+    { name: '크림', color: '#f4ebd8' },
+    { name: '리넨', color: '#ece4d4' },
+    { name: '세이지', color: '#d8e2d0' },
+    { name: '민트', color: '#d2e8df' },
+    { name: '스카이', color: '#dbe5ed' },
+    { name: '라벤더', color: '#e2dbeb' },
+    { name: '블러쉬', color: '#eeddd9' },
+    { name: '코르크', color: '#d7b891' },
+    { name: '페이퍼', color: '#ebe8e0' },
+    { name: '소프트 그레이', color: '#dedad3' },
+  ];
+
+  // ===== Storage keys =====
+  const LS_DATA = 'stickymemo.data.v1';
+  const LS_TOKEN = 'stickymemo.token.v1';
+
+  // ===== State =====
+  let state;
+  let token = localStorage.getItem(LS_TOKEN) || '';
+
+  try {
+    const raw = localStorage.getItem(LS_DATA);
+    state = raw ? JSON.parse(raw) : DEFAULT_STATE();
+  } catch {
+    state = DEFAULT_STATE();
+  }
+  if (!state.activeTab || (state.activeTab !== 'all' && !state.tabs.find(t => t.id === state.activeTab))) {
+    state.activeTab = state.tabs[0]?.id || 'all';
+  }
+  // Migration: ensure tapes array exists
+  if (!Array.isArray(state.tapes)) state.tapes = [];
+
+  // ===== Helpers =====
+  const $ = (s, el = document) => el.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+
+  // ===== Toasts =====
+  const TOAST_KEEP = 4; // max stacked
+  const toastContainer = $('#toastContainer');
+  const toastKeyed = new Map(); // key -> element (for dedupe)
+
+  function toast(msg, type = 'info', opts = {}) {
+    const { duration = (type === 'error' ? 4000 : 2500), icon, key } = opts;
+
+    // Dedupe: if same key is active, replace its text/type/duration
+    if (key && toastKeyed.has(key)) {
+      const el = toastKeyed.get(key);
+      const msgEl = el.querySelector('.toast-msg');
+      const iconEl = el.querySelector('.toast-icon');
+      if (msgEl) msgEl.textContent = msg;
+      el.classList.remove('info', 'success', 'error');
+      el.classList.add(type);
+      if (iconEl) iconEl.textContent = icon ?? ({ success: '✓', error: '⚠', info: '·' }[type] || '·');
+      clearTimeout(el._dismissTimer);
+      el._dismissTimer = setTimeout(() => dismissToast(el, key), duration);
+      return el;
+    }
+
+    const el = document.createElement('div');
+    el.className = 'toast ' + type;
+    const iconChar = icon ?? ({ success: '✓', error: '⚠', info: '·' }[type] || '·');
+    el.innerHTML = `
+      <span class="toast-icon">${iconChar}</span>
+      <span class="toast-msg"></span>
+    `;
+    el.querySelector('.toast-msg').textContent = msg;
+    toastContainer.appendChild(el);
+
+    // Limit stack size (drop oldest)
+    while (toastContainer.children.length > TOAST_KEEP) {
+      const first = toastContainer.firstElementChild;
+      if (first) dismissToast(first);
+    }
+
+    if (key) toastKeyed.set(key, el);
+    el._dismissTimer = setTimeout(() => dismissToast(el, key), duration);
+    el.addEventListener('click', () => dismissToast(el, key));
+    return el;
+  }
+
+  function dismissToast(el, key) {
+    if (!el || !el.parentNode) return;
+    clearTimeout(el._dismissTimer);
+    el.classList.add('leaving');
+    if (key && toastKeyed.get(key) === el) toastKeyed.delete(key);
+    setTimeout(() => { if (el.parentNode) el.remove(); }, 220);
+  }
+
+  // ===== Persistence =====
+  function saveLocal() {
+    localStorage.setItem(LS_DATA, JSON.stringify(state));
+    scheduleGistPush();
+  }
+
+  // Save + user-visible confirmation (use for meaningful events, not keystrokes)
+  function announceSave(msg = '저장됨') {
+    saveLocal();
+    toast(msg, 'success', { duration: 1400, key: 'save' });
+  }
+
+  // Manual save: cancel any pending debounce and push now
+  function forcePush() {
+    saveLocal(); // ensures latest localStorage write
+    if (!token || !state.gistId) {
+      toast('로컬에 저장됨 (Gist 미설정)', 'success', { duration: 1800, key: 'save' });
+      return;
+    }
+    clearTimeout(pushTimer);
+    pushToGist();
+  }
+
+  // ===== Gist sync =====
+  let pushTimer = null;
+  function setSyncStatus(txt, cls) {
+    const el = $('#syncStatus');
+    el.textContent = txt ? '· ' + txt : '';
+    el.className = 'sync-status' + (cls ? ' ' + cls : '');
+  }
+
+  function scheduleGistPush() {
+    if (!token || !state.gistId) { setSyncStatus('로컬만', ''); return; }
+    clearTimeout(pushTimer);
+    setSyncStatus('대기중...');
+    pushTimer = setTimeout(pushToGist, 1500);
+  }
+
+  async function pushToGist() {
+    if (!token || !state.gistId) return;
+    setSyncStatus('동기화중...');
+    toast('Gist에 동기화 중...', 'info', { duration: 3000, key: 'sync', icon: '☁' });
+    try {
+      const res = await fetch(`https://api.github.com/gists/${state.gistId}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': 'token ' + token,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          files: { 'sticky-memo.json': { content: JSON.stringify(state, null, 2) } }
+        })
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const json = await res.json();
+      state.lastSyncedAt = new Date(json.updated_at).getTime();
+      localStorage.setItem(LS_DATA, JSON.stringify(state));
+      setSyncStatus('동기화됨 ✓', 'ok');
+      toast('Gist에 동기화 완료', 'success', { duration: 2000, key: 'sync' });
+    } catch (e) {
+      setSyncStatus('동기화 실패', 'err');
+      toast('동기화 실패 — 로컬 저장은 안전함', 'error', { duration: 4500, key: 'sync' });
+    }
+  }
+
+  async function createGist() {
+    if (!token) throw new Error('토큰이 없습니다');
+    const res = await fetch('https://api.github.com/gists', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'token ' + token,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        description: 'Sticky Memo Sync',
+        public: false,
+        files: { 'sticky-memo.json': { content: JSON.stringify(state, null, 2) } }
+      })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    return json.id;
+  }
+
+  async function pullFromGist() {
+    if (!token || !state.gistId) return false;
+    setSyncStatus('불러오는중...');
+    toast('Gist에서 불러오는 중...', 'info', { duration: 3000, key: 'sync', icon: '⬇' });
+    try {
+      const res = await fetch(`https://api.github.com/gists/${state.gistId}`, {
+        headers: {
+          'Authorization': 'token ' + token,
+          'Accept': 'application/vnd.github+json',
+        }
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const json = await res.json();
+      const content = json.files?.['sticky-memo.json']?.content;
+      if (!content) throw new Error('파일이 없습니다');
+      const remote = JSON.parse(content);
+      if (remote && Array.isArray(remote.tabs) && Array.isArray(remote.notes)) {
+        state = remote;
+        if (!Array.isArray(state.tapes)) state.tapes = [];
+        state.lastSyncedAt = new Date(json.updated_at).getTime();
+        if (!state.activeTab || (state.activeTab !== 'all' && !state.tabs.find(t => t.id === state.activeTab))) {
+          state.activeTab = state.tabs[0]?.id || 'all';
+        }
+        localStorage.setItem(LS_DATA, JSON.stringify(state));
+        setSyncStatus('불러옴 ✓', 'ok');
+        toast(`Gist에서 불러옴 (메모 ${state.notes.length}개)`, 'success', { duration: 2500, key: 'sync' });
+        render();
+        return true;
+      }
+    } catch (e) {
+      setSyncStatus('불러오기 실패', 'err');
+      toast('불러오기 실패', 'error', { duration: 4000, key: 'sync' });
+    }
+    return false;
+  }
+
+  // On init: if remote is newer than our last sync, auto-pull
+  async function autoSyncOnLoad() {
+    if (!token || !state.gistId) return;
+    setSyncStatus('확인중...');
+    try {
+      const res = await fetch(`https://api.github.com/gists/${state.gistId}`, {
+        headers: {
+          'Authorization': 'token ' + token,
+          'Accept': 'application/vnd.github+json',
+        }
+      });
+      if (!res.ok) { setSyncStatus('연결 오류', 'err'); return; }
+      const json = await res.json();
+      const remoteUpdated = new Date(json.updated_at).getTime();
+      const localSynced = state.lastSyncedAt || 0;
+
+      // Remote is meaningfully newer → auto-pull
+      if (remoteUpdated > localSynced + 2000) {
+        const content = json.files?.['sticky-memo.json']?.content;
+        if (content) {
+          const remote = JSON.parse(content);
+          if (remote && Array.isArray(remote.tabs) && Array.isArray(remote.notes)) {
+            state = remote;
+            if (!Array.isArray(state.tapes)) state.tapes = [];
+            state.lastSyncedAt = remoteUpdated;
+            if (!state.activeTab || (state.activeTab !== 'all' && !state.tabs.find(t => t.id === state.activeTab))) {
+              state.activeTab = state.tabs[0]?.id || 'all';
+            }
+            localStorage.setItem(LS_DATA, JSON.stringify(state));
+            render();
+            setSyncStatus('최신으로 동기화됨 ✓', 'ok');
+            return;
+          }
+        }
+      }
+      setSyncStatus('동기화됨 ✓', 'ok');
+    } catch (e) {
+      setSyncStatus('확인 실패', 'err');
+    }
+  }
+
+  // ===== Tabs =====
+  function renderTabs() {
+    const bar = $('#tabbar');
+    bar.innerHTML = '';
+
+    // All
+    const all = document.createElement('button');
+    all.className = 'tab' + (state.activeTab === 'all' ? ' active' : '');
+    all.dataset.tabId = 'all';
+    all.innerHTML = `<span class="tab-name">전체</span><span class="tab-count">${state.notes.length}</span>`;
+    all.onclick = () => { state.activeTab = 'all'; saveLocal(); render(); };
+    bar.appendChild(all);
+
+    // Custom tabs
+    state.tabs.forEach(tab => {
+      const count = state.notes.filter(n => n.tabId === tab.id).length;
+      const btn = document.createElement('button');
+      btn.className = 'tab' + (state.activeTab === tab.id ? ' active' : '');
+      btn.dataset.tabId = tab.id;
+      btn.style.setProperty('--swatch', tab.color);
+      btn.innerHTML = `
+        <span class="tab-swatch"></span>
+        <span class="tab-name">${esc(tab.name)}</span>
+        <span class="tab-count">${count}</span>
+      `;
+
+      // Long-press state (shared between touch handlers and click)
+      let longPressTimer = null;
+      let longPressed = false;
+      let touchStartX = 0, touchStartY = 0;
+
+      btn.onclick = () => {
+        if (longPressed) { longPressed = false; return; }
+        state.activeTab = tab.id; saveLocal(); render();
+      };
+
+      // Desktop: right-click
+      btn.oncontextmenu = (e) => {
+        e.preventDefault();
+        showTabMenu(e.clientX, e.clientY, tab.id);
+      };
+
+      // Mobile: long-press (500ms)
+      btn.addEventListener('touchstart', (e) => {
+        longPressed = false;
+        const t = e.touches[0];
+        touchStartX = t.clientX;
+        touchStartY = t.clientY;
+        longPressTimer = setTimeout(() => {
+          longPressed = true;
+          if (navigator.vibrate) { try { navigator.vibrate(30); } catch {} }
+          showTabMenu(touchStartX, touchStartY, tab.id);
+        }, 500);
+      }, { passive: true });
+
+      btn.addEventListener('touchmove', (e) => {
+        // Cancel if finger moves too much
+        const t = e.touches[0];
+        if (Math.hypot(t.clientX - touchStartX, t.clientY - touchStartY) > 10) {
+          clearTimeout(longPressTimer);
+        }
+      }, { passive: true });
+
+      btn.addEventListener('touchend', () => clearTimeout(longPressTimer));
+      btn.addEventListener('touchcancel', () => clearTimeout(longPressTimer));
+
+      bar.appendChild(btn);
+    });
+
+    // Add
+    const add = document.createElement('button');
+    add.className = 'tab-add';
+    add.textContent = '＋ 탭 추가';
+    add.onclick = addTab;
+    bar.appendChild(add);
+  }
+
+  function addTab() {
+    const name = prompt('새 탭 이름');
+    if (!name || !name.trim()) return;
+    const usedColors = state.tabs.map(t => t.color);
+    const color = COLORS.find(c => !usedColors.includes(c)) || COLORS[state.tabs.length % COLORS.length];
+    const tab = { id: uid('t'), name: name.trim(), color };
+    state.tabs.push(tab);
+    state.activeTab = tab.id;
+    announceSave(`"${tab.name}" 탭 추가됨`);
+    render();
+  }
+
+  // Tab context menu
+  let menuTabId = null;
+  function showTabMenu(x, y, tabId) {
+    menuTabId = tabId;
+    const m = $('#tabMenu');
+    m.style.left = Math.min(x, window.innerWidth - 160) + 'px';
+    m.style.top = Math.min(y, window.innerHeight - 130) + 'px';
+    m.style.display = 'block';
+  }
+  $('#tabMenu').addEventListener('click', (e) => {
+    const action = e.target.dataset.action;
+    if (!action) return;
+    const tab = state.tabs.find(t => t.id === menuTabId);
+    if (!tab) return;
+    if (action === 'rename') {
+      const name = prompt('탭 이름', tab.name);
+      if (name && name.trim()) { tab.name = name.trim(); announceSave('탭 이름 변경됨'); render(); }
+    } else if (action === 'color') {
+      const rect = e.target.getBoundingClientRect();
+      showColorPicker(rect.right + 4, rect.top, tab.color, (c) => {
+        if (c) { tab.color = c; announceSave('탭 색상 변경됨'); render(); }
+      });
+    } else if (action === 'delete') {
+      const n = state.notes.filter(nn => nn.tabId === tab.id).length;
+      const msg = n > 0 ? `"${tab.name}" 탭을 삭제하면 메모 ${n}개도 함께 삭제됩니다. 계속할까요?` : `"${tab.name}" 탭을 삭제할까요?`;
+      if (confirm(msg)) {
+        const tabName = tab.name;
+        state.notes = state.notes.filter(nn => nn.tabId !== tab.id);
+        state.tabs = state.tabs.filter(t => t.id !== tab.id);
+        if (state.activeTab === tab.id) state.activeTab = state.tabs[0]?.id || 'all';
+        announceSave(`"${tabName}" 탭 삭제됨`);
+        render();
+      }
+    }
+    $('#tabMenu').style.display = 'none';
+  });
+
+  function showColorPicker(x, y, currentColor, onPick, { includeReset = false, resetLabel = '기본' } = {}) {
+    const p = $('#colorPicker');
+    let html = COLORS.map(c => `<button class="swatch${c === currentColor ? ' selected' : ''}" style="background: ${c}" data-color="${c}"></button>`).join('');
+    if (includeReset) {
+      html += `<button class="swatch swatch-reset" data-color="" title="${esc(resetLabel)}">↺</button>`;
+    }
+    p.innerHTML = html;
+    p.style.left = Math.min(x, window.innerWidth - 180) + 'px';
+    p.style.top = Math.min(y, window.innerHeight - 90) + 'px';
+    p.classList.add('open');
+    // Swallow the current click event that opened us (prevents the outside-click
+    // handler from closing this picker on the same tick)
+    p._justOpened = true;
+    setTimeout(() => { p._justOpened = false; }, 0);
+    p.onclick = (e) => {
+      e.stopPropagation();
+      const btn = e.target.closest('[data-color]');
+      if (!btn) return;
+      const c = btn.dataset.color || null;
+      onPick(c);
+      p.classList.remove('open');
+    };
+  }
+
+  document.addEventListener('click', (e) => {
+    const menu = $('#tabMenu');
+    const picker = $('#colorPicker');
+    if (!menu.contains(e.target)) menu.style.display = 'none';
+    if (!picker._justOpened && !picker.contains(e.target)) picker.classList.remove('open');
+  });
+
+  // ===== Canvas (scatter / list) =====
+  // Track which sections are expanded in list view (session-only, defaults to collapsed)
+  const expandedSections = new Set();
+
+  function renderCanvas() {
+    const canvas = $('#canvas');
+    canvas.innerHTML = '';
+
+    if (state.activeTab === 'all') {
+      renderListView(canvas);
+    } else {
+      renderScatterView(canvas);
+    }
+  }
+
+  function renderListView(canvas) {
+    if (state.notes.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'list-empty';
+      empty.innerHTML = '아직 메모가 없어요.<br>우측 하단 <b>＋</b> 버튼으로 추가해보세요.';
+      canvas.appendChild(empty);
+      return;
+    }
+
+    const wrap = document.createElement('div');
+    wrap.className = 'list-view';
+
+    state.tabs.forEach(tab => {
+      const notes = state.notes.filter(n => n.tabId === tab.id);
+      if (notes.length === 0) return;
+
+      const section = document.createElement('section');
+      section.className = 'list-section';
+      const isExpanded = expandedSections.has(tab.id);
+      if (isExpanded) section.classList.add('expanded');
+
+      const header = document.createElement('div');
+      header.className = 'list-header';
+      header.innerHTML = `
+        <span class="list-chevron">▸</span>
+        <span class="list-swatch" style="background: ${tab.color}"></span>
+        <span class="list-title">${esc(tab.name)}</span>
+        <span class="list-count">${notes.length}</span>
+        <button class="list-go" title="${esc(tab.name)} 탭 열기">열기 →</button>
+      `;
+      // Click on header (excluding 열기 button) = toggle expand
+      header.onclick = (e) => {
+        if (e.target.closest('.list-go')) return;
+        if (expandedSections.has(tab.id)) expandedSections.delete(tab.id);
+        else expandedSections.add(tab.id);
+        render();
+      };
+      header.querySelector('.list-go').onclick = (e) => {
+        e.stopPropagation();
+        state.activeTab = tab.id;
+        saveLocal();
+        render();
+      };
+      section.appendChild(header);
+
+      const ul = document.createElement('ul');
+      ul.className = 'list-items';
+      if (!isExpanded) ul.style.display = 'none';
+      notes.forEach(note => {
+        const noteColor = note.color || tab.color;
+        const li = document.createElement('li');
+        li.className = 'list-item';
+        li.innerHTML = `<span class="bullet" style="background: ${noteColor}; opacity: 1; width: 8px; height: 8px; border: 1px solid rgba(0,0,0,0.15);"></span><span>${esc(note.title || '(제목 없음)')}</span>`;
+        li.onclick = () => {
+          state.activeTab = tab.id;
+          saveLocal();
+          render();
+          // Flash the note
+          setTimeout(() => {
+            const el = document.querySelector(`[data-note-id="${note.id}"]`);
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              el.style.zIndex = ++maxZ;
+              el.animate([
+                { filter: 'brightness(1)' },
+                { filter: 'brightness(1.15)' },
+                { filter: 'brightness(1)' },
+              ], { duration: 700 });
+            }
+          }, 60);
+        };
+        ul.appendChild(li);
+      });
+      section.appendChild(ul);
+      wrap.appendChild(section);
+    });
+
+    canvas.appendChild(wrap);
+  }
+
+  function renderScatterView(canvas) {
+    const tab = state.tabs.find(t => t.id === state.activeTab);
+    if (!tab) {
+      const empty = document.createElement('div');
+      empty.className = 'empty-state';
+      empty.innerHTML = '탭이 없습니다.<br>위에서 <b>＋ 탭 추가</b>로 시작하세요.';
+      canvas.appendChild(empty);
+      return;
+    }
+
+    const notes = state.notes.filter(n => n.tabId === tab.id);
+    const tapes = state.tapes.filter(t => t.tabId === tab.id);
+
+    if (notes.length === 0 && tapes.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'empty-state';
+      empty.innerHTML = '이 탭에 메모가 없어요.<br>우측 하단 <b>＋</b> 버튼으로 추가하세요.';
+      canvas.appendChild(empty);
+      return;
+    }
+
+    // Auto-nudge legacy notes whose tape would be hidden behind the topbar
+    const minY = getMinY();
+    let nudged = false;
+    notes.forEach(n => {
+      if (typeof n.y !== 'number' || n.y < minY) {
+        n.y = minY + Math.random() * 20;
+        nudged = true;
+      }
+    });
+    tapes.forEach(t => {
+      if (typeof t.y !== 'number' || t.y < minY) {
+        t.y = minY + Math.random() * 20;
+        nudged = true;
+      }
+    });
+    if (nudged) saveLocal();
+
+    // Render tapes first (lower z-index baseline)
+    tapes.forEach((tape) => {
+      canvas.appendChild(makeTapeEl(tape));
+    });
+
+    notes.forEach((note, i) => {
+      canvas.appendChild(makeNoteEl(note, tab.color, i + 10));
+    });
+  }
+
+  let maxZ = 10;
+  function makeNoteEl(note, tabColor, z) {
+    const color = note.color || tabColor;
+    const el = document.createElement('div');
+    el.className = 'postit-note' + (note.locked ? ' locked' : '');
+    el.dataset.noteId = note.id;
+    el.style.left = (note.x || 40) + 'px';
+    el.style.top = (note.y || 30) + 'px';
+    el.style.setProperty('--rot', (note.rotation || 0) + 'deg');
+    el.style.setProperty('--paper', color);
+    el.style.zIndex = z;
+    maxZ = Math.max(maxZ, z);
+
+    el.innerHTML = `
+      <button class="note-lock" data-action="lock" title="${note.locked ? '고정 해제' : '위치 고정'}">${note.locked ? '🔒' : '🔓'}</button>
+      <div class="note-tape" title="${note.locked ? '고정됨' : '여기를 잡고 드래그'}"></div>
+      <div class="note-head">
+        <div class="note-title" spellcheck="false">${esc(note.title)}</div>
+        <div class="note-actions">
+          <button class="note-btn" data-action="color" title="색상 변경">◐</button>
+          <button class="note-btn" data-action="delete" title="삭제">×</button>
+        </div>
+      </div>
+      <div class="note-body" data-mode="view"></div>
+    `;
+
+    // Lock toggle
+    el.querySelector('[data-action="lock"]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      note.locked = !note.locked;
+      announceSave(note.locked ? '메모 고정됨' : '고정 해제됨');
+      render();
+    });
+
+    const titleEl = el.querySelector('.note-title');
+    const bodyEl = el.querySelector('.note-body');
+
+    renderBody(bodyEl, note.body);
+
+    // Title: click to edit
+    titleEl.addEventListener('click', (e) => {
+      if (titleEl.contentEditable === 'true') return;
+      e.stopPropagation();
+      titleEl.contentEditable = 'true';
+      titleEl.focus();
+      const r = document.createRange();
+      r.selectNodeContents(titleEl);
+      const sel = getSelection();
+      sel.removeAllRanges();
+      sel.addRange(r);
+    });
+    titleEl.addEventListener('blur', () => {
+      titleEl.contentEditable = 'false';
+      const newTitle = titleEl.textContent.trim();
+      if (newTitle !== note.title) {
+        note.title = newTitle || '(제목 없음)';
+        titleEl.textContent = note.title;
+        note.updatedAt = Date.now();
+        announceSave();
+        renderTabs(); // update counts if needed
+      }
+    });
+    titleEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); titleEl.blur(); }
+      if (e.key === 'Escape') { titleEl.textContent = note.title; titleEl.blur(); }
+    });
+
+    // Body: click to edit, click checkbox to toggle
+    bodyEl.addEventListener('click', (e) => {
+      if (bodyEl.dataset.mode !== 'view') return;
+      const cb = e.target.closest('.check-box');
+      if (cb) {
+        e.stopPropagation();
+        const line = cb.closest('.body-line');
+        const idx = Array.from(bodyEl.children).indexOf(line);
+        toggleLineCheck(note, idx);
+        renderBody(bodyEl, note.body);
+        renderTabs();
+        return;
+      }
+      enterBodyEdit(bodyEl, note);
+    });
+
+    // Color button
+    el.querySelector('[data-action="color"]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const rect = e.currentTarget.getBoundingClientRect();
+      showColorPicker(rect.left - 100, rect.bottom + 6, note.color || tabColor, (c) => {
+        // c === null means "reset to tab color"
+        if (c) { note.color = c; }
+        else { delete note.color; }
+        note.updatedAt = Date.now();
+        announceSave(c ? '메모 색상 변경됨' : '탭 색으로 되돌림');
+        render();
+      }, { includeReset: true, resetLabel: '탭 색으로' });
+    });
+
+    // Delete button
+    el.querySelector('[data-action="delete"]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (confirm('이 메모를 삭제할까요?')) {
+        state.notes = state.notes.filter(n => n.id !== note.id);
+        announceSave('메모 삭제됨');
+        render();
+      }
+    });
+
+    return el;
+  }
+
+  function renderBody(container, body) {
+    container.dataset.mode = 'view';
+    const lines = (body || '').split('\n');
+    if (lines.length === 1 && lines[0] === '') {
+      container.innerHTML = `<div class="body-line line-text" style="opacity:0.5;font-style:italic;">클릭하여 작성...</div>`;
+      return;
+    }
+    container.innerHTML = lines.map(line => {
+      const m = line.match(/^(\s*)\[([ xX])\]\s?(.*)$/);
+      if (m) {
+        const done = m[2].toLowerCase() === 'x';
+        return `<div class="body-line line-check ${done ? 'done' : ''}">
+          <span class="check-box"></span><span class="line-text">${esc(m[3])}</span>
+        </div>`;
+      } else if (line.trim() === '') {
+        return `<div class="body-line line-empty"></div>`;
+      } else {
+        return `<div class="body-line line-text"><span class="line-text">${esc(line)}</span></div>`;
+      }
+    }).join('');
+  }
+
+  function toggleLineCheck(note, idx) {
+    const lines = (note.body || '').split('\n');
+    const line = lines[idx];
+    if (!line) return;
+    const m = line.match(/^(\s*)\[([ xX])\](\s?)(.*)$/);
+    if (!m) return;
+    const next = m[2].toLowerCase() === 'x' ? ' ' : 'x';
+    lines[idx] = `${m[1]}[${next}]${m[3] || ' '}${m[4]}`;
+    note.body = lines.join('\n');
+    note.updatedAt = Date.now();
+    announceSave();
+  }
+
+  function enterBodyEdit(container, note) {
+    container.dataset.mode = 'edit';
+    container.innerHTML = `
+      <textarea class="body-edit" spellcheck="false">${esc(note.body || '')}</textarea>
+      <div class="edit-hint">체크박스: <code>[ ]</code> 또는 <code>[x]</code> · Esc로 저장</div>
+    `;
+    const ta = container.querySelector('textarea');
+    autoResize(ta);
+    ta.focus();
+    // place cursor at end
+    ta.selectionStart = ta.selectionEnd = ta.value.length;
+
+    ta.addEventListener('input', () => autoResize(ta));
+    ta.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { e.preventDefault(); ta.blur(); }
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); ta.blur(); }
+    });
+    ta.addEventListener('blur', () => {
+      if (ta.value !== note.body) {
+        note.body = ta.value;
+        note.updatedAt = Date.now();
+        announceSave();
+      }
+      renderBody(container, note.body);
+    });
+  }
+
+  function autoResize(ta) {
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(Math.max(ta.scrollHeight, 60), 240) + 'px';
+  }
+
+  // ===== Add note =====
+  $('#addNoteBtn').addEventListener('click', () => {
+    if (state.tabs.length === 0) {
+      alert('먼저 탭을 추가해주세요.');
+      return;
+    }
+    if (state.activeTab === 'all') {
+      state.activeTab = state.tabs[0].id;
+    }
+    const canvas = $('#canvas');
+    const cRect = canvas.getBoundingClientRect();
+    const minY = getMinY();
+    const note = {
+      id: uid('n'),
+      tabId: state.activeTab,
+      title: '새 메모',
+      body: '[ ] 할 일\n',
+      x: 40 + Math.random() * Math.max(200, cRect.width - 320),
+      y: minY + Math.random() * 100,
+      rotation: (Math.random() - 0.5) * 5,
+      updatedAt: Date.now()
+    };
+    state.notes.push(note);
+    announceSave('메모 추가됨');
+    render();
+    // Autofocus title
+    setTimeout(() => {
+      const el = document.querySelector(`[data-note-id="${note.id}"] .note-title`);
+      if (el) {
+        el.contentEditable = 'true';
+        el.focus();
+        const r = document.createRange();
+        r.selectNodeContents(el);
+        const sel = getSelection();
+        sel.removeAllRanges();
+        sel.addRange(r);
+      }
+    }, 80);
+  });
+
+  // ===== Add tape (label) =====
+  $('#addTapeBtn').addEventListener('click', () => {
+    if (state.tabs.length === 0) {
+      alert('먼저 탭을 추가해주세요.');
+      return;
+    }
+    if (state.activeTab === 'all') {
+      state.activeTab = state.tabs[0].id;
+    }
+    const canvas = $('#canvas');
+    const cRect = canvas.getBoundingClientRect();
+    const minY = getMinY();
+    const tape = {
+      id: uid('tp'),
+      tabId: state.activeTab,
+      text: '라벨',
+      color: TAPE_COLORS[0],
+      x: 60 + Math.random() * Math.max(200, cRect.width - 300),
+      y: minY + Math.random() * 140,
+      rotation: (Math.random() - 0.5) * 6,
+      locked: false,
+      updatedAt: Date.now()
+    };
+    state.tapes.push(tape);
+    announceSave('테이프 추가됨');
+    render();
+    // Autofocus text
+    setTimeout(() => {
+      const el = document.querySelector(`[data-tape-id="${tape.id}"] .label-tape-text`);
+      if (el) {
+        el.contentEditable = 'true';
+        el.focus();
+        const r = document.createRange();
+        r.selectNodeContents(el);
+        const sel = getSelection();
+        sel.removeAllRanges();
+        sel.addRange(r);
+      }
+    }, 80);
+  });
+
+  // ===== makeTapeEl =====
+  function makeTapeEl(tape) {
+    const el = document.createElement('div');
+    el.className = 'label-tape' + (tape.locked ? ' locked' : '');
+    el.dataset.tapeId = tape.id;
+    el.style.left = (tape.x || 60) + 'px';
+    el.style.top = (tape.y || 60) + 'px';
+    el.style.setProperty('--rot', (tape.rotation || 0) + 'deg');
+    el.style.setProperty('--tape-color', tape.color || TAPE_COLORS[0]);
+
+    el.innerHTML = `
+      <span class="label-tape-text" spellcheck="false">${esc(tape.text || '')}</span>
+      <div class="label-tape-actions">
+        <button class="label-tape-btn" data-action="lock" title="${tape.locked ? '고정 해제' : '위치 고정'}">${tape.locked ? '🔒' : '🔓'}</button>
+        <button class="label-tape-btn" data-action="color" title="색상 변경">◐</button>
+        <button class="label-tape-btn" data-action="delete" title="삭제">×</button>
+      </div>
+    `;
+
+    const textEl = el.querySelector('.label-tape-text');
+
+    // Click text to edit
+    textEl.addEventListener('click', (e) => {
+      if (textEl.contentEditable === 'true') return;
+      e.stopPropagation();
+      textEl.contentEditable = 'true';
+      textEl.focus();
+      const r = document.createRange();
+      r.selectNodeContents(textEl);
+      const sel = getSelection();
+      sel.removeAllRanges();
+      sel.addRange(r);
+    });
+    textEl.addEventListener('blur', () => {
+      textEl.contentEditable = 'false';
+      const newText = textEl.textContent.trim();
+      if (newText !== tape.text) {
+        tape.text = newText || '라벨';
+        textEl.textContent = tape.text;
+        tape.updatedAt = Date.now();
+        announceSave();
+      }
+    });
+    textEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); textEl.blur(); }
+      if (e.key === 'Escape') { textEl.textContent = tape.text; textEl.blur(); }
+    });
+
+    // Lock
+    el.querySelector('[data-action="lock"]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      tape.locked = !tape.locked;
+      announceSave(tape.locked ? '테이프 고정됨' : '고정 해제됨');
+      render();
+    });
+
+    // Color
+    el.querySelector('[data-action="color"]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const rect = e.currentTarget.getBoundingClientRect();
+      showTapeColorPicker(rect.left - 80, rect.bottom + 6, tape.color, (c) => {
+        if (c) {
+          tape.color = c;
+          tape.updatedAt = Date.now();
+          announceSave('테이프 색상 변경됨');
+          render();
+        }
+      });
+    });
+
+    // Delete
+    el.querySelector('[data-action="delete"]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (confirm('이 테이프를 삭제할까요?')) {
+        state.tapes = state.tapes.filter(t => t.id !== tape.id);
+        announceSave('테이프 삭제됨');
+        render();
+      }
+    });
+
+    return el;
+  }
+
+  function showTapeColorPicker(x, y, currentColor, onPick) {
+    const p = $('#colorPicker');
+    p.innerHTML = TAPE_COLORS.map(c =>
+      `<button class="swatch${c === currentColor ? ' selected' : ''}" style="background: ${c}" data-color="${c}"></button>`
+    ).join('');
+    p.style.left = Math.min(x, window.innerWidth - 180) + 'px';
+    p.style.top = Math.min(y, window.innerHeight - 90) + 'px';
+    p.classList.add('open');
+    p._justOpened = true;
+    setTimeout(() => { p._justOpened = false; }, 0);
+    p.onclick = (e) => {
+      e.stopPropagation();
+      const btn = e.target.closest('[data-color]');
+      if (!btn) return;
+      onPick(btn.dataset.color);
+      p.classList.remove('open');
+    };
+  }
+
+  // ===== Drag =====
+  let drag = null;
+
+  function pickDragTarget(e, target) {
+    // Action buttons should never trigger drag
+    if (target.closest('.note-btn, .note-lock, .label-tape-btn')) return null;
+    if (target.closest('[contenteditable="true"]')) return null;
+
+    // Post-it: drag by tape only
+    const postitTape = target.closest('.note-tape');
+    if (postitTape) {
+      const note = postitTape.closest('.postit-note');
+      if (!note) return null;
+      // Respect lock
+      if (note.classList.contains('locked')) return null;
+      return { el: note, kind: 'note' };
+    }
+
+    // Label tape: drag by anywhere (except actions/text when editing)
+    const labelTape = target.closest('.label-tape');
+    if (labelTape) {
+      if (labelTape.classList.contains('locked')) return null;
+      return { el: labelTape, kind: 'tape' };
+    }
+
+    return null;
+  }
+
+  function startDrag(clientX, clientY, pick) {
+    const rect = pick.el.getBoundingClientRect();
+    const canvasRect = $('#canvas').getBoundingClientRect();
+    drag = {
+      el: pick.el,
+      kind: pick.kind,
+      id: pick.kind === 'note' ? pick.el.dataset.noteId : pick.el.dataset.tapeId,
+      startX: clientX,
+      startY: clientY,
+      offsetX: clientX - rect.left,
+      offsetY: clientY - rect.top,
+      canvasLeft: canvasRect.left,
+      canvasTop: canvasRect.top,
+      moved: false,
+    };
+    pick.el.style.zIndex = ++maxZ;
+  }
+
+  function moveDrag(clientX, clientY) {
+    if (!drag) return;
+    const dx = clientX - drag.startX;
+    const dy = clientY - drag.startY;
+    if (!drag.moved) {
+      if (Math.hypot(dx, dy) < 4) return;
+      drag.moved = true;
+      drag.el.classList.add('dragging');
+      if (document.activeElement) document.activeElement.blur();
+      document.body.style.userSelect = 'none';
+    }
+    const x = Math.max(0, clientX - drag.canvasLeft - drag.offsetX);
+    const y = Math.max(getMinY(), clientY - drag.canvasTop - drag.offsetY);
+    drag.el.style.left = x + 'px';
+    drag.el.style.top = y + 'px';
+  }
+
+  function endDrag() {
+    if (!drag) return;
+    document.body.style.userSelect = '';
+    if (drag.moved) {
+      drag.el.classList.remove('dragging');
+      const item = drag.kind === 'note'
+        ? state.notes.find(n => n.id === drag.id)
+        : state.tapes.find(t => t.id === drag.id);
+      if (item) {
+        item.x = parseFloat(drag.el.style.left);
+        item.y = parseFloat(drag.el.style.top);
+        item.updatedAt = Date.now();
+        announceSave('위치 저장됨');
+      }
+    }
+    drag = null;
+  }
+
+  document.addEventListener('mousedown', (e) => {
+    // Raise clicked item to top
+    const item = e.target.closest('.postit-note, .label-tape');
+    if (item) item.style.zIndex = ++maxZ;
+    const target = pickDragTarget(e, e.target);
+    if (target) startDrag(e.clientX, e.clientY, target);
+  });
+  document.addEventListener('mousemove', (e) => moveDrag(e.clientX, e.clientY));
+  document.addEventListener('mouseup', endDrag);
+
+  document.addEventListener('touchstart', (e) => {
+    const item = e.target.closest('.postit-note, .label-tape');
+    if (item) item.style.zIndex = ++maxZ;
+    const target = pickDragTarget(e, e.target);
+    if (target) {
+      const t = e.touches[0];
+      startDrag(t.clientX, t.clientY, target);
+    }
+  }, { passive: true });
+  document.addEventListener('touchmove', (e) => {
+    if (!drag) return;
+    const t = e.touches[0];
+    moveDrag(t.clientX, t.clientY);
+    if (drag.moved) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('touchend', endDrag);
+
+  // ===== Settings modal =====
+  const modal = $('#settingsModal');
+
+  function renderBoardPicker() {
+    const picker = $('#boardPicker');
+    const current = state.boardColor || '#f4ebd8';
+    picker.innerHTML = BOARDS.map(b => `
+      <button class="board-swatch${b.color === current ? ' selected' : ''}"
+              style="background: ${b.color}"
+              data-color="${b.color}"
+              title="${esc(b.name)}">
+        <span class="board-swatch-label">${esc(b.name)}</span>
+      </button>
+    `).join('');
+    picker.onclick = (e) => {
+      const btn = e.target.closest('.board-swatch');
+      if (!btn) return;
+      const c = btn.dataset.color;
+      if (c && c !== state.boardColor) {
+        state.boardColor = c;
+        applyBoard();
+        announceSave('메모판 색상 변경됨');
+        renderBoardPicker();
+      }
+    };
+  }
+
+  $('#settingsBtn').onclick = () => {
+    $('#tokenInput').value = token;
+    $('#gistIdInput').value = state.gistId || '';
+    renderBoardPicker();
+    setSettingsStatus('', '');
+    modal.classList.add('open');
+  };
+  $('#closeSettingsBtn').onclick = () => modal.classList.remove('open');
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.classList.remove('open');
+  });
+
+  function setSettingsStatus(msg, cls) {
+    const el = $('#settingsStatus');
+    el.textContent = msg;
+    el.className = 'setting-status' + (cls ? ' ' + cls : '');
+  }
+
+  $('#saveSettingsBtn').onclick = () => {
+    const newToken = $('#tokenInput').value.trim();
+    const newGistId = $('#gistIdInput').value.trim() || null;
+    token = newToken;
+    state.gistId = newGistId;
+    if (token) localStorage.setItem(LS_TOKEN, token);
+    else localStorage.removeItem(LS_TOKEN);
+    saveLocal();
+    setSettingsStatus('저장되었습니다.', 'ok');
+    toast('설정 저장됨', 'success');
+    if (token && state.gistId) pushToGist();
+    else setSyncStatus('로컬만', '');
+  };
+
+  $('#createGistBtn').onclick = async () => {
+    const newToken = $('#tokenInput').value.trim();
+    if (!newToken) { setSettingsStatus('토큰을 먼저 입력하세요.', 'err'); return; }
+    token = newToken;
+    localStorage.setItem(LS_TOKEN, token);
+    setSettingsStatus('Gist 생성 중...', '');
+    toast('Gist 생성 중...', 'info', { icon: '☁', duration: 3000, key: 'sync' });
+    try {
+      const id = await createGist();
+      state.gistId = id;
+      $('#gistIdInput').value = id;
+      saveLocal();
+      setSettingsStatus('Gist 생성 완료: ' + id, 'ok');
+      toast('Gist 생성 완료', 'success', { key: 'sync' });
+      setSyncStatus('동기화됨 ✓', 'ok');
+    } catch (e) {
+      setSettingsStatus('실패: 토큰을 확인해주세요.', 'err');
+      toast('Gist 생성 실패 — 토큰을 확인하세요', 'error', { key: 'sync' });
+    }
+  };
+
+  $('#pullGistBtn').onclick = async () => {
+    const newToken = $('#tokenInput').value.trim();
+    const newGistId = $('#gistIdInput').value.trim();
+    if (!newToken || !newGistId) { setSettingsStatus('토큰과 Gist ID를 입력하세요.', 'err'); return; }
+    if (!confirm('현재 로컬 데이터를 덮어쓰고 Gist에서 불러옵니다. 계속할까요?')) return;
+    token = newToken;
+    state.gistId = newGistId;
+    localStorage.setItem(LS_TOKEN, token);
+    setSettingsStatus('불러오는 중...', '');
+    const ok = await pullFromGist();
+    if (ok) setSettingsStatus('불러오기 완료.', 'ok');
+    else setSettingsStatus('불러오기 실패. Gist ID와 토큰을 확인하세요.', 'err');
+  };
+
+  // ===== Save button + Ctrl/Cmd+S =====
+  const saveBtn = $('#saveBtn');
+  function doManualSave() {
+    saveBtn.classList.remove('pulse');
+    // force reflow to restart animation
+    void saveBtn.offsetWidth;
+    saveBtn.classList.add('pulse');
+    // Blur any active editor so its latest changes get committed to state first
+    if (document.activeElement && document.activeElement.blur) {
+      try { document.activeElement.blur(); } catch {}
+    }
+    forcePush();
+  }
+  saveBtn.addEventListener('click', doManualSave);
+
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+      e.preventDefault();
+      doManualSave();
+    }
+  });
+
+  // ESC to close modal
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('open')) {
+      modal.classList.remove('open');
+    }
+  });
+
+  // ===== Board color =====
+  function applyBoard() {
+    const c = state.boardColor || '#f4ebd8';
+    document.body.style.setProperty('--board', c);
+  }
+
+  // ===== Render =====
+  function render() {
+    applyBoard();
+    renderTabs();
+    renderCanvas();
+  }
+
+  // ===== Init =====
+  applyBoard();
+  render();
+  if (token && state.gistId) {
+    autoSyncOnLoad();
+  } else {
+    setSyncStatus('로컬만', '');
+  }
+
+})();
+</script>
+
+</body>
+</html>

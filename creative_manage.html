@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440, initial-scale=1.0">
+<title>소재 관리</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --glass-bg:rgba(255,255,255,0.74);
+  --glass-bg-strong:rgba(255,255,255,0.92);
+  --glass-border-s:rgba(0,0,0,0.07);
+  --tx:#0a0a0f;--t2:#4a4a5a;--t3:#9898a8;--t4:#c4c4d0;
+  --accent:#3a3af0;
+}
+html,body{height:100%;overflow:hidden}
+html{background:linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#eef0f8 100%) fixed}
+body{
+  font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;
+  font-size:13px;line-height:1.5;color:var(--tx);
+  display:flex;flex-direction:column;
+}
+
+/* ═══ L1 탭 (상단) ═══ */
+.l1-bar{
+  display:flex;height:46px;align-items:flex-end;
+  background:var(--glass-bg);
+  border-bottom:1px solid var(--glass-border-s);
+  padding:0 20px;flex-shrink:0;
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+.l1-tab{
+  padding:0 18px;height:100%;
+  display:flex;align-items:center;gap:6px;
+  font-size:13px;font-weight:600;color:var(--t3);
+  cursor:pointer;user-select:none;
+  border-bottom:2.5px solid transparent;
+  transition:color .15s,border-color .15s;
+}
+.l1-tab:hover{color:var(--t2)}
+.l1-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* ═══ L2 탭 (리포트용 소재일 때만 표시) ═══ */
+.l2-bar{
+  display:none;gap:6px;padding:9px 20px;
+  background:var(--glass-bg-strong);
+  border-bottom:1px solid var(--glass-border-s);
+  flex-shrink:0;
+}
+.l2-bar.show{display:flex}
+.l2-tab{
+  padding:5px 13px;
+  display:flex;align-items:center;gap:5px;
+  font-size:11.5px;font-weight:500;color:var(--t3);
+  cursor:pointer;user-select:none;
+  border-radius:6px;border:1px solid transparent;
+  transition:all .15s;
+}
+.l2-tab:hover{background:rgba(0,0,0,0.035);color:var(--t2)}
+.l2-tab.active{
+  background:#fff;color:var(--accent);
+  border-color:rgba(58,58,240,0.2);
+  box-shadow:0 1px 3px rgba(0,0,0,0.04);
+}
+
+/* ═══ iframe 영역 ═══ */
+.frame-wrap{
+  flex:1;position:relative;overflow:hidden;
+  background:#fff;
+}
+.frame{
+  width:100%;height:100%;
+  border:none;
+  position:absolute;inset:0;
+  opacity:0;pointer-events:none;
+  transition:opacity .12s;
+}
+.frame.active{
+  opacity:1;pointer-events:auto;
+}
+
+/* 초기 로딩 표시 */
+.loading{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--t3);font-size:12px;gap:8px;
+  pointer-events:none;
+}
+.loading-dot{
+  width:6px;height:6px;border-radius:50%;background:var(--accent);
+  animation:pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%,100%{opacity:.3;transform:scale(1)}
+  50%{opacity:1;transform:scale(1.3)}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ L1 탭 ═══ -->
+<div class="l1-bar">
+  <div class="l1-tab active" data-l1="report" onclick="selL1('report')">
+    📊 리포트용 소재
+  </div>
+  <div class="l1-tab" data-l1="monthly" onclick="selL1('monthly')">
+    📅 월간 광고소재
+  </div>
+</div>
+
+<!-- ═══ L2 탭 (리포트용 소재 활성 시만 표시) ═══ -->
+<div class="l2-bar show" id="l2-bar">
+  <div class="l2-tab active" data-l2="bk" onclick="selL2('bk')">
+    🔍 브검 소재
+  </div>
+  <div class="l2-tab" data-l2="gfa" onclick="selL2('gfa')">
+    🎯 GFA 소재
+  </div>
+</div>
+
+<!-- ═══ iframe 영역 ═══ -->
+<div class="frame-wrap">
+  <div class="loading" id="loading">
+    <span class="loading-dot"></span>
+    <span>불러오는 중...</span>
+  </div>
+  <iframe class="frame" id="fr-bk" data-src="bk_creative.html" title="브검 소재 이미지 관리"></iframe>
+  <iframe class="frame" id="fr-gfa" data-src="gfa_creative.html" title="GFA 소재 이미지 관리"></iframe>
+  <iframe class="frame" id="fr-monthly" data-src="monthly_design.html" title="월간 광고소재"></iframe>
+</div>
+
+<script>
+/* ══ 상태 ══ */
+let curL1='report', curL2='bk';
+
+/* ══ 초기 iframe — 첫 탭(브검)은 즉시 로드 ══ */
+(function initFirst(){
+  const f=document.getElementById('fr-bk');
+  f.src=f.dataset.src;
+  f.setAttribute('data-loaded','1');
+  f.onload=()=>{
+    const ld=document.getElementById('loading');
+    if(ld)ld.style.display='none';
+    f.classList.add('active');
+  };
+})();
+
+/* ══ L1 탭 클릭 ══ */
+function selL1(which){
+  if(curL1===which)return;
+  curL1=which;
+  document.querySelectorAll('.l1-tab').forEach(t=>{
+    t.classList.toggle('active',t.dataset.l1===which);
+  });
+  const l2bar=document.getElementById('l2-bar');
+  if(which==='report'){
+    l2bar.classList.add('show');
+    showFrame('fr-'+curL2);
+  }else{
+    l2bar.classList.remove('show');
+    showFrame('fr-monthly');
+  }
+}
+
+/* ══ L2 탭 클릭 ══ */
+function selL2(which){
+  if(curL2===which)return;
+  curL2=which;
+  document.querySelectorAll('.l2-tab').forEach(t=>{
+    t.classList.toggle('active',t.dataset.l2===which);
+  });
+  showFrame('fr-'+which);
+}
+
+/* ══ iframe 전환 (lazy load) ══ */
+function showFrame(id){
+  const f=document.getElementById(id);
+  if(!f)return;
+  // 최초 클릭 시에만 src 할당 (lazy)
+  if(!f.getAttribute('data-loaded')){
+    f.src=f.dataset.src;
+    f.setAttribute('data-loaded','1');
+  }
+  // 모든 frame 비활성화 후 대상만 활성화
+  document.querySelectorAll('.frame').forEach(x=>{
+    x.classList.toggle('active',x.id===id);
+  });
+}
+</script>
+
+</body>
+</html>

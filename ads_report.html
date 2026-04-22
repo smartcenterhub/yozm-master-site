@@ -173,7 +173,6 @@ tr.empty-group{opacity:.35}
 <!-- 메인 탭 -->
 <div class="tabs">
   <div class="tab active" onclick="sw('daily',this)">데일리 리포트</div>
-  <div class="tab" onclick="sw('monthly',this)">월간 리포트</div>
   <div class="tab" onclick="swToImgReg(this)" id="mainTabImgReg">이미지 등록</div>
 </div>
 
@@ -274,6 +273,7 @@ tr.empty-group{opacity:.35}
     <div class="sub-tab active" onclick="swSub('bk',this)" id="mainTabBk">[1] 브검</div>
     <div class="sub-tab" onclick="swSub('gfa',this)" id="mainTabGfa">[2] GFA</div>
     <div class="sub-tab" onclick="swSub('adv',this)" id="mainTabAdv">[3] ADVoost</div>
+    <div class="sub-tab" onclick="swSub('copier',this)" id="mainTabCopier" style="background:rgba(58,58,240,0.06);color:var(--accent);border-color:rgba(58,58,240,0.2)">📋 복사기</div>
     <div style="margin-left:auto;display:flex;gap:5px;align-items:center">
         <button id="globalModeAll" onclick="setGlobalMode('all')" style="padding:3px 11px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid rgba(192,57,43,.3);background:rgba(192,57,43,.08);color:#c0392b;font-weight:600;font-family:inherit;transition:all .12s">전체전환</button>
         <button id="globalModeBuy" onclick="setGlobalMode('buy')" style="padding:3px 11px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid var(--glass-border-s);background:var(--glass-bg);color:var(--t2);font-weight:400;font-family:inherit;transition:all .12s">구매전환</button>
@@ -449,6 +449,58 @@ tr.empty-group{opacity:.35}
         </div>
         <input type="file" id="advInput2" accept=".zip" style="display:none">
         <div id="advContent2" style="display:none;flex-direction:column;gap:14px"></div>
+      </div>
+    </div>
+
+
+  </div>
+
+  <!-- ④ 복사기 -->
+  <div class="sub-content" id="s-copier">
+    <div style="max-width:680px;margin:0 auto;padding:20px 0">
+      <div class="sec-label" style="margin-bottom:16px">📋 리포트용 복사기</div>
+
+      <!-- 브검 성과 -->
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-title" style="margin-bottom:12px">
+          <div class="card-dot" style="background:var(--accent)"></div>브검 성과 합계
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="copierClick('bkPerfMo')" style="font-size:12px;padding:6px 14px">📋 MO 복사</button>
+          <button class="btn btn-ghost btn-sm" onclick="copierClick('bkPerfPc')" style="font-size:12px;padding:6px 14px">📋 PC 복사</button>
+        </div>
+      </div>
+
+      <!-- 브검 키워드 -->
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-title" style="margin-bottom:12px">
+          <div class="card-dot" style="background:var(--accent)"></div>브검 키워드 리포트용
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="copierClick('kwMo')" style="font-size:12px;padding:6px 14px">📋 MO 리포트용</button>
+          <button class="btn btn-ghost btn-sm" onclick="copierClick('kwPc')" style="font-size:12px;padding:6px 14px">📋 PC 리포트용</button>
+        </div>
+      </div>
+
+      <!-- GFA -->
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-title" style="margin-bottom:12px">
+          <div class="card-dot" style="background:var(--green)"></div>GFA 날짜별 합계 리포트용
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="copierClick('gfaDate')" style="font-size:12px;padding:6px 14px">📋 GFA 합계 복사</button>
+        </div>
+      </div>
+
+      <!-- ADV -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px">
+          <div class="card-dot" style="background:var(--blue)"></div>ADVoost 합계 리포트용
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="copierClick('advDa')" style="font-size:12px;padding:6px 14px">📋 DA 리포트용</button>
+          <button class="btn btn-ghost btn-sm" onclick="copierClick('advSa')" style="font-size:12px;padding:6px 14px">📋 SA 리포트용</button>
+        </div>
       </div>
     </div>
   </div>
@@ -668,26 +720,13 @@ tr.empty-group{opacity:.35}
 </div>
 </div>
 
-<div class="tab-content" id="t-monthly">
-  <div class="pg-header">
-    <div>
-      <div class="pg-title">월간 리포트</div>
-      <div class="pg-desc">월별 광고 성과 리포트를 관리합니다</div>
-    </div>
-  </div>
-  <div class="notice notice-plan"><b>🗓 개발 예정</b> — 월간 리포트는 추후 별도 HTML 파일로 제작됩니다.</div>
-  <div class="ph-box">
-    <div class="ph-icon">📊</div>
-    <div class="ph-title">월간 리포트 관리 (예정)</div>
-    <div class="ph-desc">월별 광고 성과 리포트를 집계하고 관리합니다.</div>
-  </div>
-</div>
-
-
 <div class="tab-content" id="t-img_reg" style="display:none">
   <div style="display:flex;gap:0;border-bottom:1.5px solid var(--glass-border-s);background:var(--body-bg);position:sticky;top:var(--sticky-top,88px);z-index:60">
     <div class="inner-tab active" id="imgRegTabBk" onclick="swImgReg('bk',this)" style="padding:8px 20px;font-size:13px">🔍 브검 이미지</div>
     <div class="inner-tab" id="imgRegTabGfa" onclick="swImgReg('gfa',this)" style="padding:8px 20px;font-size:13px">🖼 GFA 이미지</div>
+    <div style="margin-left:auto;display:flex;align-items:center;padding-right:12px">
+      <button onclick="navigator.clipboard.writeText('https://ads.naver.com/manage/ad-accounts/2011692/da/report/performance?adUnit=CREATIVE&showColList=schedule%2Cimp_count%2Cclick_count%2Csales%2Cconv_count%2Cconv_sales_krw%2Cpurchase_conv_count%2Cpurchase_conv_sales_krw%2Croas&dateRange=2026-04-21%2C2026-04-21&dateUnit=DAY&placeUnit=TOTAL&audience=TOTAL&period=yesterday&page=1&filterOptions=%5B%5D').then(function(){showToast('📋 GFA 링크 복사됨');})" style="font-size:11.5px;padding:3px 10px;border-radius:6px;border:1px solid rgba(58,58,240,0.25);background:rgba(58,58,240,0.07);color:var(--accent);cursor:pointer;font-family:inherit;white-space:nowrap">🔗 GFA 바로가기 링크복사</button>
+    </div>
   </div>
   <div id="imgRegBkPane" style="padding:0">
     <iframe src="bk_creative.html" style="width:100%;height:calc(100vh - 140px);border:none;display:block"></iframe>
@@ -2296,6 +2335,45 @@ function buildPerfTable(rows, slotCost, isBuy, ths, thL) {
   tbody.insertBefore(sumTr, tbody.firstChild);
   tbl.appendChild(tbody); tbl.appendChild(tfoot);
   return tbl;
+}
+
+
+function copierClick(type) {
+  var btn = null;
+  if (type === 'bkPerfMo') {
+    // BK 성과 MO 합계행 복사 버튼 (첫 번째 panel-card)
+    var cards = document.querySelectorAll('#bkDateList .panel-grid .panel-card');
+    if (cards.length > 0) btn = cards[0].querySelector('tfoot .row-copy-btn');
+  } else if (type === 'bkPerfPc') {
+    // BK 성과 PC 합계행 복사 버튼 (두 번째 panel-card)
+    var cards = document.querySelectorAll('#bkDateList .panel-grid .panel-card');
+    if (cards.length > 1) btn = cards[1].querySelector('tfoot .row-copy-btn');
+  } else if (type === 'kwMo') {
+    btn = document.querySelector('[id^="kwRptBtn_"][id$="_MO"]');
+  } else if (type === 'kwPc') {
+    btn = document.querySelector('[id^="kwRptBtn_"][id$="_PC"]');
+  } else if (type === 'gfaDate') {
+    // GFA 날짜별 합계행 리포트용 버튼 (텍스트 "리포트용")
+    var foot = document.getElementById('gfaDateFoot');
+    if (foot) {
+      var btns = foot.querySelectorAll('.row-copy-btn');
+      btns.forEach(function(b) { if (b.textContent.trim() === '리포트용') btn = b; });
+    }
+  } else if (type === 'advDa') {
+    var panel = document.getElementById('advPanel1');
+    if (panel) {
+      var btns = panel.querySelectorAll('.row-copy-btn[title="리포트용"]');
+      if (btns.length) btn = btns[btns.length - 1]; // 합계행
+    }
+  } else if (type === 'advSa') {
+    var panel = document.getElementById('advPanel2');
+    if (panel) {
+      var btns = panel.querySelectorAll('.row-copy-btn[title="리포트용"]');
+      if (btns.length) btn = btns[btns.length - 1];
+    }
+  }
+  if (btn) { btn.click(); }
+  else { showToast('⚠️ 데이터 없음 — 먼저 파일을 업로드해주세요'); }
 }
 
 

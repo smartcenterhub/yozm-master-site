@@ -528,6 +528,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
       <option value="AL">📡 상시 (AL)</option>
     </select>
     <div class="tfsep"></div>
+    <input type="checkbox" class="grp-cb" id="bulk-all-cb-2" onchange="toggleAllBulk(2,this)" title="전체 선택" style="margin-right:0">
     <button class="btn btn-sm btn-gh" onclick="resetFilters(2)" style="font-size:11px;padding:3px 9px;flex-shrink:0">↺ 초기화</button>
     <span id="prop-total-cnt-2" style="font-size:11px;color:var(--t3);margin-left:2px"></span>
     <div class="tfsep"></div>
@@ -570,6 +571,19 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
       <div id="sku-search-btns-2"></div>
       <div style="margin-top:8px;font-size:11px;color:var(--t3)">선택됨: <span id="sku-search-selected-2" style="color:var(--ac);font-weight:600">없음</span></div>
     </div>
+  </div>
+  <!-- 일괄 처리 액션바 -->
+  <div class="bulk-action-bar" id="bulk-action-bar-2">
+    <span class="bulk-sel-cnt" id="bulk-cnt-2">0건 선택</span>
+    <div class="bulk-sep"></div>
+    <button class="bab-btn" onclick="bulkStatus(2,'제안중')">제안중</button>
+    <button class="bab-btn" onclick="bulkStatus(2,'제안완료')">제안완료</button>
+    <button class="bab-btn warn" onclick="bulkStatus(2,'확인필요')">확인필요</button>
+    <button class="bab-btn sel" onclick="bulkStatus(2,'선정')">선정</button>
+    <button class="bab-btn rej" onclick="bulkStatus(2,'미선정')">미선정</button>
+    <div class="bulk-sep"></div>
+    <button class="bab-btn del" onclick="bulkDelete(2)">삭제</button>
+    <span style="margin-left:auto;font-size:11px;color:#888;cursor:pointer;text-decoration:underline" onclick="clearBulkSelect(2)">선택 해제</span>
   </div>
   <div id="warn-banner-2" style="display:none;padding:8px 13px;background:rgba(196,90,16,.08);border:1px solid rgba(196,90,16,.25);border-radius:8px;margin-bottom:4px;font-size:12px;font-weight:600;color:var(--or)"></div>
   <div id="prop-list-2"><div class="loading"><span class="spin">⟳</span> 불러오는 중...</div></div>
@@ -2259,6 +2273,7 @@ function buildGroupHtml(eName,grp,tabNum){
     <div class="egrphd" id="${grpId}-hd" style="flex-direction:column;gap:0;padding:9px 12px">
       <!-- 1행 -->
       <div style="display:flex;align-items:center;gap:6px;width:100%">
+        ${tabNum===2?`<input type="checkbox" class="grp-cb grp-cb-2" data-grp="${ev?._id||evName}" onchange="onGrpCbChange(2)" onclick="event.stopPropagation()">`:''}
         <span class="st" style="background:rgba(0,0,0,.05);color:var(${tColor});font-size:10px">${eType}</span>
         <span class="egrpname">${evName}</span>
         ${allDone&&tabNum===2?'<span class="st s-done">✅ 제안완료</span>':''}
@@ -2911,6 +2926,59 @@ window.dfClick=function(el,field,tab){
   if(el.classList.contains('on'))dateFilter[tab].add(field);
   else dateFilter[tab].delete(field);
   renderPropList(tab);
+};
+/* ── 일괄 처리 ── */
+function getCheckedGrpIds(tab){
+  return [...document.querySelectorAll(`.grp-cb-${tab}:checked`)].map(cb=>cb.dataset.grp);
+}
+function updateBulkBar(tab){
+  const ids=getCheckedGrpIds(tab);
+  const bar=document.getElementById('bulk-action-bar-'+tab);
+  const cnt=document.getElementById('bulk-cnt-'+tab);
+  if(bar)bar.classList.toggle('on',ids.length>0);
+  if(cnt)cnt.textContent=ids.length+'건 선택';
+  /* 전체선택 체크박스 상태 */
+  const allCb=document.getElementById('bulk-all-cb-'+tab);
+  const allCbs=document.querySelectorAll(`.grp-cb-${tab}[data-grp]`);
+  if(allCb&&allCbs.length){
+    allCb.indeterminate=ids.length>0&&ids.length<allCbs.length;
+    allCb.checked=ids.length===allCbs.length;
+  }
+}
+window.onGrpCbChange=function(tab){updateBulkBar(tab);};
+window.toggleAllBulk=function(tab,el){
+  document.querySelectorAll(`.grp-cb-${tab}[data-grp]`).forEach(cb=>{cb.checked=el.checked;});
+  updateBulkBar(tab);
+};
+window.clearBulkSelect=function(tab){
+  document.querySelectorAll(`.grp-cb-${tab}`).forEach(cb=>{cb.checked=false;});
+  const allCb=document.getElementById('bulk-all-cb-'+tab);
+  if(allCb){allCb.checked=false;allCb.indeterminate=false;}
+  updateBulkBar(tab);
+};
+window.bulkStatus=async function(tab,status){
+  const ids=getCheckedGrpIds(tab);
+  if(!ids.length)return;
+  if(!confirm(`선택한 ${ids.length}건을 [${status}]로 변경할까요?`))return;
+  ids.forEach(grpId=>{
+    PROPOSALS.filter(p=>!p._deleted&&(p.eventSID||p.eventName||'미분류')===grpId)
+      .forEach(p=>{p.status=status;markDirty('proposalItems',p._id,{status});});
+  });
+  clearBulkSelect(tab);
+  renderPropList(tab);
+  toast(`✅ ${ids.length}건 [${status}] 변경 (저장 필요)`,'ok');
+};
+window.bulkDelete=async function(tab){
+  const ids=getCheckedGrpIds(tab);
+  if(!ids.length)return;
+  if(!confirm(`선택한 ${ids.length}건을 삭제할까요? 되돌릴 수 없습니다.`))return;
+  ids.forEach(grpId=>{
+    PROPOSALS.filter(p=>!p._deleted&&(p.eventSID||p.eventName||'미분류')===grpId)
+      .forEach(p=>{p._deleted=true;markDirty('proposalItems',p._id,{_deleted:true});});
+  });
+  clearBulkSelect(tab);
+  renderPropList(tab);
+  toast(`🗑 ${ids.length}건 삭제됨 (저장 필요)`,'ok');
 };
 window.toggleMonthSection=function(m){
   if(!window._monthOpen)window._monthOpen={};

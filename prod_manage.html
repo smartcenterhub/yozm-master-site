@@ -325,7 +325,7 @@ tr.opt-row.editing-row td.fix{background:rgba(240,240,255,0.98)}
         <input class="search-box" placeholder="닉네임 · 코드 · 품목명 검색" oninput="renderItemTable(this.value)"><span onclick="resetItemFilters()" title="필터 초기화" style="cursor:pointer;font-size:15px;margin-left:4px;user-select:none;opacity:.6" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.6">↺</span>
         <span class="cnt" id="itemCnt"></span>
         <span class="cnt" id="itemPendLbl" style="color:var(--amber);display:none"></span>
-        <span class="copy-toggle" id="itemCopyToggle" onclick="toggleCopy('item')"><span class="dot"></span>복사 OFF</span>
+        <span class="copy-toggle on" id="itemCopyToggle" onclick="toggleCopy('item')"><span class="dot"></span>복사 ON</span>
         <span class="filter-toggle" id="iFilterToggle" onclick="toggleFilterBody('item')">
           <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="4 6 8 10 12 6"/></svg>필터
         </span>
@@ -543,8 +543,8 @@ function sw(id,el){
   if(id==='item')renderItemTable();if(id==='sku')renderSkuTable();
 }
 function toggleUpload(tab){document.getElementById(tab+'UpSec').classList.toggle('open');}
-const IF={status:'전체',cat:'전체',sort:'No순'};
-const SF={status:'전체',type:'전체',sort:'No순',item:'전체',nick:'전체'};
+const IF={status:['상시','단종예정','런칭예정','비운영'],cat:'전체',sort:'No순'};
+const SF={status:['상시','단종예정','런칭예정','비운영'],type:'전체',sort:'No순',item:'전체',nick:'전체'};
 
 /* 품목 필터 카테고리 매핑 */
 const ITEM_CAT_MAP={
@@ -675,7 +675,7 @@ function toast(msg,type){
   t.style.color='#fff';t.style.opacity='1';t.textContent=msg;
   clearTimeout(t._tid);t._tid=setTimeout(()=>t.style.opacity='0',1600);
 }
-const copyState={item:false,sku:true};
+const copyState={item:true,sku:true};
 function toggleCopy(tab){
   copyState[tab]=!copyState[tab];
   const el=document.getElementById(tab+'CopyToggle');
@@ -879,6 +879,26 @@ function toggleFilterBody(tab){
 }
 
 function initFilterBodies(){
+  // 품목 상태 필터 칩: 단종 제외 상태로 초기화
+  const itemStatusRow=document.querySelector('#iFilterBody .toolbar-row');
+  if(itemStatusRow){
+    itemStatusRow.querySelectorAll('.fp').forEach(f=>{
+      const v=f.dataset.v;
+      if(!v){f.classList.remove('on');}
+      else if(v==='단종'){f.classList.remove('on');}
+      else{f.classList.add('on');}
+    });
+  }
+  // SKU 상태 필터 칩: 단종 제외 상태로 초기화
+  const skuStatusRow=document.querySelector('#sFilterBody .toolbar-row');
+  if(skuStatusRow){
+    skuStatusRow.querySelectorAll('.fp').forEach(f=>{
+      const v=f.dataset.v;
+      if(!v){f.classList.remove('on');}  // 전체 버튼 off
+      else if(v==='단종'){f.classList.remove('on');}  // 단종 off
+      else{f.classList.add('on');}  // 나머지 on
+    });
+  }
   // 가격열 접힌 상태로 초기화
   ['sc-pn','sc-pd','sc-pm','sc-pa','sc-pf','sc-da','sc-db','sc-dc','sc-ra','sc-rb','sc-rc'].forEach(id=>{
     const col=document.getElementById(id);
@@ -1527,8 +1547,8 @@ window.addEventListener('load',initFilterBodies);
     <div style="margin-bottom:16px">
       <div style="font-size:12px;font-weight:600;color:#1a56c8;margin-bottom:6px">품목 이미지</div>
       <div style="font-size:12.5px;line-height:1.8;color:#444">
-        파일명: <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px">닉네임.png</code><br>
-        예시: <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px">플.png</code>, <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px">말.png</code>, <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px">마S.png</code><br>
+        파일명: <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px">품목코드.png</code><br>
+        예시: <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px">Y-P-00.png</code>, <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px">Y-V-MO.png</code><br>
         위치: GitHub <code style="background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px">images/items/</code> 폴더
       </div>
     </div>

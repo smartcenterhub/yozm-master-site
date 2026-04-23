@@ -240,6 +240,27 @@ code{font-family:monospace;font-size:11px;background:rgba(0,0,0,.05);padding:1px
 }
 .copy-toggle.on{background:rgba(26,138,74,.08);border-color:rgba(26,138,74,.3);color:var(--green)}
 .copy-toggle .dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
+/* 추출 모드 */
+.extract-toggle.on{background:rgba(58,58,240,.08);border-color:rgba(58,58,240,.3);color:#3a3af0}
+.row-cb{width:14px;height:14px;accent-color:#3a3af0;cursor:pointer;flex-shrink:0}
+tr.extract-sel td{background:#EEEDFE !important}
+tr.extract-sel td.fix{background:#EEEDFE !important}
+/* 추출 팝업 */
+.extract-popup{position:fixed;bottom:24px;right:24px;width:310px;background:var(--bg);border:0.5px solid var(--glass-border-s);border-radius:12px;overflow:hidden;z-index:200;box-shadow:0 4px 20px rgba(0,0,0,.12)}
+.ep-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:0.5px solid var(--glass-border-s);background:var(--glass-bg-strong)}
+.ep-cols{display:flex;gap:4px;flex-wrap:wrap;padding:10px 14px;border-bottom:0.5px solid var(--glass-border-s)}
+.ep-chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:12px;font-size:11px;border:0.5px solid #AFA9EC;background:var(--bg);color:#534AB7;cursor:pointer;user-select:none}
+.ep-chip.on{background:#3a3af0;border-color:#3a3af0;color:#fff}
+.ep-preview{padding:10px 14px;border-bottom:0.5px solid var(--glass-border-s)}
+.ep-preview-box{background:var(--glass-bg-strong);border-radius:6px;padding:7px 10px;font-size:10.5px;font-family:monospace;color:var(--t2);line-height:1.75;max-height:90px;overflow:hidden}
+.ep-preview-box .hd{color:#3a3af0;font-weight:500}
+.ep-foot{display:flex;align-items:center;justify-content:space-between;padding:10px 14px}
+/* 액션바 */
+.extract-bar{display:none;align-items:center;gap:8px;padding:8px 12px;background:#EEEDFE;border:0.5px solid #AFA9EC;border-radius:8px;margin-bottom:8px;flex-wrap:wrap}
+.extract-bar.on{display:flex}
+.ext-cnt{font-size:12px;font-weight:500;color:#3C3489;min-width:52px}
+.ext-sep{width:0.5px;height:14px;background:#AFA9EC;flex-shrink:0}
+.ext-lnk{font-size:11px;color:#534AB7;cursor:pointer;text-decoration:underline}
 .pi{padding:2px 9px;border-radius:20px;font-size:11.5px;cursor:pointer;user-select:none;transition:all .1s;font-weight:600;display:inline-block}
 .pi.cat-요거트{background:rgba(219,234,254,0.5);border:1px solid rgba(30,64,175,.18);color:#3060b8}
 .pi.cat-요거트:hover,.pi.cat-요거트.on{background:#1e40af;border-color:#1e40af;color:#fff}
@@ -326,6 +347,7 @@ tr.opt-row.editing-row td.fix{background:rgba(240,240,255,0.98)}
         <span class="cnt" id="itemCnt"></span>
         <span class="cnt" id="itemPendLbl" style="color:var(--amber);display:none"></span>
         <span class="copy-toggle on" id="itemCopyToggle" onclick="toggleCopy('item')"><span class="dot"></span>복사 ON</span>
+        <span class="copy-toggle extract-toggle" id="itemExtractToggle" onclick="toggleExtract('item')" style="margin-left:4px"><span class="dot"></span>추출 OFF</span>
         <span class="filter-toggle" id="iFilterToggle" onclick="toggleFilterBody('item')">
           <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="4 6 8 10 12 6"/></svg>필터
         </span>
@@ -421,6 +443,7 @@ tr.opt-row.editing-row td.fix{background:rgba(240,240,255,0.98)}
         <span class="cnt" id="skuPendLbl" style="color:var(--amber);display:none"></span>
         <span class="copy-toggle on" id="skuCopyToggle" onclick="toggleCopy('sku')"><span class="dot"></span>복사 ON</span>
         <span class="copy-toggle" id="skuPriceToggle" onclick="toggleSkuPrice()" style="margin-left:4px">가격 접기</span>
+        <span class="copy-toggle extract-toggle" id="skuExtractToggle" onclick="toggleExtract('sku')" style="margin-left:4px"><span class="dot"></span>추출 OFF</span>
         <span class="copy-toggle" id="skuOptToggle" onclick="toggleAllOpts()" style="margin-left:4px">옵션 전체 열기</span>
         <span class="filter-toggle" id="sFilterToggle" onclick="toggleFilterBody('sku')">
           <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="4 6 8 10 12 6"/></svg>필터
@@ -838,7 +861,7 @@ function renderItemTable(q){
       </tr>`;
     }else{
       html+=`<tr class="${pCls}">
-        <td class="fix" style="left:0px;text-align:center;padding:7px 4px">${dot(it.pending)}</td>
+        <td class="fix" style="left:0px;text-align:center;padding:7px 4px" onclick="if(extractState.item)toggleExtractRow('item','${it.code}')">${extractState.item?`<input type="checkbox" class="row-cb" ${extractSel.item.has('${it.code}')?'checked':''} onclick="event.stopPropagation();toggleExtractRow('item','${it.code}')">`:dot(it.pending)}</td>
         <td class="fix" style="left:24px;color:var(--t3);font-size:11px;cursor:pointer" onclick="copyToClip('${it.no}',this,'item')">${it.no}</td>
         <td class="fix" style="left:68px;padding:3px;text-align:center"><img src="https://smartcenterhub.github.io/yozm-master-site/images/items/${encodeURIComponent(it.code)}.png" style="width:40px;height:40px;object-fit:cover;border-radius:4px;display:block" referrerpolicy="no-referrer" onerror="if(!this.dataset.jpgTried){this.dataset.jpgTried='1';this.src='https://smartcenterhub.github.io/yozm-master-site/images/items/${encodeURIComponent(it.code)}.jpg';}else{this.style.opacity=.15;this.style.filter='grayscale(1)';}"></td>
         <td class="fix" style="left:116px;cursor:pointer" onclick="copyToClip('${it.code}',this,'item')"><span class="code-val">${it.code}</span></td>
@@ -1293,7 +1316,7 @@ function renderSkuTable(q){
       </tr>`;
     }else{
       html+=`<tr class="${pCls}">
-        <td class="fix" style="left:0px;text-align:center;padding:7px 4px">${dot(sk.pending)}</td>
+        <td class="fix" style="left:0px;text-align:center;padding:7px 4px" onclick="if(extractState.sku)toggleExtractRow('sku','${sk.code}')">${extractState.sku?`<input type="checkbox" class="row-cb" ${extractSel.sku.has('${sk.code}')?'checked':''} onclick="event.stopPropagation();toggleExtractRow('sku','${sk.code}')">`:dot(sk.pending)}</td>
         <td class="fix" style="left:24px;color:var(--t3);font-size:11px;cursor:pointer" onclick="copyToClip('${sk.no}',this,'sku')">${sk.no}</td>
         <td class="fix" style="left:68px;padding:3px;text-align:center"><img src="https://smartcenterhub.github.io/yozm-master-site/images/skus/${sk.code}.jpg" style="width:40px;height:40px;object-fit:cover;border-radius:4px;display:block" referrerpolicy="no-referrer" onerror="if(!this.dataset.pngTried){this.dataset.pngTried='1';this.src='https://smartcenterhub.github.io/yozm-master-site/images/skus/${sk.code}.png';}else{this.style.opacity=.15;this.style.filter='grayscale(1)';}"></td>
         <td class="fix" style="left:116px;cursor:pointer" onclick="copyToClip('${sk.code}',this,'sku')"><span class="code-val">${sk.code}</span></td>
@@ -1459,6 +1482,126 @@ function showThumbGuide(){
   if(m){m.style.display='flex';}
 }
 
+/* ── 추출 모드 ── */
+const extractState={item:false,sku:false};
+const extractSel={item:new Set(),sku:new Set()};
+
+const SKU_COLS=[
+  {key:'code',label:'상품코드'},{key:'nick',label:'닉네임'},{key:'name',label:'상품명'},
+  {key:'type',label:'유형'},{key:'status',label:'상태'},{key:'priceNormal',label:'정상가'},
+  {key:'priceDisc',label:'상시할인가'},{key:'priceMax',label:'기본행사가'},
+  {key:'priceAlim',label:'제안행사가'},{key:'ship',label:'배송조건'},{key:'shipType',label:'배송속성'}
+];
+const ITEM_COLS=[
+  {key:'code',label:'품목코드'},{key:'nick',label:'닉네임'},{key:'name',label:'품목명'},
+  {key:'category',label:'분류'},{key:'status',label:'운영상태'},{key:'memo',label:'메모'}
+];
+const extractCols={item:new Set(['code','nick','name']),sku:new Set(['code','nick','name'])};
+
+function toggleExtract(tab){
+  extractState[tab]=!extractState[tab];
+  const el=document.getElementById(tab+'ExtractToggle');
+  el.classList.toggle('on',extractState[tab]);
+  el.innerHTML=`<span class="dot"></span>추출 ${extractState[tab]?'ON':'OFF'}`;
+  const bar=document.getElementById(tab+'ExtractBar');
+  if(bar) bar.classList.toggle('on',extractState[tab]);
+  extractSel[tab].clear();
+  if(extractState[tab]){
+    updateExtractPopup(tab);
+    document.getElementById('extractPopup').style.display='block';
+  } else {
+    document.getElementById('extractPopup').style.display='none';
+  }
+  tab==='sku'?renderSkuTable():renderItemTable();
+}
+
+function toggleExtractRow(tab,code){
+  if(!extractState[tab]) return;
+  if(extractSel[tab].has(code)) extractSel[tab].delete(code);
+  else extractSel[tab].add(code);
+  updateExtractCount(tab);
+  updateExtractPopup(tab);
+}
+
+function updateExtractCount(tab){
+  const cnt=extractSel[tab].size;
+  const el=document.getElementById(tab+'ExtCnt');
+  if(el) el.textContent=cnt+'건 선택';
+}
+
+function extractSelectAll(tab){
+  const rows=tab==='sku'?SKUS:ITEMS;
+  rows.forEach(r=>extractSel[tab].add(r.code));
+  updateExtractCount(tab);
+  updateExtractPopup(tab);
+  tab==='sku'?renderSkuTable():renderItemTable();
+}
+
+function extractClearAll(tab){
+  extractSel[tab].clear();
+  updateExtractCount(tab);
+  updateExtractPopup(tab);
+  tab==='sku'?renderSkuTable():renderItemTable();
+}
+
+function updateExtractPopup(tab){
+  const popup=document.getElementById('extractPopup');
+  if(!popup) return;
+  const cols=tab==='sku'?SKU_COLS:ITEM_COLS;
+  const selCols=extractCols[tab];
+  const selRows=tab==='sku'?SKUS.filter(r=>extractSel[tab].has(r.code)):ITEMS.filter(r=>extractSel[tab].has(r.code));
+
+  document.getElementById('epTitle').textContent='추출 미리보기 ('+(tab==='sku'?'SKU':'품목')+')';
+  document.getElementById('epSub').textContent=selRows.length+'행 선택됨';
+
+  // 열 칩
+  document.getElementById('epCols').innerHTML=cols.map(c=>
+    `<span class="ep-chip${selCols.has(c.key)?' on':''}" onclick="toggleExtractCol('${tab}','${c.key}')">${c.label}</span>`
+  ).join('');
+
+  updateExtractPreview(tab);
+}
+
+function toggleExtractCol(tab,key){
+  const selCols=extractCols[tab];
+  selCols.has(key)?selCols.delete(key):selCols.add(key);
+  updateExtractPopup(tab);
+}
+
+function updateExtractPreview(tab){
+  const cols=tab==='sku'?SKU_COLS:ITEM_COLS;
+  const selCols=extractCols[tab];
+  const selRows=tab==='sku'?SKUS.filter(r=>extractSel[tab].has(r.code)):ITEMS.filter(r=>extractSel[tab].has(r.code));
+  const activeCols=cols.filter(c=>selCols.has(c.key));
+  const withHeader=document.getElementById('epHeader')?.checked||false;
+  let html='';
+  if(withHeader&&activeCols.length){
+    html+=`<div class="hd">${activeCols.map(c=>c.label).join('\t')}</div>`;
+  }
+  selRows.slice(0,4).forEach(r=>{
+    const row=activeCols.map(c=>{const v=r[c.key];return v!=null?String(v):''}).join('\t');
+    html+=`<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${row}</div>`;
+  });
+  if(!activeCols.length) html='<div style="color:var(--t4)">열을 선택해주세요</div>';
+  if(!selRows.length) html='<div style="color:var(--t4)">행을 선택해주세요</div>';
+  document.getElementById('epPreview').innerHTML=html;
+}
+
+function doExtractCopy(){
+  const tab=extractState.sku?'sku':'item';
+  const cols=tab==='sku'?SKU_COLS:ITEM_COLS;
+  const selCols=extractCols[tab];
+  const selRows=tab==='sku'?SKUS.filter(r=>extractSel[tab].has(r.code)):ITEMS.filter(r=>extractSel[tab].has(r.code));
+  const activeCols=cols.filter(c=>selCols.has(c.key));
+  const withHeader=document.getElementById('epHeader')?.checked||false;
+  const lines=[];
+  if(withHeader) lines.push(activeCols.map(c=>c.label).join('\t'));
+  selRows.forEach(r=>lines.push(activeCols.map(c=>{const v=r[c.key];return v!=null?String(v):''}).join('\t')));
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>toast(`✅ ${selRows.length}행 복사됨`)).catch(()=>toast('복사 실패','err'));
+}
+
+document.addEventListener('change',e=>{if(e.target.id==='epHeader'){const tab=extractState.sku?'sku':'item';updateExtractPreview(tab);}});
+
 function refreshThumbs(tab){
   const tbody=document.getElementById(tab==='item'?'itemTbody':'skuTbody');
   if(!tbody)return;
@@ -1569,6 +1712,28 @@ window.addEventListener('load',initFilterBodies);
       3. Commit → Push origin<br>
       4. 이 페이지에서 <b>🖼 썸네일 갱신</b> 클릭
     </div>
+  </div>
+</div>
+
+<!-- 추출 팝업 -->
+<div id="extractPopup" class="extract-popup" style="display:none">
+  <div class="ep-head">
+    <div>
+      <div style="font-size:12px;font-weight:500;color:var(--tx)" id="epTitle">추출 미리보기</div>
+      <div style="font-size:11px;color:var(--t3)" id="epSub">0행 선택됨</div>
+    </div>
+    <span onclick="document.getElementById('extractPopup').style.display='none'" style="cursor:pointer;font-size:14px;color:var(--t3)">✕</span>
+  </div>
+  <div class="ep-cols" id="epCols"></div>
+  <div class="ep-preview">
+    <div style="font-size:10px;color:var(--t3);margin-bottom:4px">미리보기</div>
+    <div class="ep-preview-box" id="epPreview"></div>
+  </div>
+  <div class="ep-foot">
+    <label style="font-size:11px;color:var(--t2);display:flex;align-items:center;gap:4px;cursor:pointer">
+      <input type="checkbox" id="epHeader" style="width:12px;height:12px;accent-color:#3a3af0"> 헤더 포함
+    </label>
+    <button onclick="doExtractCopy()" style="padding:5px 16px;border-radius:20px;font-size:12px;border:none;background:#3a3af0;color:#fff;cursor:pointer;font-weight:500">복사</button>
   </div>
 </div>
 </body>

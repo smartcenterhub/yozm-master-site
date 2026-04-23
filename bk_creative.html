@@ -131,7 +131,10 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 
 <!-- ── 탭1: 소재 등록 ── -->
 <div class="bk-pane" id="bkPane1">
-<div class="card" id="bulkCard">
+<div style="display:flex;gap:16px;align-items:flex-start">
+<!-- 수동등록 왼쪽 -->
+<div style="flex:0 0 520px">
+<div class="card">
   <div class="card-title"><div class="cdot" style="background:var(--bl)"></div>일괄 등록</div>
 
   <!-- 양식 다운로드 + 가이드 -->
@@ -391,7 +394,7 @@ function toggleGuide() {
 function checkDt(rawId, targetId) {
   const el = document.getElementById(rawId);
   const v = el.value.trim();
-  const m = v.match(/^(\d{4})[-.]?(\d{2})[-.]?(\d{2})[-T]?(\d{2})(\d{2})$/);
+  const m = v.match(/^(\d{4})[-.]?(\d{2})[-.]?(\d{2})[-T_]?(\d{2}):?(\d{2})$/) || v.match(/^(\d{4})-(\d{2})-(\d{2})-(\d{2})(\d{2})$/);
   if (!m) {
     el.style.borderColor = 'rgba(212,32,32,0.5)';
     showToast('⚠️ 형식 오류 — 예: 2026-04-07-1100');

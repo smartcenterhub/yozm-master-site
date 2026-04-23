@@ -575,9 +575,12 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   </div>
   <!-- 상품으로 검색하기 토글 -->
   <div style="margin-bottom:6px">
-    <button onclick="toggleSkuSearch2()" id="sku-search-tog-2" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:5px">
-      <span>상품으로 검색하기</span><span id="sku-search-arrow-2" style="font-size:10px">▶</span>
-    </button>
+    <div style="display:flex;align-items:center;gap:6px">
+      <button onclick="toggleSkuSearch2()" id="sku-search-tog-2" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:5px">
+        <span>상품으로 검색하기</span><span id="sku-search-arrow-2" style="font-size:10px">▶</span>
+      </button>
+      <button id="toggle-period-chips-2" onclick="togglePeriodChips(2)" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer">제안일정 숨기기</button>
+    </div>
     <div id="sku-search-panel-2" style="display:none;margin-top:8px;padding:12px 14px;background:var(--gb);border:0.5px solid var(--bd);border-radius:var(--rl)">
       <div id="sku-search-btns-2"></div>
       <div style="margin-top:8px;font-size:11px;color:var(--t3)">선택됨: <span id="sku-search-selected-2" style="color:var(--ac);font-weight:600">없음</span></div>
@@ -728,9 +731,12 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   </div>
   <!-- 상품으로 검색하기 + 액션바 -->
   <div style="margin-bottom:6px">
-    <button onclick="toggleSkuSearch(5)" id="sku-search-tog-5" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:5px">
-      <span>상품으로 검색하기</span><span id="sku-search-arrow-5" style="font-size:10px">▶</span>
-    </button>
+    <div style="display:flex;align-items:center;gap:6px">
+      <button onclick="toggleSkuSearch(5)" id="sku-search-tog-5" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:5px">
+        <span>상품으로 검색하기</span><span id="sku-search-arrow-5" style="font-size:10px">▶</span>
+      </button>
+      <button id="toggle-period-chips-5" onclick="togglePeriodChips(5)" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer">제안일정 숨기기</button>
+    </div>
     <div id="sku-search-panel-5" style="display:none;margin-top:8px;padding:12px 14px;background:var(--gb);border:0.5px solid var(--bd);border-radius:var(--rl)">
       <div id="sku-search-btns-5"></div>
       <div style="margin-top:8px;font-size:11px;color:var(--t3)">선택됨: <span id="sku-search-selected-5" style="color:var(--ac);font-weight:600">없음</span></div>

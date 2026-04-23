@@ -469,7 +469,10 @@ tr.empty-group{opacity:.35}
   <!-- ④ 복사기 -->
   <div class="sub-content" id="s-copier">
     <div style="max-width:680px;margin:0 auto;padding:20px 0">
-      <div class="sec-label" style="margin-bottom:16px">📋 리포트용 복사기</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div class="sec-label" style="margin:0">📋 리포트용 복사기</div>
+        <button class="btn btn-ghost btn-sm" onclick="refreshCopierState(); showToast('🔄 상태 새로고침됨');" style="font-size:11.5px;padding:5px 12px" title="데이터 업로드 후 상태 반영">🔄 새로고침</button>
+      </div>
 
       <!-- 브검 성과 -->
       <div class="card" style="margin-bottom:12px">
@@ -2352,13 +2355,13 @@ function buildPerfTable(rows, slotCost, isBuy, ths, thL) {
 function copierClick(type) {
   var btn = null;
   if (type === 'bkPerfMo') {
-    // BK 성과 MO 합계행 복사 버튼 (첫 번째 panel-card)
+    // BK 성과 MO 합계행 복사 버튼 (첫 번째 panel-card, 전체탭 tbody 첫 행)
     var cards = document.querySelectorAll('#bkDateList .panel-grid .panel-card');
-    if (cards.length > 0) btn = cards[0].querySelector('tfoot .row-copy-btn');
+    if (cards.length > 0) btn = cards[0].querySelector('.pt-all tbody tr:first-child .row-copy-btn');
   } else if (type === 'bkPerfPc') {
-    // BK 성과 PC 합계행 복사 버튼 (두 번째 panel-card)
+    // BK 성과 PC 합계행 복사 버튼 (두 번째 panel-card, 전체탭 tbody 첫 행)
     var cards = document.querySelectorAll('#bkDateList .panel-grid .panel-card');
-    if (cards.length > 1) btn = cards[1].querySelector('tfoot .row-copy-btn');
+    if (cards.length > 1) btn = cards[1].querySelector('.pt-all tbody tr:first-child .row-copy-btn');
   } else if (type === 'kwMo') {
     btn = document.querySelector('[id^="kwRptBtn_"][id$="_MO"]');
   } else if (type === 'kwPc') {
@@ -2394,10 +2397,10 @@ function copierCheckReady(type) {
   // copierClick과 동일한 DOM 체크 로직 (btn 존재 여부만 반환)
   if (type === 'bkPerfMo') {
     var cards = document.querySelectorAll('#bkDateList .panel-grid .panel-card');
-    return !!(cards.length > 0 && cards[0].querySelector('tfoot .row-copy-btn'));
+    return !!(cards.length > 0 && cards[0].querySelector('.pt-all tbody tr:first-child .row-copy-btn'));
   } else if (type === 'bkPerfPc') {
     var cards = document.querySelectorAll('#bkDateList .panel-grid .panel-card');
-    return !!(cards.length > 1 && cards[1].querySelector('tfoot .row-copy-btn'));
+    return !!(cards.length > 1 && cards[1].querySelector('.pt-all tbody tr:first-child .row-copy-btn'));
   } else if (type === 'kwMo') {
     return !!document.querySelector('[id^="kwRptBtn_"][id$="_MO"]');
   } else if (type === 'kwPc') {

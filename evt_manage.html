@@ -297,6 +297,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .bab-btn.rej{color:var(--rd);border-color:rgba(153,27,27,.4)}
 .bab-btn.del{color:#fff;background:#dc2626;border-color:#dc2626}
 .grp-cb{width:15px;height:15px;cursor:pointer;accent-color:#3a3af0;flex-shrink:0}
+.hide-period-chips [id$="-period-chips"]{display:none!important}
 </style>
 </head>
 <body>
@@ -574,9 +575,12 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   </div>
   <!-- 상품으로 검색하기 토글 -->
   <div style="margin-bottom:6px">
-    <button onclick="toggleSkuSearch2()" id="sku-search-tog-2" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:5px">
-      <span>상품으로 검색하기</span><span id="sku-search-arrow-2" style="font-size:10px">▶</span>
-    </button>
+    <div style="display:flex;align-items:center;gap:6px">
+      <button onclick="toggleSkuSearch2()" id="sku-search-tog-2" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:5px">
+        <span>상품으로 검색하기</span><span id="sku-search-arrow-2" style="font-size:10px">▶</span>
+      </button>
+      <button id="toggle-period-chips-2" onclick="togglePeriodChips(2)" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer">제안일정 숨기기</button>
+    </div>
     <div id="sku-search-panel-2" style="display:none;margin-top:8px;padding:12px 14px;background:var(--gb);border:0.5px solid var(--bd);border-radius:var(--rl)">
       <div id="sku-search-btns-2"></div>
       <div style="margin-top:8px;font-size:11px;color:var(--t3)">선택됨: <span id="sku-search-selected-2" style="color:var(--ac);font-weight:600">없음</span></div>
@@ -585,15 +589,17 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   <!-- 일괄 처리 액션바 (상시 표시) -->
   <div class="bulk-action-bar on" id="bulk-action-bar-2">
     <span class="bulk-sel-cnt" id="bulk-cnt-2">0건 선택</span>
-    <div class="bulk-sep"></div>
-    <button class="bab-btn" onclick="bulkStatus(2,'제안중')">제안중</button>
-    <button class="bab-btn" onclick="bulkStatus(2,'제안완료')">제안완료</button>
-    <button class="bab-btn warn" onclick="bulkStatus(2,'확인필요')">확인필요</button>
-    <button class="bab-btn sel" onclick="bulkStatus(2,'선정')">선정</button>
-    <button class="bab-btn rej" onclick="bulkStatus(2,'미선정')">미선정</button>
-    <div class="bulk-sep"></div>
-    <button class="bab-btn del" onclick="bulkDelete(2)">삭제</button>
-    <span style="margin-left:auto;font-size:11px;color:#888;cursor:pointer;text-decoration:underline" onclick="clearBulkSelect(2)">선택 해제</span>
+    <span id="bulk-actions-2" style="display:none;align-items:center;gap:7px" class="bulk-actions-wrap">
+      <div class="bulk-sep"></div>
+      <button class="bab-btn" onclick="bulkStatus(2,'제안중')">제안중</button>
+      <button class="bab-btn" onclick="bulkStatus(2,'제안완료')">제안완료</button>
+      <button class="bab-btn warn" onclick="bulkStatus(2,'확인필요')">확인필요</button>
+      <button class="bab-btn sel" onclick="bulkStatus(2,'선정')">선정</button>
+      <button class="bab-btn rej" onclick="bulkStatus(2,'미선정')">미선정</button>
+      <div class="bulk-sep"></div>
+      <button class="bab-btn del" onclick="bulkDelete(2)">삭제</button>
+    </span>
+    <span style="margin-left:auto;display:flex;gap:8px;align-items:center"><span style="font-size:11px;color:#3a3af0;cursor:pointer;text-decoration:underline;font-weight:500" onclick="toggleAllBulk(2,{checked:true})">전체 선택</span><span style="font-size:11px;color:#888;cursor:pointer;text-decoration:underline" onclick="clearBulkSelect(2)">선택 해제</span></span>
   </div>
   </div><!-- sticky-hd end -->
   <div id="warn-banner-2" style="display:none;padding:8px 13px;background:rgba(196,90,16,.08);border:1px solid rgba(196,90,16,.25);border-radius:8px;margin-bottom:4px;font-size:12px;font-weight:600;color:var(--or)"></div>
@@ -638,9 +644,12 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   </div>
   <!-- 상품으로 검색하기 + 액션바 -->
   <div style="margin-bottom:6px">
-    <button onclick="toggleSkuSearch(3)" id="sku-search-tog-3" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:5px">
-      <span>상품으로 검색하기</span><span id="sku-search-arrow-3" style="font-size:10px">▶</span>
-    </button>
+    <div style="display:flex;align-items:center;gap:6px">
+      <button onclick="toggleSkuSearch(3)" id="sku-search-tog-3" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:5px">
+        <span>상품으로 검색하기</span><span id="sku-search-arrow-3" style="font-size:10px">▶</span>
+      </button>
+      <button id="toggle-period-chips-3" onclick="togglePeriodChips(3)" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer">제안일정 숨기기</button>
+    </div>
     <div id="sku-search-panel-3" style="display:none;margin-top:8px;padding:12px 14px;background:var(--gb);border:0.5px solid var(--bd);border-radius:var(--rl)">
       <div id="sku-search-btns-3"></div>
       <div style="margin-top:8px;font-size:11px;color:var(--t3)">선택됨: <span id="sku-search-selected-3" style="color:var(--ac);font-weight:600">없음</span></div>
@@ -648,13 +657,15 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   </div>
   <div class="bulk-action-bar on" id="bulk-action-bar-3">
     <span class="bulk-sel-cnt" id="bulk-cnt-3">0건 선택</span>
-    <div class="bulk-sep"></div>
-    <button class="bab-btn sf-mid" onclick="bulkStatus(3,'진행전')">진행전</button>
-    <button class="bab-btn sf-run" onclick="bulkStatus(3,'진행중')">진행중</button>
-    <button class="bab-btn sf-end" onclick="bulkStatus(3,'진행종료')">진행종료</button>
-    <div class="bulk-sep"></div>
-    <button class="bab-btn del" onclick="bulkDelete(3)">삭제</button>
-    <span style="margin-left:auto;font-size:11px;color:#888;cursor:pointer;text-decoration:underline" onclick="clearBulkSelect(3)">선택 해제</span>
+    <span id="bulk-actions-3" style="display:none;align-items:center;gap:7px" class="bulk-actions-wrap">
+      <div class="bulk-sep"></div>
+      <button class="bab-btn sf-mid" onclick="bulkStatus(3,'진행전')">진행전</button>
+      <button class="bab-btn sf-run" onclick="bulkStatus(3,'진행중')">진행중</button>
+      <button class="bab-btn sf-end" onclick="bulkStatus(3,'진행종료')">진행종료</button>
+      <div class="bulk-sep"></div>
+      <button class="bab-btn del" onclick="bulkDelete(3)">삭제</button>
+    </span>
+    <span style="margin-left:auto;display:flex;gap:8px;align-items:center"><span style="font-size:11px;color:#3a3af0;cursor:pointer;text-decoration:underline;font-weight:500" onclick="toggleAllBulk(3,{checked:true})">전체 선택</span><span style="font-size:11px;color:#888;cursor:pointer;text-decoration:underline" onclick="clearBulkSelect(3)">선택 해제</span></span>
   </div>
   </div>
   <div id="prop-list-3"><div class="loading"><span class="spin">⟳</span> 불러오는 중...</div></div>
@@ -720,9 +731,12 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   </div>
   <!-- 상품으로 검색하기 + 액션바 -->
   <div style="margin-bottom:6px">
-    <button onclick="toggleSkuSearch(5)" id="sku-search-tog-5" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:5px">
-      <span>상품으로 검색하기</span><span id="sku-search-arrow-5" style="font-size:10px">▶</span>
-    </button>
+    <div style="display:flex;align-items:center;gap:6px">
+      <button onclick="toggleSkuSearch(5)" id="sku-search-tog-5" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:5px">
+        <span>상품으로 검색하기</span><span id="sku-search-arrow-5" style="font-size:10px">▶</span>
+      </button>
+      <button id="toggle-period-chips-5" onclick="togglePeriodChips(5)" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer">제안일정 숨기기</button>
+    </div>
     <div id="sku-search-panel-5" style="display:none;margin-top:8px;padding:12px 14px;background:var(--gb);border:0.5px solid var(--bd);border-radius:var(--rl)">
       <div id="sku-search-btns-5"></div>
       <div style="margin-top:8px;font-size:11px;color:var(--t3)">선택됨: <span id="sku-search-selected-5" style="color:var(--ac);font-weight:600">없음</span></div>
@@ -730,9 +744,11 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   </div>
   <div class="bulk-action-bar on" id="bulk-action-bar-5">
     <span class="bulk-sel-cnt" id="bulk-cnt-5">0건 선택</span>
-    <div class="bulk-sep"></div>
-    <button class="bab-btn del" onclick="bulkDelete(5)">삭제</button>
-    <span style="margin-left:auto;font-size:11px;color:#888;cursor:pointer;text-decoration:underline" onclick="clearBulkSelect(5)">선택 해제</span>
+    <span id="bulk-actions-5" style="display:none;align-items:center;gap:7px" class="bulk-actions-wrap">
+      <div class="bulk-sep"></div>
+      <button class="bab-btn del" onclick="bulkDelete(5)">삭제</button>
+    </span>
+    <span style="margin-left:auto;display:flex;gap:8px;align-items:center"><span style="font-size:11px;color:#3a3af0;cursor:pointer;text-decoration:underline;font-weight:500" onclick="toggleAllBulk(5,{checked:true})">전체 선택</span><span style="font-size:11px;color:#888;cursor:pointer;text-decoration:underline" onclick="clearBulkSelect(5)">선택 해제</span></span>
   </div>
   </div>
   <div id="prop-list-5"><div class="loading"><span class="spin">⟳</span> 불러오는 중...</div></div>
@@ -2081,7 +2097,10 @@ window.renderPropList=function(tabNum){
     if(tabNum===2){
       if(sf.size>0&&!sf.has(cStatus)&&!sf.has(p.status))return false;
     }
-    if(tabNum===3){if(p.status!=='선정')return false;}
+    if(tabNum===3){
+      if(p.status!=='선정')return false;
+      if(sf.size>0&&!sf.has(cStatus))return false;
+    }
     if(tabNum===5){if(p.status!=='선정')return false;const ev=EVENTS.find(e=>e._id===p.eventSID)||(p.eventName?EVENTS.find(e=>e.eventName===p.eventName):null);if(!isEvEnded(ev))return false;}
     const evType=(()=>{const ev5=EVENTS.find(e=>e._id===p.eventSID);return ev5?.eventType||p.eventType||detectType({eventName:ev5?.eventName||p.eventName});})();
     if(tFilter.length>0&&!tFilter.includes(evType))return false;
@@ -2332,24 +2351,6 @@ function buildGroupHtml(eName,grp,tabNum){
       </div>
     </div>
     <div class="egrpbody${allDone&&tabNum===2?' done-state':''}" id="${grpId}-body">
-      <div class="date-chip-row">
-        <span style="font-size:10.5px;color:var(--t3);margin-right:2px">제안 일정</span>
-        <span id="chip-upload-${grpId}" class="${(ev?.proposalUploadedAt||m.proposalUploadedAt)?'date-chip chip-filled':'date-chip'}" onclick="switchCalMode('${grpId}','upload')">
-          📅 <span id="lbl-upload-${grpId}">${(ev?.proposalUploadedAt||m.proposalUploadedAt)?'업로드 '+(ev?.proposalUploadedAt||m.proposalUploadedAt).substring(5).replace('-','/'):'업로드 미입력'}</span>
-        </span>
-        <span id="chip-deadline-${grpId}" class="${(ev?.proposalDeadline||m.proposalDeadline)?'date-chip chip-filled':'date-chip'}" onclick="switchCalMode('${grpId}','deadline')">
-          📅 <span id="lbl-deadline-${grpId}">${(ev?.proposalDeadline||m.proposalDeadline)?'마감 '+(ev?.proposalDeadline||m.proposalDeadline).substring(5).replace('-','/'):'마감 미입력'}</span>
-        </span>
-        <span id="chip-propdate-${grpId}" class="${m.proposalMyDate?'date-chip chip-filled':'date-chip'}" onclick="toggleDateChip('expand-propdate-${grpId}')">
-          📅 <span id="lbl-propdate-${grpId}">${m.proposalMyDate?'제안일 '+m.proposalMyDate.substring(5).replace('-','/'):'제안일 미입력'}</span>
-        </span>
-      </div>
-      <div class="date-chip-expand" id="expand-propdate-${grpId}">
-        <span class="dce-lbl">제안일</span>
-        <input type="date" id="date-propdate-${grpId}" value="${m.proposalMyDate||''}">
-        <button class="btn btn-sm btn-fw-apply" onclick="saveDateChip('${grpId}','propdate','제안일')">적용</button>
-        <button class="btn btn-sm btn-fw-close" onclick="closeDateChip('expand-propdate-${grpId}')">닫기</button>
-      </div>
       ${selEditHtml}
       <div class="grp-add-panel" id="grpadd-${grpId}">
         <div style="font-size:11.5px;font-weight:700;color:var(--t2);margin-bottom:8px">상품 추가 — ${eName}</div>
@@ -2981,6 +2982,9 @@ function updateBulkBar(tab){
   const ids=getCheckedGrpIds(tab);
   const cnt=document.getElementById('bulk-cnt-'+tab);
   if(cnt)cnt.textContent=ids.length+'건 선택';
+  /* 버튼 표시/숨김 */
+  const actions=document.getElementById('bulk-actions-'+tab);
+  if(actions)actions.style.display=ids.length>0?'inline-flex':'none';
   /* 전체선택 체크박스 상태 */
   const allCb=document.getElementById('bulk-all-cb-'+tab);
   const allCbs=document.querySelectorAll(`.grp-cb-${tab}[data-grp]`);
@@ -2998,6 +3002,8 @@ window.clearBulkSelect=function(tab){
   document.querySelectorAll(`.grp-cb-${tab}`).forEach(cb=>{cb.checked=false;});
   const allCb=document.getElementById('bulk-all-cb-'+tab);
   if(allCb){allCb.checked=false;allCb.indeterminate=false;}
+  const actions=document.getElementById('bulk-actions-'+tab);
+  if(actions)actions.style.display='none';
   updateBulkBar(tab);
 };
 window.bulkStatus=async function(tab,status){
@@ -3023,6 +3029,14 @@ window.bulkDelete=async function(tab){
   clearBulkSelect(tab);
   renderPropList(tab);
   toast(`🗑 ${ids.length}건 삭제됨 (저장 필요)`,'ok');
+};
+window.togglePeriodChips=function(tab){
+  const listEl=document.getElementById('prop-list-'+tab);
+  if(!listEl)return;
+  const hide=!listEl.classList.contains('hide-period-chips');
+  listEl.classList.toggle('hide-period-chips',hide);
+  const btn=document.getElementById('toggle-period-chips-'+tab);
+  if(btn)btn.textContent=hide?'제안일정 보이기':'제안일정 숨기기';
 };
 window.toggleMonthSection=function(m){
   if(!window._monthOpen)window._monthOpen={};

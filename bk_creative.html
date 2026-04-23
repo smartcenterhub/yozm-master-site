@@ -89,7 +89,7 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 .sb-active{background:rgba(26,138,74,0.1);color:var(--gr)}
 .sb-done{background:rgba(152,152,168,0.15);color:var(--t3)}
 .sb-future{background:rgba(58,58,240,0.08);color:var(--ac)}
-.hist-card{background:var(--gb);border:0.5px solid var(--gbd);border-radius:10px;padding:12px 14px;transition:border-color .15s}
+.hist-card{background:var(--gb);border:0.5px solid var(--gbd);border-radius:10px;padding:12px 14px;transition:border-color .15s;margin-bottom:0}
 .hist-card.checked{border-color:#AFA9EC;background:#FAFAFE}
 .hist-month-hdr{display:flex;align-items:center;gap:8px;padding:7px 12px;background:#EEF2FF;border-radius:8px;cursor:pointer;margin-bottom:10px;border:0.5px solid #c8d0f0;user-select:none}
 .hist-month-hdr:hover{background:#e4e8ff}
@@ -632,15 +632,6 @@ function renderDetail() {
   html += '<div class="d-period"><b>' + fmtDt(c.startAt) + '</b> ~ <b>' + fmtDt(c.endAt) + '</b></div>';
   const imgH = 'height:100px;width:100%;object-fit:contain;border-radius:6px;border:1px solid var(--gbd);background:#fff;cursor:pointer;display:block';
   const noImg = '<div style="height:100px;width:100%;border-radius:6px;border:1px solid var(--gbd);background:var(--gbs);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t3)">없음</div>';
-      html += '<div style="display:flex;gap:10px;">';
-      const pcIdBtn = cr.pcId ? ' <span onclick="copyToClip(\'' + cr.pcId + '\')" style="font-size:9px;background:#E6F1FB;color:#0C447C;border-radius:4px;padding:1px 7px;cursor:pointer;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px;display:inline-block;vertical-align:middle" title="클릭하면 복사">' + cr.pcId + '</span>' : '';
-      const moIdBtn = cr.moId ? ' <span onclick="copyToClip(\'' + cr.moId + '\')" style="font-size:9px;background:#FAEEDA;color:#633806;border-radius:4px;padding:1px 7px;cursor:pointer;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px;display:inline-block;vertical-align:middle" title="클릭하면 복사">' + cr.moId + '</span>' : '';
-      html += '<div style="flex:1"><div style="font-size:10px;font-weight:500;margin-bottom:5px;display:flex;align-items:center;gap:5px;flex-wrap:wrap"><span class="pcb">PC</span>' + pcIdBtn + '</div>'
-        + (cr.pcImgUrl ? '<img src="' + cr.pcImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" onclick="copyGhImg(\'' + cr.pcImgUrl + '\')" title="클릭하면 복사" style="' + iStyle + '">' : noImg)
-        + '</div>';
-      html += '<div style="flex:1"><div style="font-size:10px;font-weight:500;margin-bottom:5px;display:flex;align-items:center;gap:5px;flex-wrap:wrap"><span class="mob">MO</span>' + moIdBtn + '</div>'
-        + (cr.moImgUrl ? '<img src="' + cr.moImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" onclick="copyGhImg(\'' + cr.moImgUrl + '\')" title="클릭하면 복사" style="' + iStyle + '">' : noImg)
-        + '</div></div>';
   html += '<div style="flex:1">';
   html += '<div style="font-size:10.5px;margin-bottom:5px"><span class="pcb">PC</span></div>';
   html += (c.pcImgUrl ? '<img style="' + imgH + '" src="' + c.pcImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" title="클릭하면 이미지 복사" onclick="copyGhImg(\'" + c.pcImgUrl + "\')">': noImg);
@@ -876,7 +867,7 @@ function renderHist() {
       + '<span style="font-size:12px;font-weight:600;color:#3D5A99">' + mo.label + '</span>'
       + '<span style="font-size:11px;color:#7a7ab0;margin-left:4px">' + mo.items.length + '개</span>'
       + '<span style="margin-left:auto;font-size:11px;color:#7a7ab0" id="ha-' + secId + '">▲</span>'
-      + '</div><div id="' + secId + '" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
+      + '</div><div id="' + secId + '" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start">';
     mo.items.forEach(function(e) {
       const id = e[0], cr = e[1];
       const col = getColor(id);
@@ -903,17 +894,21 @@ function renderHist() {
         : '<div class="hist-link-url empty">링크 없음</div>';
       html += '</div>';
       html += '<div style="display:flex;gap:10px">';
-      html += '<div style="flex:1"><div style="font-size:10px;font-weight:500;margin-bottom:5px"><span class="pcb">PC</span></div>'
+      html += '<div style="flex:1">'
+        + '<div style="font-size:10px;font-weight:500;margin-bottom:5px;display:flex;align-items:center;gap:5px;flex-wrap:wrap"><span class="pcb">PC</span>'
+        + (cr.pcId ? '<span onclick="copyToClip(&quot;' + cr.pcId + '&quot;)" style="font-size:9px;background:#E6F1FB;color:#0C447C;border-radius:4px;padding:1px 7px;cursor:pointer;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;display:inline-block" title="클릭하면 복사">' + cr.pcId + '</span>' : '')
+        + '</div>'
         + (cr.pcImgUrl ? '<img src="' + cr.pcImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" onclick="copyGhImg(\'' + cr.pcImgUrl + '\')" title="클릭하면 복사" style="' + iStyle + '">' : noImg)
-        + (cr.pcId ? '<div onclick="copyToClip(this.textContent.trim())" style="margin-top:5px;padding:3px 8px;background:#FFE500;color:#1a1a2e;border-radius:5px;font-size:9px;font-weight:600;cursor:pointer;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="클릭하면 복사">' + cr.pcId + '</div>' : '<div style="font-size:9px;color:var(--t3);margin-top:4px;text-align:center">—</div>')
         + '</div>';
-      html += '<div style="flex:1"><div style="font-size:10px;font-weight:500;margin-bottom:5px"><span class="mob">MO</span></div>'
+      html += '<div style="flex:1">'
+        + '<div style="font-size:10px;font-weight:500;margin-bottom:5px;display:flex;align-items:center;gap:5px;flex-wrap:wrap"><span class="mob">MO</span>'
+        + (cr.moId ? '<span onclick="copyToClip(&quot;' + cr.moId + '&quot;)" style="font-size:9px;background:#FAEEDA;color:#633806;border-radius:4px;padding:1px 7px;cursor:pointer;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;display:inline-block" title="클릭하면 복사">' + cr.moId + '</span>' : '')
+        + '</div>'
         + (cr.moImgUrl ? '<img src="' + cr.moImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" onclick="copyGhImg(\'' + cr.moImgUrl + '\')" title="클릭하면 복사" style="' + iStyle + '">' : noImg)
-        + (cr.moId ? '<div onclick="copyToClip(this.textContent.trim())" style="margin-top:5px;padding:3px 8px;background:#FFE500;color:#1a1a2e;border-radius:5px;font-size:9px;font-weight:600;cursor:pointer;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="클릭하면 복사">' + cr.moId + '</div>' : '<div style="font-size:9px;color:var(--t3);margin-top:4px;text-align:center">—</div>')
         + '</div></div>';
-      html += '</div></div>';
+      html += '</div>'; /* hist-card 닫기 */
     });
-    html += '</div>';
+    html += '</div>'; /* grid(secId) 닫기 */
   });
   wrap.innerHTML = html;
   _initHistCb();

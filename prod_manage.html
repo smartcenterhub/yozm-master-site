@@ -1496,7 +1496,7 @@ const ITEM_COLS=[
   {key:'code',label:'품목코드'},{key:'nick',label:'닉네임'},{key:'name',label:'품목명'},
   {key:'category',label:'분류'},{key:'status',label:'운영상태'},{key:'memo',label:'메모'}
 ];
-const extractCols={item:new Set(['code','nick','name']),sku:new Set(['code','nick','name'])};
+const extractCols={item:new Set(['code']),sku:new Set(['code'])};
 
 function toggleExtract(tab){
   extractState[tab]=!extractState[tab];

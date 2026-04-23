@@ -298,7 +298,17 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .bab-btn.del{color:#fff;background:#dc2626;border-color:#dc2626}
 .grp-cb{width:15px;height:15px;cursor:pointer;accent-color:#3a3af0;flex-shrink:0}
 .hide-period-chips [id$="-period-chips"]{display:none!important}
+.link-chip-card{font-size:10px;padding:1px 7px;border-radius:20px;border:0.5px solid #9FE1CB;background:#E1F5EE;color:#085041;cursor:pointer;display:inline-flex;align-items:center;gap:2px;white-space:nowrap}
+.link-chip-card:hover{background:#9FE1CB}
+.memo-chip-card{font-size:10px;padding:1px 7px;border-radius:20px;border:0.5px solid var(--bd);background:var(--gs);color:var(--t2);display:inline-flex;align-items:center;gap:2px;cursor:default;position:relative;white-space:nowrap}
+.memo-chip-card .memo-tip{display:none;position:absolute;right:0;top:calc(100% + 4px);background:var(--gb);border:0.5px solid var(--bd);border-radius:6px;padding:5px 9px;font-size:11px;color:var(--t1);white-space:nowrap;z-index:99;min-width:120px}
+.memo-chip-card:hover .memo-tip{display:block}
 .hide-base-cols .col-base{display:none!important}
+.lchip{font-size:10px;padding:1px 6px;border-radius:20px;border:0.5px solid var(--bd);background:var(--gs);color:var(--t2);cursor:pointer;white-space:nowrap}
+.lchip.on{background:#EEEDFE;border-color:#AFA9EC;color:#3C3489}
+.lchip-tag{font-size:10px;padding:1px 7px;border-radius:20px;border:0.5px solid #AFA9EC;background:#EEEDFE;color:#3C3489;cursor:pointer;display:inline-flex;align-items:center;gap:2px}
+.lchip-tag .lx{color:#AFA9EC;font-size:9px}
+.lchip.has-url{border-color:var(--gr);color:var(--gr)}
 .toggle-hide-btn{font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer}
 .toggle-hide-btn.active{background:rgba(58,58,240,.1)!important;border-color:rgba(58,58,240,.4)!important;color:var(--ac)!important;font-weight:600}
 </style>
@@ -368,22 +378,36 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
             <div class="fl">행사명 <span style="color:var(--t4);font-size:10px">(자동 · 수정 가능)</span></div>
             <input class="fi" id="ev-name">
           </div>
-          <div class="fg">
-            <div class="fl">랜딩페이지</div>
-            <select class="fi" id="ev-pagetype">
-              <option>쇼핑스토리+카테고리</option><option>쇼핑스토리</option>
-              <option>카테고리</option><option selected>상품바로랜딩</option>
-            </select>
-          </div>
-          <div class="fg">
-            <div class="fl">추가할인/적립</div>
-            <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
-              <div class="adtog" id="adtog-reg">
-                <button class="on" onclick="setAddDisc('reg','')">선택하기</button>
-                <button onclick="setAddDisc('reg','네이버 쿠폰')">네이버 쿠폰</button>
-                <button onclick="setAddDisc('reg','__direct__')">직접입력</button>
+          <div class="fg" style="flex:1.6">
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <!-- 랜딩페이지 -->
+              <div style="display:flex;align-items:center;gap:5px">
+                <span style="font-size:10px;color:var(--t3);width:32px;flex-shrink:0">랜딩</span>
+                <div style="display:flex;gap:3px;flex-wrap:wrap;flex:1" id="landing-chips-reg">
+                  <span style="display:inline-flex;align-items:center;gap:2px">
+                    <button class="lchip" data-type="상품바로랜딩" onclick="toggleLandingChip(this,'reg')">상품바로랜딩</button>
+                    <button title="상품코드로 링크 동기화" onclick="syncProductLinks()" style="width:20px;height:20px;border:0.5px solid var(--bd);border-radius:5px;background:var(--gs);color:var(--t3);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" style="vertical-align:middle"><path d="M10 6A4 4 0 112 6"/><path d="M10 3v3h-3"/></svg></button>
+                    <button title="샘플에 추가" onclick="applyProductLinks()" style="width:20px;height:20px;border:0.5px solid rgba(58,58,240,.4);border-radius:5px;background:#EEEDFE;color:#3C3489;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" style="vertical-align:middle"><path d="M6 2v8M2 6h8"/></svg></button>
+                  </span>
+                  <button class="lchip" data-type="쇼핑스토리" onclick="toggleLandingChip(this,'reg')">쇼핑스토리</button>
+                  <button class="lchip" data-type="카테고리" onclick="toggleLandingChip(this,'reg')">카테고리</button>
+                  <button class="lchip" data-type="기타" onclick="toggleLandingChip(this,'reg')">기타</button>
+                </div>
+                <div style="display:flex;align-items:center;gap:3px;flex-shrink:0">
+                  <input id="ev-landing-url" placeholder="URL 입력" style="width:120px;height:24px;padding:0 7px;font-size:11px;border:0.5px solid var(--bd);border-radius:6px;background:var(--gs);color:var(--t1)">
+                  <button onclick="addLandingLink('reg')" style="width:24px;height:24px;border:0.5px solid rgba(58,58,240,.4);border-radius:6px;background:#EEEDFE;color:#3C3489;cursor:pointer;font-size:14px;flex-shrink:0">+</button>
+                </div>
               </div>
-              <input class="fi" id="ev-adddisc" placeholder="직접 입력" style="display:none;width:160px">
+              <!-- 메모 -->
+              <div style="display:flex;align-items:center;gap:5px">
+                <span style="font-size:10px;color:var(--t3);width:32px;flex-shrink:0">메모</span>
+                <button id="memo-chip-reg" class="lchip" onclick="toggleMemoChip('reg')" style="font-size:10px;padding:1px 6px">메모</button>
+                <input id="ev-adddisc" placeholder="메모 입력..." style="display:none;flex:1;height:24px;padding:0 7px;font-size:11px;border:0.5px solid var(--bd);border-radius:6px;background:var(--gs);color:var(--t1)" onchange="renderRegProds()">
+                <button title="메모 샘플에 적용" onclick="applyMemo()" style="width:20px;height:20px;border:0.5px solid rgba(58,58,240,.4);border-radius:5px;background:#EEEDFE;color:#3C3489;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" style="vertical-align:middle"><path d="M6 2v8M2 6h8"/></svg></button>
+              </div>
+              <!-- 추가된 랜딩 링크 태그 -->
+              <div id="ev-landing-tags" style="display:flex;gap:3px;flex-wrap:wrap"></div>
+              <input type="hidden" id="ev-pagetype" value="상품바로랜딩">
             </div>
           </div>
         </div>
@@ -1861,16 +1885,22 @@ function renderRegProds(){
         <span class="egrpmeta">${regProducts.length}개 상품</span>
       </div>
       <!-- 2행: 기간 칩 + 일정 칩 -->
-      <div style="display:flex;align-items:center;gap:5px;margin-top:5px;flex-wrap:wrap;width:100%">
-        ${dateChipsHtml}
-        <span style="width:0.5px;height:12px;background:rgba(0,0,0,.12);flex-shrink:0"></span>
-        <span style="font-size:10px;color:var(--t3)">일정</span>
-        <span id="reg-chip-upload" class="date-chip" data-calmode="upload" data-expand="reg-expand-upload">
-          📅 <span id="reg-lbl-upload">업로드 미입력</span>
-        </span>
-        <span id="reg-chip-deadline" class="date-chip" data-calmode="deadline" data-expand="reg-expand-deadline">
-          📅 <span id="reg-lbl-deadline">마감 미입력</span>
-        </span>
+      <div style="display:flex;align-items:center;gap:5px;margin-top:5px;flex-wrap:nowrap;width:100%">
+        <div style="display:flex;align-items:center;gap:4px;flex:1;flex-wrap:wrap">
+          ${dateChipsHtml}
+          <span style="width:0.5px;height:12px;background:rgba(0,0,0,.12);flex-shrink:0"></span>
+          <span style="font-size:10px;color:var(--t3)">일정</span>
+          <span id="reg-chip-upload" class="date-chip" data-calmode="upload" data-expand="reg-expand-upload">
+            📅 <span id="reg-lbl-upload">업로드 미입력</span>
+          </span>
+          <span id="reg-chip-deadline" class="date-chip" data-calmode="deadline" data-expand="reg-expand-deadline">
+            📅 <span id="reg-lbl-deadline">마감 미입력</span>
+          </span>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;margin-left:auto">
+          ${REG_PAGE_LINKS.filter(l=>l.url).map(l=>`<span class="link-chip-card" onclick="copyToClip('${l.url}',this);event.stopPropagation()" title="${l.url}">${l.type}<span class="lc-copied" style="font-size:9px;opacity:0;margin-left:2px;color:#0F6E56;transition:opacity .2s">✓</span></span>`).join('')}
+          ${(()=>{const m=$('ev-adddisc')?.value;return m?`<span class="memo-chip-card">📝메모<span class="memo-tip">${m}</span></span>`:'';})()}
+        </div>
       </div></div>
     </div>
     <div class="date-chip-expand" id="reg-expand-upload">
@@ -1980,6 +2010,152 @@ window.addByCode=function(){
 /* ══ 행사 등록 ══ */
 /* ── 추가할인/적립 토글 ── */
 const ADDDISC_AUTO_TYPES=new Set(['FF','TD','SP','HB','CB','SA','OD']);
+/* ── 랜딩 링크 ── */
+let REG_PAGE_LINKS=[];
+window.toggleLandingChip=function(btn,scope){
+  const type=btn.dataset.type;
+  btn.classList.toggle('on');
+  if(btn.classList.contains('on')){
+    REG_PAGE_LINKS.push({type,url:''});
+  } else {
+    REG_PAGE_LINKS=REG_PAGE_LINKS.filter(l=>l.type!==type);
+  }
+  renderLandingTags(scope);
+  updatePageTypeHidden();
+};
+window.addLandingLink=function(scope){
+  const inp=document.getElementById('ev-landing-url');
+  const url=inp.value.trim();
+  const activeChip=document.querySelector('#landing-chips-reg .lchip.on');
+  const type=activeChip?activeChip.dataset.type:'기타';
+  if(!url)return;
+  REG_PAGE_LINKS=REG_PAGE_LINKS.filter(l=>l.type!==type||l.url!=='');
+  const existing=REG_PAGE_LINKS.find(l=>l.type===type);
+  if(existing)existing.url=url;
+  else REG_PAGE_LINKS.push({type,url});
+  inp.value='';
+  renderLandingTags(scope);
+  updatePageTypeHidden();
+};
+function renderLandingTags(scope){
+  const el=document.getElementById('ev-landing-tags');
+  if(!el)return;
+  el.innerHTML=REG_PAGE_LINKS.filter(l=>l.url).map((l,i)=>
+    `<span class="lchip-tag" onclick="copyToClip('${l.url}',this)" title="${l.url}">${l.type}<span class="lx" onclick="event.stopPropagation();REG_PAGE_LINKS.splice(${i},1);renderLandingTags('${scope}');updatePageTypeHidden()">×</span></span>`
+  ).join('');
+  /* 칩 has-url 클래스 동기화 */
+  document.querySelectorAll('#landing-chips-reg .lchip').forEach(btn=>{
+    const type=btn.dataset.type;
+    const hasUrl=REG_PAGE_LINKS.some(l=>l.type===type&&l.url);
+    btn.classList.toggle('has-url',hasUrl);
+  });
+}
+function updatePageTypeHidden(){
+  const el=document.getElementById('ev-pagetype');
+  if(el)el.value=REG_PAGE_LINKS.map(l=>l.type).join(',');
+}
+/* ── 수정폼 랜딩/메모 ── */
+const SE_PAGE_LINKS={};
+window.toggleSeLandingChip=function(btn,grpId){
+  const type=btn.dataset.type;
+  if(!SE_PAGE_LINKS[grpId])SE_PAGE_LINKS[grpId]=[];
+  btn.classList.toggle('on');
+  if(btn.classList.contains('on')){SE_PAGE_LINKS[grpId].push({type,url:''});}
+  else{SE_PAGE_LINKS[grpId]=SE_PAGE_LINKS[grpId].filter(l=>l.type!==type);}
+  updateSePageHidden(grpId);
+};
+window.addSeLandingLink=function(grpId){
+  const inp=document.getElementById('se-landing-url-'+grpId);
+  const url=inp.value.trim();if(!url)return;
+  if(!SE_PAGE_LINKS[grpId])SE_PAGE_LINKS[grpId]=[];
+  const activeChip=document.querySelector(`#se-landing-chips-${grpId} .lchip.on`);
+  const type=activeChip?activeChip.dataset.type:'기타';
+  const existing=SE_PAGE_LINKS[grpId].find(l=>l.type===type);
+  if(existing)existing.url=url;else SE_PAGE_LINKS[grpId].push({type,url});
+  inp.value='';
+  renderSeLandingTags(grpId);
+  updateSePageHidden(grpId);
+  const btn=document.querySelector(`#se-landing-chips-${grpId} [data-type="${type}"]`);
+  if(btn)btn.classList.add('has-url');
+};
+window.removeSeLandingLink=function(grpId,i){
+  if(SE_PAGE_LINKS[grpId])SE_PAGE_LINKS[grpId].splice(i,1);
+  renderSeLandingTags(grpId);
+  updateSePageHidden(grpId);
+};
+function renderSeLandingTags(grpId){
+  const el=document.getElementById('se-landing-tags-'+grpId);if(!el)return;
+  const links=SE_PAGE_LINKS[grpId]||[];
+  el.innerHTML=links.filter(l=>l.url).map((l,i)=>
+    `<span class="lchip-tag" onclick="copyToClip('${l.url}',this)" title="${l.url}">${l.type}<span class="lx" onclick="event.stopPropagation();removeSeLandingLink('${grpId}',${i})">×</span></span>`
+  ).join('');
+}
+function updateSePageHidden(grpId){
+  const el=document.getElementById('se-page-'+grpId);
+  if(el)el.value=JSON.stringify(SE_PAGE_LINKS[grpId]||[]);
+}
+window.syncSeProductLinks=function(grpId){
+  const ev=EVENTS.find(e=>e._id===grpId)||EVENTS.find(e=>e.eventName===grpId);
+  const prods=ev?.products||[];
+  if(!prods.length){toast('상품이 없습니다','err');return;}
+  document.getElementById('se-landing-url-'+grpId).value='https://brand.naver.com/yozmkorea/products/'+prods[0].skuCode;
+  toast('링크 미리보기: '+prods.length+'개 상품');
+};
+window.applySeProductLinks=function(grpId){
+  const ev=EVENTS.find(e=>e._id===grpId)||EVENTS.find(e=>e.eventName===grpId);
+  const prods=ev?.products||[];
+  if(!SE_PAGE_LINKS[grpId])SE_PAGE_LINKS[grpId]=[];
+  prods.forEach(p=>{
+    const url='https://brand.naver.com/yozmkorea/products/'+p.skuCode;
+    if(!SE_PAGE_LINKS[grpId].find(l=>l.url===url))SE_PAGE_LINKS[grpId].push({type:'상품바로랜딩',url});
+  });
+  renderSeLandingTags(grpId);updateSePageHidden(grpId);
+  toast('상품 링크 '+prods.length+'개 추가됨');
+};
+window.toggleSeMemoChip=function(grpId){
+  const btn=document.getElementById('se-memo-chip-'+grpId);
+  const inp=document.getElementById('se-adddisc-'+grpId);
+  const on=!btn.classList.contains('on');
+  btn.classList.toggle('on',on);
+  if(inp){inp.style.display=on?'flex':'none';if(on)inp.focus();else inp.value='';}
+};
+window.applyMemoSe=function(grpId){
+  const inp=document.getElementById('se-adddisc-'+grpId);
+  if(inp?.value)toast('메모 적용됨');
+};
+window.syncProductLinks=function(){
+  /* 상품코드 기반 링크 미리보기 */
+  const urls=regProducts.map(p=>'https://brand.naver.com/yozmkorea/products/'+p.skuCode);
+  if(!urls.length){toast('추가된 상품이 없습니다','err');return;}
+  document.getElementById('ev-landing-url').value=urls[0];
+  toast('링크 미리보기: '+urls.length+'개 상품');
+};
+window.applyProductLinks=function(){
+  /* 상품코드 기반 링크 REG_PAGE_LINKS에 추가 */
+  regProducts.forEach(p=>{
+    const url='https://brand.naver.com/yozmkorea/products/'+p.skuCode;
+    const nick=p.skuNick||p.skuCode;
+    if(!REG_PAGE_LINKS.find(l=>l.url===url)){
+      REG_PAGE_LINKS.push({type:'상품바로랜딩',url,nick});
+    }
+  });
+  updatePageTypeHidden();
+  renderLandingTags('reg');
+  renderRegProds();
+  toast('상품 링크 '+regProducts.length+'개 추가됨');
+};
+window.applyMemo=function(){
+  renderRegProds();
+  const m=document.getElementById('ev-adddisc')?.value;
+  if(m)toast('메모 적용됨');
+};
+window.toggleMemoChip=function(scope){
+  const btn=document.getElementById('memo-chip-'+scope);
+  const inp=document.getElementById('ev-adddisc');
+  const on=!btn.classList.contains('on');
+  btn.classList.toggle('on',on);
+  if(inp){inp.style.display=on?'flex':'none';if(on)inp.focus();else inp.value='';}
+};
 window.setAddDisc=function(scope,val){
   /* scope: 'reg' | 'se-{grpId}' | 'sedit-{grpId}' */
   const togId='adtog-'+scope;
@@ -2036,12 +2212,12 @@ async function doSaveEvent(){
   const type=$('ev-type').value;
   if(!name)throw new Error('행사명 필요');
   const docId=name.replace(/\s/g,'')+'_'+(start||'None').replace(/-/g,'')+'_'+(end||'None').replace(/-/g,'');
-  const data={eventName:name,eventType:type||null,startDate:start||null,startTime:startTime,endDate:end||null,endTime:endTime,pageType:$('ev-pagetype').value||null,isNotice:false,isClosed:false,additionalDiscount:$('ev-adddisc').value||null,proposalUploadedAt:$('ev-upload-date')?.value||null,proposalDeadline:$('ev-deadline')?.value||null,
+  const data={eventName:name,eventType:type||null,startDate:start||null,startTime:startTime,endDate:end||null,endTime:endTime,pageType:$('ev-pagetype').value||null,pageLinks:JSON.parse(JSON.stringify(REG_PAGE_LINKS)),isNotice:false,isClosed:false,additionalDiscount:$('ev-adddisc').value||null,proposalUploadedAt:$('ev-upload-date')?.value||null,proposalDeadline:$('ev-deadline')?.value||null,
     products:regProducts.map((p,i)=>({no:i+1,subNo:null,isMain:p.isMain,isCancelled:false,skuCode:p.skuCode,productName:p.productName,link:'https://brand.naver.com/yozmkorea/products/'+p.skuCode,priceNormal:p.priceNormal||null,priceBase:p.priceBase||null,priceEvent:p.priceEvent||null,priceAlim:p.priceAlim||null,priceMax:p.priceMax||null,ship:p.ship||null,options:[]})),
     updatedAt:new Date().toISOString()};
   await setDoc(doc(db,'events',docId),data);
   EVENTS.unshift({_id:docId,...data});
-  ['ev-name','ev-start','ev-end','ev-adddisc'].forEach(id=>{const e=$(id);if(e)e.value='';});
+  ['ev-name','ev-start','ev-end','ev-adddisc'].forEach(id=>{const e=$(id);if(e)e.value='';});REG_PAGE_LINKS=[];renderLandingTags('reg');document.querySelectorAll('#landing-chips-reg .lchip').forEach(b=>b.classList.remove('on'));const mc=document.getElementById('memo-chip-reg');if(mc)mc.classList.remove('on');
   delete CAL_STATE['reg'];calInit('reg',(function(){const _t=new Date();const _nM=_t.getMonth()+1>=12?0:_t.getMonth()+1;const _nY=_t.getMonth()+1>=12?_t.getFullYear()+1:_t.getFullYear();return {startId:'ev-start',endId:'ev-end',_initY:_nY,_initM:_nM};})());calRender('reg');
   regProducts=[];selectedSkuCodesReg=[];
   document.querySelectorAll('#sku-btn-area-reg .skb').forEach(b=>b.classList.remove('on'));
@@ -2351,9 +2527,15 @@ function buildGroupHtml(eName,grp,tabNum){
         ${grpEnded&&tabNum===3?'<span class="st s-end">종료</span>':''}
         ${grpActions?`<span style="margin-left:auto;display:flex;gap:6px">${grpActions}</span>`:''}
       </div>
-      <!-- 2행: 기간+일정 칩 -->
-      <div id="${grpId}-period-chips" style="display:flex;align-items:center;gap:5px;margin-top:5px;width:100%;flex-wrap:wrap">
-        ${buildDateChips(ev?.startDate,ev?.startTime,ev?.endDate,ev?.endTime,m?.proposalUploadedAt,m?.proposalDeadline,ev?.additionalDiscount||null)}
+      <!-- 2행: 기간+일정 칩 + 링크/메모 우측 -->
+      <div id="${grpId}-period-chips" style="display:flex;align-items:center;gap:5px;margin-top:5px;width:100%;flex-wrap:nowrap">
+        <div style="display:flex;align-items:center;gap:4px;flex:1;flex-wrap:wrap">
+          ${buildDateChips(ev?.startDate,ev?.startTime,ev?.endDate,ev?.endTime,m?.proposalUploadedAt,m?.proposalDeadline,ev?.additionalDiscount||null)}
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;margin-left:auto">
+          ${(ev?.pageLinks&&ev.pageLinks.length?ev.pageLinks.filter(l=>l.url).map(l=>`<span class="link-chip-card" onclick="copyToClip('${l.url}',this);event.stopPropagation()" title="${l.url}">${l.type}<span style="font-size:9px;opacity:0;margin-left:2px;color:#0F6E56;transition:opacity .2s" class="lc-copied">✓</span></span>`).join(''):'') }
+          ${ev?.additionalDiscount&&ev.additionalDiscount!=='네이버 쿠폰'&&!['선택하기',''].includes(ev.additionalDiscount)?`<span class="memo-chip-card">📝메모<span class="memo-tip">${ev.additionalDiscount}</span></span>`:''}
+        </div>
       </div>
     </div>
     <div class="egrpbody${allDone&&tabNum===2?' done-state':''}" id="${grpId}-body">
@@ -2529,18 +2711,35 @@ function buildSelGroupEditBlock(eName,evId,grpId,grpItems,ev,lbl,tabNum){
           <div class="frow">
             <div class="fg" style="flex:1.4"><div class="fl">행사명</div>
               <input class="fi" id="se-name-${grpId}" value="${eName}"></div>
-            <div class="fg"><div class="fl">랜딩페이지</div>
-              <select class="fi" id="se-page-${grpId}">
-                ${['쇼핑스토리+카테고리','쇼핑스토리','카테고리','상품바로랜딩'].map(v=>`<option${ev?.pageType===v?' selected':''}>${v}</option>`).join('')}
-              </select></div>
-            <div class="fg"><div class="fl">추가할인/적립</div>
-              <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
-                <div class="adtog" id="adtog-se-${grpId}">
-                  <button class="${!ev?.additionalDiscount?'on':''}" onclick="setAddDisc('se-${grpId}','')">선택하기</button>
-                  <button class="${ev?.additionalDiscount==='네이버 쿠폰'?'on':''}" onclick="setAddDisc('se-${grpId}','네이버 쿠폰')">네이버 쿠폰</button>
-                  <button class="${ev?.additionalDiscount&&ev.additionalDiscount!=='네이버 쿠폰'?'on':''}" onclick="setAddDisc('se-${grpId}','__direct__')">직접입력</button>
+            <div class="fg" style="flex:1.6">
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <div style="display:flex;align-items:center;gap:5px">
+                  <span style="font-size:10px;color:var(--t3);width:32px;flex-shrink:0">랜딩</span>
+                  <div style="display:flex;gap:3px;flex-wrap:wrap;flex:1" id="se-landing-chips-${grpId}">
+                    <span style="display:inline-flex;align-items:center;gap:2px">
+                      <button class="lchip${ev?.pageLinks?.some(l=>l.type==='상품바로랜딩')?' on has-url':''}" data-type="상품바로랜딩" onclick="toggleSeLandingChip(this,'${grpId}')">상품바로랜딩</button>
+                      <button title="동기화" onclick="syncSeProductLinks('${grpId}')" style="width:20px;height:20px;border:0.5px solid var(--bd);border-radius:5px;background:var(--gs);color:var(--t3);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 6A4 4 0 112 6"/><path d="M10 3v3h-3"/></svg></button>
+                      <button title="추가" onclick="applySeProductLinks('${grpId}')" style="width:20px;height:20px;border:0.5px solid rgba(58,58,240,.4);border-radius:5px;background:#EEEDFE;color:#3C3489;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2v8M2 6h8"/></svg></button>
+                    </span>
+                    <button class="lchip${ev?.pageLinks?.some(l=>l.type==='쇼핑스토리')?' on has-url':''}" data-type="쇼핑스토리" onclick="toggleSeLandingChip(this,'${grpId}')">쇼핑스토리</button>
+                    <button class="lchip${ev?.pageLinks?.some(l=>l.type==='카테고리')?' on has-url':''}" data-type="카테고리" onclick="toggleSeLandingChip(this,'${grpId}')">카테고리</button>
+                    <button class="lchip${ev?.pageLinks?.some(l=>l.type==='기타')?' on has-url':''}" data-type="기타" onclick="toggleSeLandingChip(this,'${grpId}')">기타</button>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:3px;flex-shrink:0">
+                    <input id="se-landing-url-${grpId}" placeholder="URL" style="width:100px;height:24px;padding:0 7px;font-size:11px;border:0.5px solid var(--bd);border-radius:6px;background:var(--gs);color:var(--t1)">
+                    <button onclick="addSeLandingLink('${grpId}')" style="width:24px;height:24px;border:0.5px solid rgba(58,58,240,.4);border-radius:6px;background:#EEEDFE;color:#3C3489;cursor:pointer;font-size:14px;flex-shrink:0">+</button>
+                  </div>
                 </div>
-                <input class="fi" id="se-adddisc-${grpId}" value="${ev?.additionalDiscount||''}" style="${ev?.additionalDiscount&&ev.additionalDiscount!=='네이버 쿠폰'?'width:160px':'display:none;width:160px'}" placeholder="직접 입력">
+                <div style="display:flex;align-items:center;gap:5px">
+                  <span style="font-size:10px;color:var(--t3);width:32px;flex-shrink:0">메모</span>
+                  <button id="se-memo-chip-${grpId}" class="lchip${ev?.additionalDiscount?' on has-url':''}" onclick="toggleSeMemoChip('${grpId}')" style="font-size:10px;padding:1px 6px">메모</button>
+                  <input id="se-adddisc-${grpId}" value="${ev?.additionalDiscount||''}" placeholder="메모 입력..." style="${ev?.additionalDiscount?'display:flex':'display:none'};flex:1;height:24px;padding:0 7px;font-size:11px;border:0.5px solid var(--bd);border-radius:6px;background:var(--gs);color:var(--t1)">
+                  <button title="적용" onclick="applyMemoSe('${grpId}')" style="width:20px;height:20px;border:0.5px solid rgba(58,58,240,.4);border-radius:5px;background:#EEEDFE;color:#3C3489;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2v8M2 6h8"/></svg></button>
+                </div>
+                <div id="se-landing-tags-${grpId}" style="display:flex;gap:3px;flex-wrap:wrap">
+                  ${(ev?.pageLinks||[]).filter(l=>l.url).map((l,i)=>`<span class="lchip-tag" onclick="copyToClip('${l.url}',this)" title="${l.url}">${l.type}<span class="lx" onclick="event.stopPropagation();removeSeLandingLink('${grpId}',${i})">×</span></span>`).join('')}
+                </div>
+                <input type="hidden" id="se-page-${grpId}" value="${ev?.pageType||''}">
               </div></div>
           </div>
         </div>
@@ -2640,9 +2839,11 @@ window.saveSelEdit=async function(grpId,tabNum){
   const {startTime,endTime}=getCalTime('edit-'+grpId);
   const page=document.getElementById('se-page-'+grpId)?.value||'';
   const adddisc=document.getElementById('se-adddisc-'+grpId)?.value||'';
+  const pageLinksVal=SE_PAGE_LINKS[grpId]||null;
   const uploadDate=calSt?.uploadDate||null;
   const deadlineDate=calSt?.deadlineDate||null;
-  const fields={eventName:name,startDate:start||null,startTime,endDate:end||null,endTime,pageType:page,additionalDiscount:adddisc,products:se.products,
+  const fields={eventName:name,startDate:start||null,startTime,endDate:end||null,endTime,pageType:page,additionalDiscount:adddisc||null,products:se.products,
+    ...(pageLinksVal?{pageLinks:pageLinksVal}:{}),
     ...(uploadDate?{proposalUploadedAt:uploadDate}:{}),
     ...(deadlineDate?{proposalDeadline:deadlineDate}:{})
   };
@@ -3464,7 +3665,11 @@ window.closeByEventId=function(evId){
 /* ── 클립보드 복사 ── */
 window.copyToClip=function(text,el){
   navigator.clipboard.writeText(String(text)).then(()=>{
-    if(el){const o=el.style.background;el.style.background='rgba(152,152,168,.18)';setTimeout(()=>el.style.background=o,600);}
+    if(el){
+      const o=el.style.background;el.style.background='rgba(152,152,168,.18)';setTimeout(()=>el.style.background=o,600);
+      const copied=el.querySelector&&el.querySelector('.lc-copied');
+      if(copied){copied.style.opacity='1';setTimeout(()=>copied.style.opacity='0',1200);}
+    }
     toast('복사됨: '+String(text).substring(0,25));
   }).catch(()=>toast('복사 실패','err'));
 };

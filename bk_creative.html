@@ -91,6 +91,10 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 .sb-future{background:rgba(58,58,240,0.08);color:var(--ac)}
 .hist-card{background:var(--gb);border:0.5px solid var(--gbd);border-radius:10px;padding:12px 14px;transition:border-color .15s;margin-bottom:0;min-width:0;overflow:hidden}
 .hist-card .hcard-btns{opacity:0;transition:opacity .15s}
+.evt-item{padding:7px 10px;cursor:pointer;border-bottom:0.5px solid var(--gbd);font-size:11.5px;display:flex;align-items:center;gap:7px}
+.evt-item:last-child{border-bottom:none}
+.evt-item:hover{background:rgba(58,58,240,0.04)}
+.evt-item.sel{background:#EEF2FF}
 .hist-card:hover .hcard-btns{opacity:1}
 .hist-card.checked{border-color:#AFA9EC;background:#FAFAFE}
 .hist-month-hdr{display:flex;align-items:center;gap:8px;padding:7px 12px;background:#EEF2FF;border-radius:8px;cursor:pointer;margin-bottom:10px;border:0.5px solid #c8d0f0;user-select:none}
@@ -191,10 +195,15 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
   <div style="display:flex;flex-direction:column;gap:8px">
     <!-- 행사 선택 -->
     <div>
-      <div class="fl" style="font-size:10px">행사 선택 <span style="font-size:9.5px;color:var(--t3);font-weight:400">— 선택하면 소재명/기간 자동 완성</span></div>
-      <select id="eventSelect" class="inp" style="width:100%;font-size:11px" onchange="onEventSelect()">
-        <option value="">직접 입력</option>
-      </select>
+      <div class="fl" style="font-size:10px">행사 선택 <span style="font-size:9.5px;color:var(--t3);font-weight:400">— 선택하면 소재명·기간·랜딩링크 자동 완성</span></div>
+      <div style="display:flex;gap:6px;margin-bottom:5px">
+        <select id="evtMonthSel" class="inp" style="width:90px;flex-shrink:0;font-size:11px" onchange="renderEvtList()">
+          <option value="">전체 월</option>
+        </select>
+        <input type="text" id="evtSearch" class="inp" placeholder="행사명 검색..." style="flex:1;font-size:11px" oninput="renderEvtList()">
+      </div>
+      <div id="evtList" style="border:0.5px solid var(--gbd);border-radius:6px;overflow:hidden;max-height:180px;overflow-y:auto;display:none"></div>
+      <input type="hidden" id="eventSelect">
     </div>
     <!-- 소재명 -->
     <div>
@@ -1176,66 +1185,95 @@ async function loadEventDropdown() {
   try {
     _eventTypes = await window._hubFs.loadEventTypes();
     _events = await window._hubFs.loadEvents();
-    const now = new Date();
-    // 진행중 + 예정 행사만, 시작일 기준 최신순
-    const filtered = _events
-      .filter(function(e) { return e.startDate && e.endDate && !e.isClosed; })
-      .sort(function(a, b) { return new Date(b.startDate) - new Date(a.startDate); })
-      .slice(0, 40);
-    const sel = document.getElementById('eventSelect');
-    if (!sel) return;
-    sel.innerHTML = '<option value="">직접 입력</option>';
-    filtered.forEach(function(e) {
-      const opt = document.createElement('option');
-      opt.value = e._id;
-      const typeNick = (_eventTypes[e.eventType] && _eventTypes[e.eventType].nick) || e.eventType || '';
-      const sd = e.startDate ? e.startDate.replace(/-/g,'').slice(2,8) : '';
-      const ed = e.endDate ? e.endDate.replace(/-/g,'').slice(2,8) : '';
-      opt.textContent = e.eventName + ' (' + sd + '~' + ed + ')';
-      opt.dataset.name = e.eventName;
-      opt.dataset.type = e.eventType || '';
-      opt.dataset.typeNick = typeNick;
-      opt.dataset.start = e.startDate || '';
-      opt.dataset.end = e.endDate || '';
-      opt.dataset.startTime = e.startTime || '0000';
-      opt.dataset.endTime = e.endTime || '2359';
-      opt.dataset.products = JSON.stringify(e.products || []);
-      sel.appendChild(opt);
-    });
+    _events = _events
+      .filter(function(e){ return e.startDate && e.endDate && !e.isClosed; })
+      .sort(function(a,b){ return new Date(b.startDate) - new Date(a.startDate); });
+    // 월 필터 옵션 생성
+    const moSel = document.getElementById('evtMonthSel');
+    if (moSel) {
+      const months = {};
+      _events.forEach(function(e) {
+        const d = new Date(e.startDate);
+        const k = (d.getFullYear()-2000)*100 + (d.getMonth()+1);
+        months[k] = (d.getMonth()+1) + '월';
+      });
+      Object.keys(months).sort().reverse().forEach(function(k) {
+        const opt = document.createElement('option');
+        opt.value = String(parseInt(k) % 100);
+        opt.textContent = months[k];
+        moSel.appendChild(opt);
+      });
+    }
+    renderEvtList();
   } catch(e) { console.warn('행사 드롭다운 로드 실패:', e); }
 }
 
-function onEventSelect() {
-  const sel = document.getElementById('eventSelect');
-  const opt = sel.options[sel.selectedIndex];
-  if (!opt || !opt.value) return;
-  const sd = opt.dataset.start; // YYYY-MM-DD
-  const ed = opt.dataset.end;
+function renderEvtList() {
+  const moSel = document.getElementById('evtMonthSel');
+  const searchEl = document.getElementById('evtSearch');
+  const listEl = document.getElementById('evtList');
+  if (!listEl) return;
+  const mo = moSel ? parseInt(moSel.value) : 0;
+  const q = searchEl ? searchEl.value.trim().toLowerCase() : '';
+  const filtered = _events.filter(function(e) {
+    const d = new Date(e.startDate);
+    const moMatch = !mo || (d.getMonth()+1) === mo;
+    const qMatch = !q || (e.eventName||'').toLowerCase().includes(q);
+    return moMatch && qMatch;
+  });
+  if (!filtered.length) {
+    listEl.innerHTML = '<div style="padding:10px;font-size:11px;color:var(--t3);text-align:center">검색 결과 없음</div>';
+    listEl.style.display = '';
+    return;
+  }
+  const selId = document.getElementById('eventSelect').value;
+  listEl.innerHTML = filtered.map(function(e) {
+    const typeNick = (_eventTypes[e.eventType] && _eventTypes[e.eventType].nick) || e.eventType || '';
+    const sd = e.startDate ? e.startDate.slice(5).replace('-','/') : '';
+    const ed = e.endDate ? e.endDate.slice(5).replace('-','/') : '';
+    return '<div class="evt-item' + (selId===e._id?' sel':'') + '" onclick="onEventSelect(&quot;' + e._id + '&quot;)">'
+      + '<span style="font-size:10px;background:#EEF2FF;color:#3a3af0;border-radius:4px;padding:1px 6px;flex-shrink:0">' + typeNick + '</span>'
+      + '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + e.eventName + '</span>'
+      + '<span style="font-size:10px;color:var(--t3);flex-shrink:0">' + sd + '~' + ed + '</span>'
+      + '</div>';
+  }).join('');
+  listEl.style.display = '';
+}
+
+function onEventSelect(id) {
+  const e = _events.find(function(x){ return x._id === id; });
+  if (!e) return;
+  document.getElementById('eventSelect').value = id;
+  renderEvtList();
+  const sd = e.startDate || '';
+  const ed = e.endDate || '';
   const stRaw = document.getElementById('startRaw');
   const edRaw = document.getElementById('endRaw');
   if (sd && stRaw) {
-    const t = (opt.dataset.startTime || '0000').padStart(4,'0');
-    stRaw.value = sd.replace(/-/g,'-').slice(0,10) + '-' + t.slice(0,2) + t.slice(2,4);
+    const t = (e.startTime || '0000').padStart(4,'0');
+    stRaw.value = sd + '-' + t.slice(0,2) + t.slice(2,4);
     checkDt('startRaw','startInput');
   }
   if (ed && edRaw) {
-    const t = (opt.dataset.endTime || '2359').padStart(4,'0');
-    edRaw.value = ed.replace(/-/g,'-').slice(0,10) + '-' + t.slice(0,2) + t.slice(2,4);
+    const t = (e.endTime || '2359').padStart(4,'0');
+    edRaw.value = ed + '-' + t.slice(0,2) + t.slice(2,4);
     checkDt('endRaw','endInput');
   }
-  // 소재명 자동 완성
-  const typeNick = opt.dataset.typeNick;
+  // 랜딩링크
+  const luEl = document.getElementById('landingUrlInput');
+  if (luEl) luEl.value = e.landingUrl || e.link || '';
+  // 소재명
+  const typeNick = (_eventTypes[e.eventType] && _eventTypes[e.eventType].nick) || '';
   const sdObj = sd ? new Date(sd) : null;
   const edObj = ed ? new Date(ed) : null;
   const mm = sdObj ? String(sdObj.getMonth()+1) : '';
-  const sdStr = sd ? (String(sdObj.getMonth()+1).padStart(2,'0') + String(sdObj.getDate()).padStart(2,'0')) : '';
-  const edStr = ed ? (String(edObj.getMonth()+1).padStart(2,'0') + String(edObj.getDate()).padStart(2,'0')) : '';
-  const prods = JSON.parse(opt.dataset.products || '[]');
+  const sdStr = sdObj ? String(sdObj.getMonth()+1).padStart(2,'0') + String(sdObj.getDate()).padStart(2,'0') : '';
+  const edStr = edObj ? String(edObj.getMonth()+1).padStart(2,'0') + String(edObj.getDate()).padStart(2,'0') : '';
+  const prods = e.products || [];
   const prodStr = prods.length > 0 ? prods.length + '종' : '';
   const nameEl = document.getElementById('nameInput');
   if (nameEl && typeNick) {
-    const parts = [mm + '월' + typeNick, prodStr, sdStr + '-' + edStr].filter(Boolean);
-    nameEl.value = parts.join('_');
+    nameEl.value = [mm + '월' + typeNick, prodStr, sdStr + '-' + edStr].filter(Boolean).join('_');
   }
 }
 

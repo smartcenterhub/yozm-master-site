@@ -298,6 +298,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .bab-btn.del{color:#fff;background:#dc2626;border-color:#dc2626}
 .grp-cb{width:15px;height:15px;cursor:pointer;accent-color:#3a3af0;flex-shrink:0}
 .hide-period-chips [id$="-period-chips"]{display:none!important}
+.hide-base-cols .col-base{display:none!important}
 </style>
 </head>
 <body>
@@ -580,6 +581,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
         <span>상품으로 검색하기</span><span id="sku-search-arrow-2" style="font-size:10px">▶</span>
       </button>
       <button id="toggle-period-chips-2" onclick="togglePeriodChips(2)" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer">제안일정 숨기기</button>
+      <button id="toggle-base-cols-2" onclick="toggleBaseCols(2)" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer">기본행사가 숨기기</button>
     </div>
     <div id="sku-search-panel-2" style="display:none;margin-top:8px;padding:12px 14px;background:var(--gb);border:0.5px solid var(--bd);border-radius:var(--rl)">
       <div id="sku-search-btns-2"></div>
@@ -649,6 +651,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
         <span>상품으로 검색하기</span><span id="sku-search-arrow-3" style="font-size:10px">▶</span>
       </button>
       <button id="toggle-period-chips-3" onclick="togglePeriodChips(3)" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer">제안일정 숨기기</button>
+      <button id="toggle-base-cols-3" onclick="toggleBaseCols(3)" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer">기본행사가 숨기기</button>
     </div>
     <div id="sku-search-panel-3" style="display:none;margin-top:8px;padding:12px 14px;background:var(--gb);border:0.5px solid var(--bd);border-radius:var(--rl)">
       <div id="sku-search-btns-3"></div>
@@ -736,6 +739,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
         <span>상품으로 검색하기</span><span id="sku-search-arrow-5" style="font-size:10px">▶</span>
       </button>
       <button id="toggle-period-chips-5" onclick="togglePeriodChips(5)" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer">제안일정 숨기기</button>
+      <button id="toggle-base-cols-5" onclick="toggleBaseCols(5)" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer">기본행사가 숨기기</button>
     </div>
     <div id="sku-search-panel-5" style="display:none;margin-top:8px;padding:12px 14px;background:var(--gb);border:0.5px solid var(--bd);border-radius:var(--rl)">
       <div id="sku-search-btns-5"></div>
@@ -825,7 +829,7 @@ const TYPE_FILTER_MAP={
 const $=id=>document.getElementById(id);
 const isoD=d=>d?(d+'').substring(0,10):'';
 const comma=n=>n==null?'—':Number(n).toLocaleString();
-const pct=(a,b)=>(a&&b)?(Math.round(((a-b)/a)*100))+'%':'—';
+const pct=(a,b)=>(a&&b)?(Math.floor(((a-b)/a)*100))+'%':'—';
 const discAmt=(a,b)=>(a&&b)?comma(a-b):'—';
 function dateStr(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 function toast(msg,type='ok'){const el=$('toast');el.textContent=msg;el.className='show '+type;setTimeout(()=>el.className='',2400);}
@@ -1763,10 +1767,10 @@ window.updateAlimRow=function(inp,minP,pn){
   upd('pmx',mx>0?mx.toLocaleString():'—');
   /* 제안할인금액/율 */
   upd('pda',pn&&v?'▼'+(pn-v).toLocaleString():'—');
-  upd('prate',pn&&v?Math.round((pn-v)/pn*100)+'%':'—');
+  upd('prate',pn&&v?Math.floor((pn-v)/pn*100)+'%':'—');
   /* 최대할인금액/율 */
   upd('mda',pn&&mx>0?'▼'+(pn-mx).toLocaleString():'—');
-  upd('mrate',pn&&mx>0?Math.round((pn-mx)/pn*100)+'%':'—');
+  upd('mrate',pn&&mx>0?Math.floor((pn-mx)/pn*100)+'%':'—');
 };
 
 function renderRegProds(){
@@ -1822,16 +1826,16 @@ function renderRegProds(){
       <td style="text-align:center;font-weight:600"><span style="display:inline-flex;align-items:center;gap:4px;cursor:pointer" onclick="copyToClip('${p.skuNick}',this)">${p.skuNick}</span><button onclick="copyToClip('${p.productName||p.skuNick}',this);event.stopPropagation()" title="${p.productName||p.skuNick}" style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border:0.5px solid var(--bd);border-radius:4px;background:var(--gs);cursor:pointer;flex-shrink:0;opacity:.55;padding:0"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" style="vertical-align:middle"><path d="M2 2h6a1 1 0 011 1v7a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M4 0h5a1 1 0 011 1v7"/></svg></button></td>
       <td style="font-size:10px;color:var(--t3);cursor:pointer;text-align:center" onclick="copyToClip('${p.skuCode}',this)">${p.skuCode}</td>
       <td style="text-align:right;cursor:pointer" onclick="copyToClip('${pn}',this)"><span class="pn">${comma(pn)||'—'}</span></td>
-      <td style="text-align:right;cursor:pointer" onclick="copyToClip('${ev||''}',this)"><span style="color:var(--rd);font-size:11.5px;font-weight:600">${comma(ev)||'—'}</span></td>
+      <td class="col-base" style="text-align:right;cursor:pointer" onclick="copyToClip('${ev||''}',this)"><span style="color:var(--rd);font-size:11.5px;font-weight:600">${comma(ev)||'—'}</span></td>
       <td style="text-align:right;cursor:pointer" onclick="if(event.target.tagName!=='INPUT'&&event.target.id!=='alim-disp-${i}')copyToClip('${ap||''}',this)">
         <span id="alim-disp-${i}" style="font-weight:600;color:var(--or);cursor:pointer;font-size:11.5px" onclick="event.stopPropagation();copyToClip('${ap||''}',this)">${comma(ap)||'—'}</span>
         <input id="alim-inp-${i}" type="number" style="display:none;width:68px;height:23px;text-align:right;padding:0 4px;font-size:11.5px;font-weight:600;color:var(--or);background:rgba(255,240,200,.7);border:1px solid rgba(186,117,23,.3);border-radius:4px" value="${ap!=null?ap:''}" min="${minP}" oninput="updateAlimRow(this,${minP},${pn})" onblur="(function(inp){const d=document.getElementById('alim-disp-${i}');d.textContent=inp.value?(+inp.value).toLocaleString():'—';d.style.display='inline';inp.style.display='none';})(this)">
       </td>
       <td style="text-align:right;cursor:pointer" onclick="copyToClip('${mx||''}',this)"><span data-f="pmx" style="color:var(--bl);font-weight:600;font-size:11px">${comma(mx)||'—'}</span></td>
-      <td style="text-align:right;cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span style="font-size:11px;color:var(--rd)">${bDA}</span></td>
+      <td class="col-base" style="text-align:right;cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span style="font-size:11px;color:var(--rd)">${bDA}</span></td>
       <td style="text-align:right;cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span data-f="pda" class="da" style="color:var(--or)">${pDA}</span></td>
       <td style="text-align:right;cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span data-f="mda" style="font-size:11px;color:var(--bl);font-weight:600">${mDA}</span></td>
-      <td style="text-align:center;cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span style="color:var(--rd);font-size:10px;font-weight:600">${bRate}</span></td>
+      <td class="col-base" style="text-align:center;cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span style="color:var(--rd);font-size:10px;font-weight:600">${bRate}</span></td>
       <td style="text-align:center;cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span data-f="prate" class="re" style="color:var(--or)">${pRate}</span></td>
       <td style="text-align:center;cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span data-f="mrate" style="color:var(--bl);font-size:10px;font-weight:600">${mRate}</span></td>
       <td style="text-align:center;font-size:11px;color:var(--t2)">${shipLabel(p)}</td>
@@ -1886,13 +1890,13 @@ function renderRegProds(){
           <th style="width:90px">닉네임</th>
           <th style="width:78px">상품코드</th>
           <th style="text-align:right;width:62px">정상가</th>
-          <th style="text-align:right;width:80px;color:var(--rd)">최대할인가<br>=기본행사가 🔒</th>
+          <th class="col-base" style="text-align:right;width:80px;color:var(--rd)">최대할인가<br>=기본행사가 🔒</th>
           <th style="text-align:right;width:76px;color:var(--or)">제안행사가 <span onclick="document.querySelectorAll('[id^=alim-disp-]').forEach(d=>{d.style.display='none';const inp=document.getElementById(d.id.replace('disp','inp'));if(inp){inp.style.display='inline-block';inp.focus();inp.select();}});event.stopPropagation();" style="cursor:pointer;color:var(--ac)" title="전체 수정 모드">✏️</span></th>
           <th style="text-align:right;width:72px;color:var(--bl)">최종혜택가 🔒</th>
-          <th style="text-align:right;width:82px;color:var(--rd)">최대할인금액<br>=기본행사금액</th>
+          <th class="col-base" style="text-align:right;width:82px;color:var(--rd)">최대할인금액<br>=기본행사금액</th>
           <th style="text-align:right;width:72px;color:var(--or)">제안행사금액</th>
           <th style="text-align:right;width:72px;color:var(--bl)">최종혜택금액</th>
-          <th style="text-align:right;width:80px;color:var(--rd)">최대할인율<br>=기본행사율</th>
+          <th class="col-base" style="text-align:right;width:80px;color:var(--rd)">최대할인율<br>=기본행사율</th>
           <th style="text-align:right;width:60px;color:var(--or)">제안행사율</th>
           <th style="text-align:right;width:60px;color:var(--bl)">최종혜택율</th>
           <th style="width:56px">배송</th>
@@ -2309,13 +2313,13 @@ function buildGroupHtml(eName,grp,tabNum){
     <th style="width:90px">닉네임 <button onclick="copyColAll('nick',this)" title="이 행사 닉네임 전체 복사" style="padding:1px 4px;border:0.5px solid var(--bd);border-radius:4px;background:var(--gs);color:var(--t3);cursor:pointer;margin-left:3px;line-height:1"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" style="vertical-align:middle"><rect x="4" y="0" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="0" y="4" width="8" height="8" rx="1.5" fill="var(--gs)" stroke="currentColor" stroke-width="1.5"/></svg></button></th>
     <th style="width:78px">상품코드 <button onclick="copyColAll('code',this)" title="이 행사 상품코드 전체 복사" style="padding:1px 4px;border:0.5px solid var(--bd);border-radius:4px;background:var(--gs);color:var(--t3);cursor:pointer;margin-left:3px;line-height:1"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" style="vertical-align:middle"><rect x="4" y="0" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="0" y="4" width="8" height="8" rx="1.5" fill="var(--gs)" stroke="currentColor" stroke-width="1.5"/></svg></button></th>
     <th style="text-align:right;width:62px">정상가</th>
-    <th style="text-align:right;width:80px;color:var(--rd)">최대할인가<br>=기본행사가</th>
+    <th class="col-base" style="text-align:right;width:80px;color:var(--rd)">최대할인가<br>=기본행사가</th>
     <th style="text-align:right;width:76px;color:var(--or)">제안행사가</th>
     <th style="text-align:right;width:70px;color:var(--bl)">최종혜택가</th>
-    <th style="text-align:right;width:82px;color:var(--rd)">최대할인금액<br>=기본행사금액</th>
+    <th class="col-base" style="text-align:right;width:82px;color:var(--rd)">최대할인금액<br>=기본행사금액</th>
     <th style="text-align:right;width:70px;color:var(--or)">제안행사금액</th>
     <th style="text-align:right;width:70px;color:var(--bl)">최종혜택금액</th>
-    <th style="text-align:right;width:80px;color:var(--rd)">최대할인율<br>=기본행사율</th>
+    <th class="col-base" style="text-align:right;width:80px;color:var(--rd)">최대할인율<br>=기본행사율</th>
     <th style="text-align:right;width:58px;color:var(--or)">제안행사율</th>
     <th style="text-align:right;width:58px;color:var(--bl)">최종혜택율</th>
     <th style="width:56px">배송</th>
@@ -2431,13 +2435,13 @@ function buildProdRow(p,tabNum,grpEnded,lbl){
     <td data-col="nick" data-val="${p.skuNick||p.productName}" style="font-weight:600"><span style="display:inline-flex;align-items:center;gap:4px"><span onclick="copyToClip('${p.skuNick||p.productName}',this);event.stopPropagation()" style="cursor:pointer">${p.skuNick||p.productName||'—'}</span><button onclick="copyToClip('${p.productName||p.skuNick}',this);event.stopPropagation()" title="${p.productName||p.skuNick}" style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border:0.5px solid var(--bd);border-radius:4px;background:var(--gs);cursor:pointer;flex-shrink:0;opacity:.55;padding:0"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" style="vertical-align:middle"><path d="M2 2h6a1 1 0 011 1v7a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M4 0h5a1 1 0 011 1v7"/></svg></button></span></td>
     <td data-col="code" data-val="${p.skuCode||''}" style="font-size:10px;color:var(--t3);cursor:pointer;text-align:center" onclick="copyToClip('${p.skuCode||''}',this);event.stopPropagation()">${p.skuCode||'—'}</td>
     <td style="text-align:right"><span class="pn">${comma(p.priceNormal)}</span></td>
-    <td style="text-align:right"><span style="color:var(--rd);font-size:11.5px;font-weight:600">${comma(evPrice)}</span></td>
+    <td class="col-base" style="text-align:right"><span style="color:var(--rd);font-size:11.5px;font-weight:600">${comma(evPrice)}</span></td>
     <td style="text-align:right"><b class="pe" style="color:var(--or)">${comma(alimPrice)}</b></td>
     <td style="text-align:right"><span class="pm" style="color:var(--bl);font-weight:600">${comma(p.priceMax)}</span></td>
-    <td style="text-align:right"><span style="color:var(--rd)">${bDA2!=='—'?'▼'+bDA2:'—'}</span></td>
+    <td class="col-base" style="text-align:right"><span style="color:var(--rd)">${bDA2!=='—'?'▼'+bDA2:'—'}</span></td>
     <td style="text-align:right"><span class="da" style="color:var(--or)">${eDA!=='—'?'▼'+eDA:'—'}</span></td>
     <td style="text-align:right"><span class="da-bl" style="color:var(--bl)">${mDA!=='—'?'▼'+mDA:'—'}</span></td>
-    <td style="text-align:right"><span style="color:var(--rd);font-size:10px">${bRate2}</span></td>
+    <td class="col-base" style="text-align:right"><span style="color:var(--rd);font-size:10px">${bRate2}</span></td>
     <td style="text-align:right"><span class="re" style="color:var(--or)">${eRate}</span></td>
     <td style="text-align:right"><span class="rm" style="color:var(--bl)">${mRate}</span></td>
     <td style="text-align:center;font-size:11px;color:var(--t2)">${shipLabel(p)}</td>
@@ -3029,6 +3033,14 @@ window.bulkDelete=async function(tab){
   clearBulkSelect(tab);
   renderPropList(tab);
   toast(`🗑 ${ids.length}건 삭제됨 (저장 필요)`,'ok');
+};
+window.toggleBaseCols=function(tab){
+  const listEl=document.getElementById('prop-list-'+tab);
+  if(!listEl)return;
+  const hide=!listEl.classList.contains('hide-base-cols');
+  listEl.classList.toggle('hide-base-cols',hide);
+  const btn=document.getElementById('toggle-base-cols-'+tab);
+  if(btn)btn.textContent=hide?'기본행사가 보이기':'기본행사가 숨기기';
 };
 window.togglePeriodChips=function(tab){
   const listEl=document.getElementById('prop-list-'+tab);

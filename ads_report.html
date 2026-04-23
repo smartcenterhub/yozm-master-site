@@ -3129,33 +3129,33 @@ function rptMakeRow(blk) {
   const isAuto = type !== 'text';
   const row = document.createElement('div');
   row.style.cssText = 'display:flex;align-items:center;gap:6px;padding:2px 0';
-  row.addEventListener('dragover', e => { if(!_rptDragSrc) return; e.preventDefault(); e.dataTransfer.dropEffect = 'move'; row.style.borderTop = '2px solid var(--accent)'; });
-  row.addEventListener('dragleave', () => row.style.borderTop = '');
-  row.addEventListener('drop', e => {
-    if(!_rptDragSrc) return;
-    e.preventDefault(); row.style.borderTop = '';
-    if (_rptDragSrc !== row) row.parentNode.insertBefore(_rptDragSrc, row);
-  });
 
-  const handle = document.createElement('span');
-  handle.textContent = '⠿';
-  handle.draggable = true;
-  handle.style.cssText = 'font-size:13px;color:var(--t3);cursor:grab;padding:0 2px;opacity:.3;user-select:none;flex-shrink:0';
-  handle.addEventListener('mouseenter', () => { handle.style.opacity = '.7'; });
-  handle.addEventListener('mouseleave', () => { handle.style.opacity = '.3'; });
-  handle.addEventListener('dragstart', e => {
-    _rptDragSrc = row;
-    e.dataTransfer.effectAllowed = 'move';
-    try { e.dataTransfer.setData('text/plain', 'rpt-block'); } catch(_) {}
-    row.style.opacity = '0.5';
-    handle.style.cursor = 'grabbing';
+  // 위/아래 이동 버튼 (드래그 대신)
+  const moveWrap = document.createElement('div');
+  moveWrap.style.cssText = 'display:flex;flex-direction:column;gap:1px;flex-shrink:0;opacity:.35;transition:opacity .12s';
+  row.addEventListener('mouseenter', () => moveWrap.style.opacity = '1');
+  row.addEventListener('mouseleave', () => moveWrap.style.opacity = '.35');
+
+  const makeMoveBtn = (label, title, fn) => {
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.title = title;
+    b.style.cssText = 'width:16px;height:13px;line-height:1;padding:0;border-radius:3px;border:0.5px solid var(--glass-border-s);background:var(--glass-bg);font-size:9px;cursor:pointer;color:var(--t2);display:flex;align-items:center;justify-content:center';
+    b.addEventListener('mouseenter', () => { b.style.background = 'var(--glass-bg-strong)'; b.style.color = 'var(--accent)'; });
+    b.addEventListener('mouseleave', () => { b.style.background = 'var(--glass-bg)'; b.style.color = 'var(--t2)'; });
+    b.onclick = fn;
+    return b;
+  };
+  const upBtn = makeMoveBtn('▲', '위로', () => {
+    const prev = row.previousElementSibling;
+    if (prev) row.parentNode.insertBefore(row, prev);
   });
-  handle.addEventListener('dragend', () => {
-    _rptDragSrc = null;
-    row.style.opacity = '';
-    handle.style.cursor = 'grab';
-    document.querySelectorAll('#rptBlocks > div').forEach(r => r.style.borderTop = '');
+  const dnBtn = makeMoveBtn('▼', '아래로', () => {
+    const next = row.nextElementSibling;
+    if (next) row.parentNode.insertBefore(next, row);
   });
+  moveWrap.appendChild(upBtn);
+  moveWrap.appendChild(dnBtn);
 
   const textEl = document.createElement('div');
   textEl.contentEditable = isAuto ? 'false' : 'true';
@@ -3233,7 +3233,7 @@ function rptMakeRow(blk) {
   if (!isAuto) [boldBtn, indLeft, indRight, delBtn].forEach(b => actions.appendChild(b));
   else actions.appendChild(delBtn);
   [boldBtn, indLeft, indRight].forEach(b => { b.style.display = isAuto ? 'none' : ''; });
-  [handle, textEl, typeBadge, actions].forEach(el => row.appendChild(el));
+  [moveWrap, textEl, typeBadge, actions].forEach(el => row.appendChild(el));
   return row;
 }
 

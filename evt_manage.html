@@ -299,6 +299,8 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .grp-cb{width:15px;height:15px;cursor:pointer;accent-color:#3a3af0;flex-shrink:0}
 .hide-period-chips [id$="-period-chips"]{display:none!important}
 .hide-base-cols .col-base{display:none!important}
+.toggle-hide-btn{font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer}
+.toggle-hide-btn.active{background:rgba(58,58,240,.1)!important;border-color:rgba(58,58,240,.4)!important;color:var(--ac)!important;font-weight:600}
 </style>
 </head>
 <body>
@@ -580,8 +582,8 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
       <button onclick="toggleSkuSearch2()" id="sku-search-tog-2" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:5px">
         <span>상품으로 검색하기</span><span id="sku-search-arrow-2" style="font-size:10px">▶</span>
       </button>
-      <button id="toggle-period-chips-2" onclick="togglePeriodChips(2)" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer">제안일정 숨기기</button>
-      <button id="toggle-base-cols-2" onclick="toggleBaseCols(2)" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer">기본행사가 숨기기</button>
+      <button id="toggle-period-chips-2" onclick="togglePeriodChips(2)" class="toggle-hide-btn">제안일정 숨기기</button>
+      <button id="toggle-base-cols-2" onclick="toggleBaseCols(2)" class="toggle-hide-btn">기본행사가 숨기기</button>
     </div>
     <div id="sku-search-panel-2" style="display:none;margin-top:8px;padding:12px 14px;background:var(--gb);border:0.5px solid var(--bd);border-radius:var(--rl)">
       <div id="sku-search-btns-2"></div>
@@ -650,8 +652,8 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
       <button onclick="toggleSkuSearch(3)" id="sku-search-tog-3" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:5px">
         <span>상품으로 검색하기</span><span id="sku-search-arrow-3" style="font-size:10px">▶</span>
       </button>
-      <button id="toggle-period-chips-3" onclick="togglePeriodChips(3)" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer">제안일정 숨기기</button>
-      <button id="toggle-base-cols-3" onclick="toggleBaseCols(3)" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer">기본행사가 숨기기</button>
+      <button id="toggle-period-chips-3" onclick="togglePeriodChips(3)" class="toggle-hide-btn">제안일정 숨기기</button>
+      <button id="toggle-base-cols-3" onclick="toggleBaseCols(3)" class="toggle-hide-btn">기본행사가 숨기기</button>
     </div>
     <div id="sku-search-panel-3" style="display:none;margin-top:8px;padding:12px 14px;background:var(--gb);border:0.5px solid var(--bd);border-radius:var(--rl)">
       <div id="sku-search-btns-3"></div>
@@ -738,8 +740,8 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
       <button onclick="toggleSkuSearch(5)" id="sku-search-tog-5" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:5px">
         <span>상품으로 검색하기</span><span id="sku-search-arrow-5" style="font-size:10px">▶</span>
       </button>
-      <button id="toggle-period-chips-5" onclick="togglePeriodChips(5)" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer">제안일정 숨기기</button>
-      <button id="toggle-base-cols-5" onclick="toggleBaseCols(5)" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer">기본행사가 숨기기</button>
+      <button id="toggle-period-chips-5" onclick="togglePeriodChips(5)" class="toggle-hide-btn">제안일정 숨기기</button>
+      <button id="toggle-base-cols-5" onclick="toggleBaseCols(5)" class="toggle-hide-btn">기본행사가 숨기기</button>
     </div>
     <div id="sku-search-panel-5" style="display:none;margin-top:8px;padding:12px 14px;background:var(--gb);border:0.5px solid var(--bd);border-radius:var(--rl)">
       <div id="sku-search-btns-5"></div>
@@ -3040,7 +3042,7 @@ window.toggleBaseCols=function(tab){
   const hide=!listEl.classList.contains('hide-base-cols');
   listEl.classList.toggle('hide-base-cols',hide);
   const btn=document.getElementById('toggle-base-cols-'+tab);
-  if(btn)btn.textContent=hide?'기본행사가 보이기':'기본행사가 숨기기';
+  if(btn){btn.textContent=hide?'기본행사가 보이기':'기본행사가 숨기기';btn.classList.toggle('active',hide);}
 };
 window.togglePeriodChips=function(tab){
   const listEl=document.getElementById('prop-list-'+tab);
@@ -3048,7 +3050,7 @@ window.togglePeriodChips=function(tab){
   const hide=!listEl.classList.contains('hide-period-chips');
   listEl.classList.toggle('hide-period-chips',hide);
   const btn=document.getElementById('toggle-period-chips-'+tab);
-  if(btn)btn.textContent=hide?'제안일정 보이기':'제안일정 숨기기';
+  if(btn){btn.textContent=hide?'제안일정 보이기':'제안일정 숨기기';btn.classList.toggle('active',hide);}
 };
 window.toggleMonthSection=function(m){
   if(!window._monthOpen)window._monthOpen={};
@@ -3112,6 +3114,13 @@ window.resetFilters=function(tab){
   buildSkuSearchBtns(tab);
   const selEl=document.getElementById('sku-search-selected-'+tab);
   if(selEl)selEl.textContent='없음';
+  /* 숨기기 버튼 초기화 */
+  const listEl=document.getElementById('prop-list-'+tab);
+  if(listEl){listEl.classList.remove('hide-period-chips','hide-base-cols');}
+  const pb=document.getElementById('toggle-period-chips-'+tab);
+  if(pb){pb.textContent='제안일정 숨기기';pb.classList.remove('active');}
+  const bb=document.getElementById('toggle-base-cols-'+tab);
+  if(bb){bb.textContent='기본행사가 숨기기';bb.classList.remove('active');}
   renderPropList(tab);
 };
 

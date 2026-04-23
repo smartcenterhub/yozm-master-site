@@ -297,6 +297,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .bab-btn.rej{color:var(--rd);border-color:rgba(153,27,27,.4)}
 .bab-btn.del{color:#fff;background:#dc2626;border-color:#dc2626}
 .grp-cb{width:15px;height:15px;cursor:pointer;accent-color:#3a3af0;flex-shrink:0}
+.hide-period-chips [id$="-period-chips"]{display:none!important}
 </style>
 </head>
 <body>
@@ -640,9 +641,12 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   </div>
   <!-- 상품으로 검색하기 + 액션바 -->
   <div style="margin-bottom:6px">
-    <button onclick="toggleSkuSearch(3)" id="sku-search-tog-3" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:5px">
-      <span>상품으로 검색하기</span><span id="sku-search-arrow-3" style="font-size:10px">▶</span>
-    </button>
+    <div style="display:flex;align-items:center;gap:6px">
+      <button onclick="toggleSkuSearch(3)" id="sku-search-tog-3" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:5px">
+        <span>상품으로 검색하기</span><span id="sku-search-arrow-3" style="font-size:10px">▶</span>
+      </button>
+      <button id="toggle-period-chips-3" onclick="togglePeriodChips(3)" style="font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer">제안일정 숨기기</button>
+    </div>
     <div id="sku-search-panel-3" style="display:none;margin-top:8px;padding:12px 14px;background:var(--gb);border:0.5px solid var(--bd);border-radius:var(--rl)">
       <div id="sku-search-btns-3"></div>
       <div style="margin-top:8px;font-size:11px;color:var(--t3)">선택됨: <span id="sku-search-selected-3" style="color:var(--ac);font-weight:600">없음</span></div>
@@ -2341,24 +2345,6 @@ function buildGroupHtml(eName,grp,tabNum){
       </div>
     </div>
     <div class="egrpbody${allDone&&tabNum===2?' done-state':''}" id="${grpId}-body">
-      <div class="date-chip-row">
-        <span style="font-size:10.5px;color:var(--t3);margin-right:2px">제안 일정</span>
-        <span id="chip-upload-${grpId}" class="${(ev?.proposalUploadedAt||m.proposalUploadedAt)?'date-chip chip-filled':'date-chip'}" onclick="switchCalMode('${grpId}','upload')">
-          📅 <span id="lbl-upload-${grpId}">${(ev?.proposalUploadedAt||m.proposalUploadedAt)?'업로드 '+(ev?.proposalUploadedAt||m.proposalUploadedAt).substring(5).replace('-','/'):'업로드 미입력'}</span>
-        </span>
-        <span id="chip-deadline-${grpId}" class="${(ev?.proposalDeadline||m.proposalDeadline)?'date-chip chip-filled':'date-chip'}" onclick="switchCalMode('${grpId}','deadline')">
-          📅 <span id="lbl-deadline-${grpId}">${(ev?.proposalDeadline||m.proposalDeadline)?'마감 '+(ev?.proposalDeadline||m.proposalDeadline).substring(5).replace('-','/'):'마감 미입력'}</span>
-        </span>
-        <span id="chip-propdate-${grpId}" class="${m.proposalMyDate?'date-chip chip-filled':'date-chip'}" onclick="toggleDateChip('expand-propdate-${grpId}')">
-          📅 <span id="lbl-propdate-${grpId}">${m.proposalMyDate?'제안일 '+m.proposalMyDate.substring(5).replace('-','/'):'제안일 미입력'}</span>
-        </span>
-      </div>
-      <div class="date-chip-expand" id="expand-propdate-${grpId}">
-        <span class="dce-lbl">제안일</span>
-        <input type="date" id="date-propdate-${grpId}" value="${m.proposalMyDate||''}">
-        <button class="btn btn-sm btn-fw-apply" onclick="saveDateChip('${grpId}','propdate','제안일')">적용</button>
-        <button class="btn btn-sm btn-fw-close" onclick="closeDateChip('expand-propdate-${grpId}')">닫기</button>
-      </div>
       ${selEditHtml}
       <div class="grp-add-panel" id="grpadd-${grpId}">
         <div style="font-size:11.5px;font-weight:700;color:var(--t2);margin-bottom:8px">상품 추가 — ${eName}</div>
@@ -3037,6 +3023,14 @@ window.bulkDelete=async function(tab){
   clearBulkSelect(tab);
   renderPropList(tab);
   toast(`🗑 ${ids.length}건 삭제됨 (저장 필요)`,'ok');
+};
+window.togglePeriodChips=function(tab){
+  const listEl=document.getElementById('prop-list-'+tab);
+  if(!listEl)return;
+  const hide=!listEl.classList.contains('hide-period-chips');
+  listEl.classList.toggle('hide-period-chips',hide);
+  const btn=document.getElementById('toggle-period-chips-'+tab);
+  if(btn)btn.textContent=hide?'제안일정 보이기':'제안일정 숨기기';
 };
 window.toggleMonthSection=function(m){
   if(!window._monthOpen)window._monthOpen={};

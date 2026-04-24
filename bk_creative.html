@@ -52,9 +52,9 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 .pdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .pname{font-weight:500}
 .ptime{color:var(--t3)}
-.cal-layout{display:flex;gap:14px;align-items:flex-start;width:1132px}
+.cal-layout{display:flex;gap:14px;align-items:flex-start}
 .cal-main{width:850px;flex-shrink:0;overflow-x:auto}
-.cal-detail{width:268px;flex-shrink:0;background:var(--gbs);border:1px solid var(--gbd);border-radius:10px;padding:14px;position:sticky;top:20px;max-height:82vh;overflow-y:auto}
+.cal-detail{flex:1;min-width:0;background:var(--gbs);border:1px solid var(--gbd);border-radius:10px;padding:14px;position:sticky;top:20px;max-height:82vh;overflow-y:auto}
 .cal-nav{display:flex;align-items:center;gap:8px;margin-bottom:10px;width:1132px}
 .cnbtn{background:var(--gbs);border:1px solid var(--gbd);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--t2);font-family:inherit}
 .cnbtn:hover{color:var(--tx)}
@@ -214,17 +214,33 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
       <input type="text" id="nameInput" class="inp" placeholder="예) 5월푸페_5종_0504-0510" style="width:100%;font-size:12px;font-weight:600" oninput="this.value=this.value.replace(/\s/g,'')" onpaste="setTimeout(()=>{this.value=this.value.replace(/\s/g,'')},0)">
     </div>
     <!-- 기간 -->
-    <div>
-      <div class="fl" style="font-size:10px;margin-bottom:4px">기간 <span style="font-size:9.5px;color:var(--t3);font-weight:400">YYYY-MM-DD-HHMM</span></div>
-      <div style="display:flex;gap:6px;align-items:center">
-        <input type="text" id="startRaw" class="inp" placeholder="2026-04-07-0000" style="flex:1;font-size:10px">
-        <button type="button" class="btn btn-g btn-sm" onclick="checkDt('startRaw','startInput')" style="padding:0 8px">✓</button>
-        <span style="font-size:10px;color:var(--t3)">~</span>
-        <input type="text" id="endRaw" class="inp" placeholder="2026-04-10-2359" style="flex:1;font-size:10px">
-        <button type="button" class="btn btn-g btn-sm" onclick="checkDt('endRaw','endInput')" style="padding:0 8px">✓</button>
+    <div style="display:flex;gap:10px;align-items:flex-start">
+      <!-- 행사 기간 읽기전용 -->
+      <div style="flex:1">
+        <div class="fl" style="font-size:10px">행사 기간</div>
+        <div id="evtPeriodDisplay" style="font-size:10px;color:var(--t3);background:var(--gbs);border-radius:6px;padding:6px 10px;line-height:1.8;min-height:34px">—</div>
+        <input type="hidden" id="evtStartHidden">
+        <input type="hidden" id="evtEndHidden">
       </div>
-      <input type="hidden" id="startInput">
-      <input type="hidden" id="endInput">
+      <!-- 브검 운영기간 -->
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">
+          <span style="font-size:10px;color:var(--ac);font-weight:600">브검 운영기간</span>
+          <button type="button" class="btn btn-g btn-sm" onclick="syncBkPeriod()" style="font-size:9.5px;padding:1px 7px">↺ 행사기간으로</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;gap:4px">
+            <input type="text" id="startRaw" class="inp" placeholder="2026-04-07-0000" style="flex:1;font-size:10px">
+            <button type="button" class="btn btn-g btn-sm" onclick="checkDt('startRaw','startInput')" style="padding:0 8px">✓</button>
+          </div>
+          <div style="display:flex;gap:4px">
+            <input type="text" id="endRaw" class="inp" placeholder="2026-04-10-2359" style="flex:1;font-size:10px">
+            <button type="button" class="btn btn-g btn-sm" onclick="checkDt('endRaw','endInput')" style="padding:0 8px">✓</button>
+          </div>
+        </div>
+        <input type="hidden" id="startInput">
+        <input type="hidden" id="endInput">
+      </div>
     </div>
     <!-- 랜딩링크 -->
     <div>
@@ -492,7 +508,7 @@ function setCalView(v) {
 
 /* ── 파일 드롭 ── */
 function resetForm() {
-  ['pcIdInput','moIdInput','nameInput','startInput','endInput','startRaw','endRaw','pcImgUrlInput','moImgUrlInput','landingUrlInput'].forEach(function(id) { var el=document.getElementById(id); if(el) el.value=''; });
+  ['pcIdInput','moIdInput','nameInput','startInput','endInput','startRaw','endRaw','pcImgUrlInput','moImgUrlInput','landingUrlInput','evtStartHidden','evtEndHidden'].forEach(function(id) { var el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('startRaw').style.borderColor=''; document.getElementById('endRaw').style.borderColor='';
   document.getElementById('pcDropText').textContent = '클릭 또는 드래그'; document.getElementById('pcDropText').className = 'fdrop-t';
   document.getElementById('moDropText').textContent = '클릭 또는 드래그'; document.getElementById('moDropText').className = 'fdrop-t';
@@ -709,7 +725,7 @@ function editCr(id) {
   const linkEl = card.querySelector('.edit-link');
   const pcIdEl = card.querySelector('.edit-pcid');
   const moIdEl = card.querySelector('.edit-moid');
-  const btnEl = card.querySelector('.edit-btns');
+  const btnEl = card.querySelector('.hcard-btns') || card.querySelector('.edit-btns');
   if (nameEl) nameEl.innerHTML = '<input class="inp" id="ei-name" value="' + (c.name||'') + '" style="width:100%;font-size:12px;font-weight:600">';
   if (periodEl) periodEl.innerHTML =
     '<div style="display:flex;gap:6px">' +
@@ -720,7 +736,8 @@ function editCr(id) {
   if (linkEl) linkEl.innerHTML = '<input class="inp" id="ei-landingUrl" value="' + (c.landingUrl||'') + '" placeholder="https://..." style="width:100%;font-size:10px;flex:1">';
   if (pcIdEl) pcIdEl.innerHTML = '<input class="inp" id="ei-pcId" value="' + (c.pcId||'') + '" style="font-size:9px;width:100%">';
   if (moIdEl) moIdEl.innerHTML = '<input class="inp" id="ei-moId" value="' + (c.moId||'') + '" style="font-size:9px;width:100%">';
-  if (btnEl) btnEl.innerHTML =
+  const btnEl2 = card.querySelector('.hcard-btns') || card.querySelector('.edit-btns');
+  if (btnEl2) btnEl2.innerHTML =
     '<button class="btn btn-p btn-sm" onclick="saveInlineEdit(\'' + id + '\')">💾 저장</button>' +
     '<button class="btn btn-g btn-sm" onclick="renderHist()">✕</button>';
 }
@@ -746,7 +763,11 @@ async function saveInlineEdit(id) {
   const ex = _cr[id] || {};
   const pcImgUrl = pcId ? GH_BASE + pcId + '.png' : (ex.pcImgUrl || null);
   const moImgUrl = moId ? GH_BASE + moId + '.png' : (ex.moImgUrl || null);
-  const data = Object.assign({}, ex, { name, startAt, endAt, pcId, moId, landingUrl: landingUrl || null, pcImgUrl, moImgUrl, updatedAt: new Date().toISOString() });
+  const evtStartHidden = document.getElementById('evtStartHidden');
+  const evtEndHidden = document.getElementById('evtEndHidden');
+  const eventStartAt = evtStartHidden ? (evtStartHidden.value ? parseShortDtStr(evtStartHidden.value) : null) : null;
+  const eventEndAt = evtEndHidden ? (evtEndHidden.value ? parseShortDtStr(evtEndHidden.value) : null) : null;
+  const data = Object.assign({}, ex, { name, startAt, endAt, eventStartAt: eventStartAt || startAt, eventEndAt: eventEndAt || endAt, pcId, moId, landingUrl: landingUrl || null, pcImgUrl, moImgUrl, updatedAt: new Date().toISOString() });
   try {
     await window._bkFs.save(id, data);
     _cr[id] = data;
@@ -930,17 +951,23 @@ function renderHist() {
       html += '<input type="checkbox" class="hcb hcard-cb" data-id="' + id + '">';
       html += '<div style="width:8px;height:8px;border-radius:50%;background:' + col + ';flex-shrink:0"></div>';
       html += '<div class="edit-name" style="font-size:12.5px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + cr.name + '</div>';
-      html += '<span class="status-badge ' + _stCls(st) + '" style="margin-left:auto;flex-shrink:0" id="hst-' + id + '">' + st + '</span>';
-      html += '<span class="edit-btns" style="display:flex;gap:4px"><button class="btn btn-g btn-sm" onclick="editCr(\'' + id + '\')">✏️</button><button class="btn btn-r btn-sm" onclick="deleteCr(\'' + id + '\')">🗑</button></span>';
+      html += '<span class="hcard-btns" style="margin-left:auto;display:flex;gap:4px;flex-shrink:0"><button class="btn btn-g btn-sm" onclick="editCr(\'' + id + '\')">✏️</button><button class="btn btn-r btn-sm" onclick="deleteCr(\'' + id + '\')">🗑</button></span>';
+      html += '<span class="status-badge ' + _stCls(st) + '" style="flex-shrink:0" id="hst-' + id + '">' + st + '</span>';
       html += '</div>';
-      html += '<div class="edit-period" style="margin-bottom:6px"><span style="font-size:10.5px;color:var(--t2);background:rgba(58,58,240,0.05);border-radius:5px;padding:2px 8px;display:inline-block">'
-        + fmtDt(cr.startAt) + ' ~ ' + fmtDt(cr.endAt)
-        + (dur ? '<span style="font-size:10px;color:var(--t3);margin-left:6px">' + dur + '</span>' : '')
-        + '</span></div>';
-      html += '<div style="display:flex;align-items:center;gap:6px;margin:7px 0 10px">';
-      html += '<span style="font-size:10px;font-weight:500;color:var(--t3);white-space:nowrap">랜딩링크</span>';
-      html += '<span class="edit-link" style="flex:1;min-width:0">' + (link ? '<div class="hist-link-url" onclick="copyHistLink(this)" title="클릭하면 복사">' + link + '</div>' : '<div class="hist-link-url empty">링크 없음</div>') + '</span>';
-      html += '</div>';
+      const evtDur = cr.eventStartAt ? _dur(cr.eventStartAt, cr.eventEndAt) : '';
+      html += '<div class="edit-period" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">';
+      if (cr.eventStartAt && (cr.eventStartAt !== cr.startAt || cr.eventEndAt !== cr.endAt)) {
+        html += '<div style="display:flex;align-items:center;gap:5px">'
+          + '<span style="font-size:9.5px;color:var(--t3);font-weight:500;white-space:nowrap">행사</span>'
+          + '<span style="font-size:10px;color:var(--t3);background:var(--gbs);border-radius:4px;padding:2px 8px;white-space:nowrap">' + fmtDt(cr.eventStartAt) + ' ~ ' + fmtDt(cr.eventEndAt) + (evtDur ? ' <span style="color:var(--t3);margin-left:3px">' + evtDur + '</span>' : '') + '</span>'
+          + '</div>'
+          + '<span style="color:var(--gbd);font-size:10px">|</span>';
+      }
+      html += '<div style="display:flex;align-items:center;gap:5px">'
+        + '<span style="font-size:9.5px;color:var(--ac);font-weight:600;white-space:nowrap">브검</span>'
+        + '<span style="font-size:10.5px;color:var(--t2);background:rgba(58,58,240,0.05);border-radius:5px;padding:2px 8px;white-space:nowrap">' + fmtDt(cr.startAt) + ' ~ ' + fmtDt(cr.endAt) + (dur ? ' <span style="font-size:10px;color:var(--t3);margin-left:4px">' + dur + '</span>' : '') + '</span>'
+        + '</div>'
+        + '</div>';
       html += '<div style="display:flex;gap:10px">';
       html += '<div style="flex:1">'
         + '<div style="font-size:10px;font-weight:500;margin-bottom:5px;display:flex;align-items:center;gap:5px;flex-wrap:wrap"><span class="pcb">PC</span>'
@@ -954,6 +981,10 @@ function renderHist() {
         + '</div>'
         + (cr.moImgUrl ? '<img src="' + cr.moImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" onclick="copyGhImg(\'' + cr.moImgUrl + '\')" title="클릭하면 복사" style="' + iStyle + '">' : noImg)
         + '</div></div>';
+      html += '<div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:0.5px solid var(--gbd)">';
+      html += '<span style="font-size:10px;font-weight:500;color:var(--t3);white-space:nowrap">랜딩링크</span>';
+      html += '<span class="edit-link" style="flex:1;min-width:0">' + (link ? '<div class="hist-link-url" onclick="copyHistLink(this)" title="클릭하면 복사">' + link + '</div>' : '<div class="hist-link-url empty">링크 없음</div>') + '</span>';
+      html += '</div>';
       html += '</div>'; /* hist-card 닫기 */
     });
     html += '</div>'; /* grid(secId) 닫기 */
@@ -1260,16 +1291,23 @@ function onEventSelect(id) {
   const ed = e.endDate || '';
   const stRaw = document.getElementById('startRaw');
   const edRaw = document.getElementById('endRaw');
-  if (sd && stRaw) {
-    const t = (e.startTime || '0000').padStart(4,'0');
-    stRaw.value = sd + '-' + t.slice(0,2) + t.slice(2,4);
-    checkDt('startRaw','startInput');
+  const stVal = sd ? sd + '-' + (e.startTime||'0000').padStart(4,'0').slice(0,2) + (e.startTime||'0000').padStart(4,'0').slice(2,4) : '';
+  const edVal = ed ? ed + '-' + (e.endTime||'2359').padStart(4,'0').slice(0,2) + (e.endTime||'2359').padStart(4,'0').slice(2,4) : '';
+  // 행사기간 표시
+  const evtDisp = document.getElementById('evtPeriodDisplay');
+  if (evtDisp && sd && ed) {
+    const sdD = new Date(sd), edD = new Date(ed);
+    const DOW2 = ['일','월','화','수','목','금','토'];
+    const fmt2 = function(d, t) { return (d.getMonth()+1) + '/' + d.getDate() + '(' + DOW2[d.getDay()] + ') ' + t.slice(0,2) + ':' + t.slice(2,4); };
+    const st2 = (e.startTime||'0000').padStart(4,'0');
+    const et2 = (e.endTime||'2359').padStart(4,'0');
+    evtDisp.textContent = fmt2(sdD, st2) + ' ~ ' + fmt2(edD, et2);
   }
-  if (ed && edRaw) {
-    const t = (e.endTime || '2359').padStart(4,'0');
-    edRaw.value = ed + '-' + t.slice(0,2) + t.slice(2,4);
-    checkDt('endRaw','endInput');
-  }
+  document.getElementById('evtStartHidden').value = stVal;
+  document.getElementById('evtEndHidden').value = edVal;
+  // 브검 운영기간 기본값 = 행사기간
+  if (stVal && stRaw) { stRaw.value = stVal; checkDt('startRaw','startInput'); }
+  if (edVal && edRaw) { edRaw.value = edVal; checkDt('endRaw','endInput'); }
   // 랜딩링크
   const luEl = document.getElementById('landingUrlInput');
   if (luEl) luEl.value = e.landingUrl || e.link || '';
@@ -1286,6 +1324,15 @@ function onEventSelect(id) {
   if (nameEl && typeNick) {
     nameEl.value = [mm + '월' + typeNick, prodStr, sdStr + '-' + edStr].filter(Boolean).join('_');
   }
+}
+
+function syncBkPeriod() {
+  const stH = document.getElementById('evtStartHidden');
+  const edH = document.getElementById('evtEndHidden');
+  const stRaw = document.getElementById('startRaw');
+  const edRaw = document.getElementById('endRaw');
+  if (stH && stH.value && stRaw) { stRaw.value = stH.value; checkDt('startRaw','startInput'); }
+  if (edH && edH.value && edRaw) { edRaw.value = edH.value; checkDt('endRaw','endInput'); }
 }
 
 function renderAll() {

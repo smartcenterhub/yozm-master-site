@@ -381,29 +381,27 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
           <div class="fg" style="flex:1.6">
             <div style="display:flex;flex-direction:column;gap:5px">
               <!-- 랜딩페이지 -->
+              <!-- 랜딩 -->
               <div style="display:flex;align-items:center;gap:5px">
                 <span style="font-size:10px;color:var(--t3);width:32px;flex-shrink:0">랜딩</span>
                 <div style="display:flex;gap:3px;flex-wrap:wrap;flex:1" id="landing-chips-reg">
-                  <span style="display:inline-flex;align-items:center;gap:2px">
-                    <button class="lchip" data-type="상품바로랜딩" onclick="toggleLandingChip(this,'reg')">상품바로랜딩</button>
-                    <button title="상품코드로 링크 동기화" onclick="syncProductLinks()" style="width:20px;height:20px;border:0.5px solid var(--bd);border-radius:5px;background:var(--gs);color:var(--t3);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" style="vertical-align:middle"><path d="M10 6A4 4 0 112 6"/><path d="M10 3v3h-3"/></svg></button>
-                    <button title="샘플에 추가" onclick="applyProductLinks()" style="width:20px;height:20px;border:0.5px solid rgba(58,58,240,.4);border-radius:5px;background:#EEEDFE;color:#3C3489;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" style="vertical-align:middle"><path d="M6 2v8M2 6h8"/></svg></button>
-                  </span>
+                  <button class="lchip" data-type="상품바로랜딩" onclick="toggleLandingChip(this,'reg')">상품바로랜딩</button>
                   <button class="lchip" data-type="쇼핑스토리" onclick="toggleLandingChip(this,'reg')">쇼핑스토리</button>
                   <button class="lchip" data-type="카테고리" onclick="toggleLandingChip(this,'reg')">카테고리</button>
                   <button class="lchip" data-type="기타" onclick="toggleLandingChip(this,'reg')">기타</button>
                 </div>
                 <div style="display:flex;align-items:center;gap:3px;flex-shrink:0">
-                  <input id="ev-landing-url" placeholder="URL 입력" style="width:120px;height:24px;padding:0 7px;font-size:11px;border:0.5px solid var(--bd);border-radius:6px;background:var(--gs);color:var(--t1)">
-                  <button onclick="addLandingLink('reg')" style="width:24px;height:24px;border:0.5px solid rgba(58,58,240,.4);border-radius:6px;background:#EEEDFE;color:#3C3489;cursor:pointer;font-size:14px;flex-shrink:0">+</button>
+                  <button title="상품코드 자동 채우기" onclick="syncProductLinks()" style="width:22px;height:22px;border:0.5px solid var(--bd);border-radius:5px;background:var(--gs);color:var(--t3);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 6A4 4 0 112 6"/><path d="M10 3v3h-3"/></svg></button>
+                  <input id="ev-landing-url" placeholder="URL 입력" style="width:110px;height:24px;padding:0 7px;font-size:11px;border:0.5px solid var(--bd);border-radius:6px;background:var(--gs);color:var(--t1)" onkeydown="if(event.key==='Enter')addLandingLink('reg')">
+                  <button onclick="addLandingLink('reg')" style="width:24px;height:24px;border:0.5px solid rgba(58,58,240,.4);border-radius:6px;background:#EEEDFE;color:#3C3489;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2v8M2 6h8"/></svg></button>
                 </div>
               </div>
               <!-- 메모 -->
               <div style="display:flex;align-items:center;gap:5px">
                 <span style="font-size:10px;color:var(--t3);width:32px;flex-shrink:0">메모</span>
                 <button id="memo-chip-reg" class="lchip" onclick="toggleMemoChip('reg')" style="font-size:10px;padding:1px 6px">메모</button>
-                <input id="ev-adddisc" placeholder="메모 입력..." style="display:none;flex:1;height:24px;padding:0 7px;font-size:11px;border:0.5px solid var(--bd);border-radius:6px;background:var(--gs);color:var(--t1)" onchange="renderRegProds()">
-                <button title="메모 샘플에 적용" onclick="applyMemo()" style="width:20px;height:20px;border:0.5px solid rgba(58,58,240,.4);border-radius:5px;background:#EEEDFE;color:#3C3489;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" style="vertical-align:middle"><path d="M6 2v8M2 6h8"/></svg></button>
+                <input id="ev-adddisc" placeholder="메모 입력..." style="display:none;flex:1;height:24px;padding:0 7px;font-size:11px;border:0.5px solid var(--bd);border-radius:6px;background:var(--gs);color:var(--t1)">
+                <button title="메모 샘플에 적용" onclick="applyMemo()" style="width:22px;height:22px;border:0.5px solid rgba(58,58,240,.4);border-radius:5px;background:#EEEDFE;color:#3C3489;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2v8M2 6h8"/></svg></button>
               </div>
               <!-- 추가된 랜딩 링크 태그 -->
               <div id="ev-landing-tags" style="display:flex;gap:3px;flex-wrap:wrap"></div>
@@ -1819,7 +1817,7 @@ function renderRegProds(){
     `<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(26,86,200,.3);border-radius:20px;background:rgba(26,86,200,.07);color:var(--bl);font-weight:500;white-space:nowrap">${fmtDate(start,startTime)}</span>`+
     `<span style="font-size:10px;color:var(--t3)">→</span>`+
     `<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(196,90,16,.3);border-radius:20px;background:rgba(196,90,16,.07);color:var(--or);font-weight:500;white-space:nowrap">${fmtDate(end,endTime)}</span>`+
-    (dur?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(152,152,168,.3);border-radius:20px;background:rgba(152,152,168,.08);color:var(--t2);font-weight:500">[${dur}일 간]</span>`:'')+
+    (dur?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(152,152,168,.3);border-radius:20px;background:rgba(152,152,168,.08);color:var(--t2);font-weight:500;cursor:pointer" onclick="copyToClip('${start} ${startTime||'00:00'}\t${end} ${endTime||'23:59'}',this)" title="클릭 시 기간 복사">[${dur}일 간]</span>`:'')+
     adChipReg
   ):`<span style="font-size:10.5px;color:var(--t3)">기간 미설정</span>`+(adChipReg?` ${adChipReg}`:'');
 
@@ -1870,18 +1868,14 @@ function renderRegProds(){
     </tr>`;
   }).join('');
 
-  const infoTags=[
-    pageType?`<span class="st" style="background:rgba(0,0,0,.04);color:var(--t3);font-size:10px">${pageType}</span>`:'',
-    addDisc?`<span class="st" style="background:rgba(58,58,240,.07);color:var(--ac);font-size:10px">+${addDisc}</span>`:'',
-  ].filter(Boolean).join('');
+  const infoTags=''; /* 행사명 옆 태그 제거 — 링크/메모는 기간 행 우측으로 이동 */
 
   el.innerHTML=`<div class="egrp">
     <div class="egrphd" style="flex-direction:column;gap:0;padding:9px 12px">
-      <!-- 1행: 배지 + 행사명 + 상태 + 상품수 + 제안하기 -->
+      <!-- 1행: 배지 + 행사명 + 상품수 -->
       <div style="display:flex;align-items:center;gap:6px;width:100%">
         <span class="st" style="background:rgba(0,0,0,.05);color:var(${tColor});font-size:10px">${typeCode}</span>
         <span class="egrpname">${evName}</span>
-        ${infoTags}
         <span class="egrpmeta">${regProducts.length}개 상품</span>
       </div>
       <!-- 2행: 기간 칩 + 일정 칩 -->
@@ -1898,8 +1892,8 @@ function renderRegProds(){
           </span>
         </div>
         <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;margin-left:auto">
-          ${REG_PAGE_LINKS.filter(l=>l.url).map(l=>`<span class="link-chip-card" onclick="copyToClip('${l.url}',this);event.stopPropagation()" title="${l.url}">${l.type}<span class="lc-copied" style="font-size:9px;opacity:0;margin-left:2px;color:#0F6E56;transition:opacity .2s">✓</span></span>`).join('')}
-          ${(()=>{const m=$('ev-adddisc')?.value;return m?`<span class="memo-chip-card">📝메모<span class="memo-tip">${m}</span></span>`:'';})()}
+          ${REG_PAGE_LINKS.filter(l=>l.url).map(l=>`<span class="link-chip-card" onclick="copyToClip('${l.url}',this);event.stopPropagation()" title="${l.url}">🔗 ${l.type}<span class="lc-copied" style="font-size:9px;opacity:0;margin-left:2px;color:#0F6E56;transition:opacity .2s">✓</span></span>`).join('')}
+          ${(()=>{const m=$('ev-adddisc')?.value?.trim();return m?`<span class="memo-chip-card">📝 메모<span class="memo-tip">${m}</span></span>`:'';})()}
         </div>
       </div></div>
     </div>
@@ -2153,9 +2147,10 @@ window.applyProductLinks=function(){
   toast('상품 링크 '+regProducts.length+'개 추가됨');
 };
 window.applyMemo=function(){
+  const m=document.getElementById('ev-adddisc')?.value||'';
+  if(!m){toast('메모를 입력해주세요','err');return;}
   renderRegProds();
-  const m=document.getElementById('ev-adddisc')?.value;
-  if(m)toast('메모 적용됨');
+  toast('메모 샘플 적용됨');
 };
 window.toggleMemoChip=function(scope){
   const btn=document.getElementById('memo-chip-'+scope);
@@ -2338,7 +2333,7 @@ window.renderPropList=function(tabNum){
   const el=document.getElementById('prop-list-'+tabNum);
   if(!sortedEntries.length){el.innerHTML='<div style="text-align:center;padding:28px;color:var(--t3)">해당하는 항목이 없습니다</div>';return;}
 
-  if(tabNum===2){
+  if(tabNum===2||tabNum===3||tabNum===5){
     /* 월별 그룹핑 */
     const today=new Date().toISOString().substring(0,7); /* YYYY-MM */
     const nextMonth=(()=>{const d=new Date();d.setMonth(d.getMonth()+1);return d.toISOString().substring(0,7);})();
@@ -2353,7 +2348,7 @@ window.renderPropList=function(tabNum){
     /* 월 정렬: 최신순 */
     const sortedMonths=Object.keys(monthGroups).sort((a,b)=>b.localeCompare(a));
     if(!window._monthOpen)window._monthOpen={};
-    /* 현재 월만 기본 오픈 */
+    /* 현재 월+다음달 기본 오픈 */
     sortedMonths.forEach(m=>{
       if(window._monthOpen[m]===undefined)window._monthOpen[m]=(m===today||m===nextMonth);
     });
@@ -2437,7 +2432,7 @@ function buildDateChips(startDate,startTime,endDate,endTime,uploadDate,deadline,
   const sChip=startDate?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(26,86,200,.3);border-radius:20px;background:rgba(26,86,200,.07);color:var(--bl);font-weight:500;white-space:nowrap">${fmtChip(startDate,startTime)}</span>`:'';
   const arrow=startDate&&endDate?`<span style="font-size:10px;color:var(--t3)">→</span>`:'';
   const eChip=endDate?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(196,90,16,.3);border-radius:20px;background:rgba(196,90,16,.07);color:var(--or);font-weight:500;white-space:nowrap">${fmtChip(endDate,endTime)}</span>`:'';
-  const dChip=dur?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(152,152,168,.3);border-radius:20px;background:rgba(152,152,168,.08);color:var(--t2);font-weight:500">[${dur}일 간]</span>`:'';
+  const dChip=dur?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(152,152,168,.3);border-radius:20px;background:rgba(152,152,168,.08);color:var(--t2);font-weight:500;cursor:pointer" onclick="copyToClip('${startDate} ${startTime||'00:00'}\t${endDate} ${endTime||'23:59'}',this)" title="클릭 시 기간 복사">[${dur}일 간]</span>`:'';
   const sep=(startDate&&(uploadDate||deadline))?`<span style="width:0.5px;height:11px;background:rgba(0,0,0,.12);flex-shrink:0"></span>`:'';
   const lbl=(uploadDate||deadline)?`<span style="font-size:10px;color:var(--t3)">일정</span>`:'';
   const uChip=uploadDate?`<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;font-size:10px;border:1px solid rgba(58,58,240,.25);border-radius:20px;background:rgba(58,58,240,.05);color:var(--ac);font-weight:500;white-space:nowrap">📅 업로드 ${fmtChip(uploadDate,'')}</span>`:'';

@@ -246,15 +246,15 @@ code{font-family:monospace;font-size:11px;background:rgba(0,0,0,.05);padding:1px
 tr.extract-sel td{background:#EEEDFE !important}
 tr.extract-sel td.fix{background:#EEEDFE !important}
 /* 추출 팝업 */
-.extract-popup{position:fixed;bottom:24px;right:24px;width:310px;background:var(--color-background-primary);border:0.5px solid var(--glass-border-s);border-radius:12px;overflow:hidden;z-index:200;box-shadow:0 4px 20px rgba(0,0,0,.12)}
-.ep-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:0.5px solid var(--glass-border-s);background:var(--glass-bg-strong)}
-.ep-cols{display:flex;gap:4px;flex-wrap:wrap;padding:10px 14px;border-bottom:0.5px solid var(--glass-border-s)}
+.extract-popup{position:fixed;bottom:24px;right:24px;width:310px;background:#fff;border:0.5px solid rgba(0,0,0,.1);border-radius:12px;overflow:hidden;z-index:200;box-shadow:0 4px 24px rgba(0,0,0,.15)}
+.ep-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:0.5px solid rgba(0,0,0,.08);background:#f8f8fc}
+.ep-cols{display:flex;gap:4px;flex-wrap:wrap;padding:10px 14px;border-bottom:0.5px solid rgba(0,0,0,.08);background:#fff}
 .ep-chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:12px;font-size:11px;border:0.5px solid #AFA9EC;background:var(--color-background-primary);color:#534AB7;cursor:pointer;user-select:none}
 .ep-chip.on{background:#3a3af0;border-color:#3a3af0;color:#fff}
-.ep-preview{padding:10px 14px;border-bottom:0.5px solid var(--glass-border-s)}
-.ep-preview-box{background:var(--color-background-secondary);border-radius:6px;padding:7px 10px;font-size:10.5px;font-family:monospace;color:var(--t2);line-height:1.75;max-height:90px;overflow:hidden}
+.ep-preview{padding:10px 14px;border-bottom:0.5px solid rgba(0,0,0,.08);background:#fff}
+.ep-preview-box{background:#f8f8fc;border-radius:6px;padding:7px 10px;font-size:10.5px;font-family:monospace;color:var(--t2);line-height:1.75;max-height:90px;overflow:hidden}
 .ep-preview-box .hd{color:#3a3af0;font-weight:500}
-.ep-foot{display:flex;align-items:center;justify-content:space-between;padding:10px 14px}
+.ep-foot{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#fff}
 /* 액션바 */
 .extract-bar{display:none;align-items:center;gap:8px;padding:8px 12px;background:#EEEDFE;border:0.5px solid #AFA9EC;border-radius:8px;margin-bottom:8px;flex-wrap:wrap}
 .extract-bar.on{display:flex}
@@ -385,7 +385,7 @@ tr.opt-row.editing-row td.fix{background:rgba(240,240,255,0.98)}
           <col id="ic-memo" style="width:150px"><col id="ic-edit" style="width:92px"><col id="ic-date" style="width:88px">
         </colgroup>
         <thead><tr>
-          <th class="fix" style="left:0px"></th>
+          <th class="fix" style="left:0px;text-align:center" id="itemExtAllTh"></th>
           <th class="fix" style="left:24px">No</th>
           <th class="fix" style="left:68px;width:48px"></th>
           <th class="fix" style="left:116px;">품목코드</th>
@@ -508,7 +508,7 @@ tr.opt-row.editing-row td.fix{background:rgba(240,240,255,0.98)}
           <col id="sc-ship" style="width:100px"><col id="sc-shiptype" style="width:80px"><col id="sc-memo" style="width:140px"><col id="sc-opt" style="width:52px"><col id="sc-edit" style="width:92px"><col id="sc-date" style="width:88px">
         </colgroup>
         <thead><tr>
-          <th class="fix" style="left:0px"></th>
+          <th class="fix" style="left:0px;text-align:center" id="skuExtAllTh"></th>
           <th class="fix" style="left:24px">No</th>
           <th class="fix" style="left:68px;width:48px"></th>
           <th class="fix" style="left:116px;">네이버 상품코드</th>
@@ -548,7 +548,7 @@ tr.opt-row.editing-row td.fix{background:rgba(240,240,255,0.98)}
   <button class="btn-fb-discard" onclick="discardAll()">되돌리기</button>
   <button class="btn-fb-save" id="fbSaveBtn" onclick="saveToFirebase()">
     <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10l4 4 8-8"/></svg>
-    Firebase 저장 <span class="pend-badge" id="fbBadge">0</span>
+    Firebase 저장 <span class="pend-badge" id="fbBadge0">0</span>
   </button>
 </div>
 
@@ -581,13 +581,21 @@ const OFF_STATUS=['비운영','단종','단종예정'];
 function renderSkuNickFilters(){
   const row=document.getElementById('skuNickFilterRow');
   if(!row)return;
-  const nicks=[...new Set(SKUS.map(sk=>sk.nick).filter(Boolean))].sort();
+  // No 순 정렬, 닉네임 중복 제거 (같은 닉네임이면 가장 낮은 No 기준)
+  const seen=new Map();
+  SKUS.forEach(sk=>{
+    if(!sk.nick) return;
+    if(!seen.has(sk.nick)||((sk.no||99)<(seen.get(sk.nick).no||99))) seen.set(sk.nick,sk);
+  });
+  const sorted=[...seen.values()].sort((a,b)=>(Number(a.no)||99)-(Number(b.no)||99));
   let html=`<span class="filter-lbl">닉네임</span><span class="fp ${SF.nick==='전체'?'on':''}" onclick="setSkuNickFilter(this,'전체')">전체</span>`;
-  nicks.forEach(nick=>{
+  sorted.forEach(sk=>{
+    const nick=sk.nick;
     const isOn=SF.nick===nick;
-    const sk=SKUS.find(x=>x.nick===nick);
-    const isOff=sk&&OFF_STATUS.includes(sk.status);
-    html+=`<span class="fp ${isOn?'on':''} ${isOff?'cat-off':''}" data-v="${nick}" onclick="setSkuNickFilter(this,'${nick}')">${nick}</span>`;
+    const isOff=OFF_STATUS.includes(sk.status);
+    const isMain=sk.group==='main';
+    const mainStyle=isMain?'border:1.5px solid #3a3af0;color:#3a3af0;font-weight:600':'';
+    html+=`<span class="fp ${isOn?'on':''} ${isOff?'cat-off':''}" data-v="${nick}" style="${mainStyle}" onclick="setSkuNickFilter(this,'${nick}')">${nick}</span>`;
   });
   row.innerHTML=html;
 }
@@ -750,7 +758,7 @@ async function saveToFirebase(){
         {code:it.code,no:it.no,nick:it.nick,name:it.name,alias:it.alias||null,
          category:it.category,status:it.status,memo:it.memo||null,thumbUrl:it.thumbUrl||null,updatedAt:new Date().toISOString()},{merge:true})),
       ...pS.map(sk=>window.fsSetDoc(window.fsDoc(window.db,'skus',sk.code),
-        {code:sk.code,no:sk.no,nick:sk.nick,name:sk.name,type:sk.type,status:sk.status,
+        {code:sk.code,no:sk.no,nick:sk.nick,name:sk.name,type:sk.type,status:sk.status,group:sk.group||'sub',
          priceNormal:sk.priceNormal||null,priceDisc:sk.priceDisc||null,priceMax:sk.priceMax||null,priceAlim:sk.priceAlim||null,priceFinal:sk.priceFinal||null,thumbUrl:sk.thumbUrl||null,
          ship:sk.ship||null,shipType:sk.shipType||null,memo:sk.memo||null,options:sk.options||[],updatedAt:new Date().toISOString()},{merge:true})
         .then(()=>{ if(sk._oldCode) return window.fsDeleteDoc(window.fsDoc(window.db,'skus',sk._oldCode)); }))
@@ -828,6 +836,7 @@ function renderItemTable(q){
   else if(IF.sort==='최신수정') rows.sort((a,b)=>new Date(b.updatedAt||0)-new Date(a.updatedAt||0));
   visibleItemRows=rows;
   document.getElementById('itemCnt').textContent=rows.length+'개';
+  updateExtractHeaderCb('item');
   let html='';
   /* fix 컬럼 left: pend=0, No=24, 코드=68, 닉네임=168 */
   if(itemNewOpen){
@@ -866,7 +875,7 @@ function renderItemTable(q){
       html+=`<tr class="${pCls}">
         <td class="fix" style="left:0px;text-align:center;padding:7px 4px" onclick="if(extractState.item)toggleExtractRow('item','${it.code}')">${extractState.item?`<input type="checkbox" class="row-cb" ${extractSel.item.has('${it.code}')?'checked':''} onclick="event.stopPropagation();toggleExtractRow('item','${it.code}')">`:dot(it.pending)}</td>
         <td class="fix" style="left:24px;color:var(--t3);font-size:11px;cursor:pointer" onclick="copyToClip('${it.no}',this,'item')">${it.no}</td>
-        <td class="fix" style="left:68px;padding:3px;text-align:center"><img src="https://smartcenterhub.github.io/yozm-master-site/images/items/${encodeURIComponent(it.code)}.png" style="width:40px;height:40px;object-fit:cover;border-radius:4px;display:block" referrerpolicy="no-referrer" onerror="if(!this.dataset.jpgTried){this.dataset.jpgTried='1';this.src='https://smartcenterhub.github.io/yozm-master-site/images/items/${encodeURIComponent(it.code)}.jpg';}else{this.style.opacity=.15;this.style.filter='grayscale(1)';}"></td>
+        <td class="fix" style="left:68px;padding:3px;text-align:center;cursor:pointer" onclick="copyToClip('https://smartcenterhub.github.io/yozm-master-site/images/items/${encodeURIComponent(it.code)}.png',this,'item')"><img src="https://smartcenterhub.github.io/yozm-master-site/images/items/${encodeURIComponent(it.code)}.png" style="width:40px;height:40px;object-fit:cover;border-radius:4px;display:block" referrerpolicy="no-referrer" onerror="if(!this.dataset.jpgTried){this.dataset.jpgTried='1';this.src='https://smartcenterhub.github.io/yozm-master-site/images/items/${encodeURIComponent(it.code)}.jpg';}else{this.style.opacity=.15;this.style.filter='grayscale(1)';}"></td>
         <td class="fix" style="left:116px;cursor:pointer" onclick="copyToClip('${it.code}',this,'item')"><span class="code-val">${it.code}</span></td>
         <td class="fix fix-last" style="left:216px;cursor:pointer" onclick="copyToClip('${it.nick}',this,'item')"><span class="nick${isOff?' off':''}">${it.nick}</span></td>
         <td style="font-weight:500;color:var(--tx);cursor:pointer" onclick="copyToClip('${it.name}',this,'item')">${it.name}</td>
@@ -1192,6 +1201,7 @@ function renderSkuTable(q){
   else if(SF.sort==='최신수정') rows.sort((a,b)=>new Date(b.updatedAt||0)-new Date(a.updatedAt||0));
   visibleSkuRows=rows;
   document.getElementById('skuCnt').textContent=rows.length+'개';
+  updateExtractHeaderCb('sku');
   let html='';
   /* fix 컬럼 left: pend=0, No=24, 상품코드=68, 닉네임=192 */
   if(skuNewOpen){
@@ -1321,8 +1331,8 @@ function renderSkuTable(q){
     }else{
       html+=`<tr class="${pCls}">
         <td class="fix" style="left:0px;text-align:center;padding:7px 4px" onclick="if(extractState.sku)toggleExtractRow('sku','${sk.code}')">${extractState.sku?`<input type="checkbox" class="row-cb" ${extractSel.sku.has('${sk.code}')?'checked':''} onclick="event.stopPropagation();toggleExtractRow('sku','${sk.code}')">`:dot(sk.pending)}</td>
-        <td class="fix" style="left:24px;color:var(--t3);font-size:11px;cursor:pointer" onclick="copyToClip('${sk.no}',this,'sku')">${sk.no}</td>
-        <td class="fix" style="left:68px;padding:3px;text-align:center"><img src="https://smartcenterhub.github.io/yozm-master-site/images/skus/${sk.code}.jpg" style="width:40px;height:40px;object-fit:cover;border-radius:4px;display:block" referrerpolicy="no-referrer" onerror="if(!this.dataset.pngTried){this.dataset.pngTried='1';this.src='https://smartcenterhub.github.io/yozm-master-site/images/skus/${sk.code}.png';}else{this.style.opacity=.15;this.style.filter='grayscale(1)';}"></td>
+        <td class="fix" style="left:24px;font-size:11px;cursor:pointer" onclick="copyToClip('${sk.no}',this,'sku')">${sk.group==='main'?`<span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#3a3af0;color:#fff;font-size:10px;font-weight:700">${sk.no}</span>`:` <span style="color:var(--t3)">${sk.no}</span>`}</td>
+        <td class="fix" style="left:68px;padding:3px;text-align:center;cursor:pointer" onclick="copyToClip('https://smartcenterhub.github.io/yozm-master-site/images/skus/${sk.code}.jpg',this,'sku')"><img src="https://smartcenterhub.github.io/yozm-master-site/images/skus/${sk.code}.jpg" style="width:40px;height:40px;object-fit:cover;border-radius:4px;display:block" referrerpolicy="no-referrer" onerror="if(!this.dataset.pngTried){this.dataset.pngTried='1';this.src='https://smartcenterhub.github.io/yozm-master-site/images/skus/${sk.code}.png';}else{this.style.opacity=.15;this.style.filter='grayscale(1)';}"></td>
         <td class="fix" style="left:116px;cursor:pointer" onclick="copyToClip('${sk.code}',this,'sku')"><span class="code-val">${sk.code}</span></td>
         <td class="fix fix-last" style="left:240px;cursor:pointer" onclick="copyToClip('${sk.nick}',this,'sku')"><span class="nick${isOff?' off':''}">${sk.nick}</span></td>
         <td style="font-weight:500;color:var(--tx);cursor:pointer" onclick="copyToClip('${sk.name}',this,'sku')">${sk.name}</td>
@@ -1527,10 +1537,25 @@ function toggleExtractRow(tab,code){
   updateExtractPopup(tab);
 }
 
+function updateExtractHeaderCb(tab){
+  const th=document.getElementById(tab+'ExtAllTh');
+  if(!th) return;
+  if(!extractState[tab]){th.innerHTML='';return;}
+  const visRows=tab==='sku'?visibleSkuRows:visibleItemRows;
+  const selLen=visRows.filter(r=>extractSel[tab].has(r.code)).length;
+  th.innerHTML=`<input type="checkbox" class="row-cb" id="${tab}ExtAllCb"
+    ${selLen===visRows.length&&visRows.length>0?'checked':''}
+    onchange="this.checked?extractSelectAll('${tab}'):extractClearAll('${tab}')"
+    onclick="event.stopPropagation()">`;
+  const cb=document.getElementById(tab+'ExtAllCb');
+  if(cb) cb.indeterminate=selLen>0&&selLen<visRows.length;
+}
+
 function updateExtractCount(tab){
   const cnt=extractSel[tab].size;
   const el=document.getElementById(tab+'ExtCnt');
   if(el) el.textContent=cnt+'건 선택';
+  updateExtractHeaderCb(tab);
 }
 
 function extractSelectAll(tab){

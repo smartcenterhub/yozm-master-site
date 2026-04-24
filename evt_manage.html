@@ -308,9 +308,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .lchip.on{background:#EEEDFE;border-color:#AFA9EC;color:#3C3489}
 .lchip-tag{font-size:10px;padding:1px 7px;border-radius:20px;border:0.5px solid #AFA9EC;background:#EEEDFE;color:#3C3489;cursor:pointer;display:inline-flex;align-items:center;gap:2px}
 .lchip-tag .lx{color:#AFA9EC;font-size:9px}
-.egrp.pinned{border:2.25px solid #D4A017!important;border-radius:var(--rl)!important}
-.egrp.pinned .egrphd{border:none!important;border-radius:calc(var(--rl) - 2px) calc(var(--rl) - 2px) 0 0!important}
-.egrp.pinned .egrpbody{border:none!important;border-top:1px solid rgba(212,160,23,.2)!important;border-radius:0 0 calc(var(--rl) - 2px) calc(var(--rl) - 2px)!important}
+.egrp.pinned{border:2.25px solid #D4A017!important}
 .pin-icon{font-size:10px;margin-left:4px;opacity:.8;flex-shrink:0}
 .lchip.has-url{border-color:var(--gr);color:var(--gr)}
 .toggle-hide-btn{font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer}
@@ -324,6 +322,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   <div class="tab" onclick="sw(0,this)">행사 등록</div>
   <div class="tab on" onclick="sw(2,this);clearBadge('badge-2')">행사 제안<span id="badge-2" class="tab-badge" style="display:none"></span></div>
   <div class="tab"    onclick="sw(3,this);clearBadge('badge-3')">행사 선정<span id="badge-3" class="tab-badge" style="display:none"></span></div>
+  <div class="tab"    onclick="sw(8,this);renderPinnedPane()" style="color:#D4A017">📌 운영 관리<span id="pin-count-8" class="tab-badge" style="display:inline-block;background:rgba(212,160,23,.15);color:#D4A017">0</span></div>
   <div class="tab"    onclick="sw(5,this);clearBadge('badge-5')">행사 종료<span id="badge-5" class="tab-badge" style="display:none"></span></div>
   <div class="tab"    onclick="sw(4,this)">행사 일정</div>
   <div class="tab"    onclick="sw(6,this)">행사 성과</div>
@@ -816,6 +815,43 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 <div class="pane" id="p7">
   <div class="pg-hd"><div><div class="pg-title">행사 유형 정보</div><div class="pg-desc">유형별 설명 + 최근 이력</div></div></div>
   <div id="type-info-wrap"><div class="loading"><span class="spin">⟳</span></div></div>
+</div>
+
+<!-- ═══ 탭8: 운영 관리 (핀된 행사) ═══ -->
+<div class="pane" id="p8">
+  <div class="pg-hd">
+    <div>
+      <div class="pg-title" style="display:flex;align-items:center;gap:8px">📌 운영 관리 <span id="pin-count-hd" style="font-size:11px;font-weight:500;color:var(--t3)"></span></div>
+      <div class="pg-desc">고정된 행사를 모아보고 엑셀/텍스트로 내보내기</div>
+    </div>
+    <div class="rbtn" style="display:flex;gap:6px;align-items:center">
+      <button class="btn btn-sm btn-gh" onclick="renderPinnedPane()">↻ 새로고침</button>
+      <button class="btn btn-sm" style="color:var(--t2);border-color:var(--bd)" onclick="copyPinnedText()">📋 복붙용 텍스트</button>
+      <button class="btn btn-sm btn-p" onclick="exportPinnedXlsx()">📊 엑셀 다운로드</button>
+    </div>
+  </div>
+  <!-- 필터 -->
+  <div class="fbar" style="margin-bottom:10px">
+    <select id="pin-type-8" onchange="renderPinnedPane()" style="height:28px;padding:0 8px;font-size:11.5px;border:1px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer">
+      <option value="">전체 유형</option>
+      <option value="FF">🎪 푸드페스타 (FF)</option>
+      <option value="TD">⏰ 오늘끝딜 (TD)</option>
+      <option value="SP">💜 슈퍼적립 (SP)</option>
+      <option value="HB">🍽️ 한입발견회 (HB)</option>
+      <option value="CB">🍽️ 취향발견회 (CB)</option>
+      <option value="SA">🏷️ +세일 (SA)</option>
+      <option value="OD">🎁 원쁠딜 (OD)</option>
+      <option value="YL">⭐ 자사런칭 (YL)</option>
+      <option value="YE">📋 자체행사 (YE)</option>
+      <option value="AL">📡 상시 (AL)</option>
+    </select>
+    <input id="pin-search-8" placeholder="행사명 / 닉네임 검색" oninput="renderPinnedPane()" style="width:180px">
+    <button class="sfb sf-mid" onclick="togglePinStatusFilter(this,'진행전')">진행전</button>
+    <button class="sfb sf-run" onclick="togglePinStatusFilter(this,'진행중')">진행중</button>
+    <button class="sfb sf-end" onclick="togglePinStatusFilter(this,'진행종료')">진행종료</button>
+    <button class="btn btn-sm btn-gh" onclick="resetPinFilters()" style="margin-left:auto">↺ 초기화</button>
+  </div>
+  <div id="pin-list-8"><div class="loading"><span class="spin">⟳</span> 불러오는 중...</div></div>
 </div>
 
 <!-- 저장 바 -->
@@ -1621,6 +1657,13 @@ async function loadAll(){
     SKUS=ss.docs.map(d=>({_id:d.id,...d.data()})).filter(s=>s.status!=='OFF'&&s.type!=='행사제안불가').sort((a,b)=>((a.no||999)-(b.no||999)));
     EVENTS=es.docs.map(d=>({_id:d.id,...d.data()})).sort((a,b)=>(b.startDate||'').localeCompare(a.startDate||''));
     PROPOSALS=ps.docs.map(d=>({_id:d.id,...d.data()})).sort((a,b)=>(b.startDate||'').localeCompare(a.startDate||''));
+    /* Firebase의 pinned 필드로 PINNED_EVENTS 재구성 */
+    PINNED_EVENTS=new Set(EVENTS.filter(e=>e.pinned).map(e=>e._id));
+    /* localStorage → Firebase 마이그레이션 (최초 1회) */
+    await migratePinnedToFirebase();
+    /* 마이그레이션 후 다시 동기화 */
+    PINNED_EVENTS=new Set(EVENTS.filter(e=>e.pinned).map(e=>e._id));
+    updatePinCount();
     autoCloseExpired();
     buildSkuButtons('reg');
     buildMonthFilters();
@@ -3207,22 +3250,326 @@ window.dfClick=function(el,field,tab){
   else dateFilter[tab].delete(field);
   renderPropList(tab);
 };
-/* ── 고정 이벤트 ── */
-let PINNED_EVENTS=new Set(JSON.parse(localStorage.getItem('pinnedEvents')||'[]'));
-function savePinned(){localStorage.setItem('pinnedEvents',JSON.stringify([...PINNED_EVENTS]));}
-window.bulkPin=function(tab){
+/* ── 고정 이벤트 (Firebase 저장) ── */
+let PINNED_EVENTS=new Set();  /* loadAll 완료 후 EVENTS.pinned 기반으로 채움 */
+
+/* 개별 핀 상태를 Firebase에 즉시 저장 */
+async function fbSetPin(evId, pinned){
+  try{
+    await updateDoc(doc(db,'events',evId),{pinned:!!pinned,updatedAt:new Date().toISOString()});
+    const ev=EVENTS.find(e=>e._id===evId);
+    if(ev)ev.pinned=!!pinned;
+  }catch(e){toast('고정 저장 실패: '+e.message,'err');throw e;}
+}
+
+window.bulkPin=async function(tab){
   const ids=getCheckedGrpIds(tab);
   if(!ids.length)return;
-  ids.forEach(id=>PINNED_EVENTS.add(id));
-  savePinned();clearBulkSelect(tab);renderPropList(tab);
-  toast('📌 '+ids.length+'건 고정됨');
+  const realIds=ids.filter(id=>EVENTS.find(e=>e._id===id));
+  try{
+    await Promise.all(realIds.map(id=>fbSetPin(id,true)));
+    realIds.forEach(id=>PINNED_EVENTS.add(id));
+    /* eventName만 있고 ID 없는 구형 데이터 대응: 메모리에만 추가 */
+    ids.filter(id=>!EVENTS.find(e=>e._id===id)).forEach(id=>PINNED_EVENTS.add(id));
+    clearBulkSelect(tab);renderPropList(tab);updatePinCount();
+    if(document.getElementById('p8')?.classList.contains('on'))renderPinnedPane();
+    toast('📌 '+ids.length+'건 고정됨');
+  }catch(e){/* 에러는 fbSetPin에서 toast */}
 };
-window.bulkUnpin=function(tab){
+window.bulkUnpin=async function(tab){
   const ids=getCheckedGrpIds(tab);
   if(!ids.length)return;
-  ids.forEach(id=>PINNED_EVENTS.delete(id));
-  savePinned();clearBulkSelect(tab);renderPropList(tab);
-  toast('📌 '+ids.length+'건 고정 해제');
+  const realIds=ids.filter(id=>EVENTS.find(e=>e._id===id));
+  try{
+    await Promise.all(realIds.map(id=>fbSetPin(id,false)));
+    ids.forEach(id=>PINNED_EVENTS.delete(id));
+    clearBulkSelect(tab);renderPropList(tab);updatePinCount();
+    if(document.getElementById('p8')?.classList.contains('on'))renderPinnedPane();
+    toast('📌 '+ids.length+'건 고정 해제');
+  }catch(e){}
+};
+
+/* 탭 바 카운트 배지 업데이트 */
+function updatePinCount(){
+  const n=PINNED_EVENTS.size;
+  const el=document.getElementById('pin-count-8');
+  if(el){el.textContent=n;el.style.display=n?'inline-block':'none';}
+  const hd=document.getElementById('pin-count-hd');
+  if(hd)hd.textContent=n?`· ${n}건`:'';
+}
+
+/* localStorage → Firebase 마이그레이션 (로드 완료 직후 1회) */
+async function migratePinnedToFirebase(){
+  const raw=localStorage.getItem('pinnedEvents');
+  if(!raw)return;
+  if(localStorage.getItem('pinnedMigrated')==='1')return;
+  try{
+    const localPins=JSON.parse(raw)||[];
+    let migrated=0;
+    for(const id of localPins){
+      const ev=EVENTS.find(e=>e._id===id);
+      if(ev&&!ev.pinned){
+        await updateDoc(doc(db,'events',id),{pinned:true,updatedAt:new Date().toISOString()});
+        ev.pinned=true;migrated++;
+      }
+    }
+    localStorage.setItem('pinnedMigrated','1');
+    if(migrated)toast('📌 기존 핀 '+migrated+'건을 Firebase로 옮김');
+  }catch(e){console.warn('pin migration skipped',e);}
+}
+
+/* ══════════════════════════════════════════
+   운영관리 탭 (p8)
+   ══════════════════════════════════════════ */
+let pinStatusFilter=new Set();
+window.togglePinStatusFilter=function(el,v){
+  el.classList.toggle('on');
+  if(el.classList.contains('on'))pinStatusFilter.add(v);
+  else pinStatusFilter.delete(v);
+  el.style.background=el.classList.contains('on')?'rgba(58,58,240,.08)':'';
+  renderPinnedPane();
+};
+window.resetPinFilters=function(){
+  pinStatusFilter.clear();
+  document.querySelectorAll('#p8 .sfb.on').forEach(b=>{b.classList.remove('on');b.style.background='';});
+  const s=document.getElementById('pin-search-8');if(s)s.value='';
+  const t=document.getElementById('pin-type-8');if(t)t.value='';
+  renderPinnedPane();
+};
+
+/* 행사 진행 상태 계산 (오늘 기준) */
+function calcEvStatus(ev){
+  if(!ev?.startDate)return '진행전';
+  const today=new Date().toISOString().substring(0,10);
+  if(ev.endDate&&ev.endDate<today)return '진행종료';
+  if(ev.startDate>today)return '진행전';
+  return '진행중';
+}
+
+/* 핀된 행사 목록 가져오기 (필터 적용) */
+function getFilteredPinnedEvents(){
+  const typeF=document.getElementById('pin-type-8')?.value||'';
+  const search=(document.getElementById('pin-search-8')?.value||'').trim().toLowerCase();
+  return EVENTS.filter(ev=>{
+    if(!PINNED_EVENTS.has(ev._id)&&!PINNED_EVENTS.has(ev.eventName))return false;
+    const t=ev.eventType||detectType(ev);
+    if(typeF&&t!==typeF)return false;
+    if(pinStatusFilter.size>0&&!pinStatusFilter.has(calcEvStatus(ev)))return false;
+    if(search){
+      const nameMatch=(ev.eventName||'').toLowerCase().includes(search);
+      const props=PROPOSALS.filter(p=>p.eventSID===ev._id&&p.status==='선정');
+      const nickMatch=props.some(p=>(p.skuNick||'').toLowerCase().includes(search));
+      if(!nameMatch&&!nickMatch)return false;
+    }
+    return true;
+  }).sort((a,b)=>(b.startDate||'').localeCompare(a.startDate||''));
+}
+
+/* 운영관리 탭 렌더 */
+window.renderPinnedPane=function(){
+  const el=document.getElementById('pin-list-8');
+  if(!el)return;
+  updatePinCount();
+  const pinnedEvs=getFilteredPinnedEvents();
+  if(!pinnedEvs.length){
+    el.innerHTML=`<div style="text-align:center;padding:36px 20px;color:var(--t3)">
+      <div style="font-size:32px;margin-bottom:8px;opacity:.5">📌</div>
+      <div style="font-size:13px;margin-bottom:4px">고정된 행사가 없습니다</div>
+      <div style="font-size:11px;color:var(--t4)">행사 제안·선정·종료 탭에서 체크 후 <b>📌 고정</b> 버튼을 눌러주세요</div>
+    </div>`;
+    return;
+  }
+  /* 월별 그룹핑 */
+  const monthGroups={};
+  pinnedEvs.forEach(ev=>{
+    const mk=ev.startDate?ev.startDate.substring(0,7):'날짜없음';
+    if(!monthGroups[mk])monthGroups[mk]=[];
+    monthGroups[mk].push(ev);
+  });
+  const today=new Date().toISOString().substring(0,7);
+  const sortedMonths=Object.keys(monthGroups).sort((a,b)=>b.localeCompare(a));
+  let html='';
+  sortedMonths.forEach(mk=>{
+    const label=mk==='날짜없음'?'날짜 미등록':`${mk.substring(0,4)}년 ${parseInt(mk.substring(5,7))}월`;
+    const tag=mk===today?'<span class="st s-run" style="margin-left:6px">이번달</span>':'';
+    html+=`<div style="font-size:12.5px;font-weight:700;color:var(--t2);margin:14px 0 8px;padding:4px 10px;background:rgba(255,255,255,.55);border-radius:6px;border-left:3px solid #D4A017">${label}${tag} <span style="font-weight:400;color:var(--t3);font-size:11px">· ${monthGroups[mk].length}건</span></div>`;
+    html+=monthGroups[mk].map(ev=>buildPinnedCard(ev)).join('');
+  });
+  el.innerHTML=html;
+};
+
+/* 핀 카드 1개 빌드 (egrp 스타일 그대로) */
+function buildPinnedCard(ev){
+  const evId=ev._id;
+  const eName=ev.eventName||'—';
+  const eType=ev.eventType||detectType(ev);
+  const tColor=TYPE_COLOR[eType]||'--t2';
+  const st=calcEvStatus(ev);
+  const stCls={'진행전':'s-mid','진행중':'s-run','진행종료':'s-end'}[st]||'s-gray';
+  const props=PROPOSALS.filter(p=>p.eventSID===evId&&p.status==='선정'&&!p._deleted);
+  const grpId='pin-'+evId;
+  const m=props[0]||{};
+  const periodChips=buildDateChips(ev.startDate,ev.startTime,ev.endDate,ev.endTime,m?.proposalUploadedAt,m?.proposalDeadline,ev.additionalDiscount||null);
+  const rows=props.map(p=>{
+    const evPrice=p.priceBase??p.priceEvent;
+    const alimPrice=p.priceAlim||p.priceEvent;
+    const baseDiscAmt=(p.priceNormal&&evPrice)?(p.priceNormal-evPrice):null;
+    const eventDiscAmt=(p.priceNormal&&alimPrice)?(p.priceNormal-alimPrice):null;
+    const maxDiscAmt=(p.priceNormal&&p.priceMax)?(p.priceNormal-p.priceMax):null;
+    const baseRate=(p.priceNormal&&evPrice)?Math.round((1-evPrice/p.priceNormal)*100)+'%':'—';
+    const eRate=(p.priceNormal&&alimPrice)?Math.round((1-alimPrice/p.priceNormal)*100)+'%':'—';
+    const mRate=(p.priceNormal&&p.priceMax)?Math.round((1-p.priceMax/p.priceNormal)*100)+'%':'—';
+    return `<tr>
+      <td style="font-weight:600;padding:5px 8px">${p.skuNick||p.productName||'—'}</td>
+      <td style="font-size:10px;color:var(--t3);text-align:center;padding:5px 8px">${p.skuCode||'—'}</td>
+      <td style="text-align:right;padding:5px 8px">${comma(p.priceNormal)}</td>
+      <td style="text-align:right;padding:5px 8px;color:var(--rd);font-weight:600">${comma(evPrice)}</td>
+      <td style="text-align:right;padding:5px 8px;color:var(--or);font-weight:600">${comma(alimPrice)}</td>
+      <td style="text-align:right;padding:5px 8px;color:var(--bl);font-weight:600">${comma(p.priceMax)}</td>
+      <td style="text-align:right;padding:5px 8px;color:var(--rd);font-size:10.5px">${baseDiscAmt?'▼'+comma(baseDiscAmt):'—'}</td>
+      <td style="text-align:right;padding:5px 8px;color:var(--or);font-size:10.5px">${eventDiscAmt?'▼'+comma(eventDiscAmt):'—'}</td>
+      <td style="text-align:right;padding:5px 8px;color:var(--bl);font-size:10.5px">${maxDiscAmt?'▼'+comma(maxDiscAmt):'—'}</td>
+      <td style="text-align:right;padding:5px 8px;color:var(--rd);font-size:10.5px">${baseRate}</td>
+      <td style="text-align:right;padding:5px 8px;color:var(--or);font-size:10.5px">${eRate}</td>
+      <td style="text-align:right;padding:5px 8px;color:var(--bl);font-size:10.5px">${mRate}</td>
+      <td style="text-align:center;padding:5px 8px;font-size:11px;color:var(--t2)">${shipLabel(p)}</td>
+    </tr>`;
+  }).join('');
+  const emptyMsg=props.length?'':'<div style="padding:14px;text-align:center;color:var(--t3);font-size:11.5px">선정된 상품이 없습니다</div>';
+  return `<div class="egrp pinned" id="${grpId}" style="margin-bottom:10px">
+    <div class="egrphd" style="flex-direction:column;gap:0;padding:9px 12px">
+      <div style="display:flex;align-items:center;gap:6px;width:100%">
+        <span class="pin-icon">📌</span>
+        <span class="st" style="background:rgba(0,0,0,.05);color:var(${tColor});font-size:10px">${eType}</span>
+        <span class="egrpname">${eName}</span>
+        <span class="st ${stCls}">${st}</span>
+        <span style="margin-left:auto;display:flex;gap:6px">
+          <button class="btn btn-sm btn-gh" onclick="copyPinnedEventText('${evId}')" title="이 행사만 복사">📋 복사</button>
+          <button class="btn btn-sm" style="color:var(--t3);border-color:var(--bd)" onclick="unpinSingle('${evId}')" title="고정 해제">📌 해제</button>
+        </span>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;margin-top:5px;width:100%;flex-wrap:nowrap">
+        <div style="display:flex;align-items:center;gap:4px;flex:1;flex-wrap:wrap">
+          ${periodChips}
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;margin-left:auto">
+          ${(ev.pageLinks&&ev.pageLinks.length?ev.pageLinks.filter(l=>l.url).map(l=>`<span class="link-chip-card" onclick="copyToClip('${l.url}',this);event.stopPropagation()" title="${l.url}">${l.type}<span style="font-size:9px;opacity:0;margin-left:2px;color:#0F6E56;transition:opacity .2s" class="lc-copied">✓</span></span>`).join(''):'') }
+          ${ev.additionalDiscount&&ev.additionalDiscount!=='네이버 쿠폰'&&!['선택하기',''].includes(ev.additionalDiscount)?`<span class="memo-chip-card">📝메모<span class="memo-tip">${ev.additionalDiscount}</span></span>`:''}
+        </div>
+      </div>
+    </div>
+    <div class="egrpbody">
+      ${props.length?`<table class="tbl" style="font-size:11.5px">
+        <thead><tr>
+          <th style="width:90px">닉네임</th><th style="width:78px">상품코드</th>
+          <th style="text-align:right;width:62px">정상가</th>
+          <th style="text-align:right;width:80px;color:var(--rd)">기본행사가</th>
+          <th style="text-align:right;width:76px;color:var(--or)">제안행사가</th>
+          <th style="text-align:right;width:70px;color:var(--bl)">최종혜택가</th>
+          <th style="text-align:right;width:70px;color:var(--rd)">기본할인</th>
+          <th style="text-align:right;width:70px;color:var(--or)">제안할인</th>
+          <th style="text-align:right;width:70px;color:var(--bl)">최종할인</th>
+          <th style="text-align:right;width:50px;color:var(--rd)">기본%</th>
+          <th style="text-align:right;width:50px;color:var(--or)">제안%</th>
+          <th style="text-align:right;width:50px;color:var(--bl)">최종%</th>
+          <th style="width:56px">배송</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`:emptyMsg}
+    </div>
+  </div>`;
+}
+
+/* 단일 행사 고정 해제 */
+window.unpinSingle=async function(evId){
+  try{
+    await fbSetPin(evId,false);
+    PINNED_EVENTS.delete(evId);
+    updatePinCount();renderPinnedPane();
+    [2,3,5].forEach(t=>{if(document.getElementById('p'+t)?.classList.contains('on'))renderPropList(t);});
+    toast('📌 고정 해제됨');
+  }catch(e){}
+};
+
+/* ── 복붙용 텍스트 생성 ── */
+function buildPinnedTextFor(ev){
+  const eName=ev.eventName||'—';
+  const eType=ev.eventType||detectType(ev);
+  const period=`${ev.startDate||'?'}${ev.startTime?' '+ev.startTime:''} ~ ${ev.endDate||'?'}${ev.endTime?' '+ev.endTime:''}`;
+  const props=PROPOSALS.filter(p=>p.eventSID===ev._id&&p.status==='선정'&&!p._deleted);
+  let txt=`▣ [${eType}] ${eName}\n기간: ${period}\n`;
+  if(ev.additionalDiscount&&ev.additionalDiscount!=='선택하기')txt+=`비고: ${ev.additionalDiscount}\n`;
+  if(!props.length){txt+='  (선정 상품 없음)\n';return txt;}
+  props.forEach(p=>{
+    const evP=p.priceBase??p.priceEvent;
+    const aP=p.priceAlim||p.priceEvent;
+    const mP=p.priceMax;
+    const rate=(p.priceNormal&&mP)?Math.round((1-mP/p.priceNormal)*100)+'%':'—';
+    txt+=`  · ${p.skuNick||p.productName||'—'} | 정상 ${comma(p.priceNormal)} → 최종 ${comma(mP)} (${rate}) | 행사가 ${comma(evP)} / 제안가 ${comma(aP)} | ${shipLabel(p)}\n`;
+  });
+  return txt;
+}
+window.copyPinnedText=function(){
+  const evs=getFilteredPinnedEvents();
+  if(!evs.length){toast('복사할 행사가 없음','err');return;}
+  const text=evs.map(buildPinnedTextFor).join('\n');
+  navigator.clipboard.writeText(text).then(()=>toast('📋 '+evs.length+'건 복사됨')).catch(()=>toast('복사 실패','err'));
+};
+window.copyPinnedEventText=function(evId){
+  const ev=EVENTS.find(e=>e._id===evId);
+  if(!ev)return;
+  const text=buildPinnedTextFor(ev);
+  navigator.clipboard.writeText(text).then(()=>toast('📋 복사됨')).catch(()=>toast('복사 실패','err'));
+};
+
+/* ── 엑셀 다운로드 ── */
+window.exportPinnedXlsx=function(){
+  const evs=getFilteredPinnedEvents();
+  if(!evs.length){toast('내보낼 행사가 없음','err');return;}
+  loadXLSX(()=>{
+    const rows=[];
+    evs.forEach(ev=>{
+      const eName=ev.eventName||'—';
+      const eType=ev.eventType||detectType(ev);
+      const period=`${ev.startDate||''} ${ev.startTime||''} ~ ${ev.endDate||''} ${ev.endTime||''}`.trim();
+      const st=calcEvStatus(ev);
+      const props=PROPOSALS.filter(p=>p.eventSID===ev._id&&p.status==='선정'&&!p._deleted);
+      if(!props.length){
+        rows.push({'유형':eType,'행사명':eName,'기간':period,'상태':st,'닉네임':'','상품코드':'','정상가':'','기본행사가':'','제안행사가':'','최종혜택가':'','기본할인금액':'','제안할인금액':'','최종할인금액':'','기본할인율':'','제안할인율':'','최종할인율':'','배송':'','비고':ev.additionalDiscount||''});
+        return;
+      }
+      props.forEach(p=>{
+        const evP=p.priceBase??p.priceEvent;
+        const aP=p.priceAlim||p.priceEvent;
+        const mP=p.priceMax;
+        const baseDisc=(p.priceNormal&&evP)?(p.priceNormal-evP):'';
+        const evDisc=(p.priceNormal&&aP)?(p.priceNormal-aP):'';
+        const mxDisc=(p.priceNormal&&mP)?(p.priceNormal-mP):'';
+        const baseRate=(p.priceNormal&&evP)?Math.round((1-evP/p.priceNormal)*100)+'%':'';
+        const evRate=(p.priceNormal&&aP)?Math.round((1-aP/p.priceNormal)*100)+'%':'';
+        const mxRate=(p.priceNormal&&mP)?Math.round((1-mP/p.priceNormal)*100)+'%':'';
+        rows.push({'유형':eType,'행사명':eName,'기간':period,'상태':st,'닉네임':p.skuNick||p.productName||'','상품코드':p.skuCode||'','정상가':p.priceNormal||'','기본행사가':evP||'','제안행사가':aP||'','최종혜택가':mP||'','기본할인금액':baseDisc,'제안할인금액':evDisc,'최종할인금액':mxDisc,'기본할인율':baseRate,'제안할인율':evRate,'최종할인율':mxRate,'배송':shipLabel(p),'비고':ev.additionalDiscount||''});
+      });
+    });
+    const ws=XLSX.utils.json_to_sheet(rows);
+    const ws_ref=XLSX.utils.decode_range(ws['!ref']);
+    const colWidths=[];
+    for(let C=ws_ref.s.c;C<=ws_ref.e.c;C++){
+      let max=10;
+      for(let R=ws_ref.s.r;R<=ws_ref.e.r;R++){
+        const cell=ws[XLSX.utils.encode_cell({c:C,r:R})];
+        if(cell&&cell.v){max=Math.max(max,Math.min(30,String(cell.v).length+2));}
+      }
+      colWidths.push({wch:max});
+    }
+    ws['!cols']=colWidths;
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'운영관리');
+    const d=new Date();
+    const fname=`운영관리_핀된행사_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.xlsx`;
+    XLSX.writeFile(wb,fname);
+    toast('📊 엑셀 다운로드 완료 ('+rows.length+'행)');
+  });
 };
 /* ── 일괄 처리 ── */
 function getCheckedGrpIds(tab){

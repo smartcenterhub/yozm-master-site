@@ -318,7 +318,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 
 <div class="tab-bar">
   <div class="tab"    onclick="sw(1,this)">행사 일괄 등록</div>
-  <div class="tab on" onclick="sw(0,this)">행사 등록</div>
+  <div class="tab" onclick="sw(0,this)">행사 등록</div>
   <div class="tab"    onclick="sw(2,this);clearBadge('badge-2')">행사 제안<span id="badge-2" class="tab-badge" style="display:none"></span></div>
   <div class="tab"    onclick="sw(3,this);clearBadge('badge-3')">행사 선정<span id="badge-3" class="tab-badge" style="display:none"></span></div>
   <div class="tab"    onclick="sw(4,this)">운영 타임라인</div>
@@ -340,7 +340,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 </div>
 
 <!-- ═══ 탭0: 행사 등록 ═══ -->
-<div class="pane on" id="p0">
+<div class="pane" id="p0">
   <div class="pg-hd">
     <div><div class="pg-title">행사 등록</div><div class="pg-desc">events 컬렉션에 새 행사 직접 등록</div></div>
     <div class="rbtn">
@@ -635,7 +635,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 </div>
 
 <!-- ═══ 탭3~7: 이전과 동일한 구조 ═══ -->
-<div class="pane" id="p3">
+<div class="pane on" id="p3">
   <div class="sticky-hd">
   <div class="pg-hd">
     <div><div class="pg-title">행사 선정</div><div class="pg-desc">proposalItems 중 선정 상태 항목</div></div>
@@ -864,7 +864,7 @@ const TYPE_NAME={FF:'푸드페스타',TD:'오늘끝딜',SP:'슈퍼적립',HB:'�
 const TYPE_COLOR={FF:'--bl',TD:'--rd',SP:'--gr',HB:'--pu',CB:'--pu',SA:'--pk',OD:'--or',YL:'--or',YE:'--tl',AL:'--tl'};
 const TYPE_EMOJI={FF:'🎪',TD:'⏰',SP:'💜',HB:'🍽️',CB:'🍽️',SA:'🏷️',OD:'🎁',YL:'⭐',YE:'📋',AL:'📡'};
 const BAR_CLS={FF:'cb-ff',TD:'cb-td',SP:'cb-sp',HB:'cb-hb',SA:'cb-sa'};
-const MAIN_NICKS=['체험팩8종','체험팩 8종','소10+꿀10','플4+4+블1','플6+블토3','플6+토핑3','플4+요4'];
+/* MAIN_NICKS 제거 — skus.group 필드 사용 */
 
 /* ── 행사별 컬럼 레이블 (이미지 기준) ── */
 function getPriceLabels(typeCode){
@@ -892,7 +892,7 @@ function detectType(e){
   if(n.includes('런칭'))       return 'YL';
   return 'OTHER';
 }
-function skuGroup(nick){return MAIN_NICKS.some(n=>nick&&nick.replace(/\s/g,'')===(n.replace(/\s/g,'')))?'main':'sub';}
+function skuGroup(nick){const sku=SKUS.find(s=>s.nick===nick||s.name===nick);return sku?.group==='main'?'main':'sub';}
 function isEvEnded(e){if(!e)return false;const t=new Date().toISOString().substring(0,10);return!!(e.endDate&&e.endDate<t);}
 function computeStatus(p){
   const today=new Date().toISOString().substring(0,10);
@@ -2026,10 +2026,11 @@ window.toggleLandingChip=function(btn,scope){
 window.addLandingLink=function(scope){
   const inp=document.getElementById('ev-landing-url');
   const url=inp.value.trim();
-  const activeChip=document.querySelector('#landing-chips-reg .lchip.on');
-  const type=activeChip?activeChip.dataset.type:'기타';
   if(!url)return;
-  REG_PAGE_LINKS=REG_PAGE_LINKS.filter(l=>l.type!==type||l.url!=='');
+  /* 켜진 칩 중 마지막 on 칩 기준 — span 중첩 무관하게 전체 탐색 */
+  const onChips=[...document.querySelectorAll('#landing-chips-reg .lchip.on')];
+  const type=onChips.length?onChips[onChips.length-1].dataset.type:'기타';
+  REG_PAGE_LINKS=REG_PAGE_LINKS.filter(l=>!(l.type===type&&l.url===''));
   const existing=REG_PAGE_LINKS.find(l=>l.type===type);
   if(existing)existing.url=url;
   else REG_PAGE_LINKS.push({type,url});
@@ -2123,8 +2124,15 @@ window.applyMemoSe=function(grpId){
   const inp=document.getElementById('se-adddisc-'+grpId);
   if(inp?.value)toast('메모 적용됨');
 };
-window.syncProductLinks=function(){
+window.reopenEvent=function(evId,eName){
+  if(!confirm('['+eName+'] 종료를 취소하고 복귀하시겠습니까?'))return;
+  const ev=EVENTS.find(e=>e._id===evId);
+  if(ev){ev.isClosed=false;markDirty('events',evId,{isClosed:false,closedAt:null});}
+  renderPropList(5);renderPropList(3);renderTimeline();
+  toast('종료 취소됨 (저장 필요)','ok');
+};
   /* 상품코드 기반 링크 미리보기 */
+window.syncProductLinks=function(){
   const urls=regProducts.map(p=>'https://brand.naver.com/yozmkorea/products/'+p.skuCode);
   if(!urls.length){toast('추가된 상품이 없습니다','err');return;}
   document.getElementById('ev-landing-url').value=urls[0];
@@ -2484,6 +2492,9 @@ function buildGroupHtml(eName,grp,tabNum){
       <button id="btn-close-${grpId}" class="btn btn-sm btn-gh" style="display:none" onclick="toggleSelEdit('${grpId}')">✕ 닫기</button>
       <button class="btn btn-sm" style="color:var(--or);border-color:rgba(196,90,16,.3);background:rgba(196,90,16,.06)" onclick="cancelSelection('${eName}','${evId}')">선정취소</button>
       ${!grpEnded?`<button class="btn btn-sm btn-d" onclick="closeByEventName('${eName}')">종료 처리</button>`:''}`;
+  }
+  if(tabNum===5){
+    grpActions=`<button class="btn btn-sm" style="color:var(--gr);border-color:rgba(22,101,52,.3);background:rgba(22,101,52,.05)" onclick="reopenEvent('${evId}','${eName}')">종료 취소</button>`;
   }
 
   /* 공통 열 헤더: 상태-닉네임-정상가-행사가(빨강)-최대혜택가-행사할인금액-최대할인금액(파랑)-행사할인율-최대할인율 */

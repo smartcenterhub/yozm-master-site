@@ -131,68 +131,10 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 
 <!-- ── 탭1: 소재 등록 ── -->
 <div class="bk-pane" id="bkPane1">
+<div class="bk-pane" id="bkPane1">
 <div style="display:flex;gap:16px;align-items:flex-start">
-<!-- 수동등록 왼쪽 -->
+<!-- 소재 등록 왼쪽 -->
 <div style="flex:0 0 520px">
-<div class="card">
-  <div class="card-title"><div class="cdot" style="background:var(--bl)"></div>일괄 등록</div>
-
-  <!-- 양식 다운로드 + 가이드 -->
-  <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;padding:10px 14px;background:rgba(58,58,240,0.04);border-radius:8px;border:1px solid rgba(58,58,240,0.1);width:1092px">
-    <button class="btn btn-g btn-sm" onclick="downloadBulkTemplate()" style="white-space:nowrap">📥 양식 다운로드</button>
-    <span style="font-size:11.5px;color:var(--t2)">
-      <b>입력 규칙:</b> 소재명 공백 금지 &nbsp;·&nbsp; 일시 형식 <code style="background:rgba(0,0,0,0.06);padding:1px 5px;border-radius:3px">YYYY-MM-DD-HHMM</code> &nbsp;·&nbsp; PC/MO 소재 ID 중 하나 이상 필수
-    </span>
-  </div>
-
-  <!-- Step 1: 엑셀 업로드 -->
-  <div style="margin-bottom:14px">
-    <div class="fl" style="margin-bottom:6px">① 엑셀 업로드 <span style="font-size:10.5px;color:var(--t3);font-weight:400">— 양식 기준 xlsx 파일</span></div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <label style="display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border:1px solid var(--gbd);border-radius:7px;cursor:pointer;background:var(--gbs);font-size:12px;color:var(--t2)">
-        📂 파일 선택
-        <input type="file" id="bulkXlsx" accept=".xlsx,.xls" style="display:none" onchange="parseBulkXlsx(this)">
-      </label>
-      <span id="bulkXlsxName" style="font-size:11.5px;color:var(--t3)">선택된 파일 없음</span>
-    </div>
-  </div>
-
-  <!-- Step 2: 미리보기 테이블 -->
-  <div id="bulkPreviewWrap" style="display:none;margin-bottom:14px">
-    <div class="fl" style="margin-bottom:6px">② 파싱 결과 확인 <span id="bulkPreviewCount" style="font-size:11px;color:var(--t3);font-weight:400"></span></div>
-    <div style="overflow-x:auto;width:1092px">
-      <table id="bulkPreviewTable" style="border-collapse:collapse;width:100%;table-layout:fixed">
-        <colgroup>
-          <col style="width:280px"><col style="width:160px"><col style="width:160px">
-          <col style="width:240px"><col style="width:240px"><col style="width:80px">
-        </colgroup>
-        <thead>
-          <tr>
-            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:left">소재명</th>
-            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:left">시작일시</th>
-            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:left">종료일시</th>
-            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:left">PC 소재 ID</th>
-            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:left">MO 소재 ID</th>
-            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:center">상태</th>
-          </tr>
-        </thead>
-        <tbody id="bulkPreviewBody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Step 3: Firebase 저장 -->
-  <div id="bulkSaveWrap" style="display:none;margin-bottom:14px">
-    <div class="fl" style="margin-bottom:8px">③ Firebase 저장</div>
-    <div style="display:flex;gap:10px;align-items:center">
-      <button class="btn btn-p" id="bulkSaveBtn" onclick="bulkSaveToFirebase()">✅ <span id="bulkSaveBtnLabel">등록</span></button>
-      <span id="bulkSaveStatus" style="font-size:11.5px;color:var(--t3)"></span>
-    </div>
-  </div>
-
-
-</div>
-
 <div class="card" style="max-width:600px">
   <div class="card-title"><div class="cdot" style="background:var(--ac)"></div>소재 등록</div>
   <div style="display:flex;flex-direction:column;gap:8px">
@@ -268,10 +210,72 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
   <input type="hidden" id="moImgUrlInput">
 </div>
 </div>
+</div>
+<!-- 일괄등록 오른쪽 -->
+<div style="flex:1;min-width:300px">
+<div class="card">
+  <div class="card-title"><div class="cdot" style="background:var(--bl)"></div>일괄 등록</div>
+
+  <!-- 양식 다운로드 + 가이드 -->
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;padding:10px 14px;background:rgba(58,58,240,0.04);border-radius:8px;border:1px solid rgba(58,58,240,0.1);width:1092px">
+    <button class="btn btn-g btn-sm" onclick="downloadBulkTemplate()" style="white-space:nowrap">📥 양식 다운로드</button>
+    <span style="font-size:11.5px;color:var(--t2)">
+      <b>입력 규칙:</b> 소재명 공백 금지 &nbsp;·&nbsp; 일시 형식 <code style="background:rgba(0,0,0,0.06);padding:1px 5px;border-radius:3px">YYYY-MM-DD-HHMM</code> &nbsp;·&nbsp; PC/MO 소재 ID 중 하나 이상 필수
+    </span>
+  </div>
+
+  <!-- Step 1: 엑셀 업로드 -->
+  <div style="margin-bottom:14px">
+    <div class="fl" style="margin-bottom:6px">① 엑셀 업로드 <span style="font-size:10.5px;color:var(--t3);font-weight:400">— 양식 기준 xlsx 파일</span></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <label style="display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border:1px solid var(--gbd);border-radius:7px;cursor:pointer;background:var(--gbs);font-size:12px;color:var(--t2)">
+        📂 파일 선택
+        <input type="file" id="bulkXlsx" accept=".xlsx,.xls" style="display:none" onchange="parseBulkXlsx(this)">
+      </label>
+      <span id="bulkXlsxName" style="font-size:11.5px;color:var(--t3)">선택된 파일 없음</span>
+    </div>
+  </div>
+
+  <!-- Step 2: 미리보기 테이블 -->
+  <div id="bulkPreviewWrap" style="display:none;margin-bottom:14px">
+    <div class="fl" style="margin-bottom:6px">② 파싱 결과 확인 <span id="bulkPreviewCount" style="font-size:11px;color:var(--t3);font-weight:400"></span></div>
+    <div style="overflow-x:auto;width:1092px">
+      <table id="bulkPreviewTable" style="border-collapse:collapse;width:100%;table-layout:fixed">
+        <colgroup>
+          <col style="width:280px"><col style="width:160px"><col style="width:160px">
+          <col style="width:240px"><col style="width:240px"><col style="width:80px">
+        </colgroup>
+        <thead>
+          <tr>
+            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:left">소재명</th>
+            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:left">시작일시</th>
+            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:left">종료일시</th>
+            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:left">PC 소재 ID</th>
+            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:left">MO 소재 ID</th>
+            <th style="background:#EEF2FF;color:#3D5A99;font-size:11px;font-weight:500;padding:6px 8px;border:0.5px solid var(--gbd);text-align:center">상태</th>
+          </tr>
+        </thead>
+        <tbody id="bulkPreviewBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Step 3: Firebase 저장 -->
+  <div id="bulkSaveWrap" style="display:none;margin-bottom:14px">
+    <div class="fl" style="margin-bottom:8px">③ Firebase 저장</div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="btn btn-p" id="bulkSaveBtn" onclick="bulkSaveToFirebase()">✅ <span id="bulkSaveBtnLabel">등록</span></button>
+      <span id="bulkSaveStatus" style="font-size:11.5px;color:var(--t3)"></span>
+    </div>
+  </div>
+
+
+</div>
 
 </div>
 </div>
-<!-- ── 탭2: 소재 현황 ── -->
+</div>
+
 <div class="bk-pane" id="bkPane2">
   <div class="today-strip">
     <div class="today-lbl" id="todayLbl">오늘 활성 소재</div>
@@ -587,6 +591,7 @@ document.getElementById('addBtn').onclick = async function() {
     resetForm();
     showToast(isUpd ? '✏️ 수정됨: ' + name : '✅ 등록 완료: ' + name);
     renderAll();
+    if (!isUpd) swTab(3);
   } catch(e) { showToast('❌ 저장 실패'); console.error(e); }
 };
 
@@ -955,15 +960,13 @@ function renderHist() {
       html += '<span class="hcard-btns" style="margin-left:auto;display:flex;gap:4px;flex-shrink:0"><button class="btn btn-g btn-sm" onclick="editCr(\'' + id + '\')">✏️</button><button class="btn btn-r btn-sm" onclick="deleteCr(\'' + id + '\')">🗑</button></span>';
       html += '<span class="status-badge ' + _stCls(st) + '" style="flex-shrink:0" id="hst-' + id + '">' + st + '</span>';
       html += '</div>';
-      const evtDur = cr.eventStartAt ? _dur(cr.eventStartAt, cr.eventEndAt) : '';
+      const evtDur = _dur(cr.eventStartAt || cr.startAt, cr.eventEndAt || cr.endAt);
       html += '<div class="edit-period" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">';
-      if (cr.eventStartAt && (cr.eventStartAt !== cr.startAt || cr.eventEndAt !== cr.endAt)) {
-        html += '<div style="display:flex;align-items:center;gap:5px">'
-          + '<span style="font-size:9.5px;color:var(--t3);font-weight:500;white-space:nowrap">행사</span>'
-          + '<span style="font-size:10px;color:var(--t3);background:var(--gbs);border-radius:4px;padding:2px 8px;white-space:nowrap">' + fmtDt(cr.eventStartAt) + ' ~ ' + fmtDt(cr.eventEndAt) + (evtDur ? ' <span style="color:var(--t3);margin-left:3px">' + evtDur + '</span>' : '') + '</span>'
-          + '</div>'
-          + '<span style="color:var(--gbd);font-size:10px">|</span>';
-      }
+      html += '<div style="display:flex;align-items:center;gap:5px">'
+        + '<span style="font-size:9.5px;color:var(--t3);font-weight:500;white-space:nowrap">행사</span>'
+        + '<span style="font-size:10px;color:var(--t3);background:var(--gbs);border-radius:4px;padding:2px 8px;white-space:nowrap">' + fmtDt(cr.eventStartAt||cr.startAt) + ' ~ ' + fmtDt(cr.eventEndAt||cr.endAt) + (evtDur ? ' <span style="color:var(--t3);margin-left:3px">' + evtDur + '</span>' : '') + '</span>'
+        + '</div>'
+        + '<span style="color:var(--gbd);font-size:10px">|</span>';
       html += '<div style="display:flex;align-items:center;gap:5px">'
         + '<span style="font-size:9.5px;color:var(--ac);font-weight:600;white-space:nowrap">브검</span>'
         + '<span style="font-size:10.5px;color:var(--t2);background:rgba(58,58,240,0.05);border-radius:5px;padding:2px 8px;white-space:nowrap">' + fmtDt(cr.startAt) + ' ~ ' + fmtDt(cr.endAt) + (dur ? ' <span style="font-size:10px;color:var(--t3);margin-left:4px">' + dur + '</span>' : '') + '</span>'

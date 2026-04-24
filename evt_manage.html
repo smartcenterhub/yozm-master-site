@@ -308,6 +308,8 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .lchip.on{background:#EEEDFE;border-color:#AFA9EC;color:#3C3489}
 .lchip-tag{font-size:10px;padding:1px 7px;border-radius:20px;border:0.5px solid #AFA9EC;background:#EEEDFE;color:#3C3489;cursor:pointer;display:inline-flex;align-items:center;gap:2px}
 .lchip-tag .lx{color:#AFA9EC;font-size:9px}
+.egrp.pinned{border:2.25px solid #D4A017!important}
+.pin-icon{font-size:10px;margin-left:4px;opacity:.8;flex-shrink:0}
 .lchip.has-url{border-color:var(--gr);color:var(--gr)}
 .toggle-hide-btn{font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer}
 .toggle-hide-btn.active{background:rgba(58,58,240,.1)!important;border-color:rgba(58,58,240,.4)!important;color:var(--ac)!important;font-weight:600}
@@ -317,14 +319,14 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 
 
 <div class="tab-bar">
-  <div class="tab"    onclick="sw(1,this)">행사 일괄 등록</div>
   <div class="tab" onclick="sw(0,this)">행사 등록</div>
-  <div class="tab"    onclick="sw(2,this);clearBadge('badge-2')">행사 제안<span id="badge-2" class="tab-badge" style="display:none"></span></div>
+  <div class="tab on" onclick="sw(2,this);clearBadge('badge-2')">행사 제안<span id="badge-2" class="tab-badge" style="display:none"></span></div>
   <div class="tab"    onclick="sw(3,this);clearBadge('badge-3')">행사 선정<span id="badge-3" class="tab-badge" style="display:none"></span></div>
-  <div class="tab"    onclick="sw(4,this)">운영 타임라인</div>
   <div class="tab"    onclick="sw(5,this);clearBadge('badge-5')">행사 종료<span id="badge-5" class="tab-badge" style="display:none"></span></div>
+  <div class="tab"    onclick="sw(4,this)">행사 일정</div>
   <div class="tab"    onclick="sw(6,this)">행사 성과</div>
   <div class="tab"    onclick="sw(7,this)">행사 유형 정보</div>
+  <div class="tab"    onclick="sw(1,this)">행사 일괄 등록</div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:4px;padding:0 8px">
     <button id="top-undo" onclick="discardAll()" title="변경 취소" style="width:30px;height:28px;border:1px solid var(--bd);border-radius:7px;background:var(--gs);color:var(--t3);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;opacity:.45;transition:all .15s" disabled>↩</button>
     <button id="top-redo" onclick="redoAll()" title="되돌리기 복원" style="width:30px;height:28px;border:1px solid var(--bd);border-radius:7px;background:var(--gs);color:var(--t3);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;opacity:.45;transition:all .15s" disabled>↪</button>
@@ -579,6 +581,8 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     <button class="sfb sf-mid"  onclick="sfClick(this,'진행전',2)">진행전 <span id="cnt-진행전-2" style="font-size:10px;opacity:.7"></span></button>
     <button class="sfb sf-run"  onclick="sfClick(this,'진행중',2)">진행중 <span id="cnt-진행중-2" style="font-size:10px;opacity:.7"></span></button>
     <button class="sfb sf-end"  onclick="sfClick(this,'진행종료',2)">진행종료 <span id="cnt-진행종료-2" style="font-size:10px;opacity:.7"></span></button>
+    <div class="tfsep"></div>
+    <button class="sfb" id="pin-filter-2" onclick="togglePinFilter(2)" style="color:#D4A017;border-color:rgba(212,160,23,.4)">📌 고정됨</button>
   </div>
   <div class="fbar">
     <input id="prop-search" placeholder="행사명 / 닉네임 검색" oninput="renderPropList(2)">
@@ -623,6 +627,8 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
       <button class="bab-btn sel" onclick="bulkStatus(2,'선정')">선정</button>
       <button class="bab-btn rej" onclick="bulkStatus(2,'미선정')">미선정</button>
       <div class="bulk-sep"></div>
+      <button class="bab-btn" onclick="bulkPin(2)" style="color:#D4A017;border-color:rgba(212,160,23,.5)">📌 고정</button>
+      <button class="bab-btn" onclick="bulkUnpin(2)" style="color:var(--t3)">고정 해제</button>
       <button class="bab-btn del" onclick="bulkDelete(2)">삭제</button>
     </span>
     <span style="margin-left:auto;display:flex;gap:8px;align-items:center"><span style="font-size:11px;color:#3a3af0;cursor:pointer;text-decoration:underline;font-weight:500" onclick="toggleAllBulk(2,{checked:true})">전체 선택</span><span style="font-size:11px;color:#888;cursor:pointer;text-decoration:underline" onclick="clearBulkSelect(2)">선택 해제</span></span>
@@ -663,6 +669,8 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     <button class="sfb sf-mid" onclick="sfClick(this,'진행전',3)">진행전</button>
     <button class="sfb sf-run" onclick="sfClick(this,'진행중',3)">진행중</button>
     <button class="sfb sf-end" onclick="sfClick(this,'진행종료',3)">진행종료</button>
+    <div class="tfsep"></div>
+    <button class="sfb" id="pin-filter-3" onclick="togglePinFilter(3)" style="color:#D4A017;border-color:rgba(212,160,23,.4)">📌 고정됨</button>
   </div>
   <div class="fbar">
     <input id="sel-search-3" placeholder="행사명 / 닉네임 검색" oninput="renderPropList(3)">
@@ -690,6 +698,8 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
       <button class="bab-btn sf-run" onclick="bulkStatus(3,'진행중')">진행중</button>
       <button class="bab-btn sf-end" onclick="bulkStatus(3,'진행종료')">진행종료</button>
       <div class="bulk-sep"></div>
+      <button class="bab-btn" onclick="bulkPin(3)" style="color:#D4A017;border-color:rgba(212,160,23,.5)">📌 고정</button>
+      <button class="bab-btn" onclick="bulkUnpin(3)" style="color:var(--t3)">고정 해제</button>
       <button class="bab-btn del" onclick="bulkDelete(3)">삭제</button>
     </span>
     <span style="margin-left:auto;display:flex;gap:8px;align-items:center"><span style="font-size:11px;color:#3a3af0;cursor:pointer;text-decoration:underline;font-weight:500" onclick="toggleAllBulk(3,{checked:true})">전체 선택</span><span style="font-size:11px;color:#888;cursor:pointer;text-decoration:underline" onclick="clearBulkSelect(3)">선택 해제</span></span>
@@ -751,6 +761,8 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     <input type="checkbox" class="grp-cb" id="bulk-all-cb-5" onchange="toggleAllBulk(5,this)" title="전체 선택">
     <button class="btn btn-sm btn-gh" onclick="resetFilters(5)" style="font-size:11px;padding:3px 9px;flex-shrink:0">↺ 초기화</button>
     <span id="prop-total-cnt-5" style="font-size:11px;color:var(--t3);margin-left:2px"></span>
+    <div class="tfsep"></div>
+    <button class="sfb" id="pin-filter-5" onclick="togglePinFilter(5)" style="color:#D4A017;border-color:rgba(212,160,23,.4)">📌 고정됨</button>
   </div>
   <div class="fbar">
     <input id="end-search" placeholder="행사명 / 닉네임 검색" oninput="renderPropList(5)">
@@ -774,6 +786,8 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     <span class="bulk-sel-cnt" id="bulk-cnt-5">0건 선택</span>
     <span id="bulk-actions-5" style="display:none;align-items:center;gap:7px" class="bulk-actions-wrap">
       <div class="bulk-sep"></div>
+      <button class="bab-btn" onclick="bulkPin(5)" style="color:#D4A017;border-color:rgba(212,160,23,.5)">📌 고정</button>
+      <button class="bab-btn" onclick="bulkUnpin(5)" style="color:var(--t3)">고정 해제</button>
       <button class="bab-btn del" onclick="bulkDelete(5)">삭제</button>
     </span>
     <span style="margin-left:auto;display:flex;gap:8px;align-items:center"><span style="font-size:11px;color:#3a3af0;cursor:pointer;text-decoration:underline;font-weight:500" onclick="toggleAllBulk(5,{checked:true})">전체 선택</span><span style="font-size:11px;color:#888;cursor:pointer;text-decoration:underline" onclick="clearBulkSelect(5)">선택 해제</span></span>
@@ -2293,6 +2307,8 @@ window.renderPropList=function(tabNum){
     if(monthF&&!((_ev?.startDate||p.startDate||'')).startsWith(monthF))return false;
     const _evName=EVENTS.find(e=>e._id===p.eventSID)?.eventName||p.eventName||'';
     if(search&&!_evName.toLowerCase().includes(search)&&!(p.skuNick||'').toLowerCase().includes(search))return false;
+    /* 고정 필터 */
+    if(pinFilter[tabNum]&&!PINNED_EVENTS.has(p.eventSID||p.eventName))return false;
     /* 상품 검색 필터 */
     if(skuSearchFilter[tabNum]){
       const grpProds=PROPOSALS.filter(x=>x.eventSID===p.eventSID&&!x._deleted);
@@ -2522,11 +2538,13 @@ function buildGroupHtml(eName,grp,tabNum){
     if(s==='선정')return 'state-selected';
     return 'state-proposal';
   })():'';
-  return `<div class="egrp ${stateClass}" id="${grpId}">
+  const isPinned=PINNED_EVENTS.has(ev?._id||evName);
+  return `<div class="egrp ${stateClass}${isPinned?' pinned':''}" id="${grpId}">
     <div class="egrphd" id="${grpId}-hd" style="flex-direction:column;gap:0;padding:9px 12px">
       <!-- 1행 -->
       <div style="display:flex;align-items:center;gap:6px;width:100%">
         ${[2,3,5].includes(tabNum)?`<input type="checkbox" class="grp-cb grp-cb-${tabNum}" data-grp="${ev?._id||evName}" onchange="onGrpCbChange(${tabNum})" onclick="event.stopPropagation()">`:''}
+        ${isPinned?'<span class="pin-icon">📌</span>':''}
         <span class="st" style="background:rgba(0,0,0,.05);color:var(${tColor});font-size:10px">${eType}</span>
         <span class="egrpname">${evName}</span>
         ${allDone&&tabNum===2?'<span class="st s-done">✅ 제안완료</span>':''}
@@ -3187,6 +3205,23 @@ window.dfClick=function(el,field,tab){
   else dateFilter[tab].delete(field);
   renderPropList(tab);
 };
+/* ── 고정 이벤트 ── */
+let PINNED_EVENTS=new Set(JSON.parse(localStorage.getItem('pinnedEvents')||'[]'));
+function savePinned(){localStorage.setItem('pinnedEvents',JSON.stringify([...PINNED_EVENTS]));}
+window.bulkPin=function(tab){
+  const ids=getCheckedGrpIds(tab);
+  if(!ids.length)return;
+  ids.forEach(id=>PINNED_EVENTS.add(id));
+  savePinned();clearBulkSelect(tab);renderPropList(tab);
+  toast('📌 '+ids.length+'건 고정됨');
+};
+window.bulkUnpin=function(tab){
+  const ids=getCheckedGrpIds(tab);
+  if(!ids.length)return;
+  ids.forEach(id=>PINNED_EVENTS.delete(id));
+  savePinned();clearBulkSelect(tab);renderPropList(tab);
+  toast('📌 '+ids.length+'건 고정 해제');
+};
 /* ── 일괄 처리 ── */
 function getCheckedGrpIds(tab){
   return [...document.querySelectorAll(`.grp-cb-${tab}:checked`)].map(cb=>cb.dataset.grp);
@@ -3270,7 +3305,14 @@ window.toggleMonthSection=function(m){
   if(hd)hd.style.marginBottom=window._monthOpen[m]?'6px':'0';
 };
 window.toggleMissFilter=function(field,el,tab){dfClick(el,field,tab);};
-let skuSearchFilter={2:null,3:null,5:null}; /* null=전체, string=닉네임 */
+let skuSearchFilter={2:null,3:null,5:null};
+let pinFilter={2:false,3:false,5:false};
+window.togglePinFilter=function(tab){
+  pinFilter[tab]=!pinFilter[tab];
+  const btn=document.getElementById('pin-filter-'+tab);
+  if(btn){btn.classList.toggle('on',pinFilter[tab]);btn.style.background=pinFilter[tab]?'rgba(212,160,23,.1)':'';}
+  renderPropList(tab);
+}; /* null=전체, string=닉네임 */
 window.toggleSkuSearch2=function(){toggleSkuSearch(2);};
 window.toggleSkuSearch=function(tab){
   const panel=document.getElementById('sku-search-panel-'+tab);
@@ -3321,6 +3363,10 @@ window.resetFilters=function(tab){
   buildSkuSearchBtns(tab);
   const selEl=document.getElementById('sku-search-selected-'+tab);
   if(selEl)selEl.textContent='없음';
+  /* 고정 필터 초기화 */
+  pinFilter[tab]=false;
+  const pfBtn=document.getElementById('pin-filter-'+tab);
+  if(pfBtn){pfBtn.classList.remove('on');pfBtn.style.background='';}
   /* 숨기기 버튼 초기화 */
   const listEl=document.getElementById('prop-list-'+tab);
   if(listEl){listEl.classList.remove('hide-period-chips','hide-base-cols');}

@@ -564,11 +564,12 @@ document.getElementById('addBtn').onclick = async function() {
   const name = document.getElementById('nameInput').value.trim();
   const startAt = document.getElementById('startInput').value;
   const endAt = document.getElementById('endInput').value;
-  if (!pcId && !moId) { showToast('⚠️ PC 또는 MO 소재 ID를 입력해주세요'); return; }
   if (!name) { showToast('⚠️ 소재명을 입력해주세요'); return; }
   if (!startAt || !endAt) { showToast('⚠️ 시작/종료 일시를 입력해주세요'); return; }
   if (new Date(startAt) >= new Date(endAt)) { showToast('⚠️ 종료 일시가 시작보다 늦어야 합니다'); return; }
-  const rawKey = pcId || moId;
+  const landingUrl = document.getElementById('landingUrlInput') ? document.getElementById('landingUrlInput').value.trim() : '';
+  if (!pcId && !moId && !name) { showToast('⚠️ 소재명을 입력해주세요'); return; }
+  const rawKey = pcId || moId || name.replace(/[^a-zA-Z0-9\-_가-힣]/g,'_').slice(0,30) + '_' + Date.now();
   const docId = rawKey.replace(/[^a-zA-Z0-9\-_]/g,'_');
   try {
     const isUpd = !!_cr[docId];
@@ -1291,16 +1292,17 @@ function onEventSelect(id) {
   const ed = e.endDate || '';
   const stRaw = document.getElementById('startRaw');
   const edRaw = document.getElementById('endRaw');
-  const stVal = sd ? sd + '-' + (e.startTime||'0000').padStart(4,'0').slice(0,2) + (e.startTime||'0000').padStart(4,'0').slice(2,4) : '';
-  const edVal = ed ? ed + '-' + (e.endTime||'2359').padStart(4,'0').slice(0,2) + (e.endTime||'2359').padStart(4,'0').slice(2,4) : '';
+  const _fmtTime = function(t) { return (t||'').replace(':','').replace(':','').padStart(4,'0'); };
+  const stVal = sd ? sd + '-' + _fmtTime(e.startTime||'0000') : '';
+  const edVal = ed ? ed + '-' + _fmtTime(e.endTime||'2359') : '';
   // 행사기간 표시
   const evtDisp = document.getElementById('evtPeriodDisplay');
   if (evtDisp && sd && ed) {
     const sdD = new Date(sd), edD = new Date(ed);
     const DOW2 = ['일','월','화','수','목','금','토'];
     const fmt2 = function(d, t) { return (d.getMonth()+1) + '/' + d.getDate() + '(' + DOW2[d.getDay()] + ') ' + t.slice(0,2) + ':' + t.slice(2,4); };
-    const st2 = (e.startTime||'0000').padStart(4,'0');
-    const et2 = (e.endTime||'2359').padStart(4,'0');
+    const st2 = _fmtTime(e.startTime||'0000');
+    const et2 = _fmtTime(e.endTime||'2359');
     evtDisp.textContent = fmt2(sdD, st2) + ' ~ ' + fmt2(edD, et2);
   }
   document.getElementById('evtStartHidden').value = stVal;

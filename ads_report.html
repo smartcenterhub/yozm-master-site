@@ -830,7 +830,10 @@ function toggleZipGuide() {
   const popup = document.getElementById('zipGuidePopup');
   _zipGuideOpen = !_zipGuideOpen;
   popup.style.display = _zipGuideOpen ? '' : 'none';
-  if (_zipGuideOpen) zgBuild();
+  if (_zipGuideOpen) {
+    zgBuild();
+    zgLoadFileLinks(); // 파일 링크 사전 로드
+  }
 }
 
 document.addEventListener('click', e => {
@@ -909,11 +912,15 @@ function zgBuildFileView(key) {
     const disp = perfDateDisplay(dk);
     const fnameRaw = row.pf ? row.pf + short : short;
     const fname = fnameRaw;
+    const isZip = row.key === 'zip';
     const div = document.createElement('div');
     div.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:7px;border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);margin-bottom:3px';
+    const nameHtml = isZip
+      ? `<span style="font-size:12px;font-family:monospace;color:var(--tx);flex:1;cursor:pointer" title="클릭하여 파일명 복사" onclick="zgFileCopy(this,'${fname}')">${fname}</span>`
+      : `<span style="font-size:12px;font-family:monospace;color:var(--tx);flex:1;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(0,0,0,0.15);text-underline-offset:2px" title="클릭: 링크 복사 / 더블클릭: 링크 편집" onclick="zgCopyLink('${row.key}')" ondblclick="event.stopPropagation(); zgEditLink('${row.key}','${row.lbl}')">${fname}</span>`;
     div.innerHTML = `
       <span style="font-size:11px;color:var(--t2);margin-right:8px;min-width:64px;flex-shrink:0">${disp}</span>
-      <span style="font-size:12px;font-family:monospace;color:var(--tx);flex:1;cursor:pointer" title="클릭하여 복사" onclick="zgFileCopy(this,'${fname}')">${fname}</span>
+      ${nameHtml}
       <button onclick="zgFileCopy(this,'${fname}')" style="padding:4px 10px;border-radius:6px;border:1px solid rgba(0,0,0,0.1);background:rgba(255,255,255,0.5);cursor:pointer;font-size:11.5px;color:${row.lc};white-space:nowrap;flex-shrink:0">복사</button>`;
     rowsEl.appendChild(div);
   });
@@ -1050,8 +1057,12 @@ function zgBuild() {
       const fnameRaw = r.pf ? r.pf + short + '.' + r.ext : short + '.' + r.ext;
       const fname = fnameRaw.split('.').slice(0, -1).join('.'); // 확장자 제거
       const copied = _zgCopied[ds].has(r.key);
+      const isZip = r.key === 'zip';
+      const linkAttrs = isZip ? '' : ` ondblclick="event.stopPropagation(); zgEditLink('${r.key}','${r.lbl}')" title="클릭: 링크 복사 / 더블클릭: 링크 편집 / 파일명 복사는 오른쪽 버튼"`;
+      const linkClick = isZip ? `zgCopy('${ds}','${r.key}','${fname}')` : `zgCopyLink('${r.key}')`;
+      const linkStyle = isZip ? '' : 'text-decoration:underline;text-decoration-color:rgba(0,0,0,0.15);text-underline-offset:2px';
       html += `<div id="zgRow_${ds}_${r.key}" style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-radius:7px;border:1px solid ${r.border};background:${copied ? r.border : r.bg};margin-bottom:3px">
-        <div><span style="font-size:11px;color:${r.lc};margin-right:8px;min-width:60px;display:inline-block;font-weight:500">${r.lbl}</span><span style="font-size:12px;font-family:monospace;color:${r.nc};cursor:pointer" title="클릭하여 복사" onclick="zgCopy('${ds}','${r.key}','${fname}')">${fname}</span></div>
+        <div><span style="font-size:11px;color:${r.lc};margin-right:8px;min-width:60px;display:inline-block;font-weight:500">${r.lbl}</span><span style="font-size:12px;font-family:monospace;color:${r.nc};cursor:pointer;${linkStyle}"${linkAttrs ? linkAttrs : ' title="클릭하여 파일명 복사"'} onclick="${linkClick}">${fname}</span></div>
         <button onclick="zgCopy('${ds}','${r.key}','${fname}')" style="padding:4px 10px;border-radius:6px;border:1px solid rgba(0,0,0,0.1);background:rgba(255,255,255,0.5);cursor:pointer;font-size:11.5px;color:${r.lc};white-space:nowrap" id="zgBtn_${ds}_${r.key}">${copied ? '✓' : '복사'}</button>
       </div>`;
     });
@@ -1081,6 +1092,67 @@ function zgSelectDate(ds) {
   document.querySelectorAll('[id^="zgPanel_"]').forEach(p => p.style.display='none');
   const target = document.getElementById('zgPanel_'+ds);
   if (target) target.style.display='';
+}
+
+/* ══════════════════════════
+   파일 링크 관리 (ZIP 올리기 모달에서 파일명 클릭 → 링크 복사 / 더블클릭 → 링크 편집)
+   저장: Firebase settings/fileLinks (key별 URL 매핑)
+══════════════════════════ */
+let _zgFileLinks = null; // {bk:'...', kwmo:'...', ...}
+let _zgFileLinksLoading = null;
+
+async function zgLoadFileLinks(force) {
+  if (_zgFileLinks && !force) return _zgFileLinks;
+  if (_zgFileLinksLoading) return _zgFileLinksLoading;
+  _zgFileLinksLoading = (async () => {
+    try {
+      if (window._adsFs && window._adsFs.loadFileLinks) {
+        const data = await window._adsFs.loadFileLinks();
+        _zgFileLinks = data || {};
+      } else {
+        _zgFileLinks = {};
+      }
+    } catch { _zgFileLinks = {}; }
+    _zgFileLinksLoading = null;
+    return _zgFileLinks;
+  })();
+  return _zgFileLinksLoading;
+}
+
+async function zgCopyLink(key) {
+  const links = await zgLoadFileLinks();
+  const url = (links && links[key]) ? links[key].trim() : '';
+  if (!url) {
+    showToast('⚠️ 링크가 설정되지 않음 — 더블클릭으로 등록');
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(url);
+    showToast('🔗 링크 복사됨');
+  } catch {
+    showToast('❌ 복사 실패');
+  }
+}
+
+async function zgEditLink(key, lbl) {
+  const links = await zgLoadFileLinks();
+  const cur = (links && links[key]) ? links[key] : '';
+  const next = window.prompt(`[${lbl}] 링크 URL 입력/수정\n(비우고 확인 시 삭제)`, cur);
+  if (next === null) return; // 취소
+  const trimmed = next.trim();
+  const newLinks = { ..._zgFileLinks };
+  if (trimmed) newLinks[key] = trimmed;
+  else delete newLinks[key];
+  try {
+    if (window._adsFs && window._adsFs.saveFileLinks) {
+      await window._adsFs.saveFileLinks(newLinks);
+    }
+    _zgFileLinks = newLinks;
+    showToast(trimmed ? '✅ 링크 저장됨' : '🗑️ 링크 삭제됨');
+  } catch (e) {
+    showToast('❌ 저장 실패 (네트워크 확인)');
+    console.error('saveFileLinks error', e);
+  }
 }
 
 function zgCopy(ds, key, fname) {
@@ -5073,6 +5145,15 @@ window._adsFs = {
       const d = await getDoc(doc(_db, 'settings', 'bkCost'));
       return d.exists() ? d.data() : null;
     } catch { return null; }
+  },
+  async loadFileLinks() {
+    try {
+      const d = await getDoc(doc(_db, 'settings', 'fileLinks'));
+      return d.exists() ? d.data() : {};
+    } catch { return {}; }
+  },
+  async saveFileLinks(data) {
+    await setDoc(doc(_db, 'settings', 'fileLinks'), { ...data, updatedAt: new Date().toISOString() });
   }
 };
 </script>

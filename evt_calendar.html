@@ -215,29 +215,132 @@ body{
   border:1px solid rgba(255,180,0,0.25);margin-left:8px;
 }
 
-/* ── 필터 메뉴 팝오버 ── */
-.filter-wrap{position:relative}
-.filter-menu{
-  position:absolute;top:calc(100% + 6px);right:0;z-index:60;
-  background:#fff;border:1px solid var(--glass-border-s);border-radius:10px;
-  padding:10px 12px;min-width:180px;
-  box-shadow:0 6px 20px rgba(0,0,0,0.1);
-  display:none;flex-direction:column;gap:7px;
+/* ── 임시 추가 패널 ── */
+.temp-panel{
+  display:none;
+  background:var(--glass-bg);border:1px solid var(--glass-border-s);
+  border-radius:12px;padding:14px 16px;margin-bottom:12px;
 }
-.filter-menu.show{display:flex}
-.filter-menu label{
-  display:flex;align-items:center;gap:8px;
-  font-size:11.5px;color:var(--t2);cursor:pointer;padding:2px 0;
-  user-select:none;
+.temp-panel.show{display:block}
+.temp-panel-title{
+  font-size:11.5px;color:var(--t3);font-weight:600;
+  margin-bottom:10px;display:flex;align-items:center;gap:8px;
 }
-.filter-menu label:hover{color:var(--tx)}
-.filter-menu input[type=checkbox]{
-  margin:0;accent-color:var(--accent);cursor:pointer;
+.temp-panel-title .badge{
+  font-size:9.5px;padding:2px 7px;border-radius:10px;
+  background:rgba(255,180,0,0.15);color:#b87400;
+  border:1px solid rgba(255,180,0,0.25);font-weight:600;
 }
-.filter-note{
-  font-size:10px;color:var(--t4);padding-top:4px;
-  border-top:1px solid var(--glass-border-s);margin-top:2px;
+.temp-form{
+  display:grid;grid-template-columns:auto 1fr auto auto auto;
+  gap:10px;align-items:flex-start;
 }
+.temp-field{display:flex;flex-direction:column;gap:4px}
+.temp-field label{font-size:10px;color:var(--t3);font-weight:500}
+.temp-sel, .temp-inp{
+  height:30px;padding:0 9px;font-size:12px;font-family:inherit;
+  border:1px solid var(--glass-border-s);border-radius:6px;
+  background:var(--glass-bg-strong);color:var(--tx);
+  transition:border-color .12s;
+}
+.temp-sel:focus, .temp-inp:focus{outline:none;border-color:var(--accent)}
+.temp-sel{min-width:130px;cursor:pointer}
+.temp-inp-name{width:260px}
+.temp-colors{display:flex;gap:4px;align-items:center}
+.temp-color{
+  width:20px;height:20px;border-radius:5px;cursor:pointer;
+  border:2px solid transparent;transition:all .1s;
+}
+.temp-color:hover{transform:scale(1.15)}
+.temp-color.active{border-color:var(--tx)}
+.temp-add-btn{
+  height:30px;padding:0 14px;font-size:11.5px;font-weight:600;
+  background:var(--accent);color:#fff;border:none;border-radius:6px;
+  cursor:pointer;font-family:inherit;align-self:flex-end;
+}
+.temp-add-btn:hover{background:#2a2ad8}
+.temp-add-btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* 달력 팝오버 (기간 선택용) */
+.temp-date-wrap{position:relative}
+.temp-date-btn{
+  height:30px;padding:0 10px;font-size:11.5px;font-family:inherit;
+  border:1px solid var(--glass-border-s);border-radius:6px;
+  background:var(--glass-bg-strong);color:var(--tx);
+  cursor:pointer;transition:all .12s;
+  display:flex;align-items:center;gap:5px;min-width:190px;
+}
+.temp-date-btn:hover{border-color:var(--accent);color:var(--accent)}
+.temp-date-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(58,58,240,0.04)}
+.temp-cal-pop{
+  display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:60;
+  width:252px;background:var(--glass-bg-strong);
+  border:1px solid var(--glass-border-s);border-radius:10px;overflow:hidden;
+  box-shadow:0 6px 20px rgba(0,0,0,0.12);
+}
+.temp-cal-pop.show{display:block}
+
+/* 인라인 달력 (evt_manage.html 스타일 이식) */
+.tcal-head{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:7px 11px;border-bottom:1px solid var(--glass-border-s);
+  background:rgba(255,255,255,0.6);
+}
+.tcal-month{font-size:12px;font-weight:700;color:var(--tx)}
+.tcal-nav{
+  width:22px;height:22px;border:1px solid var(--glass-border-s);
+  border-radius:5px;background:var(--glass-bg);color:var(--t3);
+  font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.tcal-nav:hover{color:var(--accent);border-color:var(--accent)}
+.tcal-quick{display:flex;gap:3px;padding:6px 9px;border-bottom:1px solid var(--glass-border-s)}
+.tcal-qb{
+  padding:2px 7px;font-size:10.5px;border:1px solid var(--glass-border-s);
+  border-radius:20px;background:var(--glass-bg);color:var(--t3);cursor:pointer;font-family:inherit;
+}
+.tcal-qb:hover{background:rgba(58,58,240,.08);border-color:var(--accent);color:var(--accent)}
+.tcal-grid{display:grid;grid-template-columns:repeat(7,1fr);padding:7px 8px 4px;gap:1px}
+.tcal-dow{text-align:center;font-size:9.5px;font-weight:600;color:var(--t4);padding:3px 0}
+.tcal-d{
+  text-align:center;font-size:11.5px;padding:5px 0;cursor:pointer;
+  border-radius:4px;user-select:none;color:var(--tx);
+}
+.tcal-d:hover{background:rgba(58,58,240,.09)}
+.tcal-d.today{color:var(--accent);font-weight:700}
+.tcal-d.ss{background:var(--accent);color:#fff;border-radius:4px 0 0 4px;font-weight:700}
+.tcal-d.se{background:var(--accent);color:#fff;border-radius:0 4px 4px 0;font-weight:700}
+.tcal-d.ss.se{border-radius:4px}
+.tcal-d.inrange{background:rgba(58,58,240,.09);border-radius:0}
+.tcal-d.em{cursor:default;color:var(--t4);opacity:.4}
+.tcal-result{
+  display:flex;align-items:center;gap:5px;padding:6px 9px;
+  border-top:1px solid var(--glass-border-s);background:rgba(58,58,240,.03);
+}
+.tcal-chip{
+  font-size:10.5px;color:var(--accent);font-weight:600;
+  background:rgba(58,58,240,.1);padding:2px 7px;border-radius:4px;
+}
+
+/* 임시 항목 리스트 */
+.temp-list{
+  margin-top:12px;padding-top:10px;
+  border-top:1px solid var(--glass-border-s);
+  display:flex;flex-wrap:wrap;gap:6px;
+}
+.temp-list-empty{font-size:11px;color:var(--t4);font-style:italic}
+.temp-item{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;padding:3px 4px 3px 8px;border-radius:5px;
+  background:var(--glass-bg-strong);border:1px solid var(--glass-border-s);
+  color:var(--t2);
+}
+.temp-item .dot{width:10px;height:10px;border-radius:3px}
+.temp-item .rm{
+  width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;
+  background:transparent;border:none;border-radius:4px;color:var(--t4);
+  font-size:13px;cursor:pointer;padding:0;font-family:inherit;
+}
+.temp-item .rm:hover{color:var(--red);background:rgba(212,32,32,0.08)}
 
 /* ── 로딩 / 에러 ── */
 .status-msg{
@@ -260,15 +363,7 @@ body{
   <div class="hdr-row1">
     <button class="tool-btn" onclick="goToday()">📍 오늘</button>
     <button class="tool-btn primary" id="todayToggleBtn" onclick="toggleToday()">🎯 오늘 강조</button>
-    <div class="filter-wrap">
-      <button class="tool-btn" id="filterBtn" onclick="toggleFilterMenu(event)">🔍 필터</button>
-      <div class="filter-menu" id="filterMenu">
-        <label><input type="checkbox" id="fltNotice" onchange="onFilterChange()"> 공지 표시</label>
-        <label><input type="checkbox" id="fltClosed" onchange="onFilterChange()"> 종료된 행사 표시</label>
-        <label><input type="checkbox" id="fltAL" onchange="onFilterChange()"> 상시 표시</label>
-        <div class="filter-note">세션 전용 (저장되지 않음)</div>
-      </div>
-    </div>
+    <button class="tool-btn" id="tempToggleBtn" onclick="toggleTempPanel()">✏️ 임시 추가</button>
     <button class="tool-btn" id="wkToggleBtn" onclick="toggleWkCtrl()">📐 주 확장</button>
     <button class="tool-btn" onclick="toast('캡쳐 기능 (추후 구현)')">📸 캡쳐</button>
     <button class="tool-btn" id="reloadBtn" onclick="loadAll(true)">🔄 새로고침</button>
@@ -280,6 +375,46 @@ body{
       <span class="sub" id="calSub"></span>
     </div>
     <button class="nav-btn" onclick="navMonth(1)">▶</button>
+  </div>
+
+  <!-- 임시 추가 패널 (기획서 캡쳐용 세션 전용 항목) -->
+  <div class="temp-panel" id="tempPanel">
+    <div class="temp-panel-title">
+      ✏️ 임시 추가 <span class="badge">세션 전용</span>
+      <span style="font-size:10.5px;color:var(--t4);font-weight:400;margin-left:6px">
+        페이지 새로고침 시 사라집니다
+      </span>
+    </div>
+    <div class="temp-form">
+      <div class="temp-field">
+        <label>유형</label>
+        <select class="temp-sel" id="tempType" onchange="onTempTypeChange()">
+          <option value="">선택</option>
+        </select>
+      </div>
+      <div class="temp-field">
+        <label>이름</label>
+        <input type="text" class="temp-inp temp-inp-name" id="tempName"
+               placeholder="유형/기간 선택 시 자동 생성" oninput="onTempNameInput()">
+      </div>
+      <div class="temp-field">
+        <label>기간</label>
+        <div class="temp-date-wrap">
+          <button type="button" class="temp-date-btn" id="tempDateBtn" onclick="toggleTempCal(event)">
+            <span id="tempDateLabel">기간 선택</span>
+          </button>
+          <div class="temp-cal-pop" id="tempCalPop"></div>
+        </div>
+      </div>
+      <div class="temp-field">
+        <label>색상</label>
+        <div class="temp-colors" id="tempColors"></div>
+      </div>
+      <button type="button" class="temp-add-btn" id="tempAddBtn" onclick="addTempEvent()">+ 추가</button>
+    </div>
+    <div class="temp-list" id="tempList">
+      <span class="temp-list-empty">아직 추가된 임시 항목이 없습니다</span>
+    </div>
   </div>
 
   <div class="legend" id="legend"></div>
@@ -409,11 +544,24 @@ let todayShown=true;
 let loaded=false;
 let loadError=null;
 
-// 필터 상태 (세션 전용, 저장 X)
-let filters = {
-  showNotice: false,
-  showClosed: false,
-  showAL: false
+// ── 임시 항목 (세션 전용) ──
+let TEMP_EVENTS = [];
+let tempForm = {
+  eventType: '',
+  startDate: null,
+  endDate: null,
+  name: '',
+  color: null,       // null이면 TYPE_COLOR의 기본값 사용
+  nameManual: false  // 사용자가 수동 편집했는지
+};
+
+// ── 임시 추가 패널용 인라인 달력 상태 ──
+const TCAL = {
+  vY: _today.getFullYear(),
+  vM: _today.getMonth(),    // 0-indexed
+  selS: null,
+  selE: null,
+  clicking: 'start'
 };
 
 // ═══════════════════════════════════════
@@ -426,20 +574,16 @@ function render(){
   renderGrid();
 }
 
-function isFiltered(ev){
-  if(!filters.showNotice && ev.isNotice) return true;
-  if(!filters.showClosed && ev.isClosed) return true;
-  if(!filters.showAL && ev.eventType==='AL') return true;
-  return false;
+function getAllEvents(){
+  return [...EVENTS, ...TEMP_EVENTS];
 }
 
 function getVisibleEvents(){
   const pm = cM===1?12:cM-1, py=cM===1?cY-1:cY;
   const nm = cM===12?1:cM+1, ny=cM===12?cY+1:cY;
   const months = [cY*100+cM, py*100+pm, ny*100+nm];
-  return EVENTS.filter(e=>{
+  return getAllEvents().filter(e=>{
     if(!e.startDate || !e.endDate) return false;
-    if(isFiltered(e)) return false;
     const sy=+e.startDate.slice(0,4), sm=+e.startDate.slice(5,7);
     const ey=+e.endDate.slice(0,4), em=+e.endDate.slice(5,7);
     const sYM=sy*100+sm, eYM=ey*100+em;
@@ -463,7 +607,7 @@ function assignLanes(evs){
 }
 
 function colorOfEv(ev){
-  return overrideColor[ev._id] || TYPE_COLOR[ev.eventType] || 'c-gray';
+  return overrideColor[ev._id] || ev._customColor || TYPE_COLOR[ev.eventType] || 'c-gray';
 }
 
 function renderLegend(){
@@ -481,9 +625,8 @@ function renderLegend(){
     return;
   }
 
-  const monthEvs = EVENTS.filter(e=>{
+  const monthEvs = getAllEvents().filter(e=>{
     if(!e.startDate) return false;
-    if(isFiltered(e)) return false;
     const sy=+e.startDate.slice(0,4), sm=+e.startDate.slice(5,7);
     return sy===cY && sm===cM;
   }).sort((a,b)=>dNum(a.startDate)-dNum(b.startDate));
@@ -701,30 +844,323 @@ function toggleToday(){
   renderGrid();
 }
 
-// ── 필터 메뉴 ──
-function toggleFilterMenu(e){
-  if(e) e.stopPropagation();
-  const menu = document.getElementById('filterMenu');
-  const btn = document.getElementById('filterBtn');
-  const isOpen = menu.classList.toggle('show');
+// ═══════════════════════════════════════
+// 임시 추가 패널
+// ═══════════════════════════════════════
+function toggleTempPanel(){
+  const panel = document.getElementById('tempPanel');
+  const btn = document.getElementById('tempToggleBtn');
+  const isOpen = panel.classList.toggle('show');
   btn.classList.toggle('primary', isOpen);
+  if(isOpen && !panel._inited){
+    panel._inited = true;
+    initTempForm();
+  }
 }
-function onFilterChange(){
-  filters.showNotice = document.getElementById('fltNotice').checked;
-  filters.showClosed = document.getElementById('fltClosed').checked;
-  filters.showAL     = document.getElementById('fltAL').checked;
-  render();
+
+function initTempForm(){
+  // 유형 드롭다운 채우기
+  const sel = document.getElementById('tempType');
+  sel.innerHTML = '<option value="">선택</option>';
+  // Firebase에서 로드된 eventTypes 정렬해서 추가
+  const typeKeys = Object.keys(EVENT_TYPES).sort((a,b)=>{
+    // DN/ET를 상단에 (자주 씀)
+    const priority = {DN:1, ET:2};
+    return (priority[a]||99) - (priority[b]||99) || a.localeCompare(b);
+  });
+  typeKeys.forEach(code=>{
+    const t = EVENT_TYPES[code];
+    const opt = document.createElement('option');
+    opt.value = code;
+    opt.textContent = `${t.name || code} (${code})`;
+    sel.appendChild(opt);
+  });
+
+  // 색상 팔레트
+  const colorWrap = document.getElementById('tempColors');
+  colorWrap.innerHTML = '';
+  COLORS.forEach(co=>{
+    const c = document.createElement('div');
+    c.className = 'temp-color '+co.cls;
+    c.title = co.label;
+    c.dataset.cls = co.cls;
+    c.onclick = ()=>{
+      tempForm.color = co.cls;
+      refreshTempColors();
+    };
+    colorWrap.appendChild(c);
+  });
+
+  renderTempList();
 }
-// 메뉴 바깥 클릭 시 닫기
+
+function refreshTempColors(){
+  const effective = tempForm.color || TYPE_COLOR[tempForm.eventType] || 'c-gray';
+  document.querySelectorAll('#tempColors .temp-color').forEach(el=>{
+    el.classList.toggle('active', el.dataset.cls===effective);
+  });
+}
+
+function onTempTypeChange(){
+  tempForm.eventType = document.getElementById('tempType').value;
+  // 색상 수동 지정 없으면 유형 기본색으로
+  if(!tempForm.color) refreshTempColors();
+  else refreshTempColors();
+  regenTempName();
+}
+
+function onTempNameInput(){
+  const v = document.getElementById('tempName').value;
+  tempForm.name = v;
+  tempForm.nameManual = !!v.trim();
+}
+
+// 날짜/유형 변경 시 자동 이름 생성 (수동편집 안 된 경우만)
+function regenTempName(){
+  if(tempForm.nameManual) return;
+  const auto = makeTempName(tempForm.eventType, tempForm.startDate, tempForm.endDate);
+  tempForm.name = auto;
+  document.getElementById('tempName').value = auto;
+}
+
+// 자동 이름 생성 — 닉네임 안 쓰고 name 필드 사용
+function makeTempName(typeCode, sDate, eDate){
+  if(!typeCode || !sDate || !eDate) return '';
+  const et = EVENT_TYPES[typeCode];
+  if(!et || !et.autoNick) return ''; // autoNick:false면 직접 입력
+  const sd = new Date(sDate+'T00:00:00');
+  const ed = new Date(eDate+'T00:00:00');
+  const mm = sd.getMonth()+1;
+  const sdStr = pad2(sd.getMonth()+1)+pad2(sd.getDate());
+  const edStr = pad2(ed.getMonth()+1)+pad2(ed.getDate());
+  return `${mm}월${et.name}_${sdStr}-${edStr}`;
+}
+
+// ── 인라인 달력 팝오버 ──
+function toggleTempCal(e){
+  if(e) e.stopPropagation();
+  const pop = document.getElementById('tempCalPop');
+  const btn = document.getElementById('tempDateBtn');
+  const open = pop.classList.toggle('show');
+  btn.classList.toggle('active', open);
+  if(open){
+    // 기본 달력 위치 = 선택된 시작일 or 현재 표시중인 월
+    if(tempForm.startDate){
+      const d = new Date(tempForm.startDate+'T00:00:00');
+      TCAL.vY = d.getFullYear(); TCAL.vM = d.getMonth();
+    }else{
+      TCAL.vY = cY; TCAL.vM = cM-1;
+    }
+    TCAL.selS = tempForm.startDate;
+    TCAL.selE = tempForm.endDate;
+    TCAL.clicking = 'start';
+    renderTempCal();
+  }
+}
+
+function renderTempCal(){
+  const pop = document.getElementById('tempCalPop');
+  const fd = new Date(TCAL.vY, TCAL.vM, 1).getDay();
+  const dim = new Date(TCAL.vY, TCAL.vM+1, 0).getDate();
+  const off = fd===0 ? 6 : fd-1;  // 월요일 시작
+  const today = (()=>{
+    const t=new Date();
+    return `${t.getFullYear()}-${pad2(t.getMonth()+1)}-${pad2(t.getDate())}`;
+  })();
+
+  let g = ['월','화','수','목','금','토','일'].map(d=>`<div class="tcal-dow">${d}</div>`).join('');
+  for(let i=0;i<off;i++) g += `<div class="tcal-d em"></div>`;
+  for(let d=1; d<=dim; d++){
+    const s = `${TCAL.vY}-${pad2(TCAL.vM+1)}-${pad2(d)}`;
+    let cls = 'tcal-d';
+    if(s===today) cls += ' today';
+    if(TCAL.selS && TCAL.selE && s===TCAL.selS && s===TCAL.selE) cls += ' ss se';
+    else if(s===TCAL.selS) cls += ' ss';
+    else if(s===TCAL.selE) cls += ' se';
+    if(TCAL.selS && TCAL.selE && s>TCAL.selS && s<TCAL.selE) cls += ' inrange';
+    g += `<div class="${cls}" data-tdate="${s}">${d}</div>`;
+  }
+
+  const sDisp = TCAL.selS ? fmtSlashDate(TCAL.selS) : '시작일';
+  const eDisp = TCAL.selE ? fmtSlashDate(TCAL.selE) : '종료일';
+
+  pop.innerHTML = `
+    <div class="tcal-head">
+      <button class="tcal-nav" data-tnav="-1">‹</button>
+      <span class="tcal-month">${TCAL.vY}년 ${TCAL.vM+1}월</span>
+      <button class="tcal-nav" data-tnav="1">›</button>
+    </div>
+    <div class="tcal-quick">
+      <button class="tcal-qb" data-tquick="today">오늘</button>
+      <button class="tcal-qb" data-tquick="thisweek">이번주</button>
+      <button class="tcal-qb" data-tquick="nextweek">다음주</button>
+    </div>
+    <div class="tcal-grid">${g}</div>
+    <div class="tcal-result">
+      <span class="tcal-chip">${sDisp}</span>
+      <span style="font-size:10px;color:var(--t3)">→</span>
+      <span class="tcal-chip">${eDisp}</span>
+      <button data-tconfirm="1" style="margin-left:auto;padding:3px 10px;font-size:11px;font-weight:600;background:var(--accent);color:#fff;border:none;border-radius:5px;cursor:pointer;font-family:inherit">적용</button>
+    </div>
+  `;
+
+  // 이벤트 위임 (한 번만 등록)
+  if(!pop._bound){
+    pop._bound = true;
+    pop.addEventListener('click', e=>{
+      e.stopPropagation();
+      const cell = e.target.closest('[data-tdate]');
+      if(cell){ onTempCalClick(cell.dataset.tdate); return; }
+      const nav = e.target.closest('[data-tnav]');
+      if(nav){
+        TCAL.vM += (+nav.dataset.tnav);
+        if(TCAL.vM<0){TCAL.vM=11; TCAL.vY--;}
+        if(TCAL.vM>11){TCAL.vM=0; TCAL.vY++;}
+        renderTempCal();
+        return;
+      }
+      const qb = e.target.closest('[data-tquick]');
+      if(qb){ onTempCalQuick(qb.dataset.tquick); return; }
+      const cf = e.target.closest('[data-tconfirm]');
+      if(cf){ applyTempDate(); return; }
+    });
+  }
+}
+
+function fmtSlashDate(s){
+  if(!s) return '';
+  return s.slice(5,7) + '/' + s.slice(8,10);
+}
+
+function onTempCalClick(dateStr){
+  if(TCAL.clicking==='start' || (TCAL.selS && TCAL.selE)){
+    TCAL.selS = dateStr;
+    TCAL.selE = null;
+    TCAL.clicking = 'end';
+  } else {
+    // end 선택
+    if(dateStr < TCAL.selS){
+      // 앞뒤 바뀌면 교환
+      TCAL.selE = TCAL.selS;
+      TCAL.selS = dateStr;
+    } else {
+      TCAL.selE = dateStr;
+    }
+    TCAL.clicking = 'start';
+  }
+  renderTempCal();
+}
+
+function onTempCalQuick(label){
+  const t = new Date();
+  const todayStr = `${t.getFullYear()}-${pad2(t.getMonth()+1)}-${pad2(t.getDate())}`;
+  if(label==='today'){
+    TCAL.selS = todayStr; TCAL.selE = todayStr; TCAL.clicking='start';
+  } else if(label==='thisweek' || label==='nextweek'){
+    // 월요일 시작 ~ 일요일 종료
+    const dow = t.getDay(); // 0=일
+    const monOffset = dow===0 ? -6 : 1-dow;
+    const addDays = label==='nextweek' ? 7 : 0;
+    const mon = new Date(t); mon.setDate(t.getDate()+monOffset+addDays);
+    const sun = new Date(mon); sun.setDate(mon.getDate()+6);
+    TCAL.selS = `${mon.getFullYear()}-${pad2(mon.getMonth()+1)}-${pad2(mon.getDate())}`;
+    TCAL.selE = `${sun.getFullYear()}-${pad2(sun.getMonth()+1)}-${pad2(sun.getDate())}`;
+    TCAL.vY = mon.getFullYear(); TCAL.vM = mon.getMonth();
+    TCAL.clicking='start';
+  }
+  renderTempCal();
+}
+
+function applyTempDate(){
+  if(!TCAL.selS || !TCAL.selE){
+    toast('시작일과 종료일을 모두 선택하세요');
+    return;
+  }
+  tempForm.startDate = TCAL.selS;
+  tempForm.endDate = TCAL.selE;
+  document.getElementById('tempDateLabel').textContent =
+    `${fmtSlashDate(TCAL.selS)} ~ ${fmtSlashDate(TCAL.selE)}`;
+  document.getElementById('tempCalPop').classList.remove('show');
+  document.getElementById('tempDateBtn').classList.remove('active');
+  regenTempName();
+}
+
+// 패널/달력 바깥 클릭 시 달력만 닫기
 document.addEventListener('click', e=>{
-  if(!e.target.closest('.filter-wrap')){
-    const menu = document.getElementById('filterMenu');
-    if(menu && menu.classList.contains('show')){
-      menu.classList.remove('show');
-      document.getElementById('filterBtn').classList.remove('primary');
+  if(!e.target.closest('.temp-date-wrap')){
+    const pop = document.getElementById('tempCalPop');
+    if(pop && pop.classList.contains('show')){
+      pop.classList.remove('show');
+      document.getElementById('tempDateBtn').classList.remove('active');
     }
   }
 });
+
+function addTempEvent(){
+  const typ = tempForm.eventType;
+  const sD = tempForm.startDate;
+  const eD = tempForm.endDate;
+  const nm = (tempForm.name || '').trim();
+
+  if(!typ){ toast('유형을 선택하세요'); return; }
+  if(!sD || !eD){ toast('기간을 선택하세요'); return; }
+  if(!nm){ toast('이름을 입력하세요'); return; }
+
+  const item = {
+    _id: 'temp_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+    eventName: nm,
+    eventType: typ,
+    startDate: sD,
+    endDate: eD,
+    products: [],
+    _isTemp: true,
+    _customColor: tempForm.color || null
+  };
+  TEMP_EVENTS.push(item);
+
+  // 폼 리셋 (유형은 유지 — 연속 추가 편의성)
+  tempForm.startDate = null;
+  tempForm.endDate = null;
+  tempForm.name = '';
+  tempForm.nameManual = false;
+  tempForm.color = null;
+  document.getElementById('tempName').value = '';
+  document.getElementById('tempDateLabel').textContent = '기간 선택';
+  refreshTempColors();
+
+  renderTempList();
+  render();
+  toast(`"${nm}" 추가됨`);
+}
+
+function removeTempEvent(id){
+  TEMP_EVENTS = TEMP_EVENTS.filter(t=>t._id !== id);
+  renderTempList();
+  render();
+}
+
+function renderTempList(){
+  const list = document.getElementById('tempList');
+  if(!list) return;
+  if(!TEMP_EVENTS.length){
+    list.innerHTML = '<span class="temp-list-empty">아직 추가된 임시 항목이 없습니다</span>';
+    return;
+  }
+  list.innerHTML = '';
+  TEMP_EVENTS.forEach(t=>{
+    const colorCls = t._customColor || TYPE_COLOR[t.eventType] || 'c-gray';
+    const item = document.createElement('span');
+    item.className = 'temp-item';
+    item.innerHTML = `
+      <span class="dot ${colorCls}"></span>
+      <span>${t.eventName}</span>
+      <span style="color:var(--t4);font-size:10px">(${fmtSlashDate(t.startDate)}~${fmtSlashDate(t.endDate)})</span>
+      <button class="rm" title="삭제">×</button>
+    `;
+    item.querySelector('.rm').onclick = ()=> removeTempEvent(t._id);
+    list.appendChild(item);
+  });
+}
 
 function toast(msg){
   const t=document.getElementById('toast');
@@ -791,8 +1227,11 @@ window.navMonth = navMonth;
 window.goToday = goToday;
 window.toggleWkCtrl = toggleWkCtrl;
 window.toggleToday = toggleToday;
-window.toggleFilterMenu = toggleFilterMenu;
-window.onFilterChange = onFilterChange;
+window.toggleTempPanel = toggleTempPanel;
+window.onTempTypeChange = onTempTypeChange;
+window.onTempNameInput = onTempNameInput;
+window.toggleTempCal = toggleTempCal;
+window.addTempEvent = addTempEvent;
 window.changePrevWk = changePrevWk;
 window.changeNextWk = changeNextWk;
 window.loadAll = loadAll;

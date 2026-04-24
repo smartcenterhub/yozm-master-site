@@ -308,7 +308,9 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .lchip.on{background:#EEEDFE;border-color:#AFA9EC;color:#3C3489}
 .lchip-tag{font-size:10px;padding:1px 7px;border-radius:20px;border:0.5px solid #AFA9EC;background:#EEEDFE;color:#3C3489;cursor:pointer;display:inline-flex;align-items:center;gap:2px}
 .lchip-tag .lx{color:#AFA9EC;font-size:9px}
-.egrp.pinned{border:2.25px solid #D4A017!important}
+.egrp.pinned{border:2.25px solid #D4A017!important;border-radius:var(--rl)!important}
+.egrp.pinned .egrphd{border:none!important;border-radius:calc(var(--rl) - 2px) calc(var(--rl) - 2px) 0 0!important}
+.egrp.pinned .egrpbody{border:none!important;border-top:1px solid rgba(212,160,23,.2)!important;border-radius:0 0 calc(var(--rl) - 2px) calc(var(--rl) - 2px)!important}
 .pin-icon{font-size:10px;margin-left:4px;opacity:.8;flex-shrink:0}
 .lchip.has-url{border-color:var(--gr);color:var(--gr)}
 .toggle-hide-btn{font-size:11.5px;padding:4px 12px;border:0.5px solid var(--bd);border-radius:20px;background:var(--gs);color:var(--t2);cursor:pointer}

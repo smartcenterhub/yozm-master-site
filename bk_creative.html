@@ -54,7 +54,7 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 .ptime{color:var(--t3)}
 .cal-layout{display:flex;gap:14px;align-items:flex-start}
 .cal-main{flex:1;min-width:0;overflow-x:auto}
-.cal-detail{width:calc(50% - 7px);flex-shrink:0;min-width:0;background:var(--gbs);border:1px solid var(--gbd);border-radius:10px;padding:14px;position:sticky;top:20px;max-height:82vh;overflow-y:auto}
+.cal-detail{width:calc(50% - 7px);flex-shrink:0;min-width:0;background:var(--gb);border:0.5px solid var(--gbd);border-radius:10px;padding:12px 14px;position:sticky;top:20px;max-height:82vh;overflow-y:auto}
 .cal-nav{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .cnbtn{background:var(--gbs);border:1px solid var(--gbd);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--t2);font-family:inherit}
 .cnbtn:hover{color:var(--tx)}
@@ -291,7 +291,7 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
   <div class="legend" id="calLegend"></div>
   <div class="cal-layout">
     <div class="cal-main"><div id="calGrid"></div></div>
-    <div class="cal-detail" id="calDetail"><div class="detail-empty">시간대 셀을 클릭하면<br>소재 정보가 표시됩니다</div></div>
+    <div class="cal-detail hist-card" id="calDetail"><div class="detail-empty">시간대 셀을 클릭하면<br>소재 정보가 표시됩니다</div></div>
   </div>
 </div>
 
@@ -392,6 +392,7 @@ let _calY = new Date().getFullYear();
 let _calM = new Date().getMonth();
 let _calW = 1;
 let _selId = null;
+let _selIds = [];
 let _pendingPc = null, _pendingMo = null;
 let _toastTmr;
 
@@ -614,7 +615,7 @@ function renderToday() {
     pill.className = 'pill';
     pill.style.cursor = 'pointer';
     pill.innerHTML = '<div class="pdot" style="background:' + getColor(id) + '"></div><span class="pname">' + c.name + '</span><span class="ptime">' + fmtDt(c.startAt) + ' ~ ' + fmtDt(c.endAt) + '</span>';
-    pill.onclick = function() { _selId = id; renderDetail(); };
+    pill.onclick = function() { _selId = id; _selIds = [id]; renderDetail(); };
     pills.appendChild(pill);
   });
 }
@@ -686,16 +687,25 @@ function selHourCell(id, e) {
   e.stopPropagation();
   if (!id) return;
   _selId = id;
+  // 같은 셀(td) 안의 모든 소재 ID 수집 (최대 3개)
+  const td = e.target.closest('td');
+  if (td) {
+    const segs = td.querySelectorAll('.cseg[onclick]');
+    const ids = [];
+    segs.forEach(function(seg) {
+      const m = seg.getAttribute('onclick').match(/selHourCell\('([^']+)'/);
+      if (m) ids.push(m[1]);
+    });
+    _selIds = ids.slice(0, 3);
+  } else {
+    _selIds = [id];
+  }
   renderDetail();
 }
 
-function renderDetail() {
-  const panel = document.getElementById('calDetail');
-  if (!_selId || !_cr[_selId]) {
-    panel.innerHTML = '<div class="detail-empty">시간대 셀을 클릭하면<br>소재 정보가 표시됩니다</div>';
-    return;
-  }
-  const c = _cr[_selId], id = _selId;
+function renderDetailCard(id) {
+  const c = _cr[id];
+  if (!c) return '';
   const col = getColor(id);
   const st = _autoStatus(c);
   const dur = _dur(c.startAt, c.endAt);
@@ -706,13 +716,13 @@ function renderDetail() {
   /* 헤더 */
   html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">';
   html += '<div style="width:8px;height:8px;border-radius:50%;background:' + col + ';flex-shrink:0"></div>';
-  html += '<div style="font-size:12.5px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">' + c.name + '</div>';
+  html += '<div class="edit-name" style="font-size:12.5px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">' + c.name + '</div>';
   html += '<span class="hcard-btns" style="display:flex;gap:4px;flex-shrink:0"><button class="btn btn-g btn-sm" onclick="editCr(&quot;' + id + '&quot;)">✏️</button><button class="btn btn-r btn-sm" onclick="deleteCr(&quot;' + id + '&quot;)">🗑</button></span>';
   html += '<span class="status-badge ' + _stCls(st) + '" style="flex-shrink:0">' + st + '</span>';
   html += '</div>';
   /* 기간 */
   const evtDurD = _dur(c.eventStartAt||c.startAt, c.eventEndAt||c.endAt);
-  html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">';
+  html += '<div class="edit-period" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">';
   html += '<div style="display:flex;align-items:center;gap:5px">'
     + '<span style="font-size:9.5px;color:var(--t3);font-weight:500;white-space:nowrap">행사</span>'
     + '<span style="font-size:10px;color:var(--t3);background:var(--gbs);border-radius:4px;padding:2px 8px;white-space:nowrap">' + fmtDt(c.eventStartAt||c.startAt) + ' ~ ' + fmtDt(c.eventEndAt||c.endAt) + (evtDurD ? ' <span style="color:var(--t3);margin-left:3px">' + evtDurD + '</span>' : '') + '</span>'
@@ -739,15 +749,26 @@ function renderDetail() {
   /* 랜딩링크 최하단 */
   html += '<div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:0.5px solid var(--gbd)">';
   html += '<span style="font-size:10px;font-weight:500;color:var(--t3);white-space:nowrap">랜딩링크</span>';
-  html += link ? '<div class="hist-link-url" onclick="copyHistLink(this)" title="클릭하면 복사">' + link + '</div>' : '<div class="hist-link-url empty">링크 없음</div>';
+  html += '<span class="edit-link" style="flex:1;min-width:0">' + (link ? '<div class="hist-link-url" onclick="copyHistLink(this)" title="클릭하면 복사">' + link + '</div>' : '<div class="hist-link-url empty">링크 없음</div>') + '</span>';
   html += '</div>';
-  panel.innerHTML = html;
+  return html;
+}
+
+function renderDetail() {
+  const panel = document.getElementById('calDetail');
+  const ids = (_selIds && _selIds.length) ? _selIds : (_selId ? [_selId] : []);
+  if (!ids.length || !ids.some(function(id){ return _cr[id]; })) {
+    panel.innerHTML = '<div class="detail-empty">시간대 셀을 클릭하면<br>소재 정보가 표시됩니다</div>';
+    return;
+  }
+  const cards = ids.filter(function(id){ return _cr[id]; }).map(renderDetailCard);
+  panel.innerHTML = '<div style="display:flex;flex-direction:column;gap:12px">' + cards.join('') + '</div>';
 }
 
 
 function editCr(id) {
   const c = _cr[id]; if (!c) return;
-  const card = document.getElementById('hist-card-' + id);
+  const card = document.getElementById('hist-card-' + id) || document.getElementById('calDetail');
   if (!card) return;
   const fmtRaw = function(iso) {
     if (!iso) return '';
@@ -762,16 +783,27 @@ function editCr(id) {
   const pcIdEl = card.querySelector('.edit-pcid');
   const moIdEl = card.querySelector('.edit-moid');
   const btnEl = card.querySelector('.hcard-btns') || card.querySelector('.edit-btns');
-  if (nameEl) nameEl.innerHTML = '<input class="inp" id="ei-name" value="' + (c.name||'') + '" style="width:100%;font-size:12px;font-weight:600">';
-  if (periodEl) periodEl.innerHTML =
-    '<div style="display:flex;gap:6px">' +
-    '<input class="inp" id="ei-start" value="' + fmtRaw(c.startAt) + '" placeholder="YYYY-MM-DD-HHMM" style="width:160px;font-size:10px">' +
-    '<span style="font-size:10px;color:var(--t2);line-height:34px">~</span>' +
-    '<input class="inp" id="ei-end" value="' + fmtRaw(c.endAt) + '" placeholder="YYYY-MM-DD-HHMM" style="width:160px;font-size:10px">' +
-    '</div>';
-  if (linkEl) linkEl.innerHTML = '<input class="inp" id="ei-landingUrl" value="' + (c.landingUrl||'') + '" placeholder="https://..." style="width:100%;font-size:10px;flex:1">';
-  if (pcIdEl) pcIdEl.innerHTML = '<input class="inp" id="ei-pcId" value="' + (c.pcId||'') + '" style="font-size:9px;width:100%">';
-  if (moIdEl) moIdEl.innerHTML = '<input class="inp" id="ei-moId" value="' + (c.moId||'') + '" style="font-size:9px;width:100%">';
+  if (nameEl) nameEl.innerHTML = '<input class="inp" id="ei-name" value="' + (c.name||'') + '" style="width:100%;font-size:12px;font-weight:600;padding:3px 8px">';
+  if (periodEl) {
+    const evtDurE = _dur(c.eventStartAt||c.startAt, c.eventEndAt||c.endAt);
+    periodEl.innerHTML =
+      '<div style="display:flex;align-items:center;gap:8px;flex-wrap:nowrap;overflow-x:auto">'
+      + '<div style="display:flex;align-items:center;gap:5px;flex-shrink:0">'
+      + '<span style="font-size:9.5px;color:var(--t3);font-weight:500;white-space:nowrap">행사</span>'
+      + '<span style="font-size:10px;color:var(--t3);background:var(--gbs);border-radius:4px;padding:2px 8px;white-space:nowrap">' + fmtDt(c.eventStartAt||c.startAt) + ' ~ ' + fmtDt(c.eventEndAt||c.endAt) + (evtDurE ? ' <span style="color:var(--t3);margin-left:3px">' + evtDurE + '</span>' : '') + '</span>'
+      + '</div>'
+      + '<span style="color:var(--gbd);font-size:10px;flex-shrink:0">|</span>'
+      + '<div style="display:flex;align-items:center;gap:5px;flex-shrink:0">'
+      + '<span style="font-size:9.5px;color:var(--ac);font-weight:600;white-space:nowrap">브검</span>'
+      + '<input class="inp" id="ei-start" value="' + fmtRaw(c.startAt) + '" placeholder="YYYY-MM-DD-HHMM" style="font-size:10px;padding:2px 6px;width:130px">'
+      + '<span style="font-size:10px;color:var(--t2);flex-shrink:0">~</span>'
+      + '<input class="inp" id="ei-end" value="' + fmtRaw(c.endAt) + '" placeholder="YYYY-MM-DD-HHMM" style="font-size:10px;padding:2px 6px;width:130px">'
+      + '</div>'
+      + '</div>';
+  }
+  if (linkEl) linkEl.innerHTML = '<input class="inp" id="ei-landingUrl" value="' + (c.landingUrl||'') + '" placeholder="https://..." style="width:100%;font-size:10px;flex:1;padding:2px 8px">';
+  if (pcIdEl) pcIdEl.innerHTML = '<input class="inp" id="ei-pcId" value="' + (c.pcId||'') + '" style="font-size:9px;width:100%;padding:2px 6px">';
+  if (moIdEl) moIdEl.innerHTML = '<input class="inp" id="ei-moId" value="' + (c.moId||'') + '" style="font-size:9px;width:100%;padding:2px 6px">';
   const btnEl2 = card.querySelector('.hcard-btns') || card.querySelector('.edit-btns');
   if (btnEl2) btnEl2.innerHTML =
     '<button class="btn btn-p btn-sm" onclick="saveInlineEdit(\'' + id + '\')">💾 저장</button>' +
@@ -1249,6 +1281,7 @@ function autoSelNowCr() {
   });
   if (active.length) {
     _selId = active[0][0];
+    _selIds = active.slice(0,3).map(function(e){return e[0];});
   }
 }
 

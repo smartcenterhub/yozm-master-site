@@ -8,7 +8,6 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --sb-w:252px;
   --tb-h:42px;
   --glass-bg:rgba(255,255,255,0.74);
   --glass-bg-strong:rgba(255,255,255,0.92);
@@ -21,124 +20,48 @@ html{background:linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#eef0f8 100%) fixe
 body{
   font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;
   font-size:13px;line-height:1.5;color:var(--tx);
-  display:flex;flex-direction:row;width:100vw;height:100vh;
+  display:flex;flex-direction:column;width:100vw;height:100vh;
 }
 
-/* ══ SIDEBAR — normal flow, sticky ══ */
-.sb{
-  width:var(--sb-w);min-width:var(--sb-w);height:100vh;
-  position:sticky;top:0;flex-shrink:0;
-  background:var(--glass-bg);border-right:1px solid var(--glass-border-s);
-  display:flex;flex-direction:column;overflow:hidden;
-  transition:width .22s cubic-bezier(.4,0,.2,1), min-width .22s cubic-bezier(.4,0,.2,1);
-}
-.sb::-webkit-scrollbar{width:3px}
-.sb::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.1);border-radius:2px}
-.sb-inner{
-  width:252px;min-width:252px;height:100%;
-  display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;
-}
-.sb-inner::-webkit-scrollbar{width:3px}
-.sb-inner::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.1);border-radius:2px}
-
-.sb-logo{
-  padding:0 16px;height:var(--tb-h);display:flex;align-items:center;gap:9px;
-  border-bottom:1px solid var(--glass-border-s);flex-shrink:0;
-}
-.sb-logo-icon{
-  width:28px;height:28px;border-radius:8px;background:var(--accent);
-  display:flex;align-items:center;justify-content:center;
-  color:#fff;font-weight:700;font-size:13px;flex-shrink:0;
-}
-.sb-logo-name{font-size:13.5px;font-weight:600;color:var(--tx)}
-.sb-logo-sub{font-size:9.5px;color:var(--t4)}
-
-/* L1 */
-.l1-hdr{
-  display:flex;align-items:center;gap:7px;
-  padding:8px 14px 4px;cursor:pointer;user-select:none;transition:background .12s;
-}
-.l1-hdr:hover{background:rgba(0,0,0,0.02)}
-.l1-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.l1-label{font-size:12px;font-weight:600;white-space:nowrap}
-.l1-chev{margin-left:auto;font-size:8px;color:var(--t4);transition:transform .2s}
-.l1-block.open .l1-chev{transform:rotate(90deg)}
-.l1-hdr.l1-link{cursor:pointer}
-.l1-hdr.l1-link:hover{background:rgba(0,0,0,0.03)}
-.l1-hdr.active{background:rgba(0,0,0,0.03)}
-.l1-block.open .l1-body{display:block}
-
-/* L2 */
-.l2-hdr{
-  display:flex;align-items:center;gap:6px;
-  padding:5px 14px 4px 24px;cursor:pointer;user-select:none;
-  color:var(--t2);font-size:12px;transition:all .12s;position:relative;white-space:nowrap;
-}
-.l2-hdr:hover{color:var(--tx);background:rgba(0,0,0,0.015)}
-.l2-hdr.open{color:var(--tx);font-weight:500}
-.l2-hdr.active{color:var(--accent);font-weight:500}
-.l2-hdr.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2.5px;background:var(--accent);border-radius:0 2px 2px 0}
-.l2-dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.3;flex-shrink:0;transition:opacity .12s}
-.l2-hdr.open .l2-dot,.l2-hdr.active .l2-dot{opacity:.7}
-.l2-chev{margin-left:auto;font-size:7px;color:var(--t4);transition:transform .18s}
-.l2-hdr.open .l2-chev{transform:rotate(90deg)}
-.l2-tag{font-size:9px;padding:1px 5px;border-radius:6px;font-weight:500;flex-shrink:0}
-.tag-plan{background:rgba(0,0,0,0.05);color:var(--t3)}
-.l2-body{display:none}
-.l2-hdr.open+.l2-body{display:block}
-
-/* L3 */
-.l3-item{
-  display:flex;align-items:center;gap:5px;
-  padding:3px 14px 3px 36px;cursor:pointer;user-select:none;
-  color:var(--t3);font-size:11.5px;transition:all .1s;position:relative;white-space:nowrap;
-}
-.l3-item:hover{color:var(--t2)}
-.l3-item.active{color:var(--accent);font-weight:500}
-.l3-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2.5px;background:var(--accent);border-radius:0 2px 2px 0}
-.l3-dot{width:3px;height:3px;border-radius:50%;background:currentColor;opacity:.45;flex-shrink:0}
-.l3-item.active .l3-dot{opacity:1}
-
-.sb-divider{height:1px;background:var(--glass-border-s);margin:4px 0}
-.sb-spacer{flex:1;min-height:16px}
-.sb-bottom{padding:10px 14px 12px;border-top:1px solid var(--glass-border-s);flex-shrink:0}
-.sync-btn{
-  display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:6px;
-  background:var(--glass-bg-strong);border:1px solid var(--glass-border-s);
-  cursor:pointer;font-size:11.5px;color:var(--t2);width:100%;font-family:inherit;transition:all .12s;
-}
-.sync-btn:hover{color:var(--accent)}
-.sync-live{width:6px;height:6px;border-radius:50%;background:#22c55e;flex-shrink:0}
-
-/* ══ 우측 영역 — topbar + iframe ══ */
-.right{
-  flex:1;min-width:0;height:100vh;
-  display:flex;flex-direction:column;overflow:hidden;
-}
-
-/* ══ TOPBAR — 우측 영역 안에서만 sticky ══ */
+/* ══ TOPBAR ══ */
 .topbar{
   height:var(--tb-h);flex-shrink:0;
   background:var(--glass-bg);border-bottom:1px solid var(--glass-border-s);
-  display:flex;align-items:center;padding:0 20px;gap:8px;
+  display:flex;align-items:center;padding:0 16px;gap:0;
 }
-.sb-toggle{
-  width:28px;height:28px;border-radius:6px;flex-shrink:0;
-  border:1px solid var(--glass-border-s);background:var(--glass-bg-strong);
+.tb-logo{
+  display:flex;align-items:center;gap:8px;padding-right:14px;flex-shrink:0;
+}
+.tb-logo-icon{
+  width:26px;height:26px;border-radius:7px;background:var(--accent);
   display:flex;align-items:center;justify-content:center;
-  cursor:pointer;font-size:13px;color:var(--t2);transition:all .12s;
+  color:#fff;font-weight:700;font-size:12px;flex-shrink:0;
 }
-.sb-toggle:hover{color:var(--accent);border-color:rgba(58,58,240,0.2)}
-.bc{font-size:11.5px;color:var(--t3);display:flex;align-items:center;gap:5px}
-.bc-sep{font-size:10px;color:var(--t4)}
-.bc b{color:var(--accent);font-weight:500}
-.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.tb-logo-name{font-size:13px;font-weight:600;color:var(--tx)}
+.tb-logo-sub{font-size:9.5px;color:var(--t3);margin-top:1px}
+.tb-sep{width:1px;height:16px;background:var(--glass-border-s);flex-shrink:0;margin:0 4px}
+.tb-nav{display:flex;align-items:center;flex:1;overflow:hidden}
+.tb-nav-btn{
+  padding:0 11px;font-size:11.5px;cursor:pointer;white-space:nowrap;
+  border-bottom:2px solid transparent;height:var(--tb-h);display:flex;align-items:center;
+  transition:opacity .12s, border-color .12s;font-weight:400;opacity:.5;
+}
+.tb-nav-btn:hover{opacity:.8}
+.tb-nav-btn.active{font-weight:500;border-bottom-color:currentColor;opacity:1}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0;padding-left:12px}
 .tb-date{font-size:11px;color:var(--t4)}
-.tb-sync{
-  display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;
-  background:rgba(58,58,240,0.08);color:var(--accent);font-size:11.5px;
-  cursor:pointer;font-weight:500;font-family:inherit;border:none;
+
+/* 전체 연동 버튼 */
+.sync-pill{
+  display:flex;align-items:center;gap:6px;
+  padding:4px 10px;border-radius:7px;
+  background:var(--glass-bg-strong);border:1px solid var(--glass-border-s);
+  cursor:pointer;font-size:11px;color:var(--t2);font-family:inherit;
+  transition:all .12s;
 }
+.sync-pill:hover{border-color:rgba(58,58,240,0.2);color:var(--accent)}
+.sync-live{width:6px;height:6px;border-radius:50%;background:#22c55e;flex-shrink:0}
+.sync-time{font-size:10px;color:var(--t4);margin-left:2px}
 
 /* ══ IFRAME ══ */
 .main{flex:1;overflow:hidden}
@@ -147,180 +70,75 @@ body{
 </head>
 <body>
 
-<!-- ══ SIDEBAR ══ -->
-<nav class="sb" id="sidebar">
-<div class="sb-inner">
-  <div class="sb-logo">
-    <div class="sb-logo-icon">Y</div>
-    <div>
-      <div class="sb-logo-name">요즘 대시보드</div>
-      <div class="sb-logo-sub">Naver Brandstore Ops</div>
-    </div>
-  </div>
-
-  <!-- 홈 -->
-  <div class="l1-hdr l1-link" onclick="goL1('home.html','홈',this)" style="padding:8px 14px;">
-    <div class="l1-dot" style="background:var(--t3)"></div>
-    <span class="l1-label" style="color:var(--t2)">홈</span>
-  </div>
-  <div class="sb-divider"></div>
-
-  <!-- 1. 광고 리포트 관리 -->
-  <div class="l1-block">
-    <div class="l1-hdr l1-link" onclick="goL1('ads_report.html','광고 리포트 관리',this)">
-      <div class="l1-dot" style="background:var(--blue)"></div>
-      <span class="l1-label" style="color:var(--blue)">광고 리포트 관리</span>
-    </div>
-  </div>
-  <div class="sb-divider"></div>
-
-  <!-- 2. 상품 관리 -->
-  <div class="l1-block">
-    <div class="l1-hdr l1-link" onclick="goL1('prod_manage.html','상품 관리',this)">
-      <div class="l1-dot" style="background:var(--green)"></div>
-      <span class="l1-label" style="color:var(--green)">상품 관리</span>
-    </div>
-  </div>
-  <div class="sb-divider"></div>
-
-  <!-- 3. 행사 관리 -->
-  <div class="l1-block">
-    <div class="l1-hdr l1-link" onclick="goL1('evt_manage.html','행사 관리',this)">
-      <div class="l1-dot" style="background:var(--orange)"></div>
-      <span class="l1-label" style="color:var(--orange)">행사 관리</span>
-    </div>
-  </div>
-  <div class="sb-divider"></div>
-
-  <!-- 소재 관리 -->
-  <div class="l1-block">
-    <div class="l1-hdr l1-link" onclick="goL1('creative_manage.html','소재 관리',this)">
-      <div class="l1-dot" style="background:#d946ef"></div>
-      <span class="l1-label" style="color:#d946ef">소재 관리</span>
-    </div>
-  </div>
-  <div class="sb-divider"></div>
-
-  <!-- 4. 출고 배분기 -->
-  <div class="l1-block">
-    <div class="l1-hdr l1-link" onclick="goL1('shipment_tool.html','출고 배분기',this)">
-      <div class="l1-dot" style="background:var(--purple)"></div>
-      <span class="l1-label" style="color:var(--purple)">출고 배분기</span>
-    </div>
-  </div>
-  <div class="sb-divider"></div>
-
-  <!-- 5. 물량 관리 -->
-  <div class="l1-block">
-    <div class="l1-hdr l1-link" onclick="goL1('vol_upload.html','물량 관리',this)">
-      <div class="l1-dot" style="background:var(--accent)"></div>
-      <span class="l1-label" style="color:var(--accent)">물량 관리</span>
-    </div>
-  </div>
-
-  <div class="sb-spacer"></div>
-  <div class="sb-bottom">
-    <button class="sync-btn">
-      <div class="sync-live"></div>🔄 전체 연동
-      <span style="margin-left:auto;font-size:10px;color:var(--t4)" id="sync-time">--:--</span>
-    </button>
-  </div>
-</div><!-- sb-inner -->
-</nav>
-
-<!-- ══ 우측 영역 ══ -->
-<div class="right">
-
 <!-- ══ TOPBAR ══ -->
 <div class="topbar">
-  <button class="sb-toggle" id="sb-toggle-btn" onclick="toggleSidebar()">☰</button>
-  <div class="bc" id="bc"><b>홈</b></div>
-  <div class="topbar-right">
+  <div class="tb-logo">
+    <div class="tb-logo-icon">Y</div>
+    <div>
+      <div class="tb-logo-name">요즘 대시보드</div>
+      <div class="tb-logo-sub" id="tb-week-date"></div>
+    </div>
+  </div>
+  <div class="tb-sep"></div>
+  <div class="tb-nav">
+    <div class="tb-nav-btn active" style="color:#14b8a6" onclick="navTo('evt_calendar.html',this)">달력</div>
+    <div class="tb-nav-btn" style="color:var(--blue)" onclick="navTo('ads_report.html',this)">광고 리포트 관리</div>
+    <div class="tb-nav-btn" style="color:#d946ef" onclick="navTo('creative_manage.html',this)">소재 관리</div>
+    <div class="tb-nav-btn" style="color:var(--green)" onclick="navTo('prod_manage.html',this)">상품 관리</div>
+    <div class="tb-nav-btn" style="color:var(--orange)" onclick="navTo('evt_manage.html',this)">행사 관리</div>
+    <div class="tb-nav-btn" style="color:var(--purple)" onclick="navTo('shipment_tool.html',this)">출고 배분기</div>
+    <div class="tb-nav-btn" style="color:var(--accent)" onclick="navTo('vol_upload.html',this)">물량 관리</div>
+  </div>
+  <div class="tb-right">
     <span class="tb-date" id="today-date"></span>
-    <button class="tb-sync">🔄 전체 연동</button>
+    <button class="sync-pill">
+      <div class="sync-live"></div>
+      🔄 전체 연동
+      <span class="sync-time" id="sync-time"></span>
+    </button>
   </div>
 </div>
 
 <!-- ══ IFRAME ══ -->
 <div class="main">
-  <iframe id="content-frame" src="home.html"></iframe>
+  <iframe id="content-frame" src="evt_calendar.html"></iframe>
 </div>
 
-</div><!-- .right -->
-
 <script>
-let sbOpen = true;
-function toggleSidebar() {
-  sbOpen = !sbOpen;
-  const sb = document.getElementById('sidebar');
-  sb.style.width = sbOpen ? '252px' : '0px';
-  sb.style.minWidth = sbOpen ? '252px' : '0px';
+function navTo(src, el) {
+  document.getElementById('content-frame').src = src;
+  document.querySelectorAll('.tb-nav-btn.active').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
 }
 
 window.addEventListener('message', e => {
   if (e.data && e.data.type === 'nav') {
     document.getElementById('content-frame').src = e.data.src;
-    document.getElementById('bc').innerHTML = `<b>${e.data.label}</b>`;
-    document.querySelectorAll('.l2-hdr.active,.l3-item.active,.l1-hdr.active').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tb-nav-btn.active').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tb-nav-btn').forEach(btn => {
+      const oc = btn.getAttribute('onclick') || '';
+      if (oc.includes(e.data.src)) btn.classList.add('active');
+    });
   }
 });
 
-function goL1(src, label, el) {
-  document.getElementById('content-frame').src = src;
-  document.getElementById('bc').innerHTML = `<b>${label}</b>`;
-  document.querySelectorAll('.l2-hdr.active, .l3-item.active, .l1-hdr.active').forEach(e => e.classList.remove('active'));
-  el.classList.add('active');
-  curActive = el;
-}
-
-let curActive = document.querySelector('.l2-hdr.active');
-
-// L2 직접 파일 열기
-function goL2(src, l1, l2, el) {
-  document.getElementById('content-frame').src = src;
-  document.getElementById('bc').innerHTML =
-    `<span>${l1}</span><span class="bc-sep">›</span><b>${l2}</b>`;
-  // 이전 active 해제
-  document.querySelectorAll('.l2-hdr.active, .l3-item.active').forEach(e => e.classList.remove('active'));
-  el.classList.add('active');
-  curActive = el;
-}
-
-// L3 파일 열기 (물량 대시보드용)
-function goL3(src, l1, l2, l3, el) {
-  document.getElementById('content-frame').src = src;
-  document.getElementById('bc').innerHTML =
-    `<span>${l1}</span><span class="bc-sep">›</span><span>${l2}</span><span class="bc-sep">›</span><b>${l3}</b>`;
-  document.querySelectorAll('.l2-hdr.active, .l3-item.active').forEach(e => e.classList.remove('active'));
-  el.classList.add('active');
-  curActive = el;
-}
-
-function tL1(hdr) {
-  const bl = hdr.parentElement;
-  const bd = bl.querySelector('.l1-body');
-  const op = bl.classList.toggle('open');
-  bd.style.display = op ? 'block' : 'none';
-}
-
-function tL2(hdr) {
-  const bl = hdr.parentElement;
-  const bd = bl.querySelector('.l2-body');
-  const op = hdr.classList.toggle('open');
-  bd.style.display = op ? 'block' : 'none';
-}
-
-// L2 body 초기 상태 — open 클래스 있으면 표시
-document.querySelectorAll('.l2-hdr.open').forEach(hdr => {
-  const bd = hdr.parentElement.querySelector('.l2-body');
-  if (bd) bd.style.display = 'block';
-});
-
-// 오늘 날짜
 const d = new Date();
 const days = ['일','월','화','수','목','금','토'];
 document.getElementById('today-date').textContent =
   `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} (${days[d.getDay()]})`;
+
+function getWeekNum(date) {
+  const y = date.getFullYear(), m = date.getMonth();
+  const firstDay = new Date(y, m, 1);
+  const dow = firstDay.getDay();
+  const offset = dow === 0 ? -6 : 1 - dow;
+  const week1Start = new Date(firstDay);
+  week1Start.setDate(firstDay.getDate() + offset);
+  const diff = Math.floor((date - week1Start) / 86400000);
+  return diff < 0 ? 0 : Math.floor(diff / 7) + 1;
+}
+document.getElementById('tb-week-date').textContent =
+  `${d.getMonth()+1}월 ${getWeekNum(d)}주차 | ${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} (${days[d.getDay()]})`;
 
 const now = new Date();
 document.getElementById('sync-time').textContent =

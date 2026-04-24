@@ -60,7 +60,7 @@ body{
 /* ── 범례 ── */
 .legend{
   background:var(--glass-bg);border:1px solid var(--glass-border-s);
-  border-radius:12px;padding:12px 14px;margin-bottom:14px;
+  border-radius:12px;padding:10px 14px;margin-bottom:14px;
   display:flex;flex-wrap:wrap;gap:4px 0;align-items:center;
 }
 .lg-item{
@@ -80,6 +80,34 @@ body{
   background:rgba(0,0,0,0.05);color:var(--t3);letter-spacing:.3px;
 }
 .lg-empty{font-size:12px;color:var(--t3);text-align:center;width:100%;padding:4px 0}
+
+/* ── 범례 내 필터 칩 ── */
+.lg-filter-row{
+  display:flex;align-items:center;gap:6px;padding-right:12px;
+  border-right:1px solid rgba(0,0,0,0.08);margin-right:8px;
+  flex-shrink:0;
+}
+.lg-chip{
+  font-size:11px;padding:3px 10px;border-radius:12px;
+  border:0.5px solid rgba(0,0,0,0.1);background:transparent;
+  color:var(--t3);cursor:pointer;font-family:inherit;font-weight:500;
+  transition:all .12s;user-select:none;white-space:nowrap;
+  display:inline-flex;align-items:center;gap:5px;
+}
+.lg-chip:hover{color:var(--t2);border-color:rgba(0,0,0,0.2)}
+.lg-chip.on{
+  border-color:var(--accent);background:rgba(58,58,240,0.08);
+  color:var(--accent);font-weight:600;
+}
+.lg-chip .cnt{
+  font-size:9.5px;padding:1px 5px;border-radius:8px;
+  background:rgba(0,0,0,0.06);color:var(--t4);font-weight:600;
+  min-width:14px;text-align:center;
+}
+.lg-chip.on .cnt{background:rgba(58,58,240,0.2);color:var(--accent)}
+.lg-items-wrap{
+  display:flex;flex-wrap:wrap;gap:4px 0;align-items:center;flex:1;min-width:0;
+}
 
 .color-picker{
   position:absolute;top:22px;left:-4px;z-index:50;
@@ -461,6 +489,7 @@ const db = getFirestore(initializeApp({
 let EVENT_TYPES = {};   // { FF:{nick,name,autoNick}, ... }
 let EVENTS = [];        // [{_id, eventName, eventType, startDate, endDate, isClosed, isNotice, ...}, ...]
 let PROP_COUNTS = {};   // { eventSID: count }
+let PROP_STATUS = {};   // { eventSID: Set(['선정','미선정','제안중',...]) }
 
 // eventType → 기본 색상 매핑 (파스텔 톤)
 const TYPE_COLOR = {
@@ -555,6 +584,25 @@ let tempForm = {
   nameManual: false  // 사용자가 수동 편집했는지
 };
 
+// ── 상태 필터 (범례 내 칩, 세션 전용) ──
+// 광고주 보고용: 선정/종료 기본 ON, 나머지 OFF
+const STATUS_DEFS = [
+  {key:'selected',   label:'선정'},
+  {key:'closed',     label:'종료'},
+  {key:'proposing',  label:'제안중'},
+  {key:'rejected',   label:'미선정'},
+  {key:'notice',     label:'공지'},
+  {key:'always',     label:'상시'},
+];
+let statusFilter = {
+  selected: true,
+  closed: true,
+  proposing: false,
+  rejected: false,
+  notice: false,
+  always: false,
+};
+
 // ── 임시 추가 패널용 인라인 달력 상태 ──
 const TCAL = {
   vY: _today.getFullYear(),
@@ -578,12 +626,70 @@ function getAllEvents(){
   return [...EVENTS, ...TEMP_EVENTS];
 }
 
+// ═══════════════════════════════════════
+// 상태 분류 (proposalItems 기반)
+// ═══════════════════════════════════════
+// 반환: 행사가 속한 상태 key 배열 (여러 개 가능)
+function classifyEvent(ev){
+  // 임시 항목은 'selected'로 취급 (사용자가 직접 추가했으니 포함)
+  if(ev._isTemp) return ['selected'];
+
+  const tags = [];
+  if(ev.isNotice)              tags.push('notice');
+  if(ev.isClosed)              tags.push('closed');
+  if(ev.eventType === 'AL')    tags.push('always');
+
+  const statuses = PROP_STATUS[ev._id];
+  if(statuses && statuses.size > 0){
+    if(statuses.has('선정')) tags.push('selected');
+
+    // 제안중: 확정 전 상태 중 하나라도 있으면
+    const pending = ['제안중','제안완료','확인필요'];
+    if(pending.some(s => statuses.has(s))) tags.push('proposing');
+
+    // 미선정: 전체가 미선정일 때만
+    if(statuses.size === 1 && statuses.has('미선정')) tags.push('rejected');
+  }
+
+  return tags;
+}
+
+// 해당 행사가 현재 필터에 의해 표시되는지
+function passesFilter(ev){
+  // 상태 없는 행사(proposalItems 없음)는 숨김 (광고주 보고용)
+  if(!ev._isTemp){
+    const hasPropStatus = PROP_STATUS[ev._id] && PROP_STATUS[ev._id].size > 0;
+    const hasOtherTag = ev.isClosed || ev.isNotice || ev.eventType==='AL';
+    if(!hasPropStatus && !hasOtherTag) return false;
+  }
+
+  const tags = classifyEvent(ev);
+  if(tags.length === 0) return false;
+  // 활성화된 필터 중 하나라도 일치하면 통과
+  return tags.some(t => statusFilter[t]);
+}
+
+// 각 상태별 개수 집계 (범례 칩 숫자용)
+function getStatusCounts(targetMonth){
+  const counts = {selected:0, closed:0, proposing:0, rejected:0, notice:0, always:0};
+  getAllEvents().forEach(ev=>{
+    if(!ev.startDate) return;
+    if(targetMonth){
+      const sy=+ev.startDate.slice(0,4), sm=+ev.startDate.slice(5,7);
+      if(sy!==cY || sm!==cM) return;
+    }
+    classifyEvent(ev).forEach(t=>{ if(counts[t]!==undefined) counts[t]++; });
+  });
+  return counts;
+}
+
 function getVisibleEvents(){
   const pm = cM===1?12:cM-1, py=cM===1?cY-1:cY;
   const nm = cM===12?1:cM+1, ny=cM===12?cY+1:cY;
   const months = [cY*100+cM, py*100+pm, ny*100+nm];
   return getAllEvents().filter(e=>{
     if(!e.startDate || !e.endDate) return false;
+    if(!passesFilter(e)) return false;
     const sy=+e.startDate.slice(0,4), sm=+e.startDate.slice(5,7);
     const ey=+e.endDate.slice(0,4), em=+e.endDate.slice(5,7);
     const sYM=sy*100+sm, eYM=ey*100+em;
@@ -625,14 +731,37 @@ function renderLegend(){
     return;
   }
 
+  // 상태 필터 칩 행 (항상 노출)
+  const filterRow = document.createElement('div');
+  filterRow.className = 'lg-filter-row';
+  const counts = getStatusCounts(true);  // 현재 월 기준
+  STATUS_DEFS.forEach(def=>{
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'lg-chip' + (statusFilter[def.key]?' on':'');
+    chip.innerHTML = `${def.label}<span class="cnt">${counts[def.key]||0}</span>`;
+    chip.onclick = ()=>{
+      statusFilter[def.key] = !statusFilter[def.key];
+      render();
+    };
+    filterRow.appendChild(chip);
+  });
+  lg.appendChild(filterRow);
+
+  // 이름 칩 영역
+  const itemsWrap = document.createElement('div');
+  itemsWrap.className = 'lg-items-wrap';
+  lg.appendChild(itemsWrap);
+
   const monthEvs = getAllEvents().filter(e=>{
     if(!e.startDate) return false;
+    if(!passesFilter(e)) return false;
     const sy=+e.startDate.slice(0,4), sm=+e.startDate.slice(5,7);
     return sy===cY && sm===cM;
   }).sort((a,b)=>dNum(a.startDate)-dNum(b.startDate));
 
   if(!monthEvs.length){
-    lg.innerHTML='<div class="lg-empty">이 달에 시작하는 행사가 없습니다</div>';
+    itemsWrap.innerHTML='<span class="lg-empty" style="text-align:left;padding-left:4px">이 달에 해당하는 행사가 없습니다</span>';
     return;
   }
 
@@ -653,7 +782,7 @@ function renderLegend(){
       closePickers();
       openColorPicker(ev._id, colorCls, item.querySelector('.lg-dot'));
     };
-    lg.appendChild(item);
+    itemsWrap.appendChild(item);
   });
 }
 
@@ -1198,12 +1327,16 @@ async function loadAll(isManualReload){
     // events
     EVENTS = evSnap.docs.map(d => ({ _id:d.id, ...d.data() }));
 
-    // proposalItems 카운트 (eventSID 기준)
+    // proposalItems 카운트 + 상태 집계 (eventSID 기준)
     PROP_COUNTS = {};
+    PROP_STATUS = {};
     propSnap.docs.forEach(d => {
       const p = d.data();
       const sid = p.eventSID;
-      if(sid) PROP_COUNTS[sid] = (PROP_COUNTS[sid]||0) + 1;
+      if(!sid) return;
+      PROP_COUNTS[sid] = (PROP_COUNTS[sid]||0) + 1;
+      if(!PROP_STATUS[sid]) PROP_STATUS[sid] = new Set();
+      if(p.status) PROP_STATUS[sid].add(p.status);
     });
 
     loaded = true;

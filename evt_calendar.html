@@ -117,7 +117,7 @@ body{
 /* 주차 컬럼 32px + 월~일 7개 */
 .weekdays,.days{
   display:grid;
-  grid-template-columns:32px repeat(7,1fr);
+  grid-template-columns:32px repeat(7,160px);
 }
 .weekdays{
   background:rgba(0,0,0,0.02);border-bottom:1px solid var(--glass-border-s);
@@ -144,11 +144,13 @@ body{
   border-right:1px solid rgba(0,0,0,0.04);
   border-bottom:1px solid rgba(0,0,0,0.04);
   display:flex;align-items:center;justify-content:center;
-  letter-spacing:1px;user-select:none;min-height:160px;
+  letter-spacing:1px;user-select:none;
+  min-height:var(--cell-h, 160px);
 }
 
 .day{
-  min-height:160px;padding:5px 6px 4px;
+  min-height:var(--cell-h, 160px);
+  padding:5px 6px 4px;
   border-right:1px solid rgba(0,0,0,0.04);
   border-bottom:1px solid rgba(0,0,0,0.04);
   position:relative;display:flex;flex-direction:column;
@@ -162,11 +164,10 @@ body{
 .day.sat .day-num{color:var(--blue)}
 .day.other.sun .day-num{color:#f0b8b8}
 .day.other.sat .day-num{color:#a8c4e8}
-.day.today .day-num{
-  background:var(--accent);color:#fff !important;
-  border-radius:50%;width:20px;height:20px;text-align:center;
-  line-height:20px;padding:0;font-weight:700;
-}
+.day.today{background:rgba(58,58,240,0.08)}
+.day.today .day-num{color:var(--accent);font-weight:700}
+.day.today.sun .day-num,
+.day.today.sat .day-num{color:var(--accent)}
 
 .ev-area{
   display:flex;flex-direction:column;gap:2px;
@@ -577,6 +578,15 @@ function renderGrid(){
   const allEvs = getVisibleEvents();
   const sorted = assignLanes(allEvs);
   const laneCount = sorted.length ? Math.max(...sorted.map(e=>e._lane))+1 : 0;
+
+  // ── 모든 셀의 높이를 최대 lane 수에 맞춰 통일 ──
+  // 계산: 상단 패딩(5) + 날짜숫자영역(18) + 이벤트영역 margin(2) + 바(17×n + gap 2×(n-1)) + 하단 패딩(4)
+  //      = 29 + 17n + 2(n-1) = 29 + 19n - 2 = 27 + 19n
+  // 최소 160px 보장 (lane 0~6개까지 160px 고정)
+  const baseH = 160;
+  const needH = laneCount > 0 ? 27 + 19*laneCount : 0;
+  const cellH = Math.max(baseH, needH);
+  con.style.setProperty('--cell-h', cellH + 'px');
 
   const today = new Date();
   const todayStr = toDS(today.getFullYear(), today.getMonth()+1, today.getDate());

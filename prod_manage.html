@@ -246,13 +246,13 @@ code{font-family:monospace;font-size:11px;background:rgba(0,0,0,.05);padding:1px
 tr.extract-sel td{background:#EEEDFE !important}
 tr.extract-sel td.fix{background:#EEEDFE !important}
 /* 추출 팝업 */
-.extract-popup{position:fixed;bottom:24px;right:24px;width:310px;background:var(--bg);border:0.5px solid var(--glass-border-s);border-radius:12px;overflow:hidden;z-index:200;box-shadow:0 4px 20px rgba(0,0,0,.12)}
+.extract-popup{position:fixed;bottom:24px;right:24px;width:310px;background:var(--color-background-primary);border:0.5px solid var(--glass-border-s);border-radius:12px;overflow:hidden;z-index:200;box-shadow:0 4px 20px rgba(0,0,0,.12)}
 .ep-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:0.5px solid var(--glass-border-s);background:var(--glass-bg-strong)}
 .ep-cols{display:flex;gap:4px;flex-wrap:wrap;padding:10px 14px;border-bottom:0.5px solid var(--glass-border-s)}
-.ep-chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:12px;font-size:11px;border:0.5px solid #AFA9EC;background:var(--bg);color:#534AB7;cursor:pointer;user-select:none}
+.ep-chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:12px;font-size:11px;border:0.5px solid #AFA9EC;background:var(--color-background-primary);color:#534AB7;cursor:pointer;user-select:none}
 .ep-chip.on{background:#3a3af0;border-color:#3a3af0;color:#fff}
 .ep-preview{padding:10px 14px;border-bottom:0.5px solid var(--glass-border-s)}
-.ep-preview-box{background:var(--glass-bg-strong);border-radius:6px;padding:7px 10px;font-size:10.5px;font-family:monospace;color:var(--t2);line-height:1.75;max-height:90px;overflow:hidden}
+.ep-preview-box{background:var(--color-background-secondary);border-radius:6px;padding:7px 10px;font-size:10.5px;font-family:monospace;color:var(--t2);line-height:1.75;max-height:90px;overflow:hidden}
 .ep-preview-box .hd{color:#3a3af0;font-weight:500}
 .ep-foot{display:flex;align-items:center;justify-content:space-between;padding:10px 14px}
 /* 액션바 */
@@ -306,12 +306,12 @@ tr.opt-row.editing-row td.fix{background:rgba(240,240,255,0.98)}
 <body>
 
 <div class="tabs">
-  <div class="tab active" onclick="sw('item',this)">품목</div>
-  <div class="tab" onclick="sw('sku',this)">SKU</div>
+  <div class="tab active" onclick="sw('sku',this)">SKU</div>
+  <div class="tab" onclick="sw('item',this)">품목</div>
 </div>
 
 <!-- 품목 탭 -->
-<div class="tab-content active" id="t-item">
+<div class="tab-content" id="t-item">
   <div class="sticky-header">
     <div class="pg-header" >
       <div><div class="pg-title">품목 관리</div><div class="pg-desc">Firebase <code>items</code> 컬렉션 · 변경 후 하단 Firebase 저장 버튼으로 반영</div></div>
@@ -406,7 +406,7 @@ tr.opt-row.editing-row td.fix{background:rgba(240,240,255,0.98)}
 </div>
 
 <!-- SKU 탭 -->
-<div class="tab-content" id="t-sku">
+<div class="tab-content active" id="t-sku">
   <div class="sticky-header">
     <div class="pg-header" >
       <div><div class="pg-title">SKU 관리</div><div class="pg-desc">Firebase <code>skus</code> 컬렉션 · 변경 후 하단 Firebase 저장 버튼으로 반영</div></div>
@@ -568,6 +568,8 @@ function sw(id,el){
 function toggleUpload(tab){document.getElementById(tab+'UpSec').classList.toggle('open');}
 const IF={status:['상시','단종예정','런칭예정','비운영'],cat:'전체',sort:'No순'};
 const SF={status:['상시','단종예정','런칭예정','비운영'],type:'전체',sort:'No순',item:'전체',nick:'전체'};
+let visibleItemRows=[];
+let visibleSkuRows=[];
 
 /* 품목 필터 카테고리 매핑 */
 const ITEM_CAT_MAP={
@@ -824,6 +826,7 @@ function renderItemTable(q){
   if(IF.sort==='No순') rows.sort((a,b)=>(Number(a.no)||99)-(Number(b.no)||99));
   else if(IF.sort==='상태순') rows.sort((a,b)=>(a.status||'').localeCompare(b.status||''));
   else if(IF.sort==='최신수정') rows.sort((a,b)=>new Date(b.updatedAt||0)-new Date(a.updatedAt||0));
+  visibleItemRows=rows;
   document.getElementById('itemCnt').textContent=rows.length+'개';
   let html='';
   /* fix 컬럼 left: pend=0, No=24, 코드=68, 닉네임=168 */
@@ -1187,6 +1190,7 @@ function renderSkuTable(q){
   else if(SF.sort==='유형순') rows.sort((a,b)=>(a.type||'').localeCompare(b.type||''));
   else if(SF.sort==='상태순') rows.sort((a,b)=>(a.status||'').localeCompare(b.status||''));
   else if(SF.sort==='최신수정') rows.sort((a,b)=>new Date(b.updatedAt||0)-new Date(a.updatedAt||0));
+  visibleSkuRows=rows;
   document.getElementById('skuCnt').textContent=rows.length+'개';
   let html='';
   /* fix 컬럼 left: pend=0, No=24, 상품코드=68, 닉네임=192 */
@@ -1530,7 +1534,7 @@ function updateExtractCount(tab){
 }
 
 function extractSelectAll(tab){
-  const rows=tab==='sku'?SKUS:ITEMS;
+  const rows=tab==='sku'?visibleSkuRows:visibleItemRows;
   rows.forEach(r=>extractSel[tab].add(r.code));
   updateExtractCount(tab);
   updateExtractPopup(tab);

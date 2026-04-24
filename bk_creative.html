@@ -253,6 +253,8 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 </div>
 </div>
 
+</div>
+</div>
 <!-- ── 탭2: 소재 현황 ── -->
 <div class="bk-pane" id="bkPane2">
   <div class="today-strip">
@@ -298,7 +300,6 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
   </div>
   <div id="histTable"><div class="empty-state"><div class="empty-icon">📋</div><div>등록된 소재가 없습니다</div></div></div>
 </div>
-</div>
 
 <div class="toast" id="toast"></div>
 
@@ -324,14 +325,18 @@ const _hubApp = initializeApp({
 const _hubDb = getFirestore(_hubApp);
 window._hubFs = {
   async loadEvents() {
-    const snap = await getDocs(collection(_hubDb, 'events'));
-    return snap.docs.map(function(d){ return Object.assign({_id:d.id}, d.data()); });
+    try {
+      const snap = await getDocs(collection(_hubDb, 'events'));
+      return snap.docs.map(function(d){ return Object.assign({_id:d.id}, d.data()); });
+    } catch(e) { console.warn('events 로드 실패:', e); return []; }
   },
   async loadEventTypes() {
-    const snap = await getDocs(collection(_hubDb, 'eventTypes'));
-    const r = {};
-    snap.forEach(function(d){ r[d.id] = d.data(); });
-    return r;
+    try {
+      const snap = await getDocs(collection(_hubDb, 'eventTypes'));
+      const r = {};
+      snap.forEach(function(d){ r[d.id] = d.data(); });
+      return r;
+    } catch(e) { console.warn('eventTypes 로드 실패:', e); return {}; }
   }
 };
 const COL = 'bkImages';
@@ -345,7 +350,10 @@ window._bkFs = {
   async save(id, data) { await setDoc(doc(_db, COL, id), data); },
   async remove(id) { await deleteDoc(doc(_db, COL, id)); }
 };
-document.dispatchEvent(new Event('bkFsReady'));
+/* 초기화 신호 */
+window._bkFsReady = true;
+if (window._bkFsReadyCb) { window._bkFsReadyCb(); }
+else { document.dispatchEvent(new CustomEvent('bkFsReady')); }
 </script>
 
 <script>
@@ -1297,12 +1305,26 @@ const _now = new Date();
 _calY = _now.getFullYear(); _calM = _now.getMonth();
 _calW = getWeekNum(_now, _calY, _calM);
 
-document.addEventListener('bkFsReady', async function() {
+let _initDone = false;
+async function _doInit() {
+  if (_initDone) return;
+  _initDone = true;
   try { _cr = await window._bkFs.loadAll(); }
   catch(e) { _cr = {}; console.error('Firestore loadAll 실패:', e); showToast('⚠️ Firestore 연결 실패: ' + (e.message||e.code||e)); }
   loadEventDropdown();
   renderAll();
-});
+}
+window._bkFsReadyCb = _doInit;
+/* module script가 이미 실행됐으면 바로 실행 */
+if (window._bkFsReady) {
+  _doInit();
+} else {
+  /* 아직 안 됐으면 최대 5초 대기 후 폴링 */
+  const _poll = setInterval(function() {
+    if (window._bkFsReady) { clearInterval(_poll); _doInit(); }
+  }, 100);
+  setTimeout(function() { clearInterval(_poll); }, 5000);
+}
 </script>
 </body>
 </html>

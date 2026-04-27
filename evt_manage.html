@@ -22,6 +22,20 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
 
 /* ── 탭 ── */
 .tab-bar{display:flex;align-items:center;gap:1px;border-bottom:1px solid var(--bd);margin-bottom:0;position:sticky;top:0;z-index:100;background:#eef0f8}
+.logic-card{padding:9px 16px;border-radius:var(--r);cursor:pointer;min-width:80px;text-align:center;transition:transform .12s,box-shadow .15s;user-select:none}
+.logic-card:hover{transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.logic-card:active{transform:translateY(0)}
+.logic-card .ln{font-size:13px;font-weight:600;line-height:1.2}
+.logic-card .lc{font-size:11px;opacity:.85;margin-top:3px;line-height:1;font-weight:500}
+.logic-flow-line{display:flex;align-items:center;gap:4px;flex-wrap:nowrap;overflow-x:auto;padding:8px 0}
+.logic-flow-stack{display:flex;flex-direction:column;gap:12px;position:relative;padding-left:20px}
+.logic-flow-stack::before{content:'';position:absolute;left:0;top:20px;bottom:20px;width:1px;background:var(--bd)}
+.logic-flow-branch{display:flex;align-items:center;gap:4px;position:relative}
+.logic-flow-branch::before{content:'';position:absolute;left:-20px;top:50%;width:20px;height:1px;background:var(--bd)}
+.logic-arr{font-size:14px;color:var(--t3);padding:0 4px;flex-shrink:0}
+.logic-arr-auto{display:inline-flex;align-items:center;gap:4px;padding:0 4px;flex-shrink:0}
+.logic-arr-auto .a{font-size:14px;color:var(--t3)}
+.logic-arr-auto .lbl{font-size:10.5px;color:#0C447C;background:#E6F1FB;padding:1px 7px;border-radius:6px;font-weight:500}
 .tab{padding:8px 14px;font-size:12px;color:var(--t3);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;border-radius:4px 4px 0 0;user-select:none;white-space:nowrap;transition:all .15s}
 .tab:hover{color:var(--t2);background:rgba(255,255,255,.5)}
 .tab.on{color:var(--or);font-weight:600;border-bottom-color:var(--or)}
@@ -339,6 +353,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
   <div class="tab"    onclick="sw(6,this)">행사 성과</div>
   <div class="tab"    onclick="sw(7,this)">행사 유형 정보</div>
   <div class="tab"    onclick="sw(1,this)">행사 일괄 등록</div>
+  <div class="tab"    onclick="sw(8,this);renderLogicCounts()">행사 로직</div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:4px;padding:0 8px">
     <button id="top-undo" onclick="discardAll()" title="변경 취소" style="width:30px;height:28px;border:1px solid var(--bd);border-radius:7px;background:var(--gs);color:var(--t3);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;opacity:.45;transition:all .15s" disabled>↩</button>
     <button id="top-redo" onclick="redoAll()" title="되돌리기 복원" style="width:30px;height:28px;border:1px solid var(--bd);border-radius:7px;background:var(--gs);color:var(--t3);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;opacity:.45;transition:all .15s" disabled>↪</button>
@@ -842,6 +857,55 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 <div class="pane" id="p7">
   <div class="pg-hd"><div><div class="pg-title">행사 유형 정보</div><div class="pg-desc">유형별 설명 + 최근 이력</div></div></div>
   <div id="type-info-wrap"><div class="loading"><span class="spin">⟳</span></div></div>
+</div>
+
+<div class="pane" id="p8">
+  <div class="pg-hd">
+    <div><div class="pg-title">행사 로직</div><div class="pg-desc">진행 단계 카드 클릭 → 해당 status 필터가 적용된 탭으로 이동</div></div>
+    <div class="rbtn"><button class="btn btn-sm btn-gh" onclick="renderLogicCounts()">↻ 건수 갱신</button></div>
+  </div>
+  <div style="display:flex;gap:18px;font-size:11px;color:var(--t3);margin-bottom:8px;flex-wrap:wrap">
+    <span><span style="color:var(--t3);margin-right:3px">●</span>회색·초록·노랑·파랑·빨강 → 행사 제안 탭</span>
+    <span><span style="color:var(--t3);margin-right:3px">●</span>보라·청록 → 행사 선정 탭</span>
+  </div>
+  <div class="logic-flow-line">
+    <div class="logic-card" onclick="gotoStatusFromLogic('제안중',2,this)" style="background:#F1EFE8;border:1px solid #B4B2A9;color:#444441">
+      <div class="ln">제안중</div><div class="lc" id="logic-cnt-제안중">—</div>
+    </div>
+    <span class="logic-arr">→</span>
+    <div class="logic-card" onclick="gotoStatusFromLogic('제안완료',2,this)" style="background:#EAF3DE;border:1px solid #97C459;color:#3B6D11">
+      <div class="ln">제안완료</div><div class="lc" id="logic-cnt-제안완료">—</div>
+    </div>
+    <div class="logic-flow-stack">
+      <div class="logic-flow-branch">
+        <div class="logic-card" onclick="gotoStatusFromLogic('확인필요',2,this)" style="background:#FAEEDA;border:1px solid #EF9F27;color:#854F0B">
+          <div class="ln">확인필요</div><div class="lc" id="logic-cnt-확인필요">—</div>
+        </div>
+      </div>
+      <div class="logic-flow-branch">
+        <div class="logic-card" onclick="gotoStatusFromLogic('선정',2,this)" style="background:#E6F1FB;border:1px solid #85B7EB;color:#0C447C">
+          <div class="ln">선정</div><div class="lc" id="logic-cnt-선정">—</div>
+        </div>
+        <span class="logic-arr-auto"><span class="a">→</span><span class="lbl">자동</span><span class="a">→</span></span>
+        <div class="logic-card" onclick="gotoStatusFromLogic('진행전',3,this)" style="background:#EEEDFE;border:1px solid #AFA9EC;color:#3C3489">
+          <div class="ln">진행전</div><div class="lc" id="logic-cnt-진행전">—</div>
+        </div>
+        <span class="logic-arr">→</span>
+        <div class="logic-card" onclick="gotoStatusFromLogic('진행중',3,this)" style="background:#E1F5EE;border:1px solid #5DCAA5;color:#0F6E56">
+          <div class="ln">진행중</div><div class="lc" id="logic-cnt-진행중">—</div>
+        </div>
+        <span class="logic-arr">→</span>
+        <div class="logic-card" onclick="gotoStatusFromLogic('진행종료',3,this)" style="background:#F1EFE8;border:1px solid #B4B2A9;color:#5F5E5A">
+          <div class="ln">진행종료</div><div class="lc" id="logic-cnt-진행종료">—</div>
+        </div>
+      </div>
+      <div class="logic-flow-branch">
+        <div class="logic-card" onclick="gotoStatusFromLogic('미선정',2,this)" style="background:#FCEBEB;border:1px solid #F09595;color:#791F1F">
+          <div class="ln">미선정</div><div class="lc" id="logic-cnt-미선정">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- 저장 바 -->
@@ -3275,6 +3339,49 @@ window.tfClick=function(el,cls,tab){
   renderPropList(tab);
 };
 window.sfClick=function(el,statusVal,tab){el.classList.toggle('on');if(!statusFilter[tab])statusFilter[tab]=new Set();if(el.classList.contains('on'))statusFilter[tab].add(statusVal);else statusFilter[tab].delete(statusVal);renderPropList(tab);};
+
+/* ── 행사 로직 탭(p8): 카드 클릭 시 해당 탭으로 이동 + 그 status만 필터 활성 (옵션 A) ── */
+window.gotoStatusFromLogic=function(statusVal,targetTab,cardEl){
+  /* 1) 기존 status 필터 모두 해제 + 새 status 1개만 활성화 */
+  if(!statusFilter[targetTab])statusFilter[targetTab]=new Set();
+  statusFilter[targetTab].clear();
+  statusFilter[targetTab].add(statusVal);
+  /* 2) 카드 살짝 눌렸다 표시 */
+  if(cardEl){const o=cardEl.style.transform;cardEl.style.transform='scale(0.97)';setTimeout(()=>{cardEl.style.transform=o||'';},120);}
+  /* 3) 탭 전환 (sw 함수 호출) */
+  const tabEl=document.querySelector('.tab-bar .tab[onclick*="sw('+targetTab+',"]');
+  if(tabEl)sw(targetTab,tabEl);
+  /* 4) 새 탭의 sfb 버튼들 .on 상태 동기화 — 해당 status만 켜고 나머지 끔 */
+  setTimeout(()=>{
+    const pane=document.getElementById('p'+targetTab);
+    if(!pane)return;
+    pane.querySelectorAll('.sfb').forEach(b=>{
+      const m=(b.getAttribute('onclick')||'').match(/sfClick\(this,'([^']+)'/);
+      if(!m){b.classList.remove('on');return;}
+      b.classList.toggle('on',m[1]===statusVal);
+    });
+    /* 카드 목록 재렌더 */
+    renderPropList(targetTab);
+  },30);
+};
+
+/* ── 행사 로직 탭: 각 status 카드의 건수 계산 ── */
+window.renderLogicCounts=function(){
+  if(!Array.isArray(PROPOSALS))return;
+  /* PROPOSALS에서 _deleted 제외 후 status별 카운트 */
+  const counts={'확인필요':0,'제안중':0,'제안완료':0,'선정':0,'미선정':0,'진행전':0,'진행중':0,'진행종료':0};
+  PROPOSALS.forEach(p=>{
+    if(p._deleted)return;
+    /* computeStatus는 선정 + 날짜 기준으로 진행전/중/종료 분기 */
+    const cs=(typeof computeStatus==='function')?computeStatus(p):(p.status||'제안중');
+    if(counts.hasOwnProperty(cs))counts[cs]++;
+  });
+  /* DOM 업데이트 */
+  Object.keys(counts).forEach(st=>{
+    const el=document.getElementById('logic-cnt-'+st);
+    if(el)el.textContent=counts[st];
+  });
+};
 window.dfClick=function(el,field,tab){
   el.classList.toggle('on');
   if(!dateFilter[tab])dateFilter[tab]=new Set();

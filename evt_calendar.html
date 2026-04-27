@@ -424,6 +424,195 @@ body{
   border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px;
 }
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* ═══════════════════════════════════════
+   탭 시스템 (전체 / 품목별)
+   ═══════════════════════════════════════ */
+.tab-bar{
+  display:flex;gap:0;
+  border-bottom:0.5px solid var(--glass-border-s);
+  margin:0 0 12px 0;
+  padding:0;
+}
+.tab{
+  padding:9px 18px;font-size:12.5px;cursor:pointer;
+  color:var(--t3);
+  border-bottom:2px solid transparent;
+  margin-bottom:-1px;
+  transition:all .15s;user-select:none;
+  font-weight:500;font-family:inherit;
+}
+.tab:hover{color:var(--t2)}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-content{display:none}
+.tab-content.on{display:block}
+
+/* ═══════════════════════════════════════
+   품목별 뷰 (Item View)
+   ═══════════════════════════════════════ */
+.iv-cal{
+  border:1px solid var(--glass-border-s);
+  border-radius:10px;
+  background:var(--glass-bg-strong);
+}
+.iv-weekdays{
+  display:grid;grid-template-columns:32px repeat(7,160px);
+  background:rgba(0,0,0,0.02);
+  border-bottom:1px solid var(--glass-border-s);
+}
+.iv-wk-col-head{
+  font-size:10px;color:var(--t3);text-align:center;padding:6px 0;
+  border-right:0.5px solid var(--glass-border-s);
+}
+.iv-weekday{
+  font-size:11px;color:var(--t2);text-align:center;padding:6px 0;
+  font-weight:500;border-right:0.5px solid var(--glass-border-s);
+}
+.iv-weekday:last-child{border-right:none}
+.iv-weekday.sat{color:var(--blue)}
+.iv-weekday.sun{color:var(--red)}
+
+.iv-days{display:grid;grid-template-columns:32px repeat(7,160px)}
+.iv-wk-num{
+  font-size:9.5px;color:var(--t3);text-align:center;
+  writing-mode:vertical-rl;transform:rotate(180deg);
+  padding:8px 0;letter-spacing:1px;
+  border-right:0.5px solid var(--glass-border-s);
+  border-bottom:0.5px solid var(--glass-border-s);
+  background:rgba(0,0,0,0.015);
+}
+.iv-day{
+  border-right:0.5px solid var(--glass-border-s);
+  border-bottom:0.5px solid var(--glass-border-s);
+  padding:5px 4px;min-height:120px;
+  background:#fff;cursor:pointer;user-select:none;
+  position:relative;transition:background .1s;
+}
+.iv-day:hover{background:rgba(58,58,240,0.020)}
+.iv-day.weekend-sat{background:rgba(26,86,200,0.022)}
+.iv-day.weekend-sun{background:rgba(212,32,32,0.022)}
+.iv-day.holiday{background:rgba(220,38,38,0.06)}
+.iv-day.no-ship{background:rgba(0,0,0,0.05)}
+.iv-day.other-month{background:rgba(0,0,0,0.015)}
+.iv-day.other-month .iv-day-num{color:var(--t4)}
+.iv-day.active{box-shadow:inset 0 0 0 1.5px var(--accent);background:rgba(58,58,240,0.04)}
+.iv-day.active .iv-chip-tip{display:none !important}  /* popup 떠있을 땐 칩 호버 툴팁 숨김 */
+.iv-days > div:nth-child(8n){border-right:none}
+/* 칩 가로 배치 컨테이너 */
+.iv-chips{
+  display:flex;flex-wrap:wrap;gap:2px;
+}
+.iv-day-num{
+  font-size:10.5px;color:var(--t2);text-align:center;
+  margin-bottom:4px;font-weight:500;line-height:14px;height:14px;
+}
+.iv-day-num.sat{color:var(--blue)}
+.iv-day-num.sun{color:var(--red)}
+.iv-day-num.today{
+  display:inline-block;background:var(--accent);color:#fff;
+  width:18px;height:18px;line-height:18px;border-radius:50%;
+  margin:-2px auto 2px;
+}
+
+/* SKU 칩 (구버전 - 사용 X), 품목 칩 (신버전 - 회색 통일) */
+.iv-chip{
+  display:inline-block;font-size:10px;line-height:1.35;
+  padding:2px 5px;border-radius:3px;
+  white-space:nowrap;
+  position:relative;cursor:default;
+  border-left:2px solid currentColor;
+  font-weight:500;
+}
+.iv-chip:hover{filter:brightness(0.96);outline:1.5px solid currentColor;outline-offset:0;z-index:2}
+/* 품목 칩 (회색 통일) */
+.iv-chip.iv-chip-item{
+  background:rgba(0,0,0,0.045);
+  color:var(--t2);
+  border-left-color:var(--t3);
+}
+.iv-chip.iv-chip-item:hover{
+  background:rgba(0,0,0,0.075);
+  outline-color:var(--t3);
+}
+.iv-chip-tip{
+  position:absolute;bottom:calc(100% + 4px);left:0;
+  background:#1a1a1f;color:#fff;
+  font-size:10px;padding:6px 9px;border-radius:5px;
+  pointer-events:none;
+  display:none;z-index:50;font-weight:400;
+  box-shadow:0 2px 10px rgba(0,0,0,0.22);
+  max-width:300px;line-height:1.55;
+  white-space:normal;word-break:keep-all;
+}
+.iv-chip:hover .iv-chip-tip{display:block}
+.iv-chip-tip::after{
+  content:'';position:absolute;top:100%;left:14px;
+  border:4px solid transparent;border-top-color:#1a1a1f;
+}
+.iv-chip-tip .tip-ev{
+  display:block;margin-bottom:2px;
+}
+.iv-chip-tip .tip-ev:last-child{margin-bottom:0}
+.iv-chip-tip .tip-ev-name{
+  font-weight:600;color:#fff;
+}
+.iv-chip-tip .tip-skus{
+  color:#bbb;font-size:9.5px;margin-left:0;
+}
+
+.iv-empty{
+  text-align:center;color:var(--t3);
+  font-size:12px;padding:60px 20px;
+}
+
+/* 셀 클릭 시 펼쳐지는 통합 정보 패널 */
+.iv-day-popup{
+  position:absolute;
+  top:calc(100% + 2px);left:0;
+  background:#fff;
+  border:1px solid var(--glass-border-s);
+  border-radius:8px;
+  padding:9px 11px;
+  box-shadow:0 4px 18px rgba(0,0,0,0.18);
+  z-index:60;
+  display:none;
+  min-width:240px;max-width:340px;
+  font-size:11px;line-height:1.5;
+  color:var(--tx);
+}
+.iv-day.active .iv-day-popup{display:block}
+.iv-day-popup-head{
+  font-size:11px;color:var(--t2);font-weight:600;
+  padding-bottom:6px;margin-bottom:7px;
+  border-bottom:0.5px solid var(--glass-border-s);
+}
+.iv-day-popup-section{
+  margin-bottom:8px;padding-bottom:8px;
+  border-bottom:0.5px dashed var(--glass-border-s);
+}
+.iv-day-popup-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.iv-day-popup-ev{
+  font-weight:600;color:var(--tx);font-size:11px;margin-bottom:3px;
+  display:flex;align-items:center;gap:5px;flex-wrap:wrap;
+}
+.iv-day-popup-tag{
+  display:inline-block;font-size:9.5px;padding:1px 5px;border-radius:3px;
+  font-weight:500;letter-spacing:-0.2px;
+}
+.iv-day-popup-skus{
+  color:var(--t3);font-size:10px;margin-bottom:4px;
+  word-break:keep-all;
+}
+.iv-day-popup-pills{
+  display:flex;flex-wrap:wrap;gap:2px;
+}
+.iv-day-popup-pill{
+  background:rgba(0,0,0,0.05);
+  color:var(--t2);
+  padding:1px 6px;border-radius:3px;
+  font-size:10px;font-weight:600;
+  letter-spacing:-0.2px;
+}
 </style>
 </head>
 <body>
@@ -445,6 +634,14 @@ body{
     </div>
     <button class="nav-btn" onclick="navMonth(1)">▶</button>
   </div>
+
+  <!-- 탭 바 (전체 / 품목별) -->
+  <div class="tab-bar">
+    <div class="tab on" id="tab-all" onclick="sw('all',this)">전체</div>
+    <div class="tab" id="tab-item" onclick="sw('item',this)">품목별</div>
+  </div>
+
+  <div class="tab-content on" id="t-all">
 
   <!-- 임시 추가 패널 (기획서 캡쳐용 세션 전용 항목) -->
   <div class="temp-panel" id="tempPanel">
@@ -507,6 +704,25 @@ body{
       <div class="weekday sun">일</div>
     </div>
     <div class="days" id="days"></div>
+  </div>
+
+  </div><!-- /#t-all -->
+
+  <!-- 품목별 탭 콘텐츠 -->
+  <div class="tab-content" id="t-item">
+    <div class="iv-cal">
+      <div class="iv-weekdays">
+        <div class="iv-wk-col-head">주차</div>
+        <div class="iv-weekday">월</div>
+        <div class="iv-weekday">화</div>
+        <div class="iv-weekday">수</div>
+        <div class="iv-weekday">목</div>
+        <div class="iv-weekday">금</div>
+        <div class="iv-weekday sat">토</div>
+        <div class="iv-weekday sun">일</div>
+      </div>
+      <div class="iv-days" id="iv-grid"></div>
+    </div>
   </div>
 
 </div>
@@ -665,6 +881,10 @@ function render(){
   document.getElementById('calSub').textContent = `${MEN[cM-1]} ${cY}`;
   renderLegend();
   renderGrid();
+  // 품목별 탭이 활성이고 SKU 데이터가 로드된 경우 동시 렌더
+  if(currentTab === 'item' && SKUS.length > 0){
+    renderItemView();
+  }
 }
 
 function getAllEvents(){
@@ -1555,6 +1775,303 @@ async function loadAll(isManualReload){
   }
 }
 
+// ═══════════════════════════════════════
+// 품목별 행사 관리 탭 (Item View)
+// ═══════════════════════════════════════
+let SKUS = [];                      // skus 컬렉션
+let ITEMS = [];                     // items 컬렉션
+let SKU_BY_CODE = {};               // { code: skuObj }
+let ITEM_BY_CODE = {};              // { code: itemObj }
+let ITEM_BY_NICK = {};              // { nick: itemObj } — prod_manage가 items를 {nick,qty}로만 저장하므로 nick으로 lookup
+let SKU_DETAILS = {};               // { skuCode: { no, nick, name, type, status, itemList: [{nick,name,qty,code}] } }
+let EVENT_SKUS = {};                // { eventSID: Set([skuCode, ...]) }
+let currentTab = 'all';
+
+function escapeHtml(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// 탭 전환
+function sw(tab, el){
+  if(tab === currentTab) return;
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('on'));
+  if(el) el.classList.add('on');
+  const cont = document.getElementById('t-'+tab);
+  if(cont) cont.classList.add('on');
+  if(tab === 'item'){
+    if(SKUS.length === 0){
+      loadSkusItems();
+    } else {
+      renderItemView();
+    }
+  }
+}
+
+// SKU/Item 데이터 로드 (품목별 탭 첫 진입 시 1회)
+async function loadSkusItems(){
+  const grid = document.getElementById('iv-grid');
+  grid.innerHTML = '<div class="iv-empty"><span class="spinner"></span>SKU/품목 로딩 중...</div>';
+  try {
+    const [skuSnap, itemSnap, propSnap] = await Promise.all([
+      getDocs(collection(db, 'skus')),
+      getDocs(collection(db, 'items')),
+      getDocs(collection(db, 'proposalItems')),
+    ]);
+    SKUS  = skuSnap.docs.map(d => ({_id:d.id, ...d.data()}));
+    ITEMS = itemSnap.docs.map(d => ({_id:d.id, ...d.data()}));
+
+    SKU_BY_CODE = {};
+    SKUS.forEach(s => { if(s.code) SKU_BY_CODE[s.code] = s; });
+    ITEM_BY_CODE = {};
+    ITEM_BY_NICK = {};
+    ITEMS.forEach(i => {
+      if(i.code) ITEM_BY_CODE[i.code] = i;
+      if(i.nick) ITEM_BY_NICK[i.nick] = i;
+    });
+
+    // SKU별 품목 — 첫 옵션만 대표로 (사용자 결정: 옵션 여러 개여도 options[0]만 사용)
+    // prod_manage가 옵션 items를 {nick, qty}로만 저장하므로 nick 기준으로 매핑
+    SKU_DETAILS = {};
+    SKUS.forEach(sk => {
+      const firstOpt = (sk.options||[])[0];
+      const merged = {};
+      (firstOpt?.items || []).forEach(it => {
+        const nick = it.nick;
+        if(!nick) return;
+        if(!merged[nick]){
+          const ref = ITEM_BY_NICK[nick];
+          merged[nick] = {
+            code: ref?.code || null,
+            nick: nick,
+            name: ref?.name || '',
+            qty:  it.qty || 1,
+          };
+        }
+      });
+      SKU_DETAILS[sk.code] = {
+        no:       sk.no || 999,
+        nick:     sk.nick || sk.code,
+        name:     sk.name || '',
+        type:     sk.type || '',
+        status:   sk.status || '',
+        optCount: (sk.options||[]).length,
+        itemList: Object.values(merged),
+      };
+    });
+
+    // proposalItems → eventSID별 SKU 리스트
+    EVENT_SKUS = {};
+    propSnap.docs.forEach(d => {
+      const p = d.data();
+      const sid = p.eventSID;
+      const sku = p.skuCode;
+      if(!sid || !sku) return;
+      if(!EVENT_SKUS[sid]) EVENT_SKUS[sid] = new Set();
+      EVENT_SKUS[sid].add(sku);
+    });
+
+    renderItemView();
+  } catch(err){
+    console.error(err);
+    grid.innerHTML = `<div class="iv-empty">❌ 로드 실패: ${escapeHtml(err.message||String(err))}</div>`;
+  }
+}
+
+// 그리드 렌더 (현재 cY/cM 기준 - 기존 달력과 동기화)
+function renderItemView(){
+  const grid = document.getElementById('iv-grid');
+  if(!grid) return;
+  if(SKUS.length === 0){
+    grid.innerHTML = '<div class="iv-empty"><span class="spinner"></span>로딩 중...</div>';
+    return;
+  }
+
+  const fd = fdOf(cY, cM);              // 1일 요일 (0=일,1=월,...)
+  const offset = (fd === 0) ? 6 : (fd - 1);  // 월요일 시작 그리드용 빈칸
+  const dim = dimOf(cY, cM);
+  const totalCells = Math.ceil((offset + dim) / 7) * 7;
+
+  const today = new Date();
+  const todayStr = toDS(today.getFullYear(), today.getMonth()+1, today.getDate());
+
+  let html = '';
+  for(let i = 0; i < totalCells; i++){
+    // 셀 위치 → 날짜
+    const dayOff = i - offset;
+    let dY = cY, dM = cM, dD = dayOff + 1;
+    let isOtherMonth = false;
+    if(dD < 1){
+      dM = (cM === 1) ? 12 : cM-1;
+      dY = (cM === 1) ? cY-1 : cY;
+      dD = dimOf(dY, dM) + dD;
+      isOtherMonth = true;
+    } else if(dD > dim){
+      dM = (cM === 12) ? 1 : cM+1;
+      dY = (cM === 12) ? cY+1 : cY;
+      dD = dD - dim;
+      isOtherMonth = true;
+    }
+    const dateStr = toDS(dY, dM, dD);
+    const dow = i % 7;  // 0=월
+
+    // 주 시작 셀이면 주차 컬럼 먼저
+    if(i % 7 === 0){
+      const wkn = getWeekNum(dY, dM, dD, cY, cM);
+      html += `<div class="iv-wk-num">${wkn}주</div>`;
+    }
+
+    // 날짜 셀 클래스
+    let cls = 'iv-day';
+    if(isOtherMonth) cls += ' other-month';
+    if(dow === 5) cls += ' weekend-sat';
+    if(dow === 6) cls += ' weekend-sun';
+    if(CALENDAR_MARKS[dateStr]?.holiday) cls += ' holiday';
+    if(CALENDAR_MARKS[dateStr]?.noShip) cls += ' no-ship';
+
+    // 그날 진행 중 - 품목별 수량 합산 + 행사/SKU 출처 추적 (칩 + 셀 popup 모두에 사용)
+    const dayItems = new Map();   // nick → { nick, no, qty, sources: Map<evId, {ev, skus: Set}> }
+    const dayEvents = new Map();  // evId → { ev, skus: Set, items: Map<nick, {nick, no, qty}> }
+    EVENTS.forEach(ev => {
+      if(!ev.startDate || !ev.endDate) return;
+      if(dateStr < ev.startDate || dateStr > ev.endDate) return;
+      const skuSet = EVENT_SKUS[ev._id];
+      if(!skuSet) return;
+
+      let de = dayEvents.get(ev._id);
+      if(!de){
+        de = { ev, skus: new Set(), items: new Map() };
+        dayEvents.set(ev._id, de);
+      }
+
+      skuSet.forEach(sku => {
+        const det = SKU_DETAILS[sku];
+        de.skus.add(sku);
+        (det?.itemList || []).forEach(it => {
+          const nick = it.nick;
+          if(!nick) return;
+          const itemNo = ITEM_BY_NICK[nick]?.no || 999;
+          // 셀 칩용 (품목 합산)
+          let entry = dayItems.get(nick);
+          if(!entry){
+            entry = { nick, no: itemNo, qty: 0, sources: new Map() };
+            dayItems.set(nick, entry);
+          }
+          entry.qty += (it.qty || 1);
+          let src = entry.sources.get(ev._id);
+          if(!src){
+            src = { ev, skus: new Set() };
+            entry.sources.set(ev._id, src);
+          }
+          src.skus.add(sku);
+          // popup용 (행사별 품목 합산)
+          let evItem = de.items.get(nick);
+          if(!evItem){
+            evItem = { nick, no: itemNo, qty: 0 };
+            de.items.set(nick, evItem);
+          }
+          evItem.qty += (it.qty || 1);
+        });
+      });
+    });
+    const sortedItems = Array.from(dayItems.values()).sort((a,b) => a.no - b.no);
+
+    // 칩 HTML (가로 배치, 호버 시 행사+SKU 툴팁)
+    let chipsHtml = '';
+    sortedItems.forEach(item => {
+      const tipHtml = Array.from(item.sources.values()).map(src => {
+        const evType = EVENT_TYPES[src.ev.eventType];
+        const typeLabel = evType?.nick || src.ev.eventType || '';
+        const evName = src.ev.eventName || '';
+        const skuList = Array.from(src.skus)
+          .map(s => SKU_DETAILS[s]?.nick || s)
+          .join(', ');
+        return `<span class="tip-ev"><span class="tip-ev-name">${escapeHtml(typeLabel?typeLabel+' ':'')}${escapeHtml(evName)}</span> — <span class="tip-skus">${escapeHtml(skuList)}</span></span>`;
+      }).join('');
+
+      chipsHtml += `<div class="iv-chip iv-chip-item">`+
+        `<span class="iv-chip-tip">${tipHtml}</span>`+
+        `${escapeHtml(item.nick)}${item.qty}`+
+        `</div>`;
+    });
+
+    // 셀 클릭 popup HTML (행사별 정리)
+    let popupHtml = '';
+    if(dayEvents.size > 0){
+      const dowKor = ['월','화','수','목','금','토','일'][dow];
+      popupHtml = `<div class="iv-day-popup">`+
+        `<div class="iv-day-popup-head">${dM}월 ${dD}일 (${dowKor})</div>`;
+      Array.from(dayEvents.values()).forEach(de => {
+        const evType = EVENT_TYPES[de.ev.eventType];
+        const typeLabel = evType?.nick || de.ev.eventType || '';
+        const evName = de.ev.eventName || '';
+        const colorCls = colorOfEv(de.ev) || 'c-gray';
+        const skuList = Array.from(de.skus).map(s => SKU_DETAILS[s]?.nick || s).join(', ');
+        const itemPills = Array.from(de.items.values()).sort((a,b)=>a.no-b.no)
+          .map(p => `<span class="iv-day-popup-pill">${escapeHtml(p.nick)}${p.qty}</span>`).join('');
+        popupHtml += `<div class="iv-day-popup-section">`+
+          `<div class="iv-day-popup-ev"><span class="iv-day-popup-tag ${colorCls}">${escapeHtml(typeLabel)}</span><span>${escapeHtml(evName)}</span></div>`+
+          `<div class="iv-day-popup-skus">${escapeHtml(skuList)}</div>`+
+          `<div class="iv-day-popup-pills">${itemPills}</div>`+
+          `</div>`;
+      });
+      popupHtml += `</div>`;
+    }
+
+    // 일자 표시
+    const isToday = (dateStr === todayStr);
+    let dayNumCls = '';
+    if(dow === 5) dayNumCls = ' sat';
+    if(dow === 6) dayNumCls = ' sun';
+    if(isToday && todayShown) dayNumCls += ' today';
+
+    const labelTitle = (CALENDAR_MARKS[dateStr]?.holiday?.label)
+      || (CALENDAR_MARKS[dateStr]?.noShip?.label) || '';
+
+    html += `<div class="${cls}" data-date="${dateStr}"${labelTitle?` title="${escapeHtml(labelTitle)}"`:''}>`+
+      `<div class="iv-day-num${dayNumCls}">${dD}</div>`+
+      `<div class="iv-chips">${chipsHtml}</div>`+
+      popupHtml+
+      `</div>`;
+  }
+
+  grid.innerHTML = html;
+  attachDayClickHandler();
+}
+
+// 셀 클릭 → popup 토글 (다른 곳 클릭 시 닫힘)
+function attachDayClickHandler(){
+  const grid = document.getElementById('iv-grid');
+  if(!grid || grid.dataset.clickAttached === '1') return;
+  grid.dataset.clickAttached = '1';
+
+  grid.addEventListener('click', e => {
+    // popup 안 클릭은 무시 (열린 상태 유지)
+    if(e.target.closest('.iv-day-popup')) return;
+    // 칩 클릭은 무시 (호버 툴팁이 별개로 처리)
+    if(e.target.closest('.iv-chip')) return;
+    const day = e.target.closest('.iv-day');
+    if(!day) return;
+    if(!day.querySelector('.iv-day-popup')) return;  // 행사 없는 셀은 무시
+
+    const wasActive = day.classList.contains('active');
+    document.querySelectorAll('.iv-day.active').forEach(d => d.classList.remove('active'));
+    if(!wasActive) day.classList.add('active');
+  });
+
+  // 외부 클릭 시 닫기 (한 번만 등록)
+  if(!document.body.dataset.dayClickClose){
+    document.body.dataset.dayClickClose = '1';
+    document.addEventListener('click', e => {
+      if(!e.target.closest('.iv-cal')){
+        document.querySelectorAll('.iv-day.active').forEach(d => d.classList.remove('active'));
+      }
+    });
+  }
+}
+
+
 // 최초 로드
 window.navMonth = navMonth;
 window.goToday = goToday;
@@ -1569,6 +2086,7 @@ window.changePrevWk = changePrevWk;
 window.changeNextWk = changeNextWk;
 window.loadAll = loadAll;
 window.toast = toast;
+window.sw = sw;
 
 // 초기 렌더 (로딩 상태 표시)
 render();

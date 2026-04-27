@@ -197,6 +197,47 @@ body{
 .day.today.sun .day-num,
 .day.today.sat .day-num{color:var(--accent)}
 
+/* 주말 / 휴무일 음영 */
+.day.weekend{background:rgba(0,0,0,0.022)}
+.day.mark-noship{background:rgba(0,0,0,0.06)}
+.day.mark-holiday{background:rgba(220,38,38,0.06)}
+.day.mark-holiday.mark-noship{
+  background:linear-gradient(135deg, rgba(220,38,38,0.06) 0 50%, rgba(0,0,0,0.06) 50% 100%);
+}
+/* 오늘이 휴무일인 경우 → today 우선 */
+.day.today.mark-noship,
+.day.today.mark-holiday,
+.day.today.weekend{background:rgba(58,58,240,0.08)}
+
+/* 컨텍스트 메뉴 */
+.ctx-menu{
+  position:fixed;z-index:300;
+  background:#fff;border:1px solid var(--glass-border-s);
+  border-radius:8px;padding:4px;min-width:170px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.14);
+  display:none;
+}
+.ctx-menu.show{display:block}
+.ctx-item{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 10px;border-radius:5px;
+  font-size:11.5px;color:var(--t2);cursor:pointer;user-select:none;
+  white-space:nowrap;
+}
+.ctx-item:hover{background:rgba(58,58,240,0.08);color:var(--accent)}
+.ctx-item.danger{color:var(--red)}
+.ctx-item.danger:hover{background:rgba(212,32,32,0.07);color:var(--red)}
+.ctx-sep{height:1px;background:var(--glass-border-s);margin:3px 0}
+.ctx-head{
+  padding:5px 10px 4px;font-size:10px;color:var(--t4);
+  font-weight:600;letter-spacing:.3px;
+}
+.ctx-mark-dot{
+  width:9px;height:9px;border-radius:2px;display:inline-block;
+}
+.ctx-mark-dot.holiday{background:rgba(220,38,38,0.5)}
+.ctx-mark-dot.noship{background:rgba(0,0,0,0.4)}
+
 .ev-area{
   display:flex;flex-direction:column;gap:2px;
   margin:2px -6px 0;flex:1;
@@ -471,9 +512,12 @@ body{
 </div>
 <div class="toast" id="toast"></div>
 
+<!-- 우클릭 컨텍스트 메뉴 (휴무일 마크용) -->
+<div class="ctx-menu" id="ctxMenu"></div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, getDocs }
+import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const db = getFirestore(initializeApp({
@@ -490,6 +534,7 @@ let EVENT_TYPES = {};   // { FF:{nick,name,autoNick}, ... }
 let EVENTS = [];        // [{_id, eventName, eventType, startDate, endDate, isClosed, isNotice, ...}, ...]
 let PROP_COUNTS = {};   // { eventSID: count }
 let PROP_STATUS = {};   // { eventSID: Set(['선정','미선정','제안중',...]) }
+let CALENDAR_MARKS = {};// { 'YYYY-MM-DD': { holiday: {label, _id}, noShip: {label, _id} } }
 
 // eventType → 기본 색상 매핑 (파스텔 톤)
 const TYPE_COLOR = {
@@ -886,6 +931,30 @@ function renderGrid(){
 
     const cellStr = toDS(cell.y,cell.m,cell.d);
     if(todayShown && cellStr===todayStr) div.classList.add('today');
+
+    // 주말 자동 음영
+    if(sat || sun) div.classList.add('weekend');
+
+    // 휴무일 마크 (Firebase calendarMarks 기준)
+    const marks = CALENDAR_MARKS[cellStr];
+    if(marks){
+      const tipParts = [];
+      if(marks.holiday){
+        div.classList.add('mark-holiday');
+        tipParts.push('🇰🇷 ' + (marks.holiday.label || '공휴일'));
+      }
+      if(marks.noShip){
+        div.classList.add('mark-noship');
+        tipParts.push('🚫 ' + (marks.noShip.label || '배송휴무'));
+      }
+      if(tipParts.length) div.title = tipParts.join('\n');
+    }
+
+    // 우클릭 → 컨텍스트 메뉴 (마크 추가/삭제)
+    div.addEventListener('contextmenu', e=>{
+      e.preventDefault();
+      openCtxMenu(e.clientX, e.clientY, cellStr);
+    });
 
     const num=document.createElement('div');
     num.className='day-num';
@@ -1299,6 +1368,127 @@ function toast(msg){
 }
 
 // ═══════════════════════════════════════
+// 우클릭 컨텍스트 메뉴 (휴무일 마크)
+// ═══════════════════════════════════════
+function openCtxMenu(x, y, dateStr){
+  const menu = document.getElementById('ctxMenu');
+  const marks = CALENDAR_MARKS[dateStr] || {};
+  const fmt = dateStr.slice(5,7) + '/' + dateStr.slice(8,10);
+
+  const items = [];
+  items.push(`<div class="ctx-head">${dateStr.slice(0,4)}년 ${fmt}</div>`);
+
+  if(marks.holiday){
+    items.push(`<div class="ctx-item danger" data-act="rm-holiday">
+      <span class="ctx-mark-dot holiday"></span>
+      <span>공휴일 표시 제거${marks.holiday.label?` (${marks.holiday.label})`:''}</span>
+    </div>`);
+  } else {
+    items.push(`<div class="ctx-item" data-act="add-holiday">
+      <span class="ctx-mark-dot holiday"></span>
+      <span>공휴일로 표시</span>
+    </div>`);
+  }
+
+  if(marks.noShip){
+    items.push(`<div class="ctx-item danger" data-act="rm-noShip">
+      <span class="ctx-mark-dot noship"></span>
+      <span>배송휴무 제거${marks.noShip.label?` (${marks.noShip.label})`:''}</span>
+    </div>`);
+  } else {
+    items.push(`<div class="ctx-item" data-act="add-noShip">
+      <span class="ctx-mark-dot noship"></span>
+      <span>배송휴무로 표시</span>
+    </div>`);
+  }
+
+  menu.innerHTML = items.join('');
+  menu.dataset.date = dateStr;
+
+  // 위치: 화면 밖 안 나가게 보정
+  menu.classList.add('show');
+  const rect = menu.getBoundingClientRect();
+  const maxX = window.innerWidth - rect.width - 8;
+  const maxY = window.innerHeight - rect.height - 8;
+  menu.style.left = Math.min(x, maxX) + 'px';
+  menu.style.top  = Math.min(y, maxY) + 'px';
+}
+
+function closeCtxMenu(){
+  document.getElementById('ctxMenu').classList.remove('show');
+}
+
+// 컨텍스트 메뉴 클릭 위임
+document.getElementById('ctxMenu').addEventListener('click', async (e)=>{
+  const item = e.target.closest('.ctx-item');
+  if(!item) return;
+  const act = item.dataset.act;
+  const dateStr = document.getElementById('ctxMenu').dataset.date;
+  closeCtxMenu();
+  if(!act || !dateStr) return;
+
+  if(act === 'add-holiday' || act === 'add-noShip'){
+    const type = act === 'add-holiday' ? 'holiday' : 'noShip';
+    const defaultLabel = type === 'holiday' ? '공휴일' : '배송휴무';
+    const label = prompt(`${defaultLabel} 라벨을 입력하세요 (선택사항)`, '');
+    if(label === null) return;  // 취소
+    await addCalendarMark(dateStr, type, label.trim());
+  } else if(act === 'rm-holiday' || act === 'rm-noShip'){
+    const type = act === 'rm-holiday' ? 'holiday' : 'noShip';
+    if(!confirm(`이 날짜의 ${type==='holiday'?'공휴일':'배송휴무'} 표시를 제거하시겠습니까?`)) return;
+    await removeCalendarMark(dateStr, type);
+  }
+});
+
+// 바깥 클릭 시 메뉴 닫기
+document.addEventListener('click', e=>{
+  if(!e.target.closest('#ctxMenu')) closeCtxMenu();
+});
+document.addEventListener('contextmenu', e=>{
+  if(!e.target.closest('.day')) closeCtxMenu();
+});
+document.addEventListener('scroll', closeCtxMenu, true);
+
+// ── Firebase 저장 / 삭제 ──
+async function addCalendarMark(dateStr, type, label){
+  const docId = `${dateStr}_${type}`;
+  const data = {
+    date: dateStr,
+    type: type,
+    label: label || '',
+    createdAt: new Date().toISOString()
+  };
+  try{
+    await setDoc(doc(db, 'calendarMarks', docId), data);
+    if(!CALENDAR_MARKS[dateStr]) CALENDAR_MARKS[dateStr] = {};
+    CALENDAR_MARKS[dateStr][type] = { _id: docId, label: data.label };
+    renderGrid();
+    toast(`${type==='holiday'?'공휴일':'배송휴무'} 표시 추가됨`);
+  } catch(err){
+    console.error(err);
+    toast('❌ 저장 실패: ' + (err.message||err));
+  }
+}
+
+async function removeCalendarMark(dateStr, type){
+  const docId = `${dateStr}_${type}`;
+  try{
+    await deleteDoc(doc(db, 'calendarMarks', docId));
+    if(CALENDAR_MARKS[dateStr]){
+      delete CALENDAR_MARKS[dateStr][type];
+      if(Object.keys(CALENDAR_MARKS[dateStr]).length === 0){
+        delete CALENDAR_MARKS[dateStr];
+      }
+    }
+    renderGrid();
+    toast('표시 제거됨');
+  } catch(err){
+    console.error(err);
+    toast('❌ 삭제 실패: ' + (err.message||err));
+  }
+}
+
+// ═══════════════════════════════════════
 // Firebase 데이터 로드
 // ═══════════════════════════════════════
 async function loadAll(isManualReload){
@@ -1312,10 +1502,11 @@ async function loadAll(isManualReload){
   }
 
   try {
-    const [evSnap, typeSnap, propSnap] = await Promise.all([
+    const [evSnap, typeSnap, propSnap, markSnap] = await Promise.all([
       getDocs(collection(db, 'events')),
       getDocs(collection(db, 'eventTypes')),
       getDocs(collection(db, 'proposalItems')),
+      getDocs(collection(db, 'calendarMarks')),
     ]);
 
     // eventTypes → EVENT_TYPES 맵
@@ -1337,6 +1528,15 @@ async function loadAll(isManualReload){
       PROP_COUNTS[sid] = (PROP_COUNTS[sid]||0) + 1;
       if(!PROP_STATUS[sid]) PROP_STATUS[sid] = new Set();
       if(p.status) PROP_STATUS[sid].add(p.status);
+    });
+
+    // calendarMarks → 날짜 키 맵으로 정리
+    CALENDAR_MARKS = {};
+    markSnap.docs.forEach(d => {
+      const m = d.data();
+      if(!m.date || !m.type) return;
+      if(!CALENDAR_MARKS[m.date]) CALENDAR_MARKS[m.date] = {};
+      CALENDAR_MARKS[m.date][m.type] = { _id: d.id, label: m.label || '' };
     });
 
     loaded = true;

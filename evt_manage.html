@@ -2532,7 +2532,7 @@ function buildGroupHtml(eName,grp,tabNum){
 
   /* tabNum===3: 그룹 수정 폼 블록 */
   /* SEL_EDIT 초기화 (모달용) */
-  if(tabNum===2||tabNum===3){SEL_EDIT[grpId]={evId,eName,products:grp.items.map(p=>({...p}))};}
+  if(tabNum===2||tabNum===3||tabNum===5){SEL_EDIT[grpId]={evId,eName,products:grp.items.map(p=>({...p}))};}
 
   /* 상태 클래스 계산 */
   const stateClass=tabNum===3?'state-selected':tabNum===2?(()=>{
@@ -3327,9 +3327,11 @@ window.openEditModal = function(grpId, tabNum) {
   MODAL_GRPID = grpId;
   MODAL_TABNUM = tabNum;
   const se = SEL_EDIT[grpId];
-  const ev = EVENTS.find(e => e._id === (se?.evId || grpId));
+  const ev = EVENTS.find(e => e._id === (se?.evId || grpId)) || EVENTS.find(e => e.eventName === grpId);
   const eName = se?.eName || ev?.eventName || grpId;
   const eType = ev?.eventType || detectType({eventName: eName});
+  /* se 없으면 PROPOSALS에서 직접 구성 */
+  const products = se?.products || PROPOSALS.filter(p=>!p._deleted&&(p.eventSID===grpId||p.eventName===grpId)).map(p=>({...p}));
 
   /* 뱃지/타이틀 */
   const badge = document.getElementById('modal-type-badge');
@@ -3339,24 +3341,11 @@ window.openEditModal = function(grpId, tabNum) {
 
   /* 수정폼 */
   const formEl = document.getElementById('modal-edit-form');
-  if (formEl) formEl.innerHTML = buildSelGroupEditBlock(eName, se?.evId || grpId, grpId, se?.products || [], ev, null, tabNum);
+  if (formEl) formEl.innerHTML = buildSelGroupEditBlock(eName, se?.evId || grpId, grpId, products, ev, null, tabNum);
 
-  /* 달력 */
+  /* 달력은 buildSelGroupEditBlock 내부에서 초기화됨 */
   const calEl = document.getElementById('modal-cal-area');
-  if (calEl) {
-    const calKey = 'edit-' + grpId;
-    delete CAL_STATE[calKey];
-    calEl.innerHTML = buildCalHtml(calKey, ev);
-    calInit(calKey, {
-      startVal: ev?.startDate || '', endVal: ev?.endDate || '',
-      startId: 'se-start-' + grpId, endId: 'se-end-' + grpId,
-      sh: (ev?.startTime||'00:00').split(':')[0], sm: (ev?.startTime||'00:00').split(':')[1],
-      eh: (ev?.endTime||'23:59').split(':')[0], em: (ev?.endTime||'23:59').split(':')[1],
-      uploadDate: ev?.proposalUploadedAt || null,
-      deadlineDate: ev?.proposalDeadline || null
-    });
-    calRender(calKey);
-  }
+  if (calEl) calEl.innerHTML = '';
 
   /* 열기 */
   const modal = document.getElementById('ev-edit-modal');
@@ -3850,15 +3839,11 @@ setTimeout(updateStickyTop,200);
       <button onclick="closeEditModal()" style="margin-left:auto;padding:4px 12px;border:0.5px solid var(--bd);border-radius:var(--r);background:var(--gs);color:var(--t2);cursor:pointer;font-size:12px">닫기</button>
     </div>
     <!-- 모달 바디 -->
-    <div style="display:flex;gap:0;overflow:hidden;flex:1;min-height:0">
-      <!-- 좌측: 행사정보 + 상품 -->
-      <div style="flex:1;overflow-y:auto;padding:14px 16px;border-right:0.5px solid var(--bd)">
+    <div style="display:flex;gap:0;overflow-y:auto;flex:1;min-height:0">
+      <div style="flex:1;padding:14px 16px;">
         <div id="modal-edit-form"></div>
       </div>
-      <!-- 우측: 달력 -->
-      <div style="width:280px;flex-shrink:0;overflow-y:auto;padding:14px 16px">
-        <div id="modal-cal-area"></div>
-      </div>
+      <div id="modal-cal-area" style="display:none"></div>
     </div>
     <!-- 모달 푸터 -->
     <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:10px 16px;border-top:0.5px solid var(--bd);flex-shrink:0">

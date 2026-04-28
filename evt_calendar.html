@@ -138,6 +138,10 @@ body{
   border-color:#F09595;background:#FCEBEB;color:#791F1F;
 }
 .lg-chip.lg-grp-red.on .cnt{background:#F09595;color:#fff}
+.lg-chip.lg-grp-gray.on{
+  border-color:#9E9E9E;background:#EEEEEE;color:#424242;
+}
+.lg-chip.lg-grp-gray.on .cnt{background:#9E9E9E;color:#fff}
 .lg-items-wrap{
   display:flex;flex-wrap:wrap;gap:4px 0;align-items:center;flex:1;min-width:0;
 }
@@ -894,17 +898,19 @@ const STATUS_DEFS = [
   {key:'inProgress',    label:'진행중',   group:'blue'},
   {key:'afterEnd',      label:'진행종료', group:'blue'},
   {key:'eventClosed',   label:'행사종료', group:'red'},
+  {key:'temp',          label:'임시',     group:'gray'},
 ];
 let statusFilter = {
-  proposing:   true,
-  proposed:    true,
-  needsCheck:  true,
-  rejected:    true,
+  proposing:   false,
+  proposed:    false,
+  needsCheck:  false,
+  rejected:    false,
   selected:    true,
-  beforeStart: true,
-  inProgress:  true,
-  afterEnd:    true,
-  eventClosed: true,
+  beforeStart: false,
+  inProgress:  false,
+  afterEnd:    false,
+  eventClosed: false,
+  temp:        true,  // 임시 추가 항목
 };
 
 // ── 임시 추가 패널용 인라인 달력 상태 ──
@@ -943,8 +949,8 @@ function getAllEvents(){
 //  - 3개 자동 분기: 진행전/진행중/진행종료 (status='선정'일 때 endDate 기준)
 //  - 행사종료: isClosed=true OR endDate < 오늘 (8개와 별개, 동시 부여 가능)
 function classifyEvent(ev){
-  // 임시 항목은 'selected'로 취급
-  if(ev._isTemp) return ['selected'];
+  // 임시 항목은 별도 'temp' 태그 (status 분류와 분리)
+  if(ev._isTemp) return ['temp'];
 
   const tags = [];
   const todayStr = toDS(_today.getFullYear(), _today.getMonth()+1, _today.getDate());
@@ -996,7 +1002,7 @@ function getStatusCounts(targetMonth){
   const counts = {
     proposing:0, proposed:0, needsCheck:0, rejected:0,
     selected:0, beforeStart:0, inProgress:0, afterEnd:0,
-    eventClosed:0
+    eventClosed:0, temp:0
   };
   getAllEvents().forEach(ev=>{
     if(!ev.startDate) return;

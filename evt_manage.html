@@ -526,7 +526,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
           <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">랜딩페이지</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">쇼핑스토리+카테고리 등</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택 — 드롭다운 4종</td></tr>
           <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">업로드일/제안마감일</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">YYYY-MM-DD</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택</td></tr>
           <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">상품코드1~20</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">숫자 코드</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">★ 1개 이상 필수</td></tr>
-          <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">배송1~20</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">무료배송 / 조건부무료 / 유료배송</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택 — 미입력 시 무료배송</td></tr>
+          <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">배송1~20</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">무료 / 조건부무료</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택 — 미입력 시 무료</td></tr>
           <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">정상가/제안행사가1~20</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">숫자 (원단위)</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택 — 미입력 시 SKU 최대할인가 자동 적용</td></tr>
           <tr><td style="padding:5px 8px;font-weight:600;color:var(--bl)">중복 처리</td><td style="padding:5px 8px;color:var(--t2)">병합(merge)</td><td style="padding:5px 8px;color:var(--t3)">동일 행사 존재 시 엑셀 입력 필드만 업데이트</td></tr>
         </tbody>
@@ -977,7 +977,6 @@ let tlView='week', tlWeekOffset=0, tlMonthYear=new Date().getFullYear(), tlMonth
 let propTypeFilter={2:[],3:[],5:[]};
 let statusFilter={2:new Set(),3:new Set(),5:new Set()};
 let dateFilter={2:new Set(),3:new Set(),5:new Set()}; /* 기간미등록 필터: startDate/endDate/upload/deadline/propdate */
-let EDIT_OPEN=null;
 let isDragging=false, dragStartX=0;
 const DIRTY=new Map(), TO_DELETE=new Set(), SNAPSHOTS=new Map();
 
@@ -1126,7 +1125,7 @@ function parseBulkRows(data){
     for(let n=1;n<=20;n++){
       const code=get(row,[`★ 상품코드${n}`,`상품코드${n}`]);
       if(!code)continue;
-      const ship=get(row,[`배송${n}\n드롭다운`,`배송${n}`])||'무료배송';
+      const ship=get(row,[`배송${n}\n드롭다운`,`배송${n}`])||'무료';
       const priceNormal=parseFloat(get(row,[`정상가${n}`]))||null;
       const priceAlim=parseFloat(get(row,[`제안행사가${n}`,`최대혜택가${n}`]))||null;
       products.push({code:String(code).replace(/\.0$/,''),ship,priceNormal,priceAlim});
@@ -1184,7 +1183,7 @@ window.doBulkUpload=async function(){
     bar.style.width=Math.round(done/total*100)+'%';
     const docId=r.name.replace(/\s/g,'')+'_'+(r.start||'None').replace(/-/g,'')+'_'+(r.end||'None').replace(/-/g,'');
     const evData={eventName:r.name,eventType:r.type||null,startDate:r.start||null,startTime:r.st,endDate:r.end||null,endTime:r.et,pageType:r.page||null,isClosed:false,isNotice:false,additionalDiscount:r.adddisc||null,proposalUploadedAt:r.upload||null,proposalDeadline:r.deadline||null,
-      products:r.products.map((p,i)=>{const sku=SKUS.find(s=>s._id===p.code)||{};const obj={no:i+1,subNo:null,isMain:skuGroup(sku.nick||sku.name||'')==='main'?'메인':'서브',isCancelled:false,skuCode:p.code,productName:sku.name||'',link:'https://brand.naver.com/yozmkorea/products/'+p.code,priceNormal:p.priceNormal||sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:p.priceAlim||sku.priceMax||null,priceMax:(p.priceAlim||sku.priceMax)?((p.priceAlim||sku.priceMax)-1000):null,ship:p.ship||'무료배송',options:[]};return obj;}),
+      products:r.products.map((p,i)=>{const sku=SKUS.find(s=>s._id===p.code)||{};const obj={no:i+1,subNo:null,isMain:skuGroup(sku.nick||sku.name||'')==='main'?'메인':'서브',isCancelled:false,skuCode:p.code,productName:sku.name||'',link:'https://brand.naver.com/yozmkorea/products/'+p.code,priceNormal:p.priceNormal||sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:p.priceAlim||sku.priceMax||null,priceMax:(p.priceAlim||sku.priceMax)?((p.priceAlim||sku.priceMax)-1000):null,ship:p.ship||sku.ship||'무료',options:[]};return obj;}),
       updatedAt:new Date().toISOString()};
     try{
       await setDoc(doc(db,'events',docId),evData,{merge:true});
@@ -1193,7 +1192,7 @@ window.doBulkUpload=async function(){
       for(const p of r.products){
         const pid=(docId+'_'+p.code).replace(/\s/g,'');
         const sku=SKUS.find(s=>s._id===p.code)||{};
-        const pData={eventSID:docId,eventName:r.name,eventType:r.type||null,startDate:r.start||null,endDate:r.end||null,startTime:r.st,endTime:r.et,proposalUploadedAt:r.upload||null,proposalDeadline:r.deadline||null,skuCode:p.code,skuNick:sku.nick||sku.name||p.code,productName:sku.name||'',isMain:skuGroup(sku.nick||sku.name||'')==='main'?'메인':'서브',priceNormal:p.priceNormal||sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:p.priceAlim||sku.priceMax||null,priceMax:(p.priceAlim||sku.priceMax)?((p.priceAlim||sku.priceMax)-1000):null,ship:p.ship||'무료배송',status:'제안중',createdAt:new Date().toISOString()};
+        const pData={eventSID:docId,eventName:r.name,eventType:r.type||null,startDate:r.start||null,endDate:r.end||null,startTime:r.st,endTime:r.et,proposalUploadedAt:r.upload||null,proposalDeadline:r.deadline||null,skuCode:p.code,skuNick:sku.nick||sku.name||p.code,productName:sku.name||'',isMain:skuGroup(sku.nick||sku.name||'')==='main'?'메인':'서브',priceNormal:p.priceNormal||sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:p.priceAlim||sku.priceMax||null,priceMax:(p.priceAlim||sku.priceMax)?((p.priceAlim||sku.priceMax)-1000):null,ship:p.ship||sku.ship||'무료',status:'제안중',createdAt:new Date().toISOString()};
         await setDoc(doc(db,'proposalItems',pid),pData,{merge:true});
         const exP=PROPOSALS.findIndex(x=>x._id===pid);
         if(exP>=0)Object.assign(PROPOSALS[exP],pData);else PROPOSALS.unshift({_id:pid,...pData});
@@ -1749,6 +1748,11 @@ async function loadAll(){
     SKUS=ss.docs.map(d=>({_id:d.id,...d.data()})).filter(s=>s.status!=='OFF'&&s.type!=='행사제안불가').sort((a,b)=>((a.no||999)-(b.no||999)));
     EVENTS=es.docs.map(d=>({_id:d.id,...d.data()})).sort((a,b)=>(b.startDate||'').localeCompare(a.startDate||''));
     PROPOSALS=ps.docs.map(d=>({_id:d.id,...d.data()})).sort((a,b)=>(b.startDate||'').localeCompare(a.startDate||''));
+    /* Firebase의 pinned 필드로 PINNED_EVENTS 재구성 */
+    PINNED_EVENTS=new Set(EVENTS.filter(e=>e.pinned).map(e=>e._id));
+    /* localStorage 핀 → Firebase 자동 마이그레이션 (최초 1회) */
+    await migratePinnedToFirebase();
+    PINNED_EVENTS=new Set(EVENTS.filter(e=>e.pinned).map(e=>e._id));
     autoCloseExpired();
     buildSkuButtons('reg');
     buildMonthFilters();
@@ -1910,7 +1914,7 @@ function addRegProd(code,nick,mainType){
     priceEvent:sku.priceMax||null,
     priceAlim:sku.priceMax||null,
     priceMax:sku.priceMax?(sku.priceMax-1000):null,
-    ship:sku.ship||'무료배송'});
+    ship:sku.ship||'무료'});
   renderRegProds();
 }
 function removeRegProd(code){regProducts=regProducts.filter(p=>p.skuCode!==code);renderRegProds();}
@@ -2377,7 +2381,7 @@ function fillRegFormFromEvent(ev,props){
       priceEvent:p.priceEvent||sku.priceMax||null,
       priceAlim:p.priceAlim||p.priceEvent||sku.priceMax||null,
       priceMax:(p.priceMax!=null)?p.priceMax:(p.priceAlim?p.priceAlim-1000:null),
-      ship:p.ship||sku.ship||'무료배송',
+      ship:p.ship||sku.ship||'무료',
       _origStatus:p.status||null,   /* 기존 status 유지용 */
       _origPid:p._id||null          /* 기존 proposalItems 문서 id */
     });
@@ -2877,7 +2881,7 @@ function buildDateChips(startDate,startTime,endDate,endTime,uploadDate,deadline,
   return[wChip,sChip,arrow,eChip,dChip,sep,lbl,uChip,dline,adChip].filter(Boolean).join('');
 }
 function shipLabel(p){
-  const s=(p.ship||'무료배송').replace('배송','').replace('조건부 무료','조건부').trim();
+  const s=(p.ship||'무료').replace('조건부무료','조건부').trim();
   const t=p.shipType||'일반';
   return s+' / '+t;
 }
@@ -3077,73 +3081,6 @@ window.toggleOptRows=function(pid){
   if(tog)tog.textContent=isHidden?'▼':'▶';
 };
 
-/* ══ 행사 제안/선정 — 그룹 단위 수정 폼 (tabNum 공용) ══ */
-/* 제안행사가 입력 시 최대혜택가 자동 업데이트 */
-window.updateSelAlim=function(inp,grpId,idx,minP){
-  const v=Math.max(+inp.value||0,minP);
-  if(+inp.value<minP)inp.value=minP;
-  const mx=v-1000;
-  selEditProd(grpId,idx,'priceAlim',v);
-  selEditProd(grpId,idx,'priceMax',mx);
-  const mxEl=document.getElementById('semx-'+grpId+'-'+idx);
-  if(mxEl)mxEl.textContent=mx>0?mx.toLocaleString():'—';
-};
-
-/* ── 제안 탭(tabNum===2) 개별 상품 수정 패널 ── */
-function buildEditPanel(p,tabNum){
-  return`<div style="padding:12px 16px">
-    <div class="ep-title"><span>✏️ ${p.skuNick||'—'} 수정</span>
-</div>
-    <div class="frow" onclick="event.stopPropagation()">
-      <div class="fg"><div class="fl">구분</div>
-        <select class="fi" onchange="localMod('${p._id}','proposalItems',{isMain:this.value})">
-          <option ${p.isMain==='메인'?'selected':''}>메인</option><option ${p.isMain==='서브'?'selected':''}>서브</option></select></div>
-      <div class="fg"><div class="fl">배송</div>
-        <select class="fi" onchange="localMod('${p._id}','proposalItems',{ship:this.value})">
-          <option ${p.ship==='무료배송'?'selected':''}>무료배송</option><option ${p.ship==='조건부 무료'?'selected':''}>조건부 무료</option><option ${p.ship==='유료배송'?'selected':''}>유료배송</option></select></div>
-      <div class="fg"><div class="fl">배송유형</div>
-        <select class="fi" onchange="localMod('${p._id}','proposalItems',{shipType:this.value})">
-          <option ${(p.shipType||'일반')==='일반'?'selected':''}>일반</option><option ${p.shipType==='오늘'?'selected':''}>오늘</option></select></div>
-      <div class="fg"><div class="fl">상태</div>
-        <select class="fi" onchange="localMod('${p._id}','proposalItems',{status:this.value});renderPropList(${tabNum})">
-          <option ${p.status==='제안중'?'selected':''}>제안중</option><option ${p.status==='제안완료'?'selected':''}>제안완료</option>
-          <option ${p.status==='선정'?'selected':''}>선정</option><option ${p.status==='미선정'?'selected':''}>미선정</option></select></div>
-    </div>
-    <div class="frow" onclick="event.stopPropagation()">
-      <div class="fg"><div class="fl" style="color:var(--t4)">정상가 🔒</div>
-        <input class="fi readonly" readonly value="${p.priceNormal||''}"></div>
-      <div class="fg"><div class="fl" style="color:var(--t4)">고정행사가 🔒</div>
-        <input class="fi readonly" readonly value="${p.priceEvent||''}"></div>
-      <div class="fg"><div class="fl" style="color:var(--or);font-weight:600">제안행사가 ✏️ (고정 이상)</div>
-        <input type="number" class="fi fi-alim" min="${p.priceEvent||0}" value="${p.priceAlim||p.priceEvent||''}"
-          oninput="const v=+this.value;const mn=${p.priceEvent||0};if(v<mn){this.value=mn;}localMod('${p._id}','proposalItems',{priceAlim:+this.value,priceMax:(+this.value)-1000})"></div>
-      <div class="fg"><div class="fl" style="color:var(--t4)">최대혜택가 🔒</div>
-        <input class="fi readonly" readonly id="ep-mx-${p._id}" value="${p.priceMax||''}"></div>
-      <div class="fg"><div class="fl">제안업로드일</div>
-        <input class="fi" value="${p.proposalUploadedAt||''}" oninput="localMod('${p._id}','proposalItems',{proposalUploadedAt:this.value})"></div>
-      <div class="fg"><div class="fl">마감일</div>
-        <input class="fi" value="${p.proposalDeadline||''}" oninput="localMod('${p._id}','proposalItems',{proposalDeadline:this.value})"></div>
-      <div class="fg"><div class="fl">제안일</div>
-        <input class="fi" value="${p.proposalMyDate||''}" oninput="localMod('${p._id}','proposalItems',{proposalMyDate:this.value})"></div>
-    </div>
-  </div>`;
-}
-
-window.toggleEditRow=function(propId,tabNum){
-  const ep=document.getElementById('ep-'+propId);const row=document.getElementById('row-'+propId);if(!ep)return;
-  const isOpen=ep.classList.contains('open');
-  if(EDIT_OPEN&&EDIT_OPEN!==propId){const prev=document.getElementById('ep-'+EDIT_OPEN);const prevRow=document.getElementById('row-'+EDIT_OPEN);if(prev)prev.classList.remove('open');if(prevRow)prevRow.classList.remove('open');}
-  ep.classList.toggle('open',!isOpen);if(row)row.classList.toggle('open',!isOpen);
-  EDIT_OPEN=isOpen?null:propId;
-};
-
-window.markOneSel=async function(id,btn){
-  localMod(id,'proposalItems',{status:'선정'});
-  const tr=btn.closest('tr');if(tr)tr.classList.add('grayed');
-  btn.outerHTML='<span class="st s-sel" style="font-size:10px">선정완료</span>';
-  toast('선정 처리 (저장 버튼으로 반영)');
-};
-
 const STATUS_CLASS_MAP={'제안중':'state-proposal','제안완료':'state-done','확인필요':'state-warning','미선정':'state-rejected','선정':'state-selected'};
 
 const STATUS_SELECT_STYLE={
@@ -3243,7 +3180,7 @@ window.addProdToGroup=function(eName,tabNum,grpId){
   const m=PROPOSALS.find(p=>p.eventName===eName);
   allCodes.forEach(code=>{
     const sku=SKUS.find(s=>s._id===code)||{};
-    const newP={_id:'NEW_'+Date.now()+'_'+code,_isNew:true,eventName:eName,eventType:m?.eventType||detectType({eventName:eName}),startDate:m?.startDate||null,endDate:m?.endDate||null,startTime:m?.startTime||null,endTime:m?.endTime||null,proposalUploadedAt:$('ev-upload-date')?.value||m?.proposalUploadedAt||null,proposalDeadline:$('ev-deadline')?.value||m?.proposalDeadline||null,proposalMyDate:m?.proposalMyDate||null,skuCode:code,skuNick:sku.nick||sku.name||code,productName:sku.name||'',isMain:skuGroup(sku.nick||sku.name)==='main'?'메인':'서브',status:'제안중',priceNormal:sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:sku.priceMax||null,priceMax:sku.priceMax?(sku.priceMax-1000):null,ship:'무료배송'};
+    const newP={_id:'NEW_'+Date.now()+'_'+code,_isNew:true,eventName:eName,eventType:m?.eventType||detectType({eventName:eName}),startDate:m?.startDate||null,endDate:m?.endDate||null,startTime:m?.startTime||null,endTime:m?.endTime||null,proposalUploadedAt:$('ev-upload-date')?.value||m?.proposalUploadedAt||null,proposalDeadline:$('ev-deadline')?.value||m?.proposalDeadline||null,proposalMyDate:m?.proposalMyDate||null,skuCode:code,skuNick:sku.nick||sku.name||code,productName:sku.name||'',isMain:skuGroup(sku.nick||sku.name)==='main'?'메인':'서브',status:'제안중',priceNormal:sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:sku.priceMax||null,priceMax:sku.priceMax?(sku.priceMax-1000):null,ship:sku.ship||'무료',shipType:sku.shipType||'일반'};
     PROPOSALS.unshift(newP);markDirty('proposalItems',newP._id,newP);
   });
   if(codeInp)codeInp.value='';
@@ -3414,7 +3351,13 @@ window.gotoStatusFromLogic=function(statusVal,targetTab,cardEl){
 /* ── 행사 운영 탭(p9): iframe lazy 로드 — 첫 진입 시만 src 설정 ── */
 window.loadPinnedIframe=function(){
   const f=document.getElementById('pinned-iframe');
-  if(f && !f.src){f.src='evt_pinned.html';}
+  if(!f)return;
+  if(!f.src){
+    f.src='evt_pinned.html';
+  }else{
+    /* 이미 로드되어 있으면 새로고침 신호 (탭 재진입 시 최신 핀 반영) */
+    if(f.contentWindow)f.contentWindow.postMessage({type:'refresh'},'*');
+  }
 };
 
 /* ── 행사 로직: 헤더(행사 제안)/행사 종료 카드 클릭 시 필터 없이 탭 전환만 ── */
@@ -3463,23 +3406,74 @@ window.dfClick=function(el,field,tab){
   else dateFilter[tab].delete(field);
   renderPropList(tab);
 };
-/* ── 고정 이벤트 ── */
-let PINNED_EVENTS=new Set(JSON.parse(localStorage.getItem('pinnedEvents')||'[]'));
-function savePinned(){localStorage.setItem('pinnedEvents',JSON.stringify([...PINNED_EVENTS]));}
-window.bulkPin=function(tab){
+/* ── 고정 이벤트 (Firebase 저장) ── */
+let PINNED_EVENTS=new Set();  /* loadAll 완료 후 EVENTS.pinned 기반으로 채움 */
+
+/* 개별 핀 상태를 Firebase에 즉시 저장 */
+async function fbSetPin(evId, pinned){
+  try{
+    await updateDoc(doc(db,'events',evId),{pinned:!!pinned,updatedAt:new Date().toISOString()});
+    const ev=EVENTS.find(e=>e._id===evId);
+    if(ev)ev.pinned=!!pinned;
+  }catch(e){toast('고정 저장 실패: '+e.message,'err');throw e;}
+}
+
+window.bulkPin=async function(tab){
   const ids=getCheckedGrpIds(tab);
   if(!ids.length)return;
-  ids.forEach(id=>PINNED_EVENTS.add(id));
-  savePinned();clearBulkSelect(tab);renderPropList(tab);
-  toast('📌 '+ids.length+'건 고정됨');
+  const realIds=ids.filter(id=>EVENTS.find(e=>e._id===id));
+  try{
+    await Promise.all(realIds.map(id=>fbSetPin(id,true)));
+    realIds.forEach(id=>PINNED_EVENTS.add(id));
+    /* ID 매칭 안 되는 구형 데이터(eventName 키)는 메모리에만 추가 */
+    ids.filter(id=>!EVENTS.find(e=>e._id===id)).forEach(id=>PINNED_EVENTS.add(id));
+    clearBulkSelect(tab);renderPropList(tab);
+    /* 행사 운영 iframe이 열려있으면 새로고침 신호 */
+    notifyPinnedIframe();
+    toast('📌 '+ids.length+'건 고정됨');
+  }catch(e){/* 에러는 fbSetPin에서 toast */}
 };
-window.bulkUnpin=function(tab){
+
+window.bulkUnpin=async function(tab){
   const ids=getCheckedGrpIds(tab);
   if(!ids.length)return;
-  ids.forEach(id=>PINNED_EVENTS.delete(id));
-  savePinned();clearBulkSelect(tab);renderPropList(tab);
-  toast('📌 '+ids.length+'건 고정 해제');
+  const realIds=ids.filter(id=>EVENTS.find(e=>e._id===id));
+  try{
+    await Promise.all(realIds.map(id=>fbSetPin(id,false)));
+    ids.forEach(id=>PINNED_EVENTS.delete(id));
+    clearBulkSelect(tab);renderPropList(tab);
+    notifyPinnedIframe();
+    toast('📌 '+ids.length+'건 고정 해제');
+  }catch(e){}
 };
+
+/* iframe(행사 운영 탭)에 핀 변경 알림 */
+function notifyPinnedIframe(){
+  const f=document.getElementById('pinned-iframe');
+  if(f && f.contentWindow && f.src){
+    f.contentWindow.postMessage({type:'pin-changed'},'*');
+  }
+}
+
+/* localStorage → Firebase 마이그레이션 (최초 1회) */
+async function migratePinnedToFirebase(){
+  const raw=localStorage.getItem('pinnedEvents');
+  if(!raw)return;
+  if(localStorage.getItem('pinnedMigrated')==='1')return;
+  try{
+    const localPins=JSON.parse(raw)||[];
+    let migrated=0;
+    for(const id of localPins){
+      const ev=EVENTS.find(e=>e._id===id);
+      if(ev&&!ev.pinned){
+        await updateDoc(doc(db,'events',id),{pinned:true,updatedAt:new Date().toISOString()});
+        ev.pinned=true;migrated++;
+      }
+    }
+    localStorage.setItem('pinnedMigrated','1');
+    if(migrated)toast('📌 기존 핀 '+migrated+'건을 Firebase로 옮김');
+  }catch(e){console.warn('pin migration skipped',e);}
+}
 /* ── 일괄 처리 ── */
 function getCheckedGrpIds(tab){
   return [...document.querySelectorAll(`.grp-cb-${tab}:checked`)].map(cb=>cb.dataset.grp);

@@ -83,8 +83,18 @@ body{
 
 /* ── 범례 내 필터 칩 ── */
 .lg-filter-row{
-  display:flex;align-items:center;gap:6px;padding-right:12px;
-  border-right:1px solid rgba(0,0,0,0.08);margin-right:8px;
+  display:flex;align-items:center;gap:5px;
+  flex-wrap:wrap;
+}
+/* 상단 필터 영역 (월 헤더 위) */
+.filter-row-top{
+  margin:0 0 10px 0;padding:0 0 10px 0;
+  border-bottom:0.5px solid rgba(0,0,0,0.08);
+}
+.filter-row-top:empty{display:none}
+.lg-sep{
+  display:inline-block;width:1px;height:14px;
+  background:rgba(0,0,0,0.12);margin:0 2px;
   flex-shrink:0;
 }
 .lg-chip{
@@ -99,12 +109,35 @@ body{
   border-color:var(--accent);background:rgba(58,58,240,0.08);
   color:var(--accent);font-weight:600;
 }
+/* 전체 토글 버튼 */
+.lg-chip.lg-chip-all{
+  font-weight:600;letter-spacing:-0.2px;
+  background:rgba(0,0,0,0.04);
+}
+.lg-chip.lg-chip-all.on{
+  background:var(--accent);color:#fff;border-color:var(--accent);
+}
+.lg-chip.lg-chip-all:hover{background:rgba(0,0,0,0.07)}
+.lg-chip.lg-chip-all.on:hover{background:var(--accent);filter:brightness(1.05)}
 .lg-chip .cnt{
   font-size:9.5px;padding:1px 5px;border-radius:8px;
   background:rgba(0,0,0,0.06);color:var(--t4);font-weight:600;
   min-width:14px;text-align:center;
 }
 .lg-chip.on .cnt{background:rgba(58,58,240,0.2);color:var(--accent)}
+/* 색 그룹 (로직 문서 color_palette 기준) */
+.lg-chip.lg-grp-yellow.on{
+  border-color:#EF9F27;background:#FAEEDA;color:#854F0B;
+}
+.lg-chip.lg-grp-yellow.on .cnt{background:#EF9F27;color:#fff}
+.lg-chip.lg-grp-blue.on{
+  border-color:#85B7EB;background:#E6F1FB;color:#0C447C;
+}
+.lg-chip.lg-grp-blue.on .cnt{background:#85B7EB;color:#fff}
+.lg-chip.lg-grp-red.on{
+  border-color:#F09595;background:#FCEBEB;color:#791F1F;
+}
+.lg-chip.lg-grp-red.on .cnt{background:#F09595;color:#fff}
 .lg-items-wrap{
   display:flex;flex-wrap:wrap;gap:4px 0;align-items:center;flex:1;min-width:0;
 }
@@ -618,6 +651,9 @@ body{
 <body>
 <div class="wrap">
 
+  <!-- 상단 상태 필터 칩 영역 -->
+  <div class="filter-row-top" id="filterRowTop"></div>
+
   <div class="hdr-row1">
     <button class="tool-btn" onclick="goToday()">📍 오늘</button>
     <button class="tool-btn primary" id="todayToggleBtn" onclick="toggleToday()">🎯 오늘 강조</button>
@@ -846,22 +882,29 @@ let tempForm = {
 };
 
 // ── 상태 필터 (범례 내 칩, 세션 전용) ──
-// 광고주 보고용: 선정/종료 기본 ON, 나머지 OFF
+// 로직 문서 그대로: 5개 Firebase status + 3개 자동 분기 + 행사종료 = 9개
+// group: 'yellow' = 제안 단계, 'blue' = 선정 라인, 'red' = 행사 종료
 const STATUS_DEFS = [
-  {key:'selected',   label:'선정'},
-  {key:'closed',     label:'종료'},
-  {key:'proposing',  label:'제안중'},
-  {key:'rejected',   label:'미선정'},
-  {key:'notice',     label:'공지'},
-  {key:'always',     label:'상시'},
+  {key:'proposing',     label:'제안중',   group:'yellow'},
+  {key:'proposed',      label:'제안완료', group:'yellow'},
+  {key:'needsCheck',    label:'확인필요', group:'yellow'},
+  {key:'rejected',      label:'미선정',   group:'yellow'},
+  {key:'selected',      label:'선정',     group:'blue'},
+  {key:'beforeStart',   label:'진행전',   group:'blue'},
+  {key:'inProgress',    label:'진행중',   group:'blue'},
+  {key:'afterEnd',      label:'진행종료', group:'blue'},
+  {key:'eventClosed',   label:'행사종료', group:'red'},
 ];
 let statusFilter = {
-  selected: true,
-  closed: true,
-  proposing: false,
-  rejected: false,
-  notice: false,
-  always: false,
+  proposing:   true,
+  proposed:    true,
+  needsCheck:  true,
+  rejected:    true,
+  selected:    true,
+  beforeStart: true,
+  inProgress:  true,
+  afterEnd:    true,
+  eventClosed: true,
 };
 
 // ── 임시 추가 패널용 인라인 달력 상태 ──
@@ -894,38 +937,52 @@ function getAllEvents(){
 // ═══════════════════════════════════════
 // 상태 분류 (proposalItems 기반)
 // ═══════════════════════════════════════
-// 반환: 행사가 속한 상태 key 배열 (여러 개 가능)
+// 반환: 행사가 속한 상태 key 배열 (다중 가능 - 한 행사가 여러 status SKU 보유 가능)
+// 로직 문서 기준:
+//  - 5개 Firebase status: 제안중/제안완료/확인필요/선정/미선정 (proposalItems.status 직접)
+//  - 3개 자동 분기: 진행전/진행중/진행종료 (status='선정'일 때 endDate 기준)
+//  - 행사종료: isClosed=true OR endDate < 오늘 (8개와 별개, 동시 부여 가능)
 function classifyEvent(ev){
-  // 임시 항목은 'selected'로 취급 (사용자가 직접 추가했으니 포함)
+  // 임시 항목은 'selected'로 취급
   if(ev._isTemp) return ['selected'];
 
   const tags = [];
-  if(ev.isNotice)              tags.push('notice');
-  if(ev.isClosed)              tags.push('closed');
-  if(ev.eventType === 'AL')    tags.push('always');
-
+  const todayStr = toDS(_today.getFullYear(), _today.getMonth()+1, _today.getDate());
   const statuses = PROP_STATUS[ev._id];
+
   if(statuses && statuses.size > 0){
-    if(statuses.has('선정')) tags.push('selected');
+    // 5개 Firebase status 직접 매핑
+    if(statuses.has('제안중'))   tags.push('proposing');
+    if(statuses.has('제안완료')) tags.push('proposed');
+    if(statuses.has('확인필요')) tags.push('needsCheck');
+    if(statuses.has('미선정'))   tags.push('rejected');
 
-    // 제안중: 확정 전 상태 중 하나라도 있으면
-    const pending = ['제안중','제안완료','확인필요'];
-    if(pending.some(s => statuses.has(s))) tags.push('proposing');
-
-    // 미선정: 전체가 미선정일 때만
-    if(statuses.size === 1 && statuses.has('미선정')) tags.push('rejected');
+    // '선정'이 있으면 → 날짜 보고 진행전/중/종료 자동 분기 (+ 'selected' 자체도 부여)
+    if(statuses.has('선정')){
+      tags.push('selected');
+      if(ev.startDate && ev.endDate){
+        if(todayStr < ev.startDate)      tags.push('beforeStart');
+        else if(todayStr > ev.endDate)   tags.push('afterEnd');
+        else                              tags.push('inProgress');
+      }
+    }
   }
+
+  // 행사종료 (isEvEnded 그대로) - 위 status와 동시 부여 가능
+  if(ev.isClosed === true) tags.push('eventClosed');
+  else if(ev.endDate && ev.endDate < todayStr) tags.push('eventClosed');
 
   return tags;
 }
 
 // 해당 행사가 현재 필터에 의해 표시되는지
 function passesFilter(ev){
-  // 상태 없는 행사(proposalItems 없음)는 숨김 (광고주 보고용)
+  // 상태 없는 행사(proposalItems 없음, isClosed도 아님)는 숨김 (광고주 보고용)
   if(!ev._isTemp){
     const hasPropStatus = PROP_STATUS[ev._id] && PROP_STATUS[ev._id].size > 0;
-    const hasOtherTag = ev.isClosed || ev.isNotice || ev.eventType==='AL';
-    if(!hasPropStatus && !hasOtherTag) return false;
+    const hasClosedTag = ev.isClosed === true ||
+      (ev.endDate && ev.endDate < toDS(_today.getFullYear(), _today.getMonth()+1, _today.getDate()));
+    if(!hasPropStatus && !hasClosedTag) return false;
   }
 
   const tags = classifyEvent(ev);
@@ -936,7 +993,11 @@ function passesFilter(ev){
 
 // 각 상태별 개수 집계 (범례 칩 숫자용)
 function getStatusCounts(targetMonth){
-  const counts = {selected:0, closed:0, proposing:0, rejected:0, notice:0, always:0};
+  const counts = {
+    proposing:0, proposed:0, needsCheck:0, rejected:0,
+    selected:0, beforeStart:0, inProgress:0, afterEnd:0,
+    eventClosed:0
+  };
   getAllEvents().forEach(ev=>{
     if(!ev.startDate) return;
     if(targetMonth){
@@ -983,7 +1044,9 @@ function colorOfEv(ev){
 
 function renderLegend(){
   const lg = document.getElementById('legend');
+  const filterTop = document.getElementById('filterRowTop');
   lg.innerHTML='';
+  if(filterTop) filterTop.innerHTML='';
 
   if(loadError){
     lg.className='legend';
@@ -996,14 +1059,41 @@ function renderLegend(){
     return;
   }
 
-  // 상태 필터 칩 행 (항상 노출)
+  // ─── 상태 필터 칩 행 (상단 별도 영역) ───
   const filterRow = document.createElement('div');
   filterRow.className = 'lg-filter-row';
   const counts = getStatusCounts(true);  // 현재 월 기준
+
+  // 전체 토글 버튼 (모두 ON이면 "전체 OFF"로, 아니면 "전체 ON"으로)
+  const allOn = STATUS_DEFS.every(d => statusFilter[d.key]);
+  const toggleBtn = document.createElement('button');
+  toggleBtn.type = 'button';
+  toggleBtn.className = 'lg-chip lg-chip-all' + (allOn ? ' on' : '');
+  toggleBtn.innerHTML = allOn ? '☑ 전체' : '☐ 전체';
+  toggleBtn.title = allOn ? '모두 끄기' : '모두 켜기';
+  toggleBtn.onclick = ()=>{
+    const next = !allOn;
+    STATUS_DEFS.forEach(d => { statusFilter[d.key] = next; });
+    render();
+  };
+  filterRow.appendChild(toggleBtn);
+
+  // 토글과 첫 그룹 사이 separator
+  const sepFirst = document.createElement('span');
+  sepFirst.className = 'lg-sep';
+  filterRow.appendChild(sepFirst);
+
+  let prevGroup = null;
   STATUS_DEFS.forEach(def=>{
+    if(prevGroup !== null && prevGroup !== def.group){
+      const sep = document.createElement('span');
+      sep.className = 'lg-sep';
+      filterRow.appendChild(sep);
+    }
+    prevGroup = def.group;
     const chip = document.createElement('button');
     chip.type = 'button';
-    chip.className = 'lg-chip' + (statusFilter[def.key]?' on':'');
+    chip.className = `lg-chip lg-grp-${def.group}` + (statusFilter[def.key]?' on':'');
     chip.innerHTML = `${def.label}<span class="cnt">${counts[def.key]||0}</span>`;
     chip.onclick = ()=>{
       statusFilter[def.key] = !statusFilter[def.key];
@@ -1011,9 +1101,9 @@ function renderLegend(){
     };
     filterRow.appendChild(chip);
   });
-  lg.appendChild(filterRow);
+  if(filterTop) filterTop.appendChild(filterRow);
 
-  // 이름 칩 영역
+  // ─── 행사 이름 칩 영역 (기존 legend 그대로) ───
   const itemsWrap = document.createElement('div');
   itemsWrap.className = 'lg-items-wrap';
   lg.appendChild(itemsWrap);

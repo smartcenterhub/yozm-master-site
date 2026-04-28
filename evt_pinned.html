@@ -116,6 +116,25 @@ body{
   padding:9px 12px;
   display:flex;flex-direction:column;gap:5px;
   border-bottom:1px solid var(--bd);
+  cursor:pointer;
+  user-select:none;
+  transition:background .12s;
+}
+.egrphd:hover{background:rgba(58,58,240,.025)}
+.egrp .egrpbody{display:none}
+.egrp.open .egrpbody{display:block}
+.egrp.open .egrphd{border-bottom:1px solid var(--bd)}
+.egrp:not(.open) .egrphd{border-bottom:none}
+.toggle-arrow{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:18px;height:18px;font-size:10px;color:var(--t3);
+  transition:transform .15s;flex-shrink:0;
+}
+.egrp.open .toggle-arrow{transform:rotate(90deg);color:var(--ac)}
+.prod-count{
+  display:inline-block;font-size:10.5px;font-weight:600;
+  padding:1px 7px;border-radius:5px;
+  background:rgba(58,58,240,.08);color:var(--ac);
 }
 .egrpname{font-size:13px;font-weight:600;color:var(--tx)}
 .st{
@@ -184,6 +203,8 @@ body{
   <div class="hd-row">
     <h1 class="hd-title"><span class="pin">📌</span> 운영 관리 <span class="hd-count" id="pin-count"></span></h1>
     <div class="hd-actions">
+      <button class="btn btn-sm" onclick="toggleAll(true)" title="모든 카드 펼치기">⬇ 모두 펼치기</button>
+      <button class="btn btn-sm" onclick="toggleAll(false)" title="모든 카드 접기">⬆ 모두 접기</button>
       <button class="btn btn-sm" onclick="loadAll()">↻ 새로고침</button>
       <button class="btn btn-sm" onclick="copyAllText()">📋 복붙용 텍스트</button>
       <button class="btn btn-sm btn-p" onclick="exportXlsx()">📊 엑셀 다운로드</button>
@@ -347,41 +368,55 @@ function buildCard(ev){
   }).join('');
   
   return `<div class="egrp">
-    <div class="egrphd">
+    <div class="egrphd" onclick="toggleCard(this.parentElement,event)">
       <div style="display:flex;align-items:center;gap:6px">
+        <span class="toggle-arrow">▶</span>
         <span class="st" style="background:rgba(0,0,0,.05);color:var(${tColor});font-size:10px">${eType}</span>
         <span class="egrpname">${eName}</span>
         <span class="st ${stCls}">${st}</span>
-        <span style="margin-left:auto;display:flex;gap:6px">
-          <button class="btn btn-sm" onclick="copyOne('${ev._id}')">📋 복사</button>
-          <button class="btn btn-sm" onclick="unpinOne('${ev._id}')" style="color:var(--t3)">📌 해제</button>
+        ${props.length?`<span class="prod-count">선정 ${props.length}건</span>`:'<span class="prod-count" style="background:rgba(152,152,168,.12);color:var(--t3)">선정 0건</span>'}
+        <span style="margin-left:auto;display:flex;gap:6px" onclick="event.stopPropagation()">
+          <button class="btn btn-sm" onclick="copyOne('${ev._id}');event.stopPropagation()">📋 복사</button>
+          <button class="btn btn-sm" onclick="unpinOne('${ev._id}');event.stopPropagation()" style="color:var(--t3)">📌 해제</button>
         </span>
       </div>
-      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding-left:24px">
         ${buildDateChips(ev)}
         ${linkChips}
         ${memoChip}
       </div>
     </div>
-    ${props.length?`<div style="overflow-x:auto"><table class="tbl">
-      <thead><tr>
-        <th style="width:90px">닉네임</th><th style="width:78px">상품코드</th>
-        <th style="text-align:right;width:62px">정상가</th>
-        <th style="text-align:right;width:80px;color:var(--rd)">기본행사가</th>
-        <th style="text-align:right;width:76px;color:var(--or)">제안행사가</th>
-        <th style="text-align:right;width:70px;color:var(--bl)">최종혜택가</th>
-        <th style="text-align:right;width:70px;color:var(--rd)">기본할인</th>
-        <th style="text-align:right;width:70px;color:var(--or)">제안할인</th>
-        <th style="text-align:right;width:70px;color:var(--bl)">최종할인</th>
-        <th style="text-align:right;width:50px;color:var(--rd)">기본%</th>
-        <th style="text-align:right;width:50px;color:var(--or)">제안%</th>
-        <th style="text-align:right;width:50px;color:var(--bl)">최종%</th>
-        <th style="width:56px">배송</th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table></div>`:'<div style="padding:14px;text-align:center;color:var(--t3);font-size:11.5px">선정된 상품이 없습니다</div>'}
+    <div class="egrpbody">
+      ${props.length?`<div style="overflow-x:auto"><table class="tbl">
+        <thead><tr>
+          <th style="width:90px">닉네임</th><th style="width:78px">상품코드</th>
+          <th style="text-align:right;width:62px">정상가</th>
+          <th style="text-align:right;width:80px;color:var(--rd)">기본행사가</th>
+          <th style="text-align:right;width:76px;color:var(--or)">제안행사가</th>
+          <th style="text-align:right;width:70px;color:var(--bl)">최종혜택가</th>
+          <th style="text-align:right;width:70px;color:var(--rd)">기본할인</th>
+          <th style="text-align:right;width:70px;color:var(--or)">제안할인</th>
+          <th style="text-align:right;width:70px;color:var(--bl)">최종할인</th>
+          <th style="text-align:right;width:50px;color:var(--rd)">기본%</th>
+          <th style="text-align:right;width:50px;color:var(--or)">제안%</th>
+          <th style="text-align:right;width:50px;color:var(--bl)">최종%</th>
+          <th style="width:56px">배송</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>`:'<div style="padding:14px;text-align:center;color:var(--t3);font-size:11.5px">선정된 상품이 없습니다</div>'}
+    </div>
   </div>`;
 }
+
+window.toggleCard=function(card,ev){
+  card.classList.toggle('open');
+};
+window.toggleAll=function(open){
+  document.querySelectorAll('.egrp').forEach(c=>{
+    if(open)c.classList.add('open');
+    else c.classList.remove('open');
+  });
+};
 
 window.renderList=function(){
   const evs=getFiltered();

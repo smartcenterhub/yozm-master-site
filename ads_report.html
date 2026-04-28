@@ -332,17 +332,20 @@ tr.empty-group{opacity:.35}
       <div id="kwDateList"></div>
     </div>
     <div id="bkImg" style="display:none">
-      <iframe id="bkImageFrame" src="bk_creative.html"
-        style="width:100%;height:700px;border:1px solid var(--glass-border-s);border-radius:12px;display:block;max-width:1132px"></iframe>
+      <div style="overflow:hidden;border:1px solid var(--glass-border-s);border-radius:12px;max-width:1132px;height:700px">
+        <iframe id="bkImageFrame" src="bk_creative.html"
+          style="width:117.6%;height:117.6%;border:0;display:block;transform:scale(0.85);transform-origin:0 0"></iframe>
+      </div>
     </div>
   </div>
 
   <!-- ② GFA (GFA 성과 + GFA 소재 통합) -->
   <div class="sub-content" id="s-gfa">
     <!-- 내부 탭 -->
-    <div class="inner-tabs" style="display:flex;gap:0;border-bottom:1.5px solid var(--glass-border-s);margin-bottom:14px">
+    <div class="inner-tabs" id="gfaInnerTabs" style="display:flex;gap:0;border-bottom:1.5px solid var(--glass-border-s);margin-bottom:14px">
       <div class="inner-tab active" id="innerTabGfaPerf" onclick="swGfaInner('gfaPerf',this)" style="padding:5px 16px;font-size:12.5px;color:var(--accent);cursor:pointer;border-bottom:2.5px solid var(--accent);margin-bottom:-1.5px">GFA 성과</div>
       <div class="inner-tab" id="innerTabGfaSojai" onclick="swGfaInner('gfaSojai',this)" style="padding:5px 16px;font-size:12.5px;color:var(--t2);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px">GFA 소재</div>
+      <div class="inner-tab" id="innerTabGfaImg" onclick="swGfaInner('gfaImg',this)" style="padding:5px 16px;font-size:12.5px;color:var(--t2);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px">🖼 이미지 관리</div>
     </div>
     <div id="gfaPerf">
     <div class="upload-zone" id="gfaUpload" style="max-width:920px" onclick="document.getElementById('gfaInput').click()">
@@ -431,6 +434,12 @@ tr.empty-group{opacity:.35}
       <iframe id="gcImageFrame" src="gfa_creative.html"
         style="width:100%;height:660px;border:1px solid var(--glass-border-s);border-radius:12px;display:block;max-width:920px"></iframe>
     </div>
+    </div>
+
+    <!-- GFA 이미지 관리 (상위 탭 전용) -->
+    <div id="gfaImg" style="display:none">
+      <iframe id="gfaImageFrame" src="gfa_creative.html"
+        style="width:100%;height:700px;border:1px solid var(--glass-border-s);border-radius:12px;display:block;max-width:1132px"></iframe>
     </div>
   </div>
 
@@ -743,7 +752,9 @@ tr.empty-group{opacity:.35}
     </div>
   </div>
   <div id="imgRegBkPane" style="padding:0">
-    <iframe src="bk_creative.html" style="width:100%;height:calc(100vh - 140px);border:none;display:block"></iframe>
+    <div style="overflow:hidden;width:100%;height:calc(100vh - 140px)">
+      <iframe src="bk_creative.html" style="width:117.6%;height:117.6%;border:none;display:block;transform:scale(0.85);transform-origin:0 0"></iframe>
+    </div>
   </div>
   <div id="imgRegGfaPane" style="padding:0;display:none">
     <iframe src="gfa_creative.html" style="width:100%;height:calc(100vh - 140px);border:none;display:block"></iframe>
@@ -2749,7 +2760,7 @@ function swGfaInner(id, el) {
   if (_gfaSojai && _gfaContainer && _gfaSojai.parentNode !== _gfaContainer) {
     _gfaContainer.appendChild(_gfaSojai);
   }
-  ['gfaPerf','gfaSojai'].forEach(p => { const el2=document.getElementById(p); if(el2) el2.style.display='none'; });
+  ['gfaPerf','gfaSojai','gfaImg'].forEach(p => { const el2=document.getElementById(p); if(el2) el2.style.display='none'; });
   el.closest('.inner-tabs').querySelectorAll('.inner-tab').forEach(t => {
     t.classList.remove('active');
     t.style.borderBottomColor = 'transparent';

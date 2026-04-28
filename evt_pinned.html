@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>운영 관리 - 핀된 행사</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-grad: linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#eef0f8 100%);
+  --glass-bg: rgba(255,255,255,0.74);
+  --glass-bg-strong: rgba(255,255,255,0.92);
+  --glass-border-s: rgba(0,0,0,0.07);
+  --bd: rgba(0,0,0,0.07);
+  --gs: rgba(255,255,255,0.55);
+  --tx: #0a0a0f;
+  --t2: #4a4a5a;
+  --t3: #9898a8;
+  --t4: #c4c4d0;
+  --ac: #3a3af0;
+  --gr: #1a8a4a;
+  --rd: #d42020;
+  --or: #c45a10;
+  --bl: #1a56c8;
+  --pu: #6c35cc;
+  --pk: #c42878;
+  --tl: #0d7a6b;
+  --pin: #D4A017;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-width:1440px;background:var(--bg-grad) fixed}
+body{
+  font-family:'Plus Jakarta Sans',-apple-system,'SF Pro Text',sans-serif;
+  font-size:13px;line-height:1.5;color:var(--tx);
+}
+.mono{font-family:'IBM Plex Mono',monospace}
+
+/* 헤더 */
+.header{
+  background:var(--glass-bg);
+  border-bottom:1px solid var(--glass-border-s);
+  padding:16px 24px;
+  position:sticky;top:0;z-index:90;
+  backdrop-filter:blur(8px);
+}
+.hd-row{display:flex;align-items:center;gap:12px}
+.hd-title{font-size:18px;font-weight:700;color:var(--tx);display:flex;align-items:center;gap:8px}
+.hd-title .pin{color:var(--pin);font-size:20px}
+.hd-count{font-size:12px;color:var(--t3);font-weight:500;margin-left:6px}
+.hd-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+/* 버튼 */
+.btn{
+  height:30px;padding:0 14px;border-radius:7px;border:1px solid var(--bd);
+  background:var(--glass-bg-strong);color:var(--t2);
+  font-size:12px;font-weight:500;cursor:pointer;
+  font-family:inherit;display:inline-flex;align-items:center;gap:5px;
+  transition:all .12s;
+}
+.btn:hover{border-color:var(--ac);color:var(--ac)}
+.btn-p{background:var(--ac);color:#fff;border-color:var(--ac)}
+.btn-p:hover{background:#2929d0;color:#fff}
+.btn-sm{height:24px;padding:0 9px;font-size:11px}
+
+/* 필터 바 */
+.fbar{
+  background:var(--glass-bg);
+  border-bottom:1px solid var(--glass-border-s);
+  padding:8px 24px;
+  display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+}
+.fbar select,.fbar input{
+  height:28px;padding:0 10px;font-size:12px;
+  border:1px solid var(--bd);border-radius:7px;
+  background:var(--gs);color:var(--t2);
+  font-family:inherit;
+}
+.fbar input{width:200px}
+.sfb{
+  height:26px;padding:0 12px;font-size:11.5px;
+  border:1px solid var(--bd);border-radius:14px;
+  background:var(--gs);color:var(--t2);cursor:pointer;
+  font-family:inherit;
+}
+.sfb.on{background:rgba(58,58,240,.08);border-color:var(--ac);color:var(--ac);font-weight:600}
+
+/* 콘텐츠 */
+.main{padding:16px 24px 32px}
+.month-hd{
+  font-size:13px;font-weight:700;color:var(--t2);
+  margin:18px 0 10px;padding:6px 12px;
+  background:rgba(255,255,255,.6);border-radius:7px;
+  border-left:3px solid var(--pin);
+  display:flex;align-items:center;gap:8px;
+}
+.month-hd .cnt{font-weight:400;color:var(--t3);font-size:11.5px}
+.tag-thismo{
+  display:inline-block;font-size:10px;font-weight:600;
+  padding:1px 7px;border-radius:5px;
+  background:rgba(58,58,240,.1);color:var(--ac);
+}
+
+/* 카드 */
+.egrp{
+  background:var(--glass-bg-strong);
+  border:1px solid var(--glass-border-s);
+  border-radius:10px;
+  margin-bottom:10px;
+  overflow:hidden;
+  box-shadow:0 1px 3px rgba(0,0,0,.04);
+  border-left:3px solid var(--pin);
+}
+.egrphd{
+  padding:9px 12px;
+  display:flex;flex-direction:column;gap:5px;
+  border-bottom:1px solid var(--bd);
+}
+.egrpname{font-size:13px;font-weight:600;color:var(--tx)}
+.st{
+  display:inline-block;padding:2px 8px;border-radius:5px;
+  font-size:10.5px;font-weight:600;
+}
+.s-mid{background:rgba(196,90,16,.1);color:var(--or)}
+.s-run{background:rgba(196,40,120,.1);color:var(--pk)}
+.s-end{background:rgba(152,152,168,.15);color:var(--t3)}
+
+.tbl{width:100%;border-collapse:collapse;font-size:11.5px}
+.tbl th{
+  text-align:left;padding:7px 8px;color:var(--t3);font-weight:600;
+  border-bottom:1px solid var(--bd);
+  font-size:10.5px;background:rgba(255,255,255,.4);
+}
+.tbl td{padding:6px 8px;border-bottom:1px solid rgba(0,0,0,.04)}
+.tbl tr:last-child td{border-bottom:none}
+
+/* 토스트 */
+#toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  padding:8px 16px;background:var(--tx);color:#fff;
+  border-radius:8px;font-size:12px;font-weight:500;
+  opacity:0;pointer-events:none;transition:opacity .2s;z-index:1000;
+}
+#toast.on{opacity:.95}
+#toast.err{background:var(--rd)}
+
+/* 빈 상태 */
+.empty{text-align:center;padding:64px 20px;color:var(--t3)}
+.empty .ico{font-size:42px;opacity:.4;margin-bottom:12px}
+.empty .ttl{font-size:14px;margin-bottom:4px;color:var(--t2)}
+.empty .desc{font-size:11.5px;color:var(--t4)}
+
+/* 로딩 */
+.loading{padding:40px;text-align:center;color:var(--t3);font-size:12px}
+.loading .spin{display:inline-block;animation:spin 1s linear infinite;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* chip */
+.link-chip,.memo-chip{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:2px 8px;font-size:10.5px;border-radius:11px;
+  background:rgba(58,58,240,.07);color:var(--ac);
+  cursor:pointer;border:1px solid rgba(58,58,240,.2);
+}
+.memo-chip{background:rgba(196,90,16,.07);color:var(--or);border-color:rgba(196,90,16,.2);position:relative}
+.memo-chip:hover .memo-tip{display:block}
+.memo-tip{
+  display:none;position:absolute;top:calc(100% + 4px);right:0;
+  z-index:100;padding:8px 12px;
+  background:var(--tx);color:#fff;font-size:11px;font-weight:400;
+  border-radius:6px;white-space:pre-wrap;max-width:280px;line-height:1.5;
+}
+.date-chip{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:2px 8px;font-size:10.5px;border-radius:11px;
+  background:rgba(0,0,0,.04);color:var(--t2);border:1px solid var(--bd);
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="hd-row">
+    <h1 class="hd-title"><span class="pin">📌</span> 운영 관리 <span class="hd-count" id="pin-count"></span></h1>
+    <div class="hd-actions">
+      <button class="btn btn-sm" onclick="loadAll()">↻ 새로고침</button>
+      <button class="btn btn-sm" onclick="copyAllText()">📋 복붙용 텍스트</button>
+      <button class="btn btn-sm btn-p" onclick="exportXlsx()">📊 엑셀 다운로드</button>
+    </div>
+  </div>
+</div>
+
+<div class="fbar">
+  <select id="f-type" onchange="renderList()">
+    <option value="">전체 유형</option>
+    <option value="FF">🎪 푸드페스타 (FF)</option>
+    <option value="TD">⏰ 오늘끝딜 (TD)</option>
+    <option value="SP">💜 슈퍼적립 (SP)</option>
+    <option value="HB">🍽️ 한입발견회 (HB)</option>
+    <option value="CB">🍽️ 취향발견회 (CB)</option>
+    <option value="SA">🏷️ +세일 (SA)</option>
+    <option value="OD">🎁 원쁠딜 (OD)</option>
+    <option value="YL">⭐ 자사런칭 (YL)</option>
+    <option value="YE">📋 자체행사 (YE)</option>
+    <option value="AL">📡 상시 (AL)</option>
+  </select>
+  <input id="f-search" placeholder="행사명 / 닉네임 검색" oninput="renderList()">
+  <button class="sfb" onclick="toggleStatus(this,'진행전')">진행전</button>
+  <button class="sfb" onclick="toggleStatus(this,'진행중')">진행중</button>
+  <button class="sfb" onclick="toggleStatus(this,'진행종료')">진행종료</button>
+  <button class="btn btn-sm" onclick="resetFilters()" style="margin-left:auto">↺ 초기화</button>
+</div>
+
+<div class="main" id="main"><div class="loading"><span class="spin">⟳</span> 불러오는 중...</div></div>
+
+<div id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, updateDoc }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const db = getFirestore(initializeApp({
+  apiKey:"AIzaSyBB3XxL4kJz5uGVRUn-eLPYirJsuwuiEIU",
+  authDomain:"data-hub-app-2026.firebaseapp.com",
+  projectId:"data-hub-app-2026",
+  appId:"1:127013070764:web:d10d5d24c5b14c31b13c09"
+}));
+
+let SKUS=[], EVENTS=[], PROPOSALS=[];
+let statusFilter=new Set();
+
+const TYPE_COLOR={FF:'--bl',TD:'--rd',SP:'--gr',HB:'--pu',CB:'--pu',SA:'--pk',OD:'--or',YL:'--or',YE:'--tl',AL:'--tl'};
+
+const comma=n=>n==null?'—':Number(n).toLocaleString();
+const $=id=>document.getElementById(id);
+
+window.toast=function(msg,type){
+  const t=$('toast');
+  if(!t)return;
+  t.textContent=msg;
+  t.className=type==='err'?'on err':'on';
+  setTimeout(()=>t.classList.remove('on'),2400);
+};
+
+window.copyToClip=function(text,el){
+  navigator.clipboard.writeText(text).then(()=>{
+    if(el){
+      const orig=el.style.background;
+      el.style.background='rgba(26,138,74,.15)';
+      setTimeout(()=>{el.style.background=orig},800);
+    }
+    toast('📋 복사됨');
+  }).catch(()=>toast('복사 실패','err'));
+};
+
+function detectType(e){
+  if(e.eventType)return e.eventType;
+  const n=(e.eventName||'').toLowerCase();
+  if(n.includes('푸드페스타'))return 'FF';
+  if(n.includes('오늘끝딜'))return 'TD';
+  if(n.includes('슈퍼적립'))return 'SP';
+  if(n.includes('한입'))return 'HB';
+  if(n.includes('취향'))return 'CB';
+  if(n.includes('+세일')||n.includes('세일'))return 'SA';
+  if(n.includes('원쁠딜'))return 'OD';
+  if(n.includes('런칭'))return 'YL';
+  return 'YE';
+}
+
+function shipLabel(p){
+  if(!p)return '—';
+  if(p.shipFee==null||p.shipFee===0)return '무료';
+  return comma(p.shipFee)+'원';
+}
+
+function calcStatus(ev){
+  if(!ev?.startDate)return '진행전';
+  const today=new Date().toISOString().substring(0,10);
+  if(ev.endDate&&ev.endDate<today)return '진행종료';
+  if(ev.startDate>today)return '진행전';
+  return '진행중';
+}
+
+function buildDateChips(ev){
+  const sd=ev.startDate||'?', st=ev.startTime||'';
+  const ed=ev.endDate||'?', et=ev.endTime||'';
+  return `<span class="date-chip">📅 ${sd}${st?' '+st:''} ~ ${ed}${et?' '+et:''}</span>`;
+}
+
+function getFiltered(){
+  const typeF=$('f-type').value;
+  const search=($('f-search').value||'').trim().toLowerCase();
+  return EVENTS.filter(ev=>{
+    if(!ev.pinned)return false;
+    const t=detectType(ev);
+    if(typeF&&t!==typeF)return false;
+    if(statusFilter.size>0&&!statusFilter.has(calcStatus(ev)))return false;
+    if(search){
+      const nameMatch=(ev.eventName||'').toLowerCase().includes(search);
+      const props=PROPOSALS.filter(p=>p.eventSID===ev._id&&p.status==='선정');
+      const nickMatch=props.some(p=>(p.skuNick||'').toLowerCase().includes(search));
+      if(!nameMatch&&!nickMatch)return false;
+    }
+    return true;
+  }).sort((a,b)=>(b.startDate||'').localeCompare(a.startDate||''));
+}
+
+function buildCard(ev){
+  const eName=ev.eventName||'—';
+  const eType=detectType(ev);
+  const tColor=TYPE_COLOR[eType]||'--t2';
+  const st=calcStatus(ev);
+  const stCls={'진행전':'s-mid','진행중':'s-run','진행종료':'s-end'}[st]||'s-end';
+  const props=PROPOSALS.filter(p=>p.eventSID===ev._id&&p.status==='선정'&&!p._deleted);
+  const memoChip=(ev.additionalDiscount&&ev.additionalDiscount!=='네이버 쿠폰'&&!['선택하기',''].includes(ev.additionalDiscount))
+    ?`<span class="memo-chip">📝 메모<span class="memo-tip">${ev.additionalDiscount}</span></span>`:'';
+  const linkChips=(ev.pageLinks||[]).filter(l=>l.url).map(l=>
+    `<span class="link-chip" onclick="copyToClip('${l.url.replace(/'/g,"\\'")}',this)" title="${l.url}">${l.type}</span>`
+  ).join('');
+  const rows=props.map(p=>{
+    const evP=p.priceBase??p.priceEvent;
+    const aP=p.priceAlim||p.priceEvent;
+    const mP=p.priceMax;
+    const baseDisc=(p.priceNormal&&evP)?(p.priceNormal-evP):null;
+    const evDisc=(p.priceNormal&&aP)?(p.priceNormal-aP):null;
+    const mxDisc=(p.priceNormal&&mP)?(p.priceNormal-mP):null;
+    const baseRate=(p.priceNormal&&evP)?Math.round((1-evP/p.priceNormal)*100)+'%':'—';
+    const evRate=(p.priceNormal&&aP)?Math.round((1-aP/p.priceNormal)*100)+'%':'—';
+    const mxRate=(p.priceNormal&&mP)?Math.round((1-mP/p.priceNormal)*100)+'%':'—';
+    return `<tr>
+      <td style="font-weight:600">${p.skuNick||p.productName||'—'}</td>
+      <td class="mono" style="font-size:10px;color:var(--t3);text-align:center">${p.skuCode||'—'}</td>
+      <td class="mono" style="text-align:right">${comma(p.priceNormal)}</td>
+      <td class="mono" style="text-align:right;color:var(--rd);font-weight:600">${comma(evP)}</td>
+      <td class="mono" style="text-align:right;color:var(--or);font-weight:600">${comma(aP)}</td>
+      <td class="mono" style="text-align:right;color:var(--bl);font-weight:600">${comma(mP)}</td>
+      <td class="mono" style="text-align:right;color:var(--rd);font-size:10.5px">${baseDisc?'▼'+comma(baseDisc):'—'}</td>
+      <td class="mono" style="text-align:right;color:var(--or);font-size:10.5px">${evDisc?'▼'+comma(evDisc):'—'}</td>
+      <td class="mono" style="text-align:right;color:var(--bl);font-size:10.5px">${mxDisc?'▼'+comma(mxDisc):'—'}</td>
+      <td class="mono" style="text-align:right;color:var(--rd);font-size:10.5px">${baseRate}</td>
+      <td class="mono" style="text-align:right;color:var(--or);font-size:10.5px">${evRate}</td>
+      <td class="mono" style="text-align:right;color:var(--bl);font-size:10.5px">${mxRate}</td>
+      <td style="text-align:center;font-size:11px">${shipLabel(p)}</td>
+    </tr>`;
+  }).join('');
+  
+  return `<div class="egrp">
+    <div class="egrphd">
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="st" style="background:rgba(0,0,0,.05);color:var(${tColor});font-size:10px">${eType}</span>
+        <span class="egrpname">${eName}</span>
+        <span class="st ${stCls}">${st}</span>
+        <span style="margin-left:auto;display:flex;gap:6px">
+          <button class="btn btn-sm" onclick="copyOne('${ev._id}')">📋 복사</button>
+          <button class="btn btn-sm" onclick="unpinOne('${ev._id}')" style="color:var(--t3)">📌 해제</button>
+        </span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        ${buildDateChips(ev)}
+        ${linkChips}
+        ${memoChip}
+      </div>
+    </div>
+    ${props.length?`<div style="overflow-x:auto"><table class="tbl">
+      <thead><tr>
+        <th style="width:90px">닉네임</th><th style="width:78px">상품코드</th>
+        <th style="text-align:right;width:62px">정상가</th>
+        <th style="text-align:right;width:80px;color:var(--rd)">기본행사가</th>
+        <th style="text-align:right;width:76px;color:var(--or)">제안행사가</th>
+        <th style="text-align:right;width:70px;color:var(--bl)">최종혜택가</th>
+        <th style="text-align:right;width:70px;color:var(--rd)">기본할인</th>
+        <th style="text-align:right;width:70px;color:var(--or)">제안할인</th>
+        <th style="text-align:right;width:70px;color:var(--bl)">최종할인</th>
+        <th style="text-align:right;width:50px;color:var(--rd)">기본%</th>
+        <th style="text-align:right;width:50px;color:var(--or)">제안%</th>
+        <th style="text-align:right;width:50px;color:var(--bl)">최종%</th>
+        <th style="width:56px">배송</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`:'<div style="padding:14px;text-align:center;color:var(--t3);font-size:11.5px">선정된 상품이 없습니다</div>'}
+  </div>`;
+}
+
+window.renderList=function(){
+  const evs=getFiltered();
+  $('pin-count').textContent=evs.length?`· ${evs.length}건`:'';
+  if(!evs.length){
+    const totalPinned=EVENTS.filter(e=>e.pinned).length;
+    $('main').innerHTML=`<div class="empty">
+      <div class="ico">📌</div>
+      <div class="ttl">${totalPinned===0?'고정된 행사가 없습니다':'필터에 해당하는 행사가 없습니다'}</div>
+      <div class="desc">${totalPinned===0?'행사 관리 페이지에서 체크 후 <b>📌 고정</b> 버튼을 눌러주세요':'필터를 초기화하거나 변경해보세요'}</div>
+    </div>`;
+    return;
+  }
+  const groups={};
+  evs.forEach(ev=>{
+    const k=ev.startDate?ev.startDate.substring(0,7):'날짜없음';
+    (groups[k]=groups[k]||[]).push(ev);
+  });
+  const today=new Date().toISOString().substring(0,7);
+  const months=Object.keys(groups).sort((a,b)=>b.localeCompare(a));
+  let html='';
+  months.forEach(k=>{
+    const label=k==='날짜없음'?'날짜 미등록':`${k.substring(0,4)}년 ${parseInt(k.substring(5,7))}월`;
+    const tag=k===today?'<span class="tag-thismo">이번달</span>':'';
+    html+=`<div class="month-hd">${label}${tag}<span class="cnt">· ${groups[k].length}건</span></div>`;
+    html+=groups[k].map(buildCard).join('');
+  });
+  $('main').innerHTML=html;
+};
+
+window.toggleStatus=function(el,v){
+  el.classList.toggle('on');
+  if(el.classList.contains('on'))statusFilter.add(v);
+  else statusFilter.delete(v);
+  renderList();
+};
+window.resetFilters=function(){
+  statusFilter.clear();
+  document.querySelectorAll('.sfb.on').forEach(b=>b.classList.remove('on'));
+  $('f-search').value='';$('f-type').value='';
+  renderList();
+};
+
+window.unpinOne=async function(evId){
+  if(!confirm('이 행사의 고정을 해제하시겠습니까?'))return;
+  try{
+    await updateDoc(doc(db,'events',evId),{pinned:false,updatedAt:new Date().toISOString()});
+    const ev=EVENTS.find(e=>e._id===evId);
+    if(ev)ev.pinned=false;
+    renderList();
+    toast('📌 고정 해제됨');
+  }catch(e){toast('해제 실패: '+e.message,'err');}
+};
+
+function buildText(ev){
+  const eName=ev.eventName||'—';
+  const eType=detectType(ev);
+  const period=`${ev.startDate||'?'}${ev.startTime?' '+ev.startTime:''} ~ ${ev.endDate||'?'}${ev.endTime?' '+ev.endTime:''}`;
+  const props=PROPOSALS.filter(p=>p.eventSID===ev._id&&p.status==='선정'&&!p._deleted);
+  let txt=`▣ [${eType}] ${eName}\n기간: ${period}\n`;
+  if(ev.additionalDiscount&&ev.additionalDiscount!=='선택하기')txt+=`비고: ${ev.additionalDiscount}\n`;
+  if(!props.length){txt+='  (선정 상품 없음)\n';return txt;}
+  props.forEach(p=>{
+    const evP=p.priceBase??p.priceEvent;
+    const aP=p.priceAlim||p.priceEvent;
+    const mP=p.priceMax;
+    const rate=(p.priceNormal&&mP)?Math.round((1-mP/p.priceNormal)*100)+'%':'—';
+    txt+=`  · ${p.skuNick||p.productName||'—'} | 정상 ${comma(p.priceNormal)} → 최종 ${comma(mP)} (${rate}) | 행사가 ${comma(evP)} / 제안가 ${comma(aP)} | ${shipLabel(p)}\n`;
+  });
+  return txt;
+}
+
+window.copyOne=function(evId){
+  const ev=EVENTS.find(e=>e._id===evId);
+  if(!ev)return;
+  navigator.clipboard.writeText(buildText(ev)).then(()=>toast('📋 복사됨')).catch(()=>toast('복사 실패','err'));
+};
+
+window.copyAllText=function(){
+  const evs=getFiltered();
+  if(!evs.length){toast('복사할 행사가 없음','err');return;}
+  const text=evs.map(buildText).join('\n');
+  navigator.clipboard.writeText(text).then(()=>toast('📋 '+evs.length+'건 복사됨')).catch(()=>toast('복사 실패','err'));
+};
+
+function loadXLSX(cb){
+  if(window.XLSX){cb();return;}
+  const s=document.createElement('script');
+  s.src='https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js';
+  s.onload=cb;
+  s.onerror=()=>toast('SheetJS 로드 실패','err');
+  document.head.appendChild(s);
+}
+
+window.exportXlsx=function(){
+  const evs=getFiltered();
+  if(!evs.length){toast('내보낼 행사가 없음','err');return;}
+  loadXLSX(()=>{
+    const rows=[];
+    evs.forEach(ev=>{
+      const eName=ev.eventName||'—';
+      const eType=detectType(ev);
+      const period=`${ev.startDate||''} ${ev.startTime||''} ~ ${ev.endDate||''} ${ev.endTime||''}`.trim();
+      const st=calcStatus(ev);
+      const props=PROPOSALS.filter(p=>p.eventSID===ev._id&&p.status==='선정'&&!p._deleted);
+      if(!props.length){
+        rows.push({'유형':eType,'행사명':eName,'기간':period,'상태':st,'닉네임':'','상품코드':'','정상가':'','기본행사가':'','제안행사가':'','최종혜택가':'','기본할인금액':'','제안할인금액':'','최종할인금액':'','기본할인율':'','제안할인율':'','최종할인율':'','배송':'','비고':ev.additionalDiscount||''});
+        return;
+      }
+      props.forEach(p=>{
+        const evP=p.priceBase??p.priceEvent;
+        const aP=p.priceAlim||p.priceEvent;
+        const mP=p.priceMax;
+        const baseDisc=(p.priceNormal&&evP)?(p.priceNormal-evP):'';
+        const evDisc=(p.priceNormal&&aP)?(p.priceNormal-aP):'';
+        const mxDisc=(p.priceNormal&&mP)?(p.priceNormal-mP):'';
+        const baseRate=(p.priceNormal&&evP)?Math.round((1-evP/p.priceNormal)*100)+'%':'';
+        const evRate=(p.priceNormal&&aP)?Math.round((1-aP/p.priceNormal)*100)+'%':'';
+        const mxRate=(p.priceNormal&&mP)?Math.round((1-mP/p.priceNormal)*100)+'%':'';
+        rows.push({'유형':eType,'행사명':eName,'기간':period,'상태':st,'닉네임':p.skuNick||p.productName||'','상품코드':p.skuCode||'','정상가':p.priceNormal||'','기본행사가':evP||'','제안행사가':aP||'','최종혜택가':mP||'','기본할인금액':baseDisc,'제안할인금액':evDisc,'최종할인금액':mxDisc,'기본할인율':baseRate,'제안할인율':evRate,'최종할인율':mxRate,'배송':shipLabel(p),'비고':ev.additionalDiscount||''});
+      });
+    });
+    const ws=XLSX.utils.json_to_sheet(rows);
+    const ws_ref=XLSX.utils.decode_range(ws['!ref']);
+    const colWidths=[];
+    for(let C=ws_ref.s.c;C<=ws_ref.e.c;C++){
+      let max=10;
+      for(let R=ws_ref.s.r;R<=ws_ref.e.r;R++){
+        const cell=ws[XLSX.utils.encode_cell({c:C,r:R})];
+        if(cell&&cell.v){max=Math.max(max,Math.min(30,String(cell.v).length+2));}
+      }
+      colWidths.push({wch:max});
+    }
+    ws['!cols']=colWidths;
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,ws,'운영관리');
+    const d=new Date();
+    const fname=`운영관리_핀된행사_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.xlsx`;
+    XLSX.writeFile(wb,fname);
+    toast('📊 엑셀 다운로드 완료 ('+rows.length+'행)');
+  });
+};
+
+window.loadAll=async function(){
+  $('main').innerHTML='<div class="loading"><span class="spin">⟳</span> 불러오는 중...</div>';
+  try{
+    const[ss,es,ps]=await Promise.all([
+      getDocs(collection(db,'skus')),
+      getDocs(collection(db,'events')),
+      getDocs(collection(db,'proposalItems'))
+    ]);
+    SKUS=ss.docs.map(d=>({_id:d.id,...d.data()}));
+    EVENTS=es.docs.map(d=>({_id:d.id,...d.data()})).sort((a,b)=>(b.startDate||'').localeCompare(a.startDate||''));
+    PROPOSALS=ps.docs.map(d=>({_id:d.id,...d.data()})).sort((a,b)=>(b.startDate||'').localeCompare(a.startDate||''));
+    renderList();
+  }catch(e){
+    $('main').innerHTML=`<div class="empty"><div class="ico">⚠️</div><div class="ttl">로드 실패</div><div class="desc">${e.message}</div></div>`;
+    toast('로드 실패: '+e.message,'err');
+  }
+};
+
+loadAll();
+</script>
+</body>
+</html>

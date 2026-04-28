@@ -20,11 +20,11 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 .bk-tab:hover{color:var(--tx)}
 .bk-tab.active{color:var(--ac);border-bottom-color:var(--ac);font-weight:600}
 .bk-pane{display:none}.bk-pane.active{display:block}
-.card{background:var(--gb);border:1px solid var(--gbd);border-radius:12px;padding:18px 20px;margin-bottom:14px;width:1132px}
+.card{background:var(--gb);border:1px solid var(--gbd);border-radius:12px;padding:18px 20px;margin-bottom:14px}
 .card-title{font-size:12.5px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:7px}
 .cdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .cbadge{background:rgba(58,58,240,0.08);color:var(--ac);border-radius:10px;padding:2px 9px;font-size:11.5px;font-weight:500;margin-left:4px}
-.form-row{display:flex;gap:12px;align-items:flex-end;margin-bottom:12px;width:1132px}
+.form-row{display:flex;gap:12px;align-items:flex-end;margin-bottom:12px}
 .fg{display:flex;flex-direction:column;gap:5px}
 .fl{font-size:11.5px;font-weight:500;color:var(--t2)}
 .inp{border:1px solid var(--gbd);border-radius:7px;padding:7px 12px;font-size:12.5px;color:var(--tx);background:var(--gbs);font-family:inherit;outline:none}
@@ -41,11 +41,11 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 .btn-sm{padding:4px 10px;font-size:11px}
 .pcb{background:rgba(26,86,200,0.1);color:var(--bl);border-radius:4px;padding:1px 6px;font-size:10px;font-weight:600}
 .mob{background:rgba(196,90,16,0.1);color:var(--or);border-radius:4px;padding:1px 6px;font-size:10px;font-weight:600}
-.urow{display:flex;gap:20px;align-items:flex-end;width:1132px}
+.urow{display:flex;gap:20px;align-items:flex-end}
 .ublock{display:flex;flex-direction:column;gap:5px}
 .utitle{font-size:11.5px;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:6px}
 /* 소재 현황 */
-.today-strip{background:var(--gb);border:1px solid var(--gbd);border-radius:10px;padding:12px 16px;margin-bottom:14px;width:1132px}
+.today-strip{background:var(--gb);border:1px solid var(--gbd);border-radius:10px;padding:12px 16px;margin-bottom:14px}
 .today-lbl{font-size:11px;color:var(--t3);margin-bottom:8px}
 .pills{display:flex;gap:8px}
 .pill{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:6px;font-size:11px;border:1px solid var(--gbd);background:var(--gbs)}
@@ -53,16 +53,16 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 .pname{font-weight:500}
 .ptime{color:var(--t3)}
 .cal-layout{display:flex;gap:14px;align-items:flex-start}
-.cal-main{width:850px;flex-shrink:0;overflow-x:auto}
-.cal-detail{flex:1;min-width:0;background:var(--gbs);border:1px solid var(--gbd);border-radius:10px;padding:14px;position:sticky;top:20px;max-height:82vh;overflow-y:auto}
-.cal-nav{display:flex;align-items:center;gap:8px;margin-bottom:10px;width:1132px}
+.cal-main{flex:1;min-width:0;overflow-x:auto}
+.cal-detail{width:calc(50% - 7px);flex-shrink:0;min-width:0;background:var(--gb);border:0.5px solid var(--gbd);border-radius:10px;padding:12px 14px;position:sticky;top:20px;max-height:82vh;overflow-y:auto}
+.cal-nav{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .cnbtn{background:var(--gbs);border:1px solid var(--gbd);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--t2);font-family:inherit}
 .cnbtn:hover{color:var(--tx)}
 .cntitle{font-size:13px;font-weight:600;min-width:120px;text-align:center}
 .cvtog{display:flex;border:1px solid var(--gbd);border-radius:7px;overflow:hidden;margin-left:auto}
 .cvbtn{padding:4px 12px;font-size:11.5px;cursor:pointer;background:var(--gb);color:var(--t2);border:none;font-family:inherit;transition:all .12s}
 .cvbtn.active{background:rgba(58,58,240,0.08);color:var(--ac);font-weight:500}
-.legend{display:flex;gap:10px;margin-bottom:8px;width:1132px}
+.legend{display:flex;gap:10px;margin-bottom:8px}
 .litem{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2)}
 .ldot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
 .cal-table{border-collapse:collapse;table-layout:fixed}
@@ -130,7 +130,6 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 </div>
 
 <!-- ── 탭1: 소재 등록 ── -->
-<div class="bk-pane" id="bkPane1">
 <div class="bk-pane" id="bkPane1">
 <div style="display:flex;gap:16px;align-items:flex-start">
 <!-- 소재 등록 왼쪽 -->
@@ -239,7 +238,7 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
   <!-- Step 2: 미리보기 테이블 -->
   <div id="bulkPreviewWrap" style="display:none;margin-bottom:14px">
     <div class="fl" style="margin-bottom:6px">② 파싱 결과 확인 <span id="bulkPreviewCount" style="font-size:11px;color:var(--t3);font-weight:400"></span></div>
-    <div style="overflow-x:auto;width:1092px">
+    <div style="overflow-x:auto">
       <table id="bulkPreviewTable" style="border-collapse:collapse;width:100%;table-layout:fixed">
         <colgroup>
           <col style="width:280px"><col style="width:160px"><col style="width:160px">
@@ -274,7 +273,6 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
 
 </div>
 </div>
-</div>
 
 <div class="bk-pane" id="bkPane2">
   <div class="today-strip">
@@ -291,7 +289,7 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
   <div class="legend" id="calLegend"></div>
   <div class="cal-layout">
     <div class="cal-main"><div id="calGrid"></div></div>
-    <div class="cal-detail" id="calDetail"><div class="detail-empty">시간대 셀을 클릭하면<br>소재 정보가 표시됩니다</div></div>
+    <div class="cal-detail hist-card" id="calDetail"><div class="detail-empty">시간대 셀을 클릭하면<br>소재 정보가 표시됩니다</div></div>
   </div>
 </div>
 
@@ -307,6 +305,8 @@ body{font-family:'Inter',-apple-system,'SF Pro Text',sans-serif;font-size:13px;l
     <select id="histMonthFilter" class="inp" style="width:100px;font-size:11.5px" onchange="renderHist()">
       <option value="">전체 월</option>
     </select>
+    <div style="width:0.5px;height:16px;background:var(--gbd);margin:0 4px"></div>
+    <input type="text" id="histSearchInput" class="inp" placeholder="소재명 · ID · 링크 검색..." style="flex:1;font-size:11.5px" oninput="renderHist()">
   </div>
   <div class="hist-action-bar" id="histActionBar" style="display:none">
     <span style="font-size:12px;font-weight:600;color:#3C3489;min-width:60px" id="histSelCnt">0건 선택</span>
@@ -390,6 +390,7 @@ let _calY = new Date().getFullYear();
 let _calM = new Date().getMonth();
 let _calW = 1;
 let _selId = null;
+let _selIds = [];
 let _pendingPc = null, _pendingMo = null;
 let _toastTmr;
 
@@ -612,7 +613,7 @@ function renderToday() {
     pill.className = 'pill';
     pill.style.cursor = 'pointer';
     pill.innerHTML = '<div class="pdot" style="background:' + getColor(id) + '"></div><span class="pname">' + c.name + '</span><span class="ptime">' + fmtDt(c.startAt) + ' ~ ' + fmtDt(c.endAt) + '</span>';
-    pill.onclick = function() { _selId = id; renderDetail(); };
+    pill.onclick = function() { _selId = id; _selIds = [id]; renderDetail(); };
     pills.appendChild(pill);
   });
 }
@@ -684,40 +685,88 @@ function selHourCell(id, e) {
   e.stopPropagation();
   if (!id) return;
   _selId = id;
+  // 같은 셀(td) 안의 모든 소재 ID 수집 (최대 3개)
+  const td = e.target.closest('td');
+  if (td) {
+    const segs = td.querySelectorAll('.cseg[onclick]');
+    const ids = [];
+    segs.forEach(function(seg) {
+      const m = seg.getAttribute('onclick').match(/selHourCell\('([^']+)'/);
+      if (m) ids.push(m[1]);
+    });
+    _selIds = ids.slice(0, 3);
+  } else {
+    _selIds = [id];
+  }
   renderDetail();
+}
+
+function renderDetailCard(id) {
+  const c = _cr[id];
+  if (!c) return '';
+  const col = getColor(id);
+  const st = _autoStatus(c);
+  const dur = _dur(c.startAt, c.endAt);
+  const iStyle = 'width:100%;height:160px;object-fit:contain;border-radius:6px;border:1px solid var(--gbd);background:#fff;cursor:pointer;display:block';
+  const noImg = '<div style="width:100%;height:160px;border-radius:6px;border:1px solid var(--gbd);background:var(--gbs);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--t3)">없음</div>';
+  const link = c.landingUrl || '';
+  let html = '';
+  /* 헤더 */
+  html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">';
+  html += '<div style="width:8px;height:8px;border-radius:50%;background:' + col + ';flex-shrink:0"></div>';
+  html += '<div class="edit-name" style="font-size:12.5px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">' + c.name + '</div>';
+  html += '<span class="hcard-btns" style="display:flex;gap:4px;flex-shrink:0"><button class="btn btn-g btn-sm" onclick="editCr(&quot;' + id + '&quot;)">✏️</button><button class="btn btn-r btn-sm" onclick="deleteCr(&quot;' + id + '&quot;)">🗑</button></span>';
+  html += '<span class="status-badge ' + _stCls(st) + '" style="flex-shrink:0">' + st + '</span>';
+  html += '</div>';
+  /* 기간 */
+  const evtDurD = _dur(c.eventStartAt||c.startAt, c.eventEndAt||c.endAt);
+  html += '<div class="edit-period" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">';
+  html += '<div style="display:flex;align-items:center;gap:5px">'
+    + '<span style="font-size:9.5px;color:var(--t3);font-weight:500;white-space:nowrap">행사</span>'
+    + '<span style="font-size:10px;color:var(--t3);background:var(--gbs);border-radius:4px;padding:2px 8px;white-space:nowrap">' + fmtDt(c.eventStartAt||c.startAt) + ' ~ ' + fmtDt(c.eventEndAt||c.endAt) + (evtDurD ? ' <span style="color:var(--t3);margin-left:3px">' + evtDurD + '</span>' : '') + '</span>'
+    + '</div>'
+    + '<span style="color:var(--gbd);font-size:10px">|</span>';
+  html += '<div style="display:flex;align-items:center;gap:5px">'
+    + '<span style="font-size:9.5px;color:var(--ac);font-weight:600;white-space:nowrap">브검</span>'
+    + '<span style="font-size:10.5px;color:var(--t2);background:rgba(58,58,240,0.05);border-radius:5px;padding:2px 8px;white-space:nowrap">' + fmtDt(c.startAt) + ' ~ ' + fmtDt(c.endAt) + (dur ? ' <span style="font-size:10px;color:var(--t3);margin-left:4px">' + dur + '</span>' : '') + '</span>'
+    + '</div>'
+    + '</div>';
+  /* PC/MO */
+  html += '<div style="display:flex;gap:10px">';
+  html += '<div style="flex:1"><div style="font-size:10px;font-weight:500;margin-bottom:5px;display:flex;align-items:center;gap:5px;flex-wrap:wrap"><span class="pcb">PC</span>'
+    + '<span class="edit-pcid">' + (c.pcId ? '<span onclick="copyToClip(&quot;' + c.pcId + '&quot;)" style="font-size:9px;background:#E6F1FB;color:#0C447C;border-radius:4px;padding:1px 7px;cursor:pointer;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;display:inline-block" title="클릭하면 복사">' + c.pcId + '</span>' : '') + '</span>'
+    + '</div>'
+    + (c.pcImgUrl ? '<img src="' + c.pcImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" onclick="copyGhImg(\'' + c.pcImgUrl + '\')" title="클릭하면 복사" style="' + iStyle + '">' : noImg)
+    + '</div>';
+  html += '<div style="flex:1"><div style="font-size:10px;font-weight:500;margin-bottom:5px;display:flex;align-items:center;gap:5px;flex-wrap:wrap"><span class="mob">MO</span>'
+    + '<span class="edit-moid">' + (c.moId ? '<span onclick="copyToClip(&quot;' + c.moId + '&quot;)" style="font-size:9px;background:#FAEEDA;color:#633806;border-radius:4px;padding:1px 7px;cursor:pointer;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;display:inline-block" title="클릭하면 복사">' + c.moId + '</span>' : '') + '</span>'
+    + '</div>'
+    + (c.moImgUrl ? '<img src="' + c.moImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" onclick="copyGhImg(\'' + c.moImgUrl + '\')" title="클릭하면 복사" style="' + iStyle + '">' : noImg)
+    + '</div>';
+  html += '</div>';
+  /* 랜딩링크 최하단 */
+  html += '<div style="display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:0.5px solid var(--gbd)">';
+  html += '<span style="font-size:10px;font-weight:500;color:var(--t3);white-space:nowrap">랜딩링크</span>';
+  html += '<span class="edit-link" style="flex:1;min-width:0">' + (link ? '<div class="hist-link-url" onclick="copyHistLink(this)" title="클릭하면 복사">' + link + '</div>' : '<div class="hist-link-url empty">링크 없음</div>') + '</span>';
+  html += '</div>';
+  return html;
 }
 
 function renderDetail() {
   const panel = document.getElementById('calDetail');
-  if (!_selId || !_cr[_selId]) {
+  const ids = (_selIds && _selIds.length) ? _selIds : (_selId ? [_selId] : []);
+  if (!ids.length || !ids.some(function(id){ return _cr[id]; })) {
     panel.innerHTML = '<div class="detail-empty">시간대 셀을 클릭하면<br>소재 정보가 표시됩니다</div>';
     return;
   }
-  const c = _cr[_selId], id = _selId;
-  const col = getColor(id);
-  let html = '<div style="display:flex;align-items:center;gap:7px;margin-bottom:6px"><div style="width:10px;height:10px;border-radius:50%;background:' + col + ';flex-shrink:0"></div><div class="d-name">' + c.name + '</div></div>';
-
-  html += '<div class="d-period"><b>' + fmtDt(c.startAt) + '</b> ~ <b>' + fmtDt(c.endAt) + '</b></div>';
-  const imgH = 'height:100px;width:100%;object-fit:contain;border-radius:6px;border:1px solid var(--gbd);background:#fff;cursor:pointer;display:block';
-  const noImg = '<div style="height:100px;width:100%;border-radius:6px;border:1px solid var(--gbd);background:var(--gbs);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t3)">없음</div>';
-  html += '<div style="flex:1">';
-  html += '<div style="font-size:10.5px;margin-bottom:5px"><span class="pcb">PC</span></div>';
-  html += (c.pcImgUrl ? '<img style="' + imgH + '" src="' + c.pcImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" title="클릭하면 이미지 복사" onclick="copyGhImg(\'" + c.pcImgUrl + "\')">': noImg);
-  html += '<div style="font-size:9.5px;color:var(--t3);margin-top:4px;text-align:center;word-break:break-all">' + (c.pcId || '—') + '</div>';
-  html += '</div>';
-  html += '<div style="flex:1">';
-  html += '<div style="font-size:10.5px;margin-bottom:5px"><span class="mob">MO</span></div>';
-  html += (c.moImgUrl ? '<img style="' + imgH + '" src="' + c.moImgUrl + '" referrerpolicy="no-referrer" onerror="this.style.opacity=.2;this.style.filter=\'grayscale(1)\'" title="클릭하면 이미지 복사" onclick="copyGhImg(\'" + c.moImgUrl + "\')">': noImg);
-  html += '<div style="font-size:9.5px;color:var(--t3);margin-top:4px;text-align:center;word-break:break-all">' + (c.moId || '—') + '</div>';
-  html += '</div>';
-  html += '</div>';
-  html += '<div class="d-btns"><button class="btn btn-g btn-sm" onclick="editCr(\'' + id + '\')">✏️ 수정</button><button class="btn btn-r btn-sm" onclick="deleteCr(\'' + id + '\')">🗑 삭제</button></div>';
-  panel.innerHTML = html;
+  const cards = ids.filter(function(id){ return _cr[id]; }).map(renderDetailCard);
+  panel.innerHTML = '<div style="display:flex;flex-direction:column;gap:12px">' + cards.join('') + '</div>';
 }
+
 
 function editCr(id) {
   const c = _cr[id]; if (!c) return;
-  const card = document.getElementById('hist-card-' + id);
+  const card = document.getElementById('hist-card-' + id) || document.getElementById('calDetail');
   if (!card) return;
   const fmtRaw = function(iso) {
     if (!iso) return '';
@@ -732,16 +781,27 @@ function editCr(id) {
   const pcIdEl = card.querySelector('.edit-pcid');
   const moIdEl = card.querySelector('.edit-moid');
   const btnEl = card.querySelector('.hcard-btns') || card.querySelector('.edit-btns');
-  if (nameEl) nameEl.innerHTML = '<input class="inp" id="ei-name" value="' + (c.name||'') + '" style="width:100%;font-size:12px;font-weight:600">';
-  if (periodEl) periodEl.innerHTML =
-    '<div style="display:flex;gap:6px">' +
-    '<input class="inp" id="ei-start" value="' + fmtRaw(c.startAt) + '" placeholder="YYYY-MM-DD-HHMM" style="width:160px;font-size:10px">' +
-    '<span style="font-size:10px;color:var(--t2);line-height:34px">~</span>' +
-    '<input class="inp" id="ei-end" value="' + fmtRaw(c.endAt) + '" placeholder="YYYY-MM-DD-HHMM" style="width:160px;font-size:10px">' +
-    '</div>';
-  if (linkEl) linkEl.innerHTML = '<input class="inp" id="ei-landingUrl" value="' + (c.landingUrl||'') + '" placeholder="https://..." style="width:100%;font-size:10px;flex:1">';
-  if (pcIdEl) pcIdEl.innerHTML = '<input class="inp" id="ei-pcId" value="' + (c.pcId||'') + '" style="font-size:9px;width:100%">';
-  if (moIdEl) moIdEl.innerHTML = '<input class="inp" id="ei-moId" value="' + (c.moId||'') + '" style="font-size:9px;width:100%">';
+  if (nameEl) nameEl.innerHTML = '<input class="inp" id="ei-name" value="' + (c.name||'') + '" style="width:100%;font-size:12px;font-weight:600;padding:3px 8px">';
+  if (periodEl) {
+    const evtDurE = _dur(c.eventStartAt||c.startAt, c.eventEndAt||c.endAt);
+    periodEl.innerHTML =
+      '<div style="display:flex;align-items:center;gap:8px;flex-wrap:nowrap;overflow-x:auto">'
+      + '<div style="display:flex;align-items:center;gap:5px;flex-shrink:0">'
+      + '<span style="font-size:9.5px;color:var(--t3);font-weight:500;white-space:nowrap">행사</span>'
+      + '<span style="font-size:10px;color:var(--t3);background:var(--gbs);border-radius:4px;padding:2px 8px;white-space:nowrap">' + fmtDt(c.eventStartAt||c.startAt) + ' ~ ' + fmtDt(c.eventEndAt||c.endAt) + (evtDurE ? ' <span style="color:var(--t3);margin-left:3px">' + evtDurE + '</span>' : '') + '</span>'
+      + '</div>'
+      + '<span style="color:var(--gbd);font-size:10px;flex-shrink:0">|</span>'
+      + '<div style="display:flex;align-items:center;gap:5px;flex-shrink:0">'
+      + '<span style="font-size:9.5px;color:var(--ac);font-weight:600;white-space:nowrap">브검</span>'
+      + '<input class="inp" id="ei-start" value="' + fmtRaw(c.startAt) + '" placeholder="YYYY-MM-DD-HHMM" style="font-size:10px;padding:2px 6px;width:130px">'
+      + '<span style="font-size:10px;color:var(--t2);flex-shrink:0">~</span>'
+      + '<input class="inp" id="ei-end" value="' + fmtRaw(c.endAt) + '" placeholder="YYYY-MM-DD-HHMM" style="font-size:10px;padding:2px 6px;width:130px">'
+      + '</div>'
+      + '</div>';
+  }
+  if (linkEl) linkEl.innerHTML = '<input class="inp" id="ei-landingUrl" value="' + (c.landingUrl||'') + '" placeholder="https://..." style="width:100%;font-size:10px;flex:1;padding:2px 8px">';
+  if (pcIdEl) pcIdEl.innerHTML = '<input class="inp" id="ei-pcId" value="' + (c.pcId||'') + '" style="font-size:9px;width:100%;padding:2px 6px">';
+  if (moIdEl) moIdEl.innerHTML = '<input class="inp" id="ei-moId" value="' + (c.moId||'') + '" style="font-size:9px;width:100%;padding:2px 6px">';
   const btnEl2 = card.querySelector('.hcard-btns') || card.querySelector('.edit-btns');
   if (btnEl2) btnEl2.innerHTML =
     '<button class="btn btn-p btn-sm" onclick="saveInlineEdit(\'' + id + '\')">💾 저장</button>' +
@@ -919,10 +979,20 @@ function renderHist() {
     });
   }
   const filterVal = monthSel ? monthSel.value : '';
-  const entries = filterVal ? allEntries.filter(function(e) {
-    const d = new Date(e[1].startAt);
-    return (d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0')) === filterVal;
-  }) : allEntries;
+  const searchEl = document.getElementById('histSearchInput');
+  const q = searchEl ? searchEl.value.trim().toLowerCase() : '';
+  const entries = allEntries.filter(function(e) {
+    const cr = e[1];
+    const d = new Date(cr.startAt);
+    const moKey = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+    const moMatch = !filterVal || moKey === filterVal;
+    const qMatch = !q ||
+      (cr.name||'').toLowerCase().includes(q) ||
+      (cr.pcId||'').toLowerCase().includes(q) ||
+      (cr.moId||'').toLowerCase().includes(q) ||
+      (cr.landingUrl||'').toLowerCase().includes(q);
+    return moMatch && qMatch;
+  });
   if (!entries.length) {
     wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div>등록된 소재가 없습니다</div></div>';
     _initHistCb(); return;
@@ -1209,6 +1279,7 @@ function autoSelNowCr() {
   });
   if (active.length) {
     _selId = active[0][0];
+    _selIds = active.slice(0,3).map(function(e){return e[0];});
   }
 }
 

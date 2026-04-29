@@ -346,7 +346,6 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 
 <div class="tab-bar">
   <div class="tab on" onclick="sw(8,this);renderLogicCounts()">행사 로직</div>
-  <div class="tab" onclick="sw(9,this);loadPinnedIframe()">행사 운영</div>
   <div class="tab" onclick="sw(0,this)">행사 등록</div>
   <div class="tab"    onclick="sw(2,this);clearBadge('badge-2')">행사 제안<span id="badge-2" class="tab-badge" style="display:none"></span></div>
   <div class="tab"    onclick="sw(3,this);clearBadge('badge-3')">행사 선정<span id="badge-3" class="tab-badge" style="display:none"></span></div>
@@ -937,12 +936,6 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
         <text id="logic-svg-cnt-행사종료" x="642" y="343" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,monospace" font-size="11" fill="#791F1F">—</text>
       </g>
     </svg>
-  </div>
-</div>
-
-<div class="pane" id="p9">
-  <div style="width:100%;height:calc(100vh - 60px);background:var(--gs);border-radius:8px;overflow:hidden;border:0.5px solid var(--bd)">
-    <iframe id="pinned-iframe" src="" style="width:100%;height:100%;border:none;background:transparent;display:block"></iframe>
   </div>
 </div>
 
@@ -3348,18 +3341,6 @@ window.gotoStatusFromLogic=function(statusVal,targetTab,cardEl){
   },30);
 };
 
-/* ── 행사 운영 탭(p9): iframe lazy 로드 — 첫 진입 시만 src 설정 ── */
-window.loadPinnedIframe=function(){
-  const f=document.getElementById('pinned-iframe');
-  if(!f)return;
-  if(!f.src){
-    f.src='evt_pinned.html';
-  }else{
-    /* 이미 로드되어 있으면 새로고침 신호 (탭 재진입 시 최신 핀 반영) */
-    if(f.contentWindow)f.contentWindow.postMessage({type:'refresh'},'*');
-  }
-};
-
 /* ── 행사 로직: 헤더(행사 제안)/행사 종료 카드 클릭 시 필터 없이 탭 전환만 ── */
 window.goLogicTab=function(targetTab){
   if(!statusFilter[targetTab])statusFilter[targetTab]=new Set();
@@ -3428,8 +3409,6 @@ window.bulkPin=async function(tab){
     /* ID 매칭 안 되는 구형 데이터(eventName 키)는 메모리에만 추가 */
     ids.filter(id=>!EVENTS.find(e=>e._id===id)).forEach(id=>PINNED_EVENTS.add(id));
     clearBulkSelect(tab);renderPropList(tab);
-    /* 행사 운영 iframe이 열려있으면 새로고침 신호 */
-    notifyPinnedIframe();
     toast('📌 '+ids.length+'건 고정됨');
   }catch(e){/* 에러는 fbSetPin에서 toast */}
 };
@@ -3442,18 +3421,9 @@ window.bulkUnpin=async function(tab){
     await Promise.all(realIds.map(id=>fbSetPin(id,false)));
     ids.forEach(id=>PINNED_EVENTS.delete(id));
     clearBulkSelect(tab);renderPropList(tab);
-    notifyPinnedIframe();
     toast('📌 '+ids.length+'건 고정 해제');
   }catch(e){}
 };
-
-/* iframe(행사 운영 탭)에 핀 변경 알림 */
-function notifyPinnedIframe(){
-  const f=document.getElementById('pinned-iframe');
-  if(f && f.contentWindow && f.src){
-    f.contentWindow.postMessage({type:'pin-changed'},'*');
-  }
-}
 
 /* localStorage → Firebase 마이그레이션 (최초 1회) */
 async function migratePinnedToFirebase(){

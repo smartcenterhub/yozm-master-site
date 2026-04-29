@@ -1182,7 +1182,7 @@ window.doBulkUpload=async function(){
     bar.style.width=Math.round(done/total*100)+'%';
     const docId=r.name.replace(/\s/g,'')+'_'+(r.start||'None').replace(/-/g,'')+'_'+(r.end||'None').replace(/-/g,'');
     const evData={eventName:r.name,eventType:r.type||null,startDate:r.start||null,startTime:r.st,endDate:r.end||null,endTime:r.et,pageType:r.page||null,isClosed:false,isNotice:false,additionalDiscount:r.adddisc||null,proposalUploadedAt:r.upload||null,proposalDeadline:r.deadline||null,
-      products:r.products.map((p,i)=>{const sku=SKUS.find(s=>s._id===p.code)||{};const obj={no:i+1,subNo:null,isMain:skuGroup(sku.nick||sku.name||'')==='main'?'메인':'서브',isCancelled:false,skuCode:p.code,productName:sku.name||'',link:'https://brand.naver.com/yozmkorea/products/'+p.code,priceNormal:p.priceNormal||sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:p.priceAlim||sku.priceMax||null,priceMax:(p.priceAlim||sku.priceMax)?((p.priceAlim||sku.priceMax)-1000):null,ship:p.ship||sku.ship||'무료',options:[]};return obj;}),
+      products:r.products.map((p,i)=>{const sku=SKUS.find(s=>s._id===p.code)||{};const obj={no:i+1,subNo:null,isMain:skuGroup(sku.nick||sku.name||'')==='main'?'메인':'서브',isCancelled:false,skuCode:p.code,productName:sku.name||'',link:'https://brand.naver.com/yozmkorea/products/'+p.code,priceNormal:p.priceNormal||sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:p.priceAlim||sku.priceMax||null,priceMax:(p.priceAlim||sku.priceMax)?((p.priceAlim||sku.priceMax)-1000):null,ship:p.ship||sku.ship||'무료',shipType:sku.shipType||'일반',options:[]};return obj;}),
       updatedAt:new Date().toISOString()};
     try{
       await setDoc(doc(db,'events',docId),evData,{merge:true});
@@ -1191,7 +1191,7 @@ window.doBulkUpload=async function(){
       for(const p of r.products){
         const pid=(docId+'_'+p.code).replace(/\s/g,'');
         const sku=SKUS.find(s=>s._id===p.code)||{};
-        const pData={eventSID:docId,eventName:r.name,eventType:r.type||null,startDate:r.start||null,endDate:r.end||null,startTime:r.st,endTime:r.et,proposalUploadedAt:r.upload||null,proposalDeadline:r.deadline||null,skuCode:p.code,skuNick:sku.nick||sku.name||p.code,productName:sku.name||'',isMain:skuGroup(sku.nick||sku.name||'')==='main'?'메인':'서브',priceNormal:p.priceNormal||sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:p.priceAlim||sku.priceMax||null,priceMax:(p.priceAlim||sku.priceMax)?((p.priceAlim||sku.priceMax)-1000):null,ship:p.ship||sku.ship||'무료',status:'제안중',createdAt:new Date().toISOString()};
+        const pData={eventSID:docId,eventName:r.name,eventType:r.type||null,startDate:r.start||null,endDate:r.end||null,startTime:r.st,endTime:r.et,proposalUploadedAt:r.upload||null,proposalDeadline:r.deadline||null,skuCode:p.code,skuNick:sku.nick||sku.name||p.code,productName:sku.name||'',isMain:skuGroup(sku.nick||sku.name||'')==='main'?'메인':'서브',priceNormal:p.priceNormal||sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:p.priceAlim||sku.priceMax||null,priceMax:(p.priceAlim||sku.priceMax)?((p.priceAlim||sku.priceMax)-1000):null,ship:p.ship||sku.ship||'무료',shipType:sku.shipType||'일반',status:'제안중',createdAt:new Date().toISOString()};
         await setDoc(doc(db,'proposalItems',pid),pData,{merge:true});
         const exP=PROPOSALS.findIndex(x=>x._id===pid);
         if(exP>=0)Object.assign(PROPOSALS[exP],pData);else PROPOSALS.unshift({_id:pid,...pData});
@@ -1915,7 +1915,7 @@ function addRegProd(code,nick,mainType){
     priceEvent:sku.priceMax||null,
     priceAlim:sku.priceMax||null,
     priceMax:sku.priceMax?(sku.priceMax-1000):null,
-    ship:sku.ship||'무료'});
+    ship:sku.ship||'무료',shipType:sku.shipType||'일반'});
   renderRegProds();
 }
 function removeRegProd(code){regProducts=regProducts.filter(p=>p.skuCode!==code);renderRegProds();}
@@ -2005,7 +2005,7 @@ function renderRegProds(){
     `<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(26,86,200,.3);border-radius:20px;background:rgba(26,86,200,.07);color:var(--bl);font-weight:500;white-space:nowrap">${fmtDate(start,startTime)}</span>`+
     `<span style="font-size:10px;color:var(--t3)">→</span>`+
     `<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(196,90,16,.3);border-radius:20px;background:rgba(196,90,16,.07);color:var(--or);font-weight:500;white-space:nowrap">${fmtDate(end,endTime)}</span>`+
-    (dur?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(152,152,168,.3);border-radius:20px;background:rgba(152,152,168,.08);color:var(--t2);font-weight:500;cursor:pointer" onclick="copyToClip('${start} ${startTime||'00:00'}\n${end} ${endTime||'23:59'}',this)" title="클릭 시 기간 복사 (세로 2셀)">[${dur}일 간]</span>`:'')
+    (dur?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(152,152,168,.3);border-radius:20px;background:rgba(152,152,168,.08);color:var(--t2);font-weight:500;cursor:pointer" onclick="copyToClip('${start} ${startTime||'00:00'}\\n${end} ${endTime||'23:59'}',this)" title="클릭 시 기간 복사 (세로 2셀)">[${dur}일 간]</span>`:'')
   ):`<span style="font-size:10.5px;color:var(--t3)">기간 미설정</span>`;
 
   /* SKU no 기준 정렬 */
@@ -2160,7 +2160,7 @@ window.submitProposal=async function(){
       proposalDeadline:$('ev-deadline')?.value||null,
       skuCode:p.skuCode,skuNick:p.skuNick,productName:p.productName,
       priceNormal:p.priceNormal,priceBase:p.priceBase,priceEvent:p.priceEvent,
-      priceAlim:p.priceAlim,priceMax:p.priceMax,ship:p.ship,isMain:p.isMain,
+      priceAlim:p.priceAlim,priceMax:p.priceMax,ship:p.ship,shipType:p.shipType||'일반',isMain:p.isMain,
       status:'제안중',createdAt:new Date().toISOString()};
     try{
       await setDoc(doc(db,'proposalItems',pid),data);
@@ -2400,6 +2400,7 @@ function fillRegFormFromEvent(ev,props){
       priceAlim:p.priceAlim||p.priceEvent||sku.priceMax||null,
       priceMax:(p.priceMax!=null)?p.priceMax:(p.priceAlim?p.priceAlim-1000:null),
       ship:p.ship||sku.ship||'무료',
+      shipType:p.shipType||sku.shipType||'일반',
       _origStatus:p.status||null,   /* 기존 status 유지용 */
       _origPid:p._id||null          /* 기존 proposalItems 문서 id */
     });
@@ -2577,7 +2578,7 @@ async function saveEditMode(){
       link:'https://brand.naver.com/yozmkorea/products/'+p.skuCode,
       priceNormal:p.priceNormal||null,priceBase:p.priceBase||null,
       priceEvent:p.priceEvent||null,priceAlim:p.priceAlim||null,
-      priceMax:p.priceMax||null,ship:p.ship||null,options:[]
+      priceMax:p.priceMax||null,ship:p.ship||null,shipType:p.shipType||'일반',options:[]
     })),
     updatedAt:new Date().toISOString()
   };
@@ -2610,7 +2611,7 @@ async function saveEditMode(){
         proposalDeadline:$('ev-deadline')?.value||null,
         skuCode:p.skuCode,skuNick:p.skuNick,productName:p.productName,
         priceNormal:p.priceNormal,priceBase:p.priceBase,priceEvent:p.priceEvent,
-        priceAlim:p.priceAlim,priceMax:p.priceMax,ship:p.ship,isMain:p.isMain,
+        priceAlim:p.priceAlim,priceMax:p.priceMax,ship:p.ship,shipType:p.shipType||'일반',isMain:p.isMain,
         status:p._origStatus||'제안중',
         updatedAt:new Date().toISOString()
       };
@@ -2667,7 +2668,7 @@ async function doSaveEvent(){
   if(!name)throw new Error('행사명 필요');
   const docId=name.replace(/\s/g,'')+'_'+(start||'None').replace(/-/g,'')+'_'+(end||'None').replace(/-/g,'');
   const data={eventName:name,eventType:type||null,startDate:start||null,startTime:startTime,endDate:end||null,endTime:endTime,pageType:$('ev-pagetype').value||null,pageLinks:JSON.parse(JSON.stringify(REG_PAGE_LINKS)),isNotice:false,isClosed:false,additionalDiscount:$('ev-adddisc').value||null,proposalUploadedAt:$('ev-upload-date')?.value||null,proposalDeadline:$('ev-deadline')?.value||null,talkSendDate:$('ev-talk-date')?.value||null,
-    products:regProducts.map((p,i)=>({no:i+1,subNo:null,isMain:p.isMain,isCancelled:false,skuCode:p.skuCode,productName:p.productName,link:'https://brand.naver.com/yozmkorea/products/'+p.skuCode,priceNormal:p.priceNormal||null,priceBase:p.priceBase||null,priceEvent:p.priceEvent||null,priceAlim:p.priceAlim||null,priceMax:p.priceMax||null,ship:p.ship||null,options:[]})),
+    products:regProducts.map((p,i)=>({no:i+1,subNo:null,isMain:p.isMain,isCancelled:false,skuCode:p.skuCode,productName:p.productName,link:'https://brand.naver.com/yozmkorea/products/'+p.skuCode,priceNormal:p.priceNormal||null,priceBase:p.priceBase||null,priceEvent:p.priceEvent||null,priceAlim:p.priceAlim||null,priceMax:p.priceMax||null,ship:p.ship||null,shipType:p.shipType||'일반',options:[]})),
     updatedAt:new Date().toISOString()};
   await setDoc(doc(db,'events',docId),data);
   EVENTS.unshift({_id:docId,...data});
@@ -2938,7 +2939,7 @@ function buildDateChips(startDate,startTime,endDate,endTime,uploadDate,deadline,
   const sChip=startDate?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(26,86,200,.3);border-radius:20px;background:rgba(26,86,200,.07);color:var(--bl);font-weight:500;white-space:nowrap">${fmtChip(startDate,startTime)}</span>`:'';
   const arrow=startDate&&endDate?`<span style="font-size:10px;color:var(--t3)">→</span>`:'';
   const eChip=endDate?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(196,90,16,.3);border-radius:20px;background:rgba(196,90,16,.07);color:var(--or);font-weight:500;white-space:nowrap">${fmtChip(endDate,endTime)}</span>`:'';
-  const dChip=dur?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(152,152,168,.3);border-radius:20px;background:rgba(152,152,168,.08);color:var(--t2);font-weight:500;cursor:pointer" onclick="copyToClip('${startDate} ${startTime||'00:00'}\n${endDate} ${endTime||'23:59'}',this)" title="클릭 시 기간 복사 (세로 2셀)">[${dur}일 간]</span>`:'';
+  const dChip=dur?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(152,152,168,.3);border-radius:20px;background:rgba(152,152,168,.08);color:var(--t2);font-weight:500;cursor:pointer" onclick="copyToClip('${startDate} ${startTime||'00:00'}\\n${endDate} ${endTime||'23:59'}',this)" title="클릭 시 기간 복사 (세로 2셀)">[${dur}일 간]</span>`:'';
   const sep=(startDate&&(uploadDate||deadline))?`<span style="width:0.5px;height:11px;background:rgba(0,0,0,.12);flex-shrink:0"></span>`:'';
   const lbl=(uploadDate||deadline)?`<span style="font-size:10px;color:var(--t3)">일정</span>`:'';
   const uChip=uploadDate?`<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;font-size:10px;border:1px solid rgba(58,58,240,.25);border-radius:20px;background:rgba(58,58,240,.05);color:var(--ac);font-weight:500;white-space:nowrap">📅 업로드 ${fmtChip(uploadDate,'')}</span>`:'';
@@ -2951,10 +2952,12 @@ function buildDateChips(startDate,startTime,endDate,endTime,uploadDate,deadline,
 }
 function shipLabel(p){
   const s=(p.ship||'무료').replace('조건부무료','조건부').trim();
-  const t=p.shipType||'일반';
+  let t=p.shipType||'일반';
+  /* 표시 라벨 단순화: '오늘출발' → '오늘' (데이터는 변경 안 됨, 표시만) */
+  if(t==='오늘출발')t='오늘';
   /* 안 A — 색상 분리 칩 (표시 전용, 클릭 동작 없음) */
   const isFree=s==='무료';
-  const isFast=t==='오늘출발';
+  const isFast=t==='오늘';
   const baseSt='display:inline-flex;align-items:center;padding:1px 7px;font-size:10px;border-radius:20px;font-weight:500;border:0.5px solid;white-space:nowrap;line-height:1.5';
   const shipSt=isFree
     ?'background:rgba(26,138,74,.1);color:#15703a;border-color:rgba(26,138,74,.35)'

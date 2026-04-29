@@ -854,7 +854,7 @@ function renderSelected(){
         <div class="ev-card-title">
           <span class="result-tag t-${ev.type}">${ev.type}</span>
           <span class="ev-card-name">${escapeHtml(ev.name)}</span>
-          <span class="ev-card-meta">${ev.startDate} ~ ${ev.endDate}</span>
+          <span class="ev-card-meta">${ev.startDate} ~ ${ev.endDate}${ev.talkSendDate?` · 톡톡 ${ev.talkSendDate.slice(5).replace('-','/')}`:''}</span>
         </div>
         <button class="ev-card-toggle ${isDistOpen?'on':''}" onclick="toggleDowDist('${ev._id}')" title="요일별 분배 보기">
           📊 요일분배
@@ -972,8 +972,8 @@ function renderDowDistTable(ev){
   weightRow += `<td style="color:var(--t3)">${weightSum||'·'}</td></tr>`;
   
   const note = offDayCount > 0
-    ? `※ 출고일 기준 (행사일+1) · 휴무는 다음 영업일로 이월 · 첫날 가중치 +2 반영`
-    : `※ 출고일 기준 (행사일+1) · 첫날 가중치 +2 반영`;
+    ? `※ 출고일 기준 (행사일+1) · 휴무는 다음 영업일로 이월 · 첫날 가중치 +2${ev.talkSendDate?' · 톡톡 가중치 +1':''}`
+    : `※ 출고일 기준 (행사일+1) · 첫날 가중치 +2${ev.talkSendDate?' · 톡톡 가중치 +1':''}`;
   
   return `<div class="dow-dist">
     <div class="dow-dist-title">
@@ -1257,6 +1257,27 @@ function buildShipmentMap(ev){
   }
   if(bonusDs){
     map[bonusDs] = (map[bonusDs]||0) + 2;
+  }
+  
+  // 3) 톡톡 가중치(가중치코드2) +1
+  //    톡톡 발송일이 있으면 → 발송일 + 1일이 톡톡 출고일
+  //    영업일이면 그곳, 휴무/주말이면 다음 영업일에 +1
+  if(ev.talkSendDate){
+    const talkDate = parseDate(ev.talkSendDate);
+    const talkShip = new Date(talkDate);
+    talkShip.setDate(talkDate.getDate() + 1);
+    const talkShipDs = fmtDate(talkShip);
+    const talkShipW = getDayWeight(talkShipDs, talkShip);
+    let talkDs = null;
+    if(talkShipW > 0){
+      talkDs = talkShipDs;
+    } else {
+      const biz = findBusinessDay(talkShip);
+      if(biz) talkDs = biz.ds;
+    }
+    if(talkDs){
+      map[talkDs] = (map[talkDs]||0) + 1;
+    }
   }
   
   _shipMapCache.set(ev, map);
@@ -1660,6 +1681,17 @@ async function loadAll(){
         .filter(p => p.eventSID === e._id || p.eventName === e.eventName)
         .map(p => p.skuCode)
         .filter((v,i,arr) => v && arr.indexOf(v) === i);  // 중복 제거
+      
+      // 톡톡 발송일 — "YYYY-MM-DD HH:MM" 또는 "YYYY-MM-DDTHH:MM"에서 날짜만 추출
+      // "없음", "none", "미발송", "" → null
+      let talkDate = null;
+      const tk = (e.talkSendDate || '').toString().trim();
+      const tkLow = tk.toLowerCase();
+      if(tk && tkLow !== '없음' && tkLow !== 'none' && tkLow !== '미발송'){
+        const m = tk.match(/(\d{4})-(\d{2})-(\d{2})/);
+        if(m) talkDate = `${m[1]}-${m[2]}-${m[3]}`;
+      }
+      
       return {
         _id: e._id,
         name: e.eventName || '',                  // 정규화
@@ -1667,6 +1699,7 @@ async function loadAll(){
         startDate: e.startDate || '',
         endDate: e.endDate || '',
         isClosed: !!e.isClosed,
+        talkSendDate: talkDate,                   // 'YYYY-MM-DD' 또는 null
         skus,
       };
     })

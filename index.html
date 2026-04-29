@@ -106,20 +106,52 @@ body{
 </div>
 
 <script>
-function navTo(src, el) {
-  document.getElementById('content-frame').src = src;
-  document.querySelectorAll('.tb-nav-btn.active').forEach(e => e.classList.remove('active'));
-  el.classList.add('active');
+const VALID_PAGES = [
+  'evt_calendar.html','evt_vol.html','ads_report.html','prod_manage.html',
+  'creative_manage.html','evt_manage.html','shipment_tool.html','vol_upload.html'
+];
+
+function setActiveTab(src) {
+  document.querySelectorAll('.tb-nav-btn.active').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tb-nav-btn').forEach(btn => {
+    const oc = btn.getAttribute('onclick') || '';
+    if (oc.includes("'"+src+"'")) btn.classList.add('active');
+  });
 }
 
+function navTo(src, el) {
+  document.getElementById('content-frame').src = src;
+  if (location.hash.slice(1) !== src) location.hash = src;
+  if (el) {
+    document.querySelectorAll('.tb-nav-btn.active').forEach(e => e.classList.remove('active'));
+    el.classList.add('active');
+  } else {
+    setActiveTab(src);
+  }
+}
+
+// 페이지 로드 시 URL hash로 초기 탭 복원
+(function initFromHash(){
+  const h = location.hash.slice(1);
+  if (h && VALID_PAGES.includes(h)) {
+    document.getElementById('content-frame').src = h;
+    setActiveTab(h);
+  }
+  // hash 없으면 기본 evt_calendar.html 그대로 (HTML에 박혀있음)
+})();
+
+// 뒤로가기/앞으로가기 대응
+window.addEventListener('hashchange', () => {
+  const h = location.hash.slice(1);
+  if (h && VALID_PAGES.includes(h)) {
+    document.getElementById('content-frame').src = h;
+    setActiveTab(h);
+  }
+});
+
 window.addEventListener('message', e => {
-  if (e.data && e.data.type === 'nav') {
-    document.getElementById('content-frame').src = e.data.src;
-    document.querySelectorAll('.tb-nav-btn.active').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.tb-nav-btn').forEach(btn => {
-      const oc = btn.getAttribute('onclick') || '';
-      if (oc.includes(e.data.src)) btn.classList.add('active');
-    });
+  if (e.data && e.data.type === 'nav' && VALID_PAGES.includes(e.data.src)) {
+    navTo(e.data.src);
   }
 });
 

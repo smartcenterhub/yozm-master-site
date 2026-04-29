@@ -2570,6 +2570,7 @@ async function saveEditMode(){
     additionalDiscount:$('ev-adddisc').value||null,
     proposalUploadedAt:$('ev-upload-date')?.value||null,
     proposalDeadline:$('ev-deadline')?.value||null,
+    talkSendDate:$('ev-talk-date')?.value||null,
     products:regProducts.map((p,i)=>({
       no:i+1,subNo:null,isMain:p.isMain,isCancelled:false,
       skuCode:p.skuCode,productName:p.productName,
@@ -2625,6 +2626,7 @@ async function saveEditMode(){
         startTime:startTime||'',endTime:endTime||'',
         proposalUploadedAt:$('ev-upload-date')?.value||'',
         proposalDeadline:$('ev-deadline')?.value||'',
+        talkSendDate:$('ev-talk-date')?.value||'',
         additionalDiscount:$('ev-adddisc').value||'',
         pageLinksJSON:JSON.stringify(REG_PAGE_LINKS.map(l=>({type:l.type,url:l.url||''})).sort((a,b)=>a.type.localeCompare(b.type))),
         products:regProducts.map(p=>({skuCode:p.skuCode,skuNick:p.skuNick,priceAlim:p.priceAlim}))

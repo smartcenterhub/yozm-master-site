@@ -433,11 +433,10 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
                   <button onclick="addLandingLink('reg')" style="width:24px;height:24px;border:0.5px solid rgba(58,58,240,.4);border-radius:6px;background:#EEEDFE;color:#3C3489;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2v8M2 6h8"/></svg></button>
                 </div>
               </div>
-              <!-- 메모 -->
+              <!-- 메모 (항상 펼쳐진 상태로 고정) -->
               <div style="display:flex;align-items:center;gap:5px">
                 <span style="font-size:10px;color:var(--t3);width:32px;flex-shrink:0">메모</span>
-                <button id="memo-chip-reg" class="lchip" onclick="toggleMemoChip('reg')" style="font-size:10px;padding:1px 6px">메모</button>
-                <input id="ev-adddisc" placeholder="메모 입력..." style="display:none;flex:1;height:24px;padding:0 7px;font-size:11px;border:0.5px solid var(--bd);border-radius:6px;background:var(--gs);color:var(--t1)">
+                <input id="ev-adddisc" placeholder="메모 입력..." style="flex:1;height:24px;padding:0 7px;font-size:11px;border:0.5px solid var(--bd);border-radius:6px;background:var(--gs);color:var(--t1)">
                 <button title="메모 샘플에 적용" onclick="applyMemo()" style="width:22px;height:22px;border:0.5px solid rgba(58,58,240,.4);border-radius:5px;background:#EEEDFE;color:#3C3489;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2v8M2 6h8"/></svg></button>
               </div>
               <!-- 톡톡 발송일 (텍스트 직접 입력, 형식: YYYY-MM-DD HH:MM, 또는 '없음') -->
@@ -2348,16 +2347,7 @@ function fillRegFormFromEvent(ev,props){
   const tkEl=document.getElementById('ev-talk-date');if(tkEl)tkEl.value=ev.talkSendDate||'';
   $('ev-start').value=ev.startDate||'';
   $('ev-end').value=ev.endDate||'';
-  /* 2) 메모 칩 */
-  const mc=document.getElementById('memo-chip-reg');
-  const adIn=$('ev-adddisc');
-  if(ev.additionalDiscount){
-    if(mc)mc.classList.add('on');
-    if(adIn)adIn.style.display='flex';
-  }else{
-    if(mc)mc.classList.remove('on');
-    if(adIn)adIn.style.display='none';
-  }
+  /* 2) 메모 입력 필드는 항상 표시되므로 토글 처리 불필요 (값은 위에서 setting됨) */
   /* 3) 랜딩 링크 복원 */
   REG_PAGE_LINKS=(ev.pageLinks||[]).map(l=>({...l}));
   document.querySelectorAll('#landing-chips-reg .lchip').forEach(b=>{
@@ -2465,8 +2455,7 @@ window.exitEditMode=function(){
   REG_PAGE_LINKS=[];
   if(typeof renderLandingTags==='function')renderLandingTags('reg');
   document.querySelectorAll('#landing-chips-reg .lchip').forEach(b=>b.classList.remove('on','has-url'));
-  const mc=document.getElementById('memo-chip-reg');if(mc)mc.classList.remove('on');
-  const adIn=$('ev-adddisc');if(adIn)adIn.style.display='none';
+  /* 메모 입력 필드는 항상 표시이므로 display 처리 불필요 (value는 위 forEach에서 비워짐) */
   delete CAL_STATE['reg'];
   calInit('reg',{startId:'ev-start',endId:'ev-end'});
   calRender('reg');
@@ -2672,7 +2661,7 @@ async function doSaveEvent(){
     updatedAt:new Date().toISOString()};
   await setDoc(doc(db,'events',docId),data);
   EVENTS.unshift({_id:docId,...data});
-  ['ev-name','ev-start','ev-end','ev-adddisc','ev-talk-date'].forEach(id=>{const e=$(id);if(e)e.value='';});REG_PAGE_LINKS=[];renderLandingTags('reg');document.querySelectorAll('#landing-chips-reg .lchip').forEach(b=>b.classList.remove('on'));const mc=document.getElementById('memo-chip-reg');if(mc)mc.classList.remove('on');
+  ['ev-name','ev-start','ev-end','ev-adddisc','ev-talk-date'].forEach(id=>{const e=$(id);if(e)e.value='';});REG_PAGE_LINKS=[];renderLandingTags('reg');document.querySelectorAll('#landing-chips-reg .lchip').forEach(b=>b.classList.remove('on'));
   delete CAL_STATE['reg'];calInit('reg',(function(){const _t=new Date();const _nM=_t.getMonth()+1>=12?0:_t.getMonth()+1;const _nY=_t.getMonth()+1>=12?_t.getFullYear()+1:_t.getFullYear();return {startId:'ev-start',endId:'ev-end',_initY:_nY,_initM:_nM};})());calRender('reg');
   regProducts=[];selectedSkuCodesReg=[];
   document.querySelectorAll('#sku-btn-area-reg .skb').forEach(b=>b.classList.remove('on'));

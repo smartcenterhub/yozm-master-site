@@ -455,6 +455,8 @@ tr.opt-row.editing-row td.fix{background:rgba(240,240,255,0.98)}
           <div class="toolbar-row"><span class="filter-lbl">유형</span><span class="fp on" onclick="setFp(this)">전체</span><span class="fp" onclick="setFp(this)" data-v="상시운영">상시운영</span><span class="fp" onclick="setFp(this)" data-v="슈퍼적립">슈퍼적립</span><span class="fp" onclick="setFp(this)" data-v="행사운영">행사운영</span><span class="fp" onclick="setFp(this)" data-v="행사제안불가">행사제안불가</span></div>
           <div class="toolbar-row" id="skuItemFilterRow"><span class="filter-lbl">품목</span><span class="fp on" onclick="setSkuItemFilter(this,'전체')">전체</span></div>
           <div class="toolbar-row" id="skuNickFilterRow"><span class="filter-lbl">닉네임</span><span class="fp on" onclick="setSkuNickFilter(this,'전체')">전체</span></div>
+          <div class="toolbar-row"><span class="filter-lbl">배송조건</span><span class="fp on" data-v="전체" onclick="setSkuShipFilter(this,'ship','전체')">전체</span><span class="fp" data-v="무료" onclick="setSkuShipFilter(this,'ship','무료')">무료</span><span class="fp" data-v="조건부무료" onclick="setSkuShipFilter(this,'ship','조건부무료')">조건부무료</span></div>
+          <div class="toolbar-row"><span class="filter-lbl">배송속성</span><span class="fp on" data-v="전체" onclick="setSkuShipFilter(this,'shipType','전체')">전체</span><span class="fp" data-v="오늘출발" onclick="setSkuShipFilter(this,'shipType','오늘출발')">오늘출발</span><span class="fp" data-v="일반배송" onclick="setSkuShipFilter(this,'shipType','일반배송')">일반배송</span></div>
           <div class="toolbar-row"><span class="filter-lbl">정렬</span><span class="fp on" onclick="setFp(this)">No순</span><span class="fp" onclick="setFp(this)">유형순</span><span class="fp" onclick="setFp(this)">상태순</span><span class="fp" onclick="setFp(this)">최신수정</span></div>
         </div>
         <div class="filter-right">
@@ -567,7 +569,7 @@ function sw(id,el){
 }
 function toggleUpload(tab){document.getElementById(tab+'UpSec').classList.toggle('open');}
 const IF={status:['상시','단종예정','런칭예정','비운영'],cat:'전체',sort:'No순'};
-const SF={status:['상시','단종예정','런칭예정','비운영'],type:'전체',sort:'No순',item:'전체',nick:'전체'};
+const SF={status:['상시','단종예정','런칭예정','비운영'],type:'전체',sort:'No순',item:'전체',nick:'전체',ship:'전체',shipType:'전체'};
 let visibleItemRows=[];
 let visibleSkuRows=[];
 
@@ -600,6 +602,14 @@ function renderSkuNickFilters(){
   row.innerHTML=html;
 }
 
+
+function setSkuShipFilter(el,field,val){
+  const row=el.closest('.toolbar-row');
+  row.querySelectorAll('.fp').forEach(f=>f.classList.remove('on'));
+  el.classList.add('on');
+  SF[field]=val;
+  renderSkuTable(document.querySelector('#t-sku .search-box')?.value);
+}
 function setSkuNickFilter(el,nick){
   const row=document.getElementById('skuNickFilterRow');
   row.querySelectorAll('.fp').forEach(f=>f.classList.remove('on'));
@@ -875,7 +885,7 @@ function renderItemTable(q){
       html+=`<tr class="${pCls}">
         <td class="fix" style="left:0px;text-align:center;padding:7px 4px" onclick="if(extractState.item)toggleExtractRow('item','${it.code}')">${extractState.item?`<input type="checkbox" class="row-cb" ${extractSel.item.has('${it.code}')?'checked':''} onclick="event.stopPropagation();toggleExtractRow('item','${it.code}')">`:dot(it.pending)}</td>
         <td class="fix" style="left:24px;color:var(--t3);font-size:11px;cursor:pointer" onclick="copyToClip('${it.no}',this,'item')">${it.no}</td>
-        <td class="fix" style="left:68px;padding:3px;text-align:center;cursor:pointer" onclick="copyToClip('https://smartcenterhub.github.io/yozm-master-site/images/items/${encodeURIComponent(it.code)}.png',this,'item')"><img src="https://smartcenterhub.github.io/yozm-master-site/images/items/${encodeURIComponent(it.code)}.png" style="width:40px;height:40px;object-fit:cover;border-radius:4px;display:block" referrerpolicy="no-referrer" onerror="if(!this.dataset.jpgTried){this.dataset.jpgTried='1';this.src='https://smartcenterhub.github.io/yozm-master-site/images/items/${encodeURIComponent(it.code)}.jpg';}else{this.style.opacity=.15;this.style.filter='grayscale(1)';}"></td>
+        <td class="fix" style="left:68px;padding:3px;text-align:center;cursor:pointer" onclick="copyThumb(this,'https://smartcenterhub.github.io/yozm-master-site/images/items/${encodeURIComponent(it.code)}.png')"><img src="https://smartcenterhub.github.io/yozm-master-site/images/items/${encodeURIComponent(it.code)}.png" style="width:40px;height:40px;object-fit:cover;border-radius:4px;display:block" referrerpolicy="no-referrer" onerror="if(!this.dataset.jpgTried){this.dataset.jpgTried='1';this.src='https://smartcenterhub.github.io/yozm-master-site/images/items/${encodeURIComponent(it.code)}.jpg';}else{this.style.opacity=.15;this.style.filter='grayscale(1)';}"></td>
         <td class="fix" style="left:116px;cursor:pointer" onclick="copyToClip('${it.code}',this,'item')"><span class="code-val">${it.code}</span></td>
         <td class="fix fix-last" style="left:216px;cursor:pointer" onclick="copyToClip('${it.nick}',this,'item')"><span class="nick${isOff?' off':''}">${it.nick}</span></td>
         <td style="font-weight:500;color:var(--tx);cursor:pointer" onclick="copyToClip('${it.name}',this,'item')">${it.name}</td>
@@ -1189,6 +1199,12 @@ function renderSkuTable(q){
       );
       if(!match) return false;
     }
+    if(SF.ship!=='전체'){
+      if((x.ship||'')!==SF.ship) return false;
+    }
+    if(SF.shipType!=='전체'){
+      if((x.shipType||'')!==SF.shipType) return false;
+    }
     if(SF.nick!=='전체'){
       const nicks=Array.isArray(SF.nick)?SF.nick:[SF.nick];
       if(!nicks.some(n=>(x.nick||'').includes(n))) return false;
@@ -1332,7 +1348,7 @@ function renderSkuTable(q){
       html+=`<tr class="${pCls}">
         <td class="fix" style="left:0px;text-align:center;padding:7px 4px" onclick="if(extractState.sku)toggleExtractRow('sku','${sk.code}')">${extractState.sku?`<input type="checkbox" class="row-cb" ${extractSel.sku.has('${sk.code}')?'checked':''} onclick="event.stopPropagation();toggleExtractRow('sku','${sk.code}')">`:dot(sk.pending)}</td>
         <td class="fix" style="left:24px;font-size:11px;cursor:pointer" onclick="copyToClip('${sk.no}',this,'sku')">${sk.group==='main'?`<span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#3a3af0;color:#fff;font-size:10px;font-weight:700">${sk.no}</span>`:` <span style="color:var(--t3)">${sk.no}</span>`}</td>
-        <td class="fix" style="left:68px;padding:3px;text-align:center;cursor:pointer" onclick="copyToClip('https://smartcenterhub.github.io/yozm-master-site/images/skus/${sk.code}.jpg',this,'sku')"><img src="https://smartcenterhub.github.io/yozm-master-site/images/skus/${sk.code}.jpg" style="width:40px;height:40px;object-fit:cover;border-radius:4px;display:block" referrerpolicy="no-referrer" onerror="if(!this.dataset.pngTried){this.dataset.pngTried='1';this.src='https://smartcenterhub.github.io/yozm-master-site/images/skus/${sk.code}.png';}else{this.style.opacity=.15;this.style.filter='grayscale(1)';}"></td>
+        <td class="fix" style="left:68px;padding:3px;text-align:center;cursor:pointer" onclick="copyThumb(this,'https://smartcenterhub.github.io/yozm-master-site/images/skus/${sk.code}.jpg')"><img src="https://smartcenterhub.github.io/yozm-master-site/images/skus/${sk.code}.jpg" style="width:40px;height:40px;object-fit:cover;border-radius:4px;display:block" referrerpolicy="no-referrer" onerror="if(!this.dataset.pngTried){this.dataset.pngTried='1';this.src='https://smartcenterhub.github.io/yozm-master-site/images/skus/${sk.code}.png';}else{this.style.opacity=.15;this.style.filter='grayscale(1)';}"></td>
         <td class="fix" style="left:116px;cursor:pointer" onclick="copyToClip('${sk.code}',this,'sku')"><span class="code-val">${sk.code}</span></td>
         <td class="fix fix-last" style="left:240px;cursor:pointer" onclick="copyToClip('${sk.nick}',this,'sku')"><span class="nick${isOff?' off':''}">${sk.nick}</span></td>
         <td style="font-weight:500;color:var(--tx);cursor:pointer" onclick="copyToClip('${sk.name}',this,'sku')">${sk.name}</td>
@@ -1343,12 +1359,12 @@ function renderSkuTable(q){
         <td class="r" style="color:#d42020;cursor:pointer" onclick="copyToClip('${sk.priceMax||''}',this,'sku')">${fmtP(sk.priceMax)}</td>
         <td class="r" style="color:#e07000;cursor:pointer" onclick="copyToClip('${sk.priceAlim||sk.priceMax||''}',this,'sku')">${(sk.priceAlim||sk.priceMax)?(sk.priceAlim||sk.priceMax).toLocaleString()+'원':'<span style="color:var(--t4)">—</span>'}</td>
         <td class="r" style="color:#1a56c8">${(sk.priceAlim||sk.priceMax)?((sk.priceAlim||sk.priceMax)-1000).toLocaleString()+'원':'<span style="color:var(--t4)">—</span>'}</td>
-        <td class="r" style="color:#1a8a4a;font-size:11.5px">${sk.priceNormal&&sk.priceDisc?'▼'+(sk.priceNormal-sk.priceDisc).toLocaleString()+'원':'<span style="color:var(--t4)">—</span>'}</td>
-        <td class="r" style="color:#d42020;font-size:11.5px">${sk.priceNormal&&sk.priceMax?'▼'+(sk.priceNormal-sk.priceMax).toLocaleString()+'원':'<span style="color:var(--t4)">—</span>'}</td>
-        <td class="r" style="color:#1a56c8;font-size:11.5px">${(()=>{const pa=sk.priceAlim||sk.priceMax;return sk.priceNormal&&pa?'▼'+(sk.priceNormal-(pa-1000)).toLocaleString()+'원':'<span style="color:var(--t4)">—</span>';})()}</td>
-        <td class="r" style="color:#1a8a4a;font-size:11.5px">${sk.priceNormal&&sk.priceDisc?(((sk.priceNormal-sk.priceDisc)/sk.priceNormal*100).toFixed(1)+'%'):'<span style="color:var(--t4)">—</span>'}</td>
-        <td class="r" style="color:#d42020;font-size:11.5px">${sk.priceNormal&&sk.priceMax?(((sk.priceNormal-sk.priceMax)/sk.priceNormal*100).toFixed(1)+'%'):'<span style="color:var(--t4)">—</span>'}</td>
-        <td class="r" style="color:#1a56c8;font-size:11.5px">${(()=>{const pa=sk.priceAlim||sk.priceMax;return sk.priceNormal&&pa?(((sk.priceNormal-(pa-1000))/sk.priceNormal*100).toFixed(1)+'%'):'<span style="color:var(--t4)">—</span>';})()}</td>
+        <td class="r" style="color:#1a8a4a;font-size:11.5px;cursor:pointer" onclick="copyToClip(this.dataset.v,this,'sku')" data-v="${sk.priceNormal&&sk.priceDisc?sk.priceNormal-sk.priceDisc:''}">${sk.priceNormal&&sk.priceDisc?'▼'+(sk.priceNormal-sk.priceDisc).toLocaleString()+'원':'<span style="color:var(--t4)">—</span>'}</td>
+        <td class="r" style="color:#d42020;font-size:11.5px;cursor:pointer" onclick="copyToClip(this.dataset.v,this,'sku')" data-v="${sk.priceNormal&&sk.priceMax?sk.priceNormal-sk.priceMax:''}">${sk.priceNormal&&sk.priceMax?'▼'+(sk.priceNormal-sk.priceMax).toLocaleString()+'원':'<span style="color:var(--t4)">—</span>'}</td>
+        <td class="r" style="color:#1a56c8;font-size:11.5px;cursor:pointer" onclick="copyToClip((()=>{const pa=sk.priceAlim||sk.priceMax;return sk.priceNormal&&pa?sk.priceNormal-(pa-1000):'';})(),this,'sku')">${(()=>{const pa=sk.priceAlim||sk.priceMax;return sk.priceNormal&&pa?'▼'+(sk.priceNormal-(pa-1000)).toLocaleString()+'원':'<span style="color:var(--t4)">—</span>';})()}</td>
+        <td class="r" style="color:#1a8a4a;font-size:11.5px;cursor:pointer" onclick="copyToClip(this.dataset.v,this,'sku')" data-v="${sk.priceNormal&&sk.priceDisc?Math.floor((sk.priceNormal-sk.priceDisc)/sk.priceNormal*100)+'%':''}">${sk.priceNormal&&sk.priceDisc?(Math.floor((sk.priceNormal-sk.priceDisc)/sk.priceNormal*100)+'%'):'<span style="color:var(--t4)">—</span>'}</td>
+        <td class="r" style="color:#d42020;font-size:11.5px;cursor:pointer" onclick="copyToClip(this.dataset.v,this,'sku')" data-v="${sk.priceNormal&&sk.priceMax?Math.floor((sk.priceNormal-sk.priceMax)/sk.priceNormal*100)+'%':''}">${sk.priceNormal&&sk.priceMax?(Math.floor((sk.priceNormal-sk.priceMax)/sk.priceNormal*100)+'%'):'<span style="color:var(--t4)">—</span>'}</td>
+        <td class="r" style="color:#1a56c8;font-size:11.5px;cursor:pointer" onclick="copyToClip(this.dataset.v,this,'sku')" data-v="${(()=>{const pa=sk.priceAlim||sk.priceMax;return sk.priceNormal&&pa?Math.floor((sk.priceNormal-(pa-1000))/sk.priceNormal*100)+'%':'';})()}">${(()=>{const pa=sk.priceAlim||sk.priceMax;return sk.priceNormal&&pa?(Math.floor((sk.priceNormal-(pa-1000))/sk.priceNormal*100)+'%'):'<span style="color:var(--t4)">—</span>';})()}</td>
         <td style="cursor:pointer" onclick="copyToClip('${sk.ship||''}',this,'sku')">${dash(sk.ship)}</td>
         <td style="cursor:pointer" onclick="copyToClip('${sk.shipType||''}',this,'sku')">${sk.shipType?`<span style="display:inline-flex;align-items:center;height:18px;padding:0 7px;border-radius:9px;font-size:10px;font-weight:600;${sk.shipType==='오늘출발'?'background:rgba(26,86,200,.1);color:#1a56c8':'background:rgba(0,0,0,.06);color:#666'}">${sk.shipType}</span>`:'<span style="color:var(--t4)">—</span>'}</td>
         <td class="memo-cell" style="color:var(--t3)" onclick="copyToClip('${(sk.memo||'').replace(/'/g,"\\'")}',this,'sku')">${dash(sk.memo)}${sk.memo?'<span class="memo-tip-data" style="display:none">'+sk.memo.replace(/</g,'&lt;')+'</span>':''}</td>
@@ -1388,9 +1404,9 @@ function renderSkuTable(q){
             <td class="r" style="color:#1a8a4a;font-size:11.5px">${opt.priceNormal&&opt.priceDisc?'▼'+(opt.priceNormal-opt.priceDisc).toLocaleString()+'원':'—'}</td>
             <td class="r" style="color:#d42020;font-size:11.5px">${opt.priceNormal&&opt.priceMax?'▼'+(opt.priceNormal-opt.priceMax).toLocaleString()+'원':'—'}</td>
             <td class="r" style="color:#1a56c8;font-size:11.5px">${(()=>{const pa=opt.priceAlim||opt.priceMax;return opt.priceNormal&&pa?'▼'+(opt.priceNormal-(pa-1000)).toLocaleString()+'원':'—';})()}</td>
-            <td class="r" style="color:#1a8a4a;font-size:11.5px">${opt.priceNormal&&opt.priceDisc?(((opt.priceNormal-opt.priceDisc)/opt.priceNormal*100).toFixed(1)+'%'):'—'}</td>
-            <td class="r" style="color:#d42020;font-size:11.5px">${opt.priceNormal&&opt.priceMax?(((opt.priceNormal-opt.priceMax)/opt.priceNormal*100).toFixed(1)+'%'):'—'}</td>
-            <td class="r" style="color:#1a56c8;font-size:11.5px">${(()=>{const pa=opt.priceAlim||opt.priceMax;return opt.priceNormal&&pa?(((opt.priceNormal-(pa-1000))/opt.priceNormal*100).toFixed(1)+'%'):'—';})()}</td>
+            <td class="r" style="color:#1a8a4a;font-size:11.5px">${opt.priceNormal&&opt.priceDisc?(Math.floor((opt.priceNormal-opt.priceDisc)/opt.priceNormal*100)+'%'):'—'}</td>
+            <td class="r" style="color:#d42020;font-size:11.5px">${opt.priceNormal&&opt.priceMax?(Math.floor((opt.priceNormal-opt.priceMax)/opt.priceNormal*100)+'%'):'—'}</td>
+            <td class="r" style="color:#1a56c8;font-size:11.5px">${(()=>{const pa=opt.priceAlim||opt.priceMax;return opt.priceNormal&&pa?(Math.floor((opt.priceNormal-(pa-1000))/opt.priceNormal*100)+'%'):'—';})()}</td>
             <td></td>
             <td style="color:var(--t3);font-size:11.5px">${opt.memo||'<span style="color:var(--t4)">—</span>'}</td>
             <td></td><td></td><td></td><td></td><td></td>
@@ -1469,7 +1485,7 @@ document.getElementById('skuDlBtn').addEventListener('click',e=>{e.preventDefaul
 ]),'SKU_업로드_양식.csv');});
 
 function resetSkuFilters(){
-  SF.status='전체';SF.type='전체';SF.sort='No순';SF.item='전체';SF.nick='전체';
+  SF.status='전체';SF.type='전체';SF.sort='No순';SF.item='전체';SF.nick='전체';SF.ship='전체';SF.shipType='전체';
   const tb=document.querySelector('#t-sku .search-box');if(tb)tb.value='';
   document.querySelectorAll('#sFilterBody .fp').forEach(f=>{
     const isAll=!f.dataset.v;
@@ -1491,6 +1507,29 @@ function resetItemFilters(){
   renderItemTable('');
   toast('필터 초기화됨');
 }
+function copyThumb(el,url){
+  const img=el.querySelector('img');
+  const src=img?img.src:url;
+  const canvas=document.createElement('canvas');
+  const tmpImg=new Image();
+  tmpImg.crossOrigin='anonymous';
+  tmpImg.onload=function(){
+    canvas.width=tmpImg.naturalWidth;
+    canvas.height=tmpImg.naturalHeight;
+    canvas.getContext('2d').drawImage(tmpImg,0,0);
+    canvas.toBlob(blob=>{
+      if(!blob){toast('이미지 복사 실패','err');return;}
+      navigator.clipboard.write([new ClipboardItem({'image/png':blob})])
+        .then(()=>toast('🖼 이미지 복사됨'))
+        .catch(()=>{navigator.clipboard.writeText(src).then(()=>toast('URL 복사됨 (이미지 불가)'));});
+    },'image/png');
+  };
+  tmpImg.onerror=function(){
+    navigator.clipboard.writeText(src).then(()=>toast('URL 복사됨 (CORS 차단)'));
+  };
+  tmpImg.src=src+'?t='+Date.now();
+}
+
 function showThumbGuide(){
   const m=document.getElementById('thumbGuideModal');
   if(m){m.style.display='flex';}

@@ -346,7 +346,6 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 
 <div class="tab-bar">
   <div class="tab on" onclick="sw(8,this);renderLogicCounts()">행사 로직</div>
-  <div class="tab" onclick="sw(9,this);loadPinnedIframe()">행사 운영</div>
   <div class="tab" onclick="sw(0,this)">행사 등록</div>
   <div class="tab"    onclick="sw(2,this);clearBadge('badge-2')">행사 제안<span id="badge-2" class="tab-badge" style="display:none"></span></div>
   <div class="tab"    onclick="sw(3,this);clearBadge('badge-3')">행사 선정<span id="badge-3" class="tab-badge" style="display:none"></span></div>
@@ -434,12 +433,17 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
                   <button onclick="addLandingLink('reg')" style="width:24px;height:24px;border:0.5px solid rgba(58,58,240,.4);border-radius:6px;background:#EEEDFE;color:#3C3489;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2v8M2 6h8"/></svg></button>
                 </div>
               </div>
-              <!-- 메모 -->
+              <!-- 메모 (항상 펼쳐진 상태로 고정) -->
               <div style="display:flex;align-items:center;gap:5px">
                 <span style="font-size:10px;color:var(--t3);width:32px;flex-shrink:0">메모</span>
-                <button id="memo-chip-reg" class="lchip" onclick="toggleMemoChip('reg')" style="font-size:10px;padding:1px 6px">메모</button>
-                <input id="ev-adddisc" placeholder="메모 입력..." style="display:none;flex:1;height:24px;padding:0 7px;font-size:11px;border:0.5px solid var(--bd);border-radius:6px;background:var(--gs);color:var(--t1)">
+                <input id="ev-adddisc" placeholder="메모 입력..." style="flex:1;height:24px;padding:0 7px;font-size:11px;border:0.5px solid var(--bd);border-radius:6px;background:var(--gs);color:var(--t1)">
                 <button title="메모 샘플에 적용" onclick="applyMemo()" style="width:22px;height:22px;border:0.5px solid rgba(58,58,240,.4);border-radius:5px;background:#EEEDFE;color:#3C3489;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2v8M2 6h8"/></svg></button>
+              </div>
+              <!-- 톡톡 발송일 (텍스트 직접 입력, 형식: YYYY-MM-DD HH:MM, 또는 '없음') -->
+              <div style="display:flex;align-items:center;gap:5px">
+                <span style="font-size:10px;color:#047857;width:32px;flex-shrink:0;font-weight:600">톡톡</span>
+                <input id="ev-talk-date" placeholder="2026-05-10 11:40 또는 없음" oninput="if(typeof renderRegProds==='function')renderRegProds()" style="flex:1;height:24px;padding:0 7px;font-size:11px;border:0.5px solid rgba(16,185,129,.35);border-radius:6px;background:rgba(16,185,129,.05);color:var(--t1);font-family:'IBM Plex Mono',monospace">
+                <button title="발송 안 함 (없음)" onclick="(function(){const e=document.getElementById('ev-talk-date');if(e){e.value='없음';if(typeof renderRegProds==='function')renderRegProds();}})()" style="height:24px;padding:0 8px;font-size:10.5px;border:0.5px solid rgba(0,0,0,.15);border-radius:5px;background:rgba(0,0,0,.04);color:#666;cursor:pointer;font-weight:500;flex-shrink:0">없음</button>
               </div>
               <!-- 추가된 랜딩 링크 태그 -->
               <div id="ev-landing-tags" style="display:flex;gap:3px;flex-wrap:wrap"></div>
@@ -526,7 +530,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
           <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">랜딩페이지</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">쇼핑스토리+카테고리 등</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택 — 드롭다운 4종</td></tr>
           <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">업로드일/제안마감일</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">YYYY-MM-DD</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택</td></tr>
           <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">상품코드1~20</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">숫자 코드</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">★ 1개 이상 필수</td></tr>
-          <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">배송1~20</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">무료배송 / 조건부무료 / 유료배송</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택 — 미입력 시 무료배송</td></tr>
+          <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">배송1~20</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">무료 / 조건부무료</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택 — 미입력 시 무료</td></tr>
           <tr><td style="padding:5px 8px;border-bottom:1px solid var(--bd);font-weight:600">정상가/제안행사가1~20</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t2)">숫자 (원단위)</td><td style="padding:5px 8px;border-bottom:1px solid var(--bd);color:var(--t3)">선택 — 미입력 시 SKU 최대할인가 자동 적용</td></tr>
           <tr><td style="padding:5px 8px;font-weight:600;color:var(--bl)">중복 처리</td><td style="padding:5px 8px;color:var(--t2)">병합(merge)</td><td style="padding:5px 8px;color:var(--t3)">동일 행사 존재 시 엑셀 입력 필드만 업데이트</td></tr>
         </tbody>
@@ -866,52 +870,77 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     <div class="rbtn"><button class="btn btn-sm btn-gh" onclick="renderLogicCounts()">↻ 건수 갱신</button></div>
   </div>
   <div style="display:flex;gap:18px;font-size:11px;color:var(--t3);margin-bottom:8px;flex-wrap:wrap">
-    <span><span style="color:var(--t3);margin-right:3px">●</span>회색·초록·노랑·파랑·빨강 → 행사 제안 탭</span>
-    <span><span style="color:var(--t3);margin-right:3px">●</span>보라·청록 → 행사 선정 탭</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:#FAEEDA;border:1px solid #EF9F27;border-radius:2px;vertical-align:middle;margin-right:4px"></span>노랑 → 행사 제안 탭</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:#E6F1FB;border:1px solid #85B7EB;border-radius:2px;vertical-align:middle;margin-right:4px"></span>파랑 → 행사 선정 탭</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:#FCEBEB;border:1px solid #F09595;border-radius:2px;vertical-align:middle;margin-right:4px"></span>빨강 → 행사 종료 탭</span>
   </div>
-  <div class="logic-flow-line">
-    <div class="logic-card" onclick="gotoStatusFromLogic('제안중',2,this)" style="background:#F1EFE8;border:1px solid #B4B2A9;color:#444441">
-      <div class="ln">제안중</div><div class="lc" id="logic-cnt-제안중">—</div>
-    </div>
-    <span class="logic-arr">→</span>
-    <div class="logic-card" onclick="gotoStatusFromLogic('제안완료',2,this)" style="background:#EAF3DE;border:1px solid #97C459;color:#3B6D11">
-      <div class="ln">제안완료</div><div class="lc" id="logic-cnt-제안완료">—</div>
-    </div>
-    <div class="logic-flow-stack">
-      <div class="logic-flow-branch">
-        <div class="logic-card" onclick="gotoStatusFromLogic('확인필요',2,this)" style="background:#FAEEDA;border:1px solid #EF9F27;color:#854F0B">
-          <div class="ln">확인필요</div><div class="lc" id="logic-cnt-확인필요">—</div>
-        </div>
-      </div>
-      <div class="logic-flow-branch">
-        <div class="logic-card" onclick="gotoStatusFromLogic('선정',2,this)" style="background:#E6F1FB;border:1px solid #85B7EB;color:#0C447C">
-          <div class="ln">선정</div><div class="lc" id="logic-cnt-선정">—</div>
-        </div>
-        <span class="logic-arr-auto"><span class="a">→</span><span class="lbl">자동</span><span class="a">→</span></span>
-        <div class="logic-card" onclick="gotoStatusFromLogic('진행전',3,this)" style="background:#EEEDFE;border:1px solid #AFA9EC;color:#3C3489">
-          <div class="ln">진행전</div><div class="lc" id="logic-cnt-진행전">—</div>
-        </div>
-        <span class="logic-arr">→</span>
-        <div class="logic-card" onclick="gotoStatusFromLogic('진행중',3,this)" style="background:#E1F5EE;border:1px solid #5DCAA5;color:#0F6E56">
-          <div class="ln">진행중</div><div class="lc" id="logic-cnt-진행중">—</div>
-        </div>
-        <span class="logic-arr">→</span>
-        <div class="logic-card" onclick="gotoStatusFromLogic('진행종료',3,this)" style="background:#F1EFE8;border:1px solid #B4B2A9;color:#5F5E5A">
-          <div class="ln">진행종료</div><div class="lc" id="logic-cnt-진행종료">—</div>
-        </div>
-      </div>
-      <div class="logic-flow-branch">
-        <div class="logic-card" onclick="gotoStatusFromLogic('미선정',2,this)" style="background:#FCEBEB;border:1px solid #F09595;color:#791F1F">
-          <div class="ln">미선정</div><div class="lc" id="logic-cnt-미선정">—</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="pane" id="p9">
-  <div style="width:100%;height:calc(100vh - 60px);background:var(--gs);border-radius:8px;overflow:hidden;border:0.5px solid var(--bd)">
-    <iframe id="pinned-iframe" src="" style="width:100%;height:100%;border:none;background:transparent;display:block"></iframe>
+  <div style="overflow-x:auto;padding:8px 0">
+    <svg width="700" height="380" viewBox="0 0 700 380" style="display:block">
+      <defs>
+        <marker id="logic-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+      <g style="cursor:pointer" onclick="goLogicTab(2)">
+        <rect x="20" y="20" width="80" height="36" rx="6" fill="#FFF8E7" stroke="#EF9F27" stroke-width="0.5"/>
+        <text x="60" y="38" text-anchor="middle" dominant-baseline="central" font-family="Plus Jakarta Sans,sans-serif" font-size="12" font-weight="500" fill="#854F0B">행사 제안</text>
+      </g>
+      <g style="cursor:pointer" onclick="gotoStatusFromLogic('제안중',2,null)">
+        <rect x="20" y="80" width="80" height="50" rx="8" fill="#FAEEDA" stroke="#EF9F27" stroke-width="0.5"/>
+        <text x="60" y="100" text-anchor="middle" dominant-baseline="central" font-family="Plus Jakarta Sans,sans-serif" font-size="13" font-weight="600" fill="#854F0B">제안중</text>
+        <text id="logic-svg-cnt-제안중" x="60" y="118" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,monospace" font-size="11" fill="#854F0B">—</text>
+      </g>
+      <line x1="100" y1="105" x2="118" y2="105" stroke="#888" stroke-width="0.5" marker-end="url(#logic-arrow)"/>
+      <g style="cursor:pointer" onclick="gotoStatusFromLogic('제안완료',2,null)">
+        <rect x="120" y="80" width="80" height="50" rx="8" fill="#FAEEDA" stroke="#EF9F27" stroke-width="0.5"/>
+        <text x="160" y="100" text-anchor="middle" dominant-baseline="central" font-family="Plus Jakarta Sans,sans-serif" font-size="13" font-weight="600" fill="#854F0B">제안완료</text>
+        <text id="logic-svg-cnt-제안완료" x="160" y="118" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,monospace" font-size="11" fill="#854F0B">—</text>
+      </g>
+      <line x1="200" y1="105" x2="218" y2="105" stroke="#888" stroke-width="0.5" marker-end="url(#logic-arrow)"/>
+      <g style="cursor:pointer" onclick="gotoStatusFromLogic('확인필요',2,null)">
+        <rect x="220" y="80" width="80" height="50" rx="8" fill="#FAEEDA" stroke="#EF9F27" stroke-width="0.5"/>
+        <text x="260" y="100" text-anchor="middle" dominant-baseline="central" font-family="Plus Jakarta Sans,sans-serif" font-size="13" font-weight="600" fill="#854F0B">확인필요</text>
+        <text id="logic-svg-cnt-확인필요" x="260" y="118" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,monospace" font-size="11" fill="#854F0B">—</text>
+      </g>
+      <line x1="260" y1="130" x2="260" y2="175" stroke="#888" stroke-width="0.5"/>
+      <line x1="260" y1="175" x2="318" y2="175" stroke="#888" stroke-width="0.5" marker-end="url(#logic-arrow)"/>
+      <line x1="260" y1="175" x2="260" y2="245" stroke="#888" stroke-width="0.5"/>
+      <line x1="260" y1="245" x2="318" y2="245" stroke="#888" stroke-width="0.5" marker-end="url(#logic-arrow)"/>
+      <g style="cursor:pointer" onclick="gotoStatusFromLogic('선정',2,null)">
+        <rect x="320" y="150" width="80" height="50" rx="8" fill="#E6F1FB" stroke="#85B7EB" stroke-width="0.5"/>
+        <text x="360" y="170" text-anchor="middle" dominant-baseline="central" font-family="Plus Jakarta Sans,sans-serif" font-size="13" font-weight="600" fill="#0C447C">선정</text>
+        <text id="logic-svg-cnt-선정" x="360" y="188" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,monospace" font-size="11" fill="#0C447C">—</text>
+      </g>
+      <line x1="400" y1="175" x2="430" y2="175" stroke="#888" stroke-width="0.5" marker-end="url(#logic-arrow)"/>
+      <g style="cursor:pointer" onclick="gotoStatusFromLogic('진행전',3,null)">
+        <rect x="432" y="150" width="68" height="50" rx="8" fill="#E6F1FB" stroke="#85B7EB" stroke-width="0.5"/>
+        <text x="466" y="170" text-anchor="middle" dominant-baseline="central" font-family="Plus Jakarta Sans,sans-serif" font-size="13" font-weight="600" fill="#0C447C">진행전</text>
+        <text id="logic-svg-cnt-진행전" x="466" y="188" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,monospace" font-size="11" fill="#0C447C">—</text>
+      </g>
+      <line x1="500" y1="175" x2="518" y2="175" stroke="#888" stroke-width="0.5" marker-end="url(#logic-arrow)"/>
+      <g style="cursor:pointer" onclick="gotoStatusFromLogic('진행중',3,null)">
+        <rect x="520" y="150" width="68" height="50" rx="8" fill="#E6F1FB" stroke="#85B7EB" stroke-width="0.5"/>
+        <text x="554" y="170" text-anchor="middle" dominant-baseline="central" font-family="Plus Jakarta Sans,sans-serif" font-size="13" font-weight="600" fill="#0C447C">진행중</text>
+        <text id="logic-svg-cnt-진행중" x="554" y="188" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,monospace" font-size="11" fill="#0C447C">—</text>
+      </g>
+      <line x1="588" y1="175" x2="606" y2="175" stroke="#888" stroke-width="0.5" marker-end="url(#logic-arrow)"/>
+      <g style="cursor:pointer" onclick="gotoStatusFromLogic('진행종료',3,null)">
+        <rect x="608" y="150" width="68" height="50" rx="8" fill="#E6F1FB" stroke="#85B7EB" stroke-width="0.5"/>
+        <text x="642" y="170" text-anchor="middle" dominant-baseline="central" font-family="Plus Jakarta Sans,sans-serif" font-size="13" font-weight="600" fill="#0C447C">진행종료</text>
+        <text id="logic-svg-cnt-진행종료" x="642" y="188" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,monospace" font-size="11" fill="#0C447C">—</text>
+      </g>
+      <g style="cursor:pointer" onclick="gotoStatusFromLogic('미선정',2,null)">
+        <rect x="320" y="220" width="80" height="50" rx="8" fill="#FAEEDA" stroke="#EF9F27" stroke-width="0.5"/>
+        <text x="360" y="240" text-anchor="middle" dominant-baseline="central" font-family="Plus Jakarta Sans,sans-serif" font-size="13" font-weight="600" fill="#854F0B">미선정</text>
+        <text id="logic-svg-cnt-미선정" x="360" y="258" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,monospace" font-size="11" fill="#854F0B">—</text>
+      </g>
+      <line x1="642" y1="200" x2="642" y2="303" stroke="#888" stroke-width="0.5" marker-end="url(#logic-arrow)"/>
+      <g style="cursor:pointer" onclick="goLogicTab(5)">
+        <rect x="608" y="305" width="68" height="50" rx="8" fill="#FCEBEB" stroke="#F09595" stroke-width="0.5"/>
+        <text x="642" y="325" text-anchor="middle" dominant-baseline="central" font-family="Plus Jakarta Sans,sans-serif" font-size="13" font-weight="600" fill="#791F1F">행사 종료</text>
+        <text id="logic-svg-cnt-행사종료" x="642" y="343" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono,monospace" font-size="11" fill="#791F1F">—</text>
+      </g>
+    </svg>
   </div>
 </div>
 
@@ -946,7 +975,6 @@ let tlView='week', tlWeekOffset=0, tlMonthYear=new Date().getFullYear(), tlMonth
 let propTypeFilter={2:[],3:[],5:[]};
 let statusFilter={2:new Set(),3:new Set(),5:new Set()};
 let dateFilter={2:new Set(),3:new Set(),5:new Set()}; /* 기간미등록 필터: startDate/endDate/upload/deadline/propdate */
-let EDIT_OPEN=null;
 let isDragging=false, dragStartX=0;
 const DIRTY=new Map(), TO_DELETE=new Set(), SNAPSHOTS=new Map();
 
@@ -1095,7 +1123,7 @@ function parseBulkRows(data){
     for(let n=1;n<=20;n++){
       const code=get(row,[`★ 상품코드${n}`,`상품코드${n}`]);
       if(!code)continue;
-      const ship=get(row,[`배송${n}\n드롭다운`,`배송${n}`])||'무료배송';
+      const ship=get(row,[`배송${n}\n드롭다운`,`배송${n}`])||'무료';
       const priceNormal=parseFloat(get(row,[`정상가${n}`]))||null;
       const priceAlim=parseFloat(get(row,[`제안행사가${n}`,`최대혜택가${n}`]))||null;
       products.push({code:String(code).replace(/\.0$/,''),ship,priceNormal,priceAlim});
@@ -1153,7 +1181,7 @@ window.doBulkUpload=async function(){
     bar.style.width=Math.round(done/total*100)+'%';
     const docId=r.name.replace(/\s/g,'')+'_'+(r.start||'None').replace(/-/g,'')+'_'+(r.end||'None').replace(/-/g,'');
     const evData={eventName:r.name,eventType:r.type||null,startDate:r.start||null,startTime:r.st,endDate:r.end||null,endTime:r.et,pageType:r.page||null,isClosed:false,isNotice:false,additionalDiscount:r.adddisc||null,proposalUploadedAt:r.upload||null,proposalDeadline:r.deadline||null,
-      products:r.products.map((p,i)=>{const sku=SKUS.find(s=>s._id===p.code)||{};const obj={no:i+1,subNo:null,isMain:skuGroup(sku.nick||sku.name||'')==='main'?'메인':'서브',isCancelled:false,skuCode:p.code,productName:sku.name||'',link:'https://brand.naver.com/yozmkorea/products/'+p.code,priceNormal:p.priceNormal||sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:p.priceAlim||sku.priceMax||null,priceMax:(p.priceAlim||sku.priceMax)?((p.priceAlim||sku.priceMax)-1000):null,ship:p.ship||'무료배송',options:[]};return obj;}),
+      products:r.products.map((p,i)=>{const sku=SKUS.find(s=>s._id===p.code)||{};const obj={no:i+1,subNo:null,isMain:skuGroup(sku.nick||sku.name||'')==='main'?'메인':'서브',isCancelled:false,skuCode:p.code,productName:sku.name||'',link:'https://brand.naver.com/yozmkorea/products/'+p.code,priceNormal:p.priceNormal||sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:p.priceAlim||sku.priceMax||null,priceMax:(p.priceAlim||sku.priceMax)?((p.priceAlim||sku.priceMax)-1000):null,ship:p.ship||sku.ship||'무료',shipType:sku.shipType||'일반',options:[]};return obj;}),
       updatedAt:new Date().toISOString()};
     try{
       await setDoc(doc(db,'events',docId),evData,{merge:true});
@@ -1162,7 +1190,7 @@ window.doBulkUpload=async function(){
       for(const p of r.products){
         const pid=(docId+'_'+p.code).replace(/\s/g,'');
         const sku=SKUS.find(s=>s._id===p.code)||{};
-        const pData={eventSID:docId,eventName:r.name,eventType:r.type||null,startDate:r.start||null,endDate:r.end||null,startTime:r.st,endTime:r.et,proposalUploadedAt:r.upload||null,proposalDeadline:r.deadline||null,skuCode:p.code,skuNick:sku.nick||sku.name||p.code,productName:sku.name||'',isMain:skuGroup(sku.nick||sku.name||'')==='main'?'메인':'서브',priceNormal:p.priceNormal||sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:p.priceAlim||sku.priceMax||null,priceMax:(p.priceAlim||sku.priceMax)?((p.priceAlim||sku.priceMax)-1000):null,ship:p.ship||'무료배송',status:'제안중',createdAt:new Date().toISOString()};
+        const pData={eventSID:docId,eventName:r.name,eventType:r.type||null,startDate:r.start||null,endDate:r.end||null,startTime:r.st,endTime:r.et,proposalUploadedAt:r.upload||null,proposalDeadline:r.deadline||null,skuCode:p.code,skuNick:sku.nick||sku.name||p.code,productName:sku.name||'',isMain:skuGroup(sku.nick||sku.name||'')==='main'?'메인':'서브',priceNormal:p.priceNormal||sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:p.priceAlim||sku.priceMax||null,priceMax:(p.priceAlim||sku.priceMax)?((p.priceAlim||sku.priceMax)-1000):null,ship:p.ship||sku.ship||'무료',shipType:sku.shipType||'일반',status:'제안중',createdAt:new Date().toISOString()};
         await setDoc(doc(db,'proposalItems',pid),pData,{merge:true});
         const exP=PROPOSALS.findIndex(x=>x._id===pid);
         if(exP>=0)Object.assign(PROPOSALS[exP],pData);else PROPOSALS.unshift({_id:pid,...pData});
@@ -1467,6 +1495,7 @@ function calRender(key){
           if(!st.deadlineDate){confirmBtn.textContent='날짜 선택 필요';setTimeout(()=>{confirmBtn.textContent='✓ 적용';},1400);return;}
           const d=document.getElementById('ev-deadline');if(d)d.value=st.deadlineDate;
           calUpdateChips(key);
+          if(key==='reg')maybeAutofillTalk();
           if(key.startsWith('edit-')){const gId=key.replace('edit-','');saveDateChip(gId,'deadline','마감',st.deadlineDate);}
           confirmBtn.textContent='✓';confirmBtn.style.background='var(--gr)';
           setTimeout(()=>{confirmBtn.textContent='✓ 적용';confirmBtn.style.background='var(--gr)';st.mode='period';calRender(key);},900);
@@ -1554,6 +1583,7 @@ function calClick(key,s){
     /* 마감일: 클릭 즉시 적용 */
     const d=document.getElementById('ev-deadline');if(d)d.value=s;
     calUpdateChips(key);
+    if(key==='reg')maybeAutofillTalk();
     if(key.startsWith('edit-')){const gId=key.replace('edit-','');saveDateChip(gId,'deadline','마감',s);}
     setTimeout(()=>{st.mode='period';calRender(key);},300);
     return;
@@ -1718,6 +1748,11 @@ async function loadAll(){
     SKUS=ss.docs.map(d=>({_id:d.id,...d.data()})).filter(s=>s.status!=='OFF'&&s.type!=='행사제안불가').sort((a,b)=>((a.no||999)-(b.no||999)));
     EVENTS=es.docs.map(d=>({_id:d.id,...d.data()})).sort((a,b)=>(b.startDate||'').localeCompare(a.startDate||''));
     PROPOSALS=ps.docs.map(d=>({_id:d.id,...d.data()})).sort((a,b)=>(b.startDate||'').localeCompare(a.startDate||''));
+    /* Firebase의 pinned 필드로 PINNED_EVENTS 재구성 */
+    PINNED_EVENTS=new Set(EVENTS.filter(e=>e.pinned).map(e=>e._id));
+    /* localStorage 핀 → Firebase 자동 마이그레이션 (최초 1회) */
+    await migratePinnedToFirebase();
+    PINNED_EVENTS=new Set(EVENTS.filter(e=>e.pinned).map(e=>e._id));
     autoCloseExpired();
     buildSkuButtons('reg');
     buildMonthFilters();
@@ -1879,7 +1914,7 @@ function addRegProd(code,nick,mainType){
     priceEvent:sku.priceMax||null,
     priceAlim:sku.priceMax||null,
     priceMax:sku.priceMax?(sku.priceMax-1000):null,
-    ship:sku.ship||'무료배송'});
+    ship:sku.ship||'무료',shipType:sku.shipType||'일반'});
   renderRegProds();
 }
 function removeRegProd(code){regProducts=regProducts.filter(p=>p.skuCode!==code);renderRegProds();}
@@ -1949,6 +1984,19 @@ function renderRegProds(){
   /* 기간 칩 HTML */
   const dur=calDur(start,end);
   const regAddDisc=$('ev-adddisc')?.value||null;
+  /* 업로드일/마감일 칩 라벨 (CAL_STATE에서 직접 계산 - 수정 모드 진입 시 즉시 반영) */
+  const _calRegSt=CAL_STATE['reg']||{};
+  const _dowK=['일','월','화','수','목','금','토'];
+  const _fmtUDChip=(ds,pfx)=>{if(!ds)return pfx+' 미입력';const d=new Date(ds+'T00:00:00');return pfx+' '+String(d.getMonth()+1).padStart(2,'0')+'/'+String(d.getDate()).padStart(2,'0')+' ('+_dowK[d.getDay()]+')';};
+  const upLbl=_fmtUDChip(_calRegSt.uploadDate,'업로드');
+  const dlLbl=_fmtUDChip(_calRegSt.deadlineDate,'마감');
+  const upFilled=_calRegSt.uploadDate?' chip-filled':'';
+  const dlFilled=_calRegSt.deadlineDate?' chip-filled':'';
+  /* 톡톡 발송일 칩 라벨 + 스타일 (ev-talk-date input에서 직접 읽음, 상태별 색상) */
+  const _tkVal=document.getElementById('ev-talk-date')?.value||'';
+  const _tkRgState=talkChipState(_tkVal);
+  const tkLbl=formatTalkChip(_tkVal);
+  const tkStyle=talkChipStyle(_tkRgState);
   /* 메모칩(adChipReg)는 1행 우측으로 이동됨 — dateChipsHtml(2행)에서 제외 */
   const adChipReg='';
   const dateChipsHtml=start?(
@@ -1956,7 +2004,7 @@ function renderRegProds(){
     `<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(26,86,200,.3);border-radius:20px;background:rgba(26,86,200,.07);color:var(--bl);font-weight:500;white-space:nowrap">${fmtDate(start,startTime)}</span>`+
     `<span style="font-size:10px;color:var(--t3)">→</span>`+
     `<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(196,90,16,.3);border-radius:20px;background:rgba(196,90,16,.07);color:var(--or);font-weight:500;white-space:nowrap">${fmtDate(end,endTime)}</span>`+
-    (dur?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(152,152,168,.3);border-radius:20px;background:rgba(152,152,168,.08);color:var(--t2);font-weight:500;cursor:pointer" onclick="copyToClip('${start} ${startTime||'00:00'}\t${end} ${endTime||'23:59'}',this)" title="클릭 시 기간 복사">[${dur}일 간]</span>`:'')
+    (dur?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(152,152,168,.3);border-radius:20px;background:rgba(152,152,168,.08);color:var(--t2);font-weight:500;cursor:pointer" onclick="copyToClip('${start} ${startTime||'00:00'}\\n${end} ${endTime||'23:59'}',this)" title="클릭 시 기간 복사 (세로 2셀)">[${dur}일 간]</span>`:'')
   ):`<span style="font-size:10.5px;color:var(--t3)">기간 미설정</span>`;
 
   /* SKU no 기준 정렬 */
@@ -2001,7 +2049,7 @@ function renderRegProds(){
       <td style="text-align:center;cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span data-f="prate" class="re" style="color:var(--or)">${pRate}</span></td>
       <td style="text-align:center;cursor:pointer" onclick="copyToClip(this.querySelector('span').textContent,this)"><span data-f="mrate" style="color:var(--bl);font-size:10px;font-weight:600">${mRate}</span></td>
       <td style="text-align:center;font-size:11px;color:var(--t2)">${shipLabel(p)}</td>
-      <td style="text-align:center"><button class="btn btn-xs" style="color:var(--pu);border-color:rgba(108,53,204,.3)" onclick="event.stopPropagation()">소구</button></td>
+      <td style="text-align:center"><button class="btn btn-xs" style="color:var(--pu);border-color:rgba(108,53,204,.3);padding:2px 6px" onclick="event.stopPropagation()" title="소구문구"><svg width="11" height="11" viewBox="0 0 14 14" fill="none" style="vertical-align:middle"><path d="M2 3a1 1 0 011-1h8a1 1 0 011 1v6a1 1 0 01-1 1H6l-3 2.5V10H3a1 1 0 01-1-1V3z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></button></td>
       <td style="width:28px"><button class="btn btn-xs" style="color:var(--rd)" onclick="regRemoveProd('${p.skuCode}')">×</button></td>
     </tr>`;
   }).join('');
@@ -2025,14 +2073,17 @@ function renderRegProds(){
           ${dateChipsHtml}
           <span style="width:0.5px;height:12px;background:rgba(0,0,0,.12);flex-shrink:0"></span>
           <span style="font-size:10px;color:var(--t3)">일정</span>
-          <span id="reg-chip-upload" class="date-chip" data-calmode="upload" data-expand="reg-expand-upload">
-            📅 <span id="reg-lbl-upload">업로드 미입력</span>
+          <span id="reg-chip-upload" class="date-chip${upFilled}" data-calmode="upload" data-expand="reg-expand-upload">
+            📅 <span id="reg-lbl-upload">${upLbl}</span>
           </span>
-          <span id="reg-chip-deadline" class="date-chip" data-calmode="deadline" data-expand="reg-expand-deadline">
-            📅 <span id="reg-lbl-deadline">마감 미입력</span>
+          <span id="reg-chip-deadline" class="date-chip${dlFilled}" data-calmode="deadline" data-expand="reg-expand-deadline">
+            📅 <span id="reg-lbl-deadline">${dlLbl}</span>
           </span>
         </div>
         <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;margin-left:auto">
+          <span id="reg-chip-talk" style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;font-size:10px;border-radius:20px;white-space:nowrap;${tkStyle}">
+            📅 <span id="reg-lbl-talk">${tkLbl}</span>
+          </span>
           ${memoChipHTML(regAddDisc)}
         </div>
       </div></div>
@@ -2052,9 +2103,9 @@ function renderRegProds(){
     <div class="egrpbody">
       <table class="tbl">
         <thead><tr>
-          <th style="width:46px">상태</th>
-          <th style="width:90px">닉네임</th>
-          <th style="width:78px">상품코드</th>
+          <th style="text-align:center;width:46px">상태</th>
+          <th style="text-align:center;width:90px">닉네임</th>
+          <th style="text-align:center;width:78px">상품코드</th>
           <th style="text-align:right;width:62px">정상가</th>
           <th class="col-base" style="text-align:right;width:80px;color:var(--rd)">최대할인가<br>=기본행사가 🔒</th>
           <th style="text-align:right;width:76px;color:var(--or)">제안행사가 <span onclick="toggleBulkAlimEdit();event.stopPropagation();" style="cursor:pointer;color:var(--ac)" title="전체 수정 모드 (다시 클릭 시 닫기)">✏️</span></th>
@@ -2065,8 +2116,8 @@ function renderRegProds(){
           <th class="col-base" style="text-align:right;width:80px;color:var(--rd)">최대할인율<br>=기본행사율</th>
           <th style="text-align:right;width:60px;color:var(--or)">제안행사율</th>
           <th style="text-align:right;width:60px;color:var(--bl)">최종혜택율</th>
-          <th style="width:56px">배송</th>
-          <th style="width:52px">소구문구</th>
+          <th style="text-align:center;width:56px">배송</th>
+          <th style="text-align:center;width:52px">소구문구</th>
           <th style="width:28px"></th>
         </tr></thead>
         <tbody>${rows||'<tr><td colspan="16" style="text-align:center;padding:16px;color:var(--t3);font-size:12px">SKU 버튼 또는 코드로 상품을 추가하세요</td></tr>'}</tbody>
@@ -2108,7 +2159,7 @@ window.submitProposal=async function(){
       proposalDeadline:$('ev-deadline')?.value||null,
       skuCode:p.skuCode,skuNick:p.skuNick,productName:p.productName,
       priceNormal:p.priceNormal,priceBase:p.priceBase,priceEvent:p.priceEvent,
-      priceAlim:p.priceAlim,priceMax:p.priceMax,ship:p.ship,isMain:p.isMain,
+      priceAlim:p.priceAlim,priceMax:p.priceMax,ship:p.ship,shipType:p.shipType||'일반',isMain:p.isMain,
       status:'제안중',createdAt:new Date().toISOString()};
     try{
       await setDoc(doc(db,'proposalItems',pid),data);
@@ -2293,18 +2344,10 @@ function fillRegFormFromEvent(ev,props){
   $('ev-adddisc').value=ev.additionalDiscount||'';
   $('ev-upload-date').value=ev.proposalUploadedAt||'';
   $('ev-deadline').value=ev.proposalDeadline||'';
+  const tkEl=document.getElementById('ev-talk-date');if(tkEl)tkEl.value=ev.talkSendDate||'';
   $('ev-start').value=ev.startDate||'';
   $('ev-end').value=ev.endDate||'';
-  /* 2) 메모 칩 */
-  const mc=document.getElementById('memo-chip-reg');
-  const adIn=$('ev-adddisc');
-  if(ev.additionalDiscount){
-    if(mc)mc.classList.add('on');
-    if(adIn)adIn.style.display='flex';
-  }else{
-    if(mc)mc.classList.remove('on');
-    if(adIn)adIn.style.display='none';
-  }
+  /* 2) 메모 입력 필드는 항상 표시되므로 토글 처리 불필요 (값은 위에서 setting됨) */
   /* 3) 랜딩 링크 복원 */
   REG_PAGE_LINKS=(ev.pageLinks||[]).map(l=>({...l}));
   document.querySelectorAll('#landing-chips-reg .lchip').forEach(b=>{
@@ -2346,7 +2389,8 @@ function fillRegFormFromEvent(ev,props){
       priceEvent:p.priceEvent||sku.priceMax||null,
       priceAlim:p.priceAlim||p.priceEvent||sku.priceMax||null,
       priceMax:(p.priceMax!=null)?p.priceMax:(p.priceAlim?p.priceAlim-1000:null),
-      ship:p.ship||sku.ship||'무료배송',
+      ship:p.ship||sku.ship||'무료',
+      shipType:p.shipType||sku.shipType||'일반',
       _origStatus:p.status||null,   /* 기존 status 유지용 */
       _origPid:p._id||null          /* 기존 proposalItems 문서 id */
     });
@@ -2357,6 +2401,7 @@ function fillRegFormFromEvent(ev,props){
   });
   updateSkuChips('reg');
   renderRegProds();
+  calUpdateChips('reg');  /* 샘플 카드 DOM 재생성 후 업로드일/마감일 칩 동기화 */
 }
 
 window.enterEditMode=function(evId,eName,originTab){
@@ -2383,6 +2428,7 @@ window.enterEditMode=function(evId,eName,originTab){
     endTime:ev.endTime||'',
     proposalUploadedAt:ev.proposalUploadedAt||'',
     proposalDeadline:ev.proposalDeadline||'',
+    talkSendDate:ev.talkSendDate||'',
     additionalDiscount:ev.additionalDiscount||'',
     pageLinksJSON:JSON.stringify((ev.pageLinks||[]).map(l=>({type:l.type,url:l.url||''})).sort((a,b)=>a.type.localeCompare(b.type))),
     products:regProducts.map(p=>({skuCode:p.skuCode,skuNick:p.skuNick,priceAlim:p.priceAlim}))
@@ -2405,12 +2451,11 @@ window.enterEditMode=function(evId,eName,originTab){
 
 window.exitEditMode=function(){
   /* 폼 비우기 — doSaveEvent 끝부분과 동일 */
-  ['ev-name','ev-start','ev-end','ev-adddisc','ev-upload-date','ev-deadline'].forEach(id=>{const e=$(id);if(e)e.value='';});
+  ['ev-name','ev-start','ev-end','ev-adddisc','ev-upload-date','ev-deadline','ev-talk-date'].forEach(id=>{const e=$(id);if(e)e.value='';});
   REG_PAGE_LINKS=[];
   if(typeof renderLandingTags==='function')renderLandingTags('reg');
   document.querySelectorAll('#landing-chips-reg .lchip').forEach(b=>b.classList.remove('on','has-url'));
-  const mc=document.getElementById('memo-chip-reg');if(mc)mc.classList.remove('on');
-  const adIn=$('ev-adddisc');if(adIn)adIn.style.display='none';
+  /* 메모 입력 필드는 항상 표시이므로 display 처리 불필요 (value는 위 forEach에서 비워짐) */
   delete CAL_STATE['reg'];
   calInit('reg',{startId:'ev-start',endId:'ev-end'});
   calRender('reg');
@@ -2515,13 +2560,14 @@ async function saveEditMode(){
     additionalDiscount:$('ev-adddisc').value||null,
     proposalUploadedAt:$('ev-upload-date')?.value||null,
     proposalDeadline:$('ev-deadline')?.value||null,
+    talkSendDate:$('ev-talk-date')?.value||null,
     products:regProducts.map((p,i)=>({
       no:i+1,subNo:null,isMain:p.isMain,isCancelled:false,
       skuCode:p.skuCode,productName:p.productName,
       link:'https://brand.naver.com/yozmkorea/products/'+p.skuCode,
       priceNormal:p.priceNormal||null,priceBase:p.priceBase||null,
       priceEvent:p.priceEvent||null,priceAlim:p.priceAlim||null,
-      priceMax:p.priceMax||null,ship:p.ship||null,options:[]
+      priceMax:p.priceMax||null,ship:p.ship||null,shipType:p.shipType||'일반',options:[]
     })),
     updatedAt:new Date().toISOString()
   };
@@ -2554,7 +2600,7 @@ async function saveEditMode(){
         proposalDeadline:$('ev-deadline')?.value||null,
         skuCode:p.skuCode,skuNick:p.skuNick,productName:p.productName,
         priceNormal:p.priceNormal,priceBase:p.priceBase,priceEvent:p.priceEvent,
-        priceAlim:p.priceAlim,priceMax:p.priceMax,ship:p.ship,isMain:p.isMain,
+        priceAlim:p.priceAlim,priceMax:p.priceMax,ship:p.ship,shipType:p.shipType||'일반',isMain:p.isMain,
         status:p._origStatus||'제안중',
         updatedAt:new Date().toISOString()
       };
@@ -2570,6 +2616,7 @@ async function saveEditMode(){
         startTime:startTime||'',endTime:endTime||'',
         proposalUploadedAt:$('ev-upload-date')?.value||'',
         proposalDeadline:$('ev-deadline')?.value||'',
+        talkSendDate:$('ev-talk-date')?.value||'',
         additionalDiscount:$('ev-adddisc').value||'',
         pageLinksJSON:JSON.stringify(REG_PAGE_LINKS.map(l=>({type:l.type,url:l.url||''})).sort((a,b)=>a.type.localeCompare(b.type))),
         products:regProducts.map(p=>({skuCode:p.skuCode,skuNick:p.skuNick,priceAlim:p.priceAlim}))
@@ -2609,12 +2656,12 @@ async function doSaveEvent(){
   const type=$('ev-type').value;
   if(!name)throw new Error('행사명 필요');
   const docId=name.replace(/\s/g,'')+'_'+(start||'None').replace(/-/g,'')+'_'+(end||'None').replace(/-/g,'');
-  const data={eventName:name,eventType:type||null,startDate:start||null,startTime:startTime,endDate:end||null,endTime:endTime,pageType:$('ev-pagetype').value||null,pageLinks:JSON.parse(JSON.stringify(REG_PAGE_LINKS)),isNotice:false,isClosed:false,additionalDiscount:$('ev-adddisc').value||null,proposalUploadedAt:$('ev-upload-date')?.value||null,proposalDeadline:$('ev-deadline')?.value||null,
-    products:regProducts.map((p,i)=>({no:i+1,subNo:null,isMain:p.isMain,isCancelled:false,skuCode:p.skuCode,productName:p.productName,link:'https://brand.naver.com/yozmkorea/products/'+p.skuCode,priceNormal:p.priceNormal||null,priceBase:p.priceBase||null,priceEvent:p.priceEvent||null,priceAlim:p.priceAlim||null,priceMax:p.priceMax||null,ship:p.ship||null,options:[]})),
+  const data={eventName:name,eventType:type||null,startDate:start||null,startTime:startTime,endDate:end||null,endTime:endTime,pageType:$('ev-pagetype').value||null,pageLinks:JSON.parse(JSON.stringify(REG_PAGE_LINKS)),isNotice:false,isClosed:false,additionalDiscount:$('ev-adddisc').value||null,proposalUploadedAt:$('ev-upload-date')?.value||null,proposalDeadline:$('ev-deadline')?.value||null,talkSendDate:$('ev-talk-date')?.value||null,
+    products:regProducts.map((p,i)=>({no:i+1,subNo:null,isMain:p.isMain,isCancelled:false,skuCode:p.skuCode,productName:p.productName,link:'https://brand.naver.com/yozmkorea/products/'+p.skuCode,priceNormal:p.priceNormal||null,priceBase:p.priceBase||null,priceEvent:p.priceEvent||null,priceAlim:p.priceAlim||null,priceMax:p.priceMax||null,ship:p.ship||null,shipType:p.shipType||'일반',options:[]})),
     updatedAt:new Date().toISOString()};
   await setDoc(doc(db,'events',docId),data);
   EVENTS.unshift({_id:docId,...data});
-  ['ev-name','ev-start','ev-end','ev-adddisc'].forEach(id=>{const e=$(id);if(e)e.value='';});REG_PAGE_LINKS=[];renderLandingTags('reg');document.querySelectorAll('#landing-chips-reg .lchip').forEach(b=>b.classList.remove('on'));const mc=document.getElementById('memo-chip-reg');if(mc)mc.classList.remove('on');
+  ['ev-name','ev-start','ev-end','ev-adddisc','ev-talk-date'].forEach(id=>{const e=$(id);if(e)e.value='';});REG_PAGE_LINKS=[];renderLandingTags('reg');document.querySelectorAll('#landing-chips-reg .lchip').forEach(b=>b.classList.remove('on'));
   delete CAL_STATE['reg'];calInit('reg',(function(){const _t=new Date();const _nM=_t.getMonth()+1>=12?0:_t.getMonth()+1;const _nY=_t.getMonth()+1>=12?_t.getFullYear()+1:_t.getFullYear();return {startId:'ev-start',endId:'ev-end',_initY:_nY,_initM:_nM};})());calRender('reg');
   regProducts=[];selectedSkuCodesReg=[];
   document.querySelectorAll('#sku-btn-area-reg .skb').forEach(b=>b.classList.remove('on'));
@@ -2681,7 +2728,14 @@ window.renderPropList=function(tabNum){
       if(sf.size>0&&!sf.has(cStatus))return false;
     }
     if(tabNum===5){const ev=EVENTS.find(e=>e._id===p.eventSID)||(p.eventName?EVENTS.find(e=>e.eventName===p.eventName):null);if(!isEvEnded(ev))return false;}
-    const evType=(()=>{const ev5=EVENTS.find(e=>e._id===p.eventSID);return ev5?.eventType||p.eventType||detectType({eventName:ev5?.eventName||p.eventName});})();
+    const evType=(()=>{
+      const ev5=EVENTS.find(e=>e._id===p.eventSID);
+      const raw=ev5?.eventType||p.eventType;
+      /* 이미 영문 2자리 코드(FF/TD/SP/HB/CB/SA/OD/YL/YE/AL)면 그대로 사용 */
+      if(raw&&/^[A-Z]{2}$/.test(raw))return raw;
+      /* 아니면 행사명 기반 자동 감지 (한글 eventType이 저장되어 있을 때 보정) */
+      return detectType({eventName:ev5?.eventName||p.eventName||raw});
+    })();
     if(tFilter.length>0&&!tFilter.includes(evType))return false;
     const _ev=EVENTS.find(e=>e._id===p.eventSID);
     if(monthF&&!((_ev?.startDate||p.startDate||'')).startsWith(monthF))return false;
@@ -2812,7 +2866,53 @@ function getWeekLabel(dateStr){
   const week=Math.floor(diffMs/604800000)+1;
   return mon+'월 '+week+'주차';
 }
-function buildDateChips(startDate,startTime,endDate,endTime,uploadDate,deadline,addDisc){
+/* ── 톡톡 발송일 헬퍼 ── */
+/* "2026-05-10 11:40" 또는 "2026-05-10T11:40" → "톡톡 05/10 (일) 11:40" */
+/* "없음" / "none" / "미발송" → "톡톡 없음" */
+function formatTalkChip(v){
+  if(!v)return'톡톡 미입력';
+  const s=String(v).trim();
+  if(!s)return'톡톡 미입력';
+  if(s==='없음'||s.toLowerCase()==='none'||s==='미발송')return'톡톡 없음';
+  const m=s.match(/(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/);
+  if(!m)return'톡톡 미입력';
+  const d=new Date(parseInt(m[1]),parseInt(m[2])-1,parseInt(m[3]));
+  const dow=['일','월','화','수','목','금','토'][d.getDay()];
+  return'톡톡 '+m[2]+'/'+m[3]+' ('+dow+') '+m[4]+':'+m[5];
+}
+/* 톡톡 칩의 상태 결정: 'empty' | 'none' | 'filled' */
+function talkChipState(v){
+  if(!v)return'empty';
+  const s=String(v).trim();
+  if(!s)return'empty';
+  if(s==='없음'||s.toLowerCase()==='none'||s==='미발송')return'none';
+  if(/(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/.test(s))return'filled';
+  return'empty';
+}
+/* 톡톡 칩 스타일 (상태별) */
+function talkChipStyle(state){
+  if(state==='filled')return'border:0.5px solid rgba(16,185,129,.4);background:rgba(16,185,129,.1);color:#047857;font-weight:600';
+  if(state==='none')return'border:0.5px solid rgba(0,0,0,.15);background:rgba(0,0,0,.05);color:#666;font-weight:600';
+  return'border:0.5px solid rgba(0,0,0,.1);background:#fff;color:#9898a8';
+}
+/* 톡톡 칩 HTML (카드 헤더 메모 영역에서 사용) */
+function buildTalkChipHtml(talkSendDate){
+  const st=talkChipState(talkSendDate);
+  if(st==='empty')return'';
+  return`<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;font-size:10px;border-radius:20px;white-space:nowrap;${talkChipStyle(st)}">📅 ${formatTalkChip(talkSendDate)}</span>`;
+}
+/* 마감일 → 톡톡 자동 채움 (수정 모드 아닐 때 + 톡톡 비어있을 때만) */
+function maybeAutofillTalk(){
+  if(typeof EDIT_MODE!=='undefined'&&EDIT_MODE.isActive)return;
+  const dl=document.getElementById('ev-deadline')?.value;
+  const tk=document.getElementById('ev-talk-date');
+  if(!tk)return;
+  if(dl&&!tk.value){
+    tk.value=dl+' 11:40';
+    if(typeof renderRegProds==='function')renderRegProds();
+  }
+}
+function buildDateChips(startDate,startTime,endDate,endTime,uploadDate,deadline,addDisc,talkSendDate){
   const DOW=['일','월','화','수','목','금','토'];
   function fmtChip(s,t){
     if(!s)return'';
@@ -2828,20 +2928,33 @@ function buildDateChips(startDate,startTime,endDate,endTime,uploadDate,deadline,
   const sChip=startDate?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(26,86,200,.3);border-radius:20px;background:rgba(26,86,200,.07);color:var(--bl);font-weight:500;white-space:nowrap">${fmtChip(startDate,startTime)}</span>`:'';
   const arrow=startDate&&endDate?`<span style="font-size:10px;color:var(--t3)">→</span>`:'';
   const eChip=endDate?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(196,90,16,.3);border-radius:20px;background:rgba(196,90,16,.07);color:var(--or);font-weight:500;white-space:nowrap">${fmtChip(endDate,endTime)}</span>`:'';
-  const dChip=dur?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(152,152,168,.3);border-radius:20px;background:rgba(152,152,168,.08);color:var(--t2);font-weight:500;cursor:pointer" onclick="copyToClip('${startDate} ${startTime||'00:00'}\t${endDate} ${endTime||'23:59'}',this)" title="클릭 시 기간 복사">[${dur}일 간]</span>`:'';
+  const dChip=dur?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(152,152,168,.3);border-radius:20px;background:rgba(152,152,168,.08);color:var(--t2);font-weight:500;cursor:pointer" onclick="copyToClip('${startDate} ${startTime||'00:00'}\\n${endDate} ${endTime||'23:59'}',this)" title="클릭 시 기간 복사 (세로 2셀)">[${dur}일 간]</span>`:'';
   const sep=(startDate&&(uploadDate||deadline))?`<span style="width:0.5px;height:11px;background:rgba(0,0,0,.12);flex-shrink:0"></span>`:'';
   const lbl=(uploadDate||deadline)?`<span style="font-size:10px;color:var(--t3)">일정</span>`:'';
   const uChip=uploadDate?`<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;font-size:10px;border:1px solid rgba(58,58,240,.25);border-radius:20px;background:rgba(58,58,240,.05);color:var(--ac);font-weight:500;white-space:nowrap">📅 업로드 ${fmtChip(uploadDate,'')}</span>`:'';
   const dline=deadline?`<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;font-size:10px;border:1px solid rgba(26,138,74,.25);border-radius:20px;background:rgba(26,138,74,.05);color:var(--gr);font-weight:500;white-space:nowrap">📅 마감 ${fmtChip(deadline,'')}</span>`:'';
+  /* 톡톡 칩은 메모 영역(우측)으로 이동했으므로 buildDateChips에서는 그리지 않음. talkSendDate 인자는 호환성 위해 유지. */
   /* 메모는 카드 1행 우측으로 이동됨 (memoChipHTML 사용). 인자는 호환성 위해 유지하지만 칩은 그리지 않음 */
   const adChip='';
   if(!startDate)return`<span style="font-size:10.5px;color:var(--t3)">기간 미설정</span>`+(adChip?` ${adChip}`:'');
   return[wChip,sChip,arrow,eChip,dChip,sep,lbl,uChip,dline,adChip].filter(Boolean).join('');
 }
 function shipLabel(p){
-  const s=(p.ship||'무료배송').replace('배송','').replace('조건부 무료','조건부').trim();
-  const t=p.shipType||'일반';
-  return s+' / '+t;
+  const s=(p.ship||'무료').replace('조건부무료','조건부').trim();
+  let t=p.shipType||'일반';
+  /* 표시 라벨 단순화: '오늘출발' → '오늘' (데이터는 변경 안 됨, 표시만) */
+  if(t==='오늘출발')t='오늘';
+  /* 안 A — 색상 분리 칩 (표시 전용, 클릭 동작 없음) */
+  const isFree=s==='무료';
+  const isFast=t==='오늘';
+  const baseSt='display:inline-flex;align-items:center;padding:1px 7px;font-size:10px;border-radius:20px;font-weight:500;border:0.5px solid;white-space:nowrap;line-height:1.5';
+  const shipSt=isFree
+    ?'background:rgba(26,138,74,.1);color:#15703a;border-color:rgba(26,138,74,.35)'
+    :'background:rgba(196,90,16,.08);color:#a04a08;border-color:rgba(196,90,16,.35)';
+  const typeSt=isFast
+    ?'background:rgba(108,53,204,.08);color:#5328a3;border-color:rgba(108,53,204,.4)'
+    :'background:rgba(152,152,168,.1);color:#666;border-color:rgba(152,152,168,.3)';
+  return`<span style="display:inline-flex;gap:3px;justify-content:center;align-items:center;flex-wrap:nowrap"><span style="${baseSt};${shipSt}">${s}</span><span style="${baseSt};${typeSt}">${t}</span></span>`;
 }
 /* 메모 등 긴 문자열 칩용 — n자 초과 시 ...로 자르고 호버 툴팁(title)에 전체 표시 */
 function truncStr(s,n){return s&&s.length>n?s.substring(0,n)+'…':(s||'');}
@@ -2882,9 +2995,9 @@ function buildGroupHtml(eName,grp,tabNum){
   }
 
   /* 공통 열 헤더: 상태-닉네임-정상가-행사가(빨강)-최대혜택가-행사할인금액-최대할인금액(파랑)-행사할인율-최대할인율 */
-  const colHd=`<th style="width:46px">상태</th>
-    <th style="width:90px">닉네임 <button onclick="copyColAll('nick',this)" title="이 행사 닉네임 전체 복사" style="padding:1px 4px;border:0.5px solid var(--bd);border-radius:4px;background:var(--gs);color:var(--t3);cursor:pointer;margin-left:3px;line-height:1"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" style="vertical-align:middle"><rect x="4" y="0" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="0" y="4" width="8" height="8" rx="1.5" fill="var(--gs)" stroke="currentColor" stroke-width="1.5"/></svg></button></th>
-    <th style="width:78px">상품코드 <button onclick="copyColAll('code',this)" title="이 행사 상품코드 전체 복사" style="padding:1px 4px;border:0.5px solid var(--bd);border-radius:4px;background:var(--gs);color:var(--t3);cursor:pointer;margin-left:3px;line-height:1"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" style="vertical-align:middle"><rect x="4" y="0" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="0" y="4" width="8" height="8" rx="1.5" fill="var(--gs)" stroke="currentColor" stroke-width="1.5"/></svg></button></th>
+  const colHd=`<th style="text-align:center;width:46px">상태</th>
+    <th style="text-align:center;width:90px">닉네임 <button onclick="copyColAll('nick',this)" title="이 행사 닉네임 전체 복사" style="padding:1px 4px;border:0.5px solid var(--bd);border-radius:4px;background:var(--gs);color:var(--t3);cursor:pointer;margin-left:3px;line-height:1"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" style="vertical-align:middle"><rect x="4" y="0" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="0" y="4" width="8" height="8" rx="1.5" fill="var(--gs)" stroke="currentColor" stroke-width="1.5"/></svg></button></th>
+    <th style="text-align:center;width:78px">상품코드 <button onclick="copyColAll('code',this)" title="이 행사 상품코드 전체 복사" style="padding:1px 4px;border:0.5px solid var(--bd);border-radius:4px;background:var(--gs);color:var(--t3);cursor:pointer;margin-left:3px;line-height:1"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" style="vertical-align:middle"><rect x="4" y="0" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="0" y="4" width="8" height="8" rx="1.5" fill="var(--gs)" stroke="currentColor" stroke-width="1.5"/></svg></button></th>
     <th style="text-align:right;width:62px">정상가</th>
     <th class="col-base" style="text-align:right;width:80px;color:var(--rd)">최대할인가<br>=기본행사가</th>
     <th style="text-align:right;width:76px;color:var(--or)">제안행사가</th>
@@ -2895,8 +3008,8 @@ function buildGroupHtml(eName,grp,tabNum){
     <th class="col-base" style="text-align:right;width:80px;color:var(--rd)">최대할인율<br>=기본행사율</th>
     <th style="text-align:right;width:58px;color:var(--or)">제안행사율</th>
     <th style="text-align:right;width:58px;color:var(--bl)">최종혜택율</th>
-    <th style="width:56px">배송</th>
-    <th style="width:52px">소구문구</th>
+    <th style="text-align:center;width:56px">배송</th>
+    <th style="text-align:center;width:52px">소구문구</th>
     <th style="width:28px"></th>`;
 
 
@@ -2910,8 +3023,10 @@ function buildGroupHtml(eName,grp,tabNum){
     return 'state-proposal';
   })():'';
   const isPinned=PINNED_EVENTS.has(ev?._id||evName);
+  const _hdGrpKey=(ev?._id||evName).replace(/'/g,"\\'");
+  const _hdAttr=[2,3,5].includes(tabNum)?` onclick="onGrpHdClick(event,${tabNum},'${_hdGrpKey}')" style="cursor:pointer;flex-direction:column;gap:0;padding:9px 12px"`:` style="flex-direction:column;gap:0;padding:9px 12px"`;
   return `<div class="egrp ${stateClass}${isPinned?' pinned':''}" id="${grpId}">
-    <div class="egrphd" id="${grpId}-hd" style="flex-direction:column;gap:0;padding:9px 12px">
+    <div class="egrphd" id="${grpId}-hd"${_hdAttr}>
       <!-- 1행 -->
       <div style="display:flex;align-items:center;gap:6px;width:100%">
         ${[2,3,5].includes(tabNum)?`<input type="checkbox" class="grp-cb grp-cb-${tabNum}" data-grp="${ev?._id||evName}" onchange="onGrpCbChange(${tabNum})" onclick="event.stopPropagation()">`:''}
@@ -2928,9 +3043,10 @@ function buildGroupHtml(eName,grp,tabNum){
       <!-- 2행: 기간+일정 칩 + 메모 우측 -->
       <div id="${grpId}-period-chips" style="display:flex;align-items:center;gap:5px;margin-top:5px;width:100%;flex-wrap:nowrap">
         <div style="display:flex;align-items:center;gap:4px;flex:1;flex-wrap:wrap">
-          ${buildDateChips(ev?.startDate,ev?.startTime,ev?.endDate,ev?.endTime,m?.proposalUploadedAt,m?.proposalDeadline,ev?.additionalDiscount||null)}
+          ${buildDateChips(ev?.startDate,ev?.startTime,ev?.endDate,ev?.endTime,m?.proposalUploadedAt,m?.proposalDeadline,ev?.additionalDiscount||null,ev?.talkSendDate||null)}
         </div>
         <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;margin-left:auto">
+          ${buildTalkChipHtml(ev?.talkSendDate)}
           ${memoChipHTML(ev?.additionalDiscount)}
         </div>
       </div>
@@ -3025,7 +3141,7 @@ function buildProdRow(p,tabNum,grpEnded,lbl){
     <td style="text-align:right"><span class="re" style="color:var(--or)">${eRate}</span></td>
     <td style="text-align:right"><span class="rm" style="color:var(--bl)">${mRate}</span></td>
     <td style="text-align:center;font-size:11px;color:var(--t2)">${shipLabel(p)}</td>
-    <td style="text-align:center"><button class="btn btn-xs" style="color:var(--pu);border-color:rgba(108,53,204,.3)" onclick="event.stopPropagation()">소구</button></td>
+    <td style="text-align:center"><button class="btn btn-xs" style="color:var(--pu);border-color:rgba(108,53,204,.3);padding:2px 6px" onclick="event.stopPropagation()" title="소구문구"><svg width="11" height="11" viewBox="0 0 14 14" fill="none" style="vertical-align:middle"><path d="M2 3a1 1 0 011-1h8a1 1 0 011 1v6a1 1 0 01-1 1H6l-3 2.5V10H3a1 1 0 01-1-1V3z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></button></td>
     <td style="text-align:center">${hasOpts?`<span id="opt-tog-${p._id}" style="font-size:10px;color:var(--t3);cursor:pointer">▶</span>`:''}</td>
   </tr>${optRows}`;
 }
@@ -3037,73 +3153,6 @@ window.toggleOptRows=function(pid){
   const isHidden=rows[0].classList.contains('hidden');
   rows.forEach(r=>r.classList.toggle('hidden',!isHidden));
   if(tog)tog.textContent=isHidden?'▼':'▶';
-};
-
-/* ══ 행사 제안/선정 — 그룹 단위 수정 폼 (tabNum 공용) ══ */
-/* 제안행사가 입력 시 최대혜택가 자동 업데이트 */
-window.updateSelAlim=function(inp,grpId,idx,minP){
-  const v=Math.max(+inp.value||0,minP);
-  if(+inp.value<minP)inp.value=minP;
-  const mx=v-1000;
-  selEditProd(grpId,idx,'priceAlim',v);
-  selEditProd(grpId,idx,'priceMax',mx);
-  const mxEl=document.getElementById('semx-'+grpId+'-'+idx);
-  if(mxEl)mxEl.textContent=mx>0?mx.toLocaleString():'—';
-};
-
-/* ── 제안 탭(tabNum===2) 개별 상품 수정 패널 ── */
-function buildEditPanel(p,tabNum){
-  return`<div style="padding:12px 16px">
-    <div class="ep-title"><span>✏️ ${p.skuNick||'—'} 수정</span>
-</div>
-    <div class="frow" onclick="event.stopPropagation()">
-      <div class="fg"><div class="fl">구분</div>
-        <select class="fi" onchange="localMod('${p._id}','proposalItems',{isMain:this.value})">
-          <option ${p.isMain==='메인'?'selected':''}>메인</option><option ${p.isMain==='서브'?'selected':''}>서브</option></select></div>
-      <div class="fg"><div class="fl">배송</div>
-        <select class="fi" onchange="localMod('${p._id}','proposalItems',{ship:this.value})">
-          <option ${p.ship==='무료배송'?'selected':''}>무료배송</option><option ${p.ship==='조건부 무료'?'selected':''}>조건부 무료</option><option ${p.ship==='유료배송'?'selected':''}>유료배송</option></select></div>
-      <div class="fg"><div class="fl">배송유형</div>
-        <select class="fi" onchange="localMod('${p._id}','proposalItems',{shipType:this.value})">
-          <option ${(p.shipType||'일반')==='일반'?'selected':''}>일반</option><option ${p.shipType==='오늘'?'selected':''}>오늘</option></select></div>
-      <div class="fg"><div class="fl">상태</div>
-        <select class="fi" onchange="localMod('${p._id}','proposalItems',{status:this.value});renderPropList(${tabNum})">
-          <option ${p.status==='제안중'?'selected':''}>제안중</option><option ${p.status==='제안완료'?'selected':''}>제안완료</option>
-          <option ${p.status==='선정'?'selected':''}>선정</option><option ${p.status==='미선정'?'selected':''}>미선정</option></select></div>
-    </div>
-    <div class="frow" onclick="event.stopPropagation()">
-      <div class="fg"><div class="fl" style="color:var(--t4)">정상가 🔒</div>
-        <input class="fi readonly" readonly value="${p.priceNormal||''}"></div>
-      <div class="fg"><div class="fl" style="color:var(--t4)">고정행사가 🔒</div>
-        <input class="fi readonly" readonly value="${p.priceEvent||''}"></div>
-      <div class="fg"><div class="fl" style="color:var(--or);font-weight:600">제안행사가 ✏️ (고정 이상)</div>
-        <input type="number" class="fi fi-alim" min="${p.priceEvent||0}" value="${p.priceAlim||p.priceEvent||''}"
-          oninput="const v=+this.value;const mn=${p.priceEvent||0};if(v<mn){this.value=mn;}localMod('${p._id}','proposalItems',{priceAlim:+this.value,priceMax:(+this.value)-1000})"></div>
-      <div class="fg"><div class="fl" style="color:var(--t4)">최대혜택가 🔒</div>
-        <input class="fi readonly" readonly id="ep-mx-${p._id}" value="${p.priceMax||''}"></div>
-      <div class="fg"><div class="fl">제안업로드일</div>
-        <input class="fi" value="${p.proposalUploadedAt||''}" oninput="localMod('${p._id}','proposalItems',{proposalUploadedAt:this.value})"></div>
-      <div class="fg"><div class="fl">마감일</div>
-        <input class="fi" value="${p.proposalDeadline||''}" oninput="localMod('${p._id}','proposalItems',{proposalDeadline:this.value})"></div>
-      <div class="fg"><div class="fl">제안일</div>
-        <input class="fi" value="${p.proposalMyDate||''}" oninput="localMod('${p._id}','proposalItems',{proposalMyDate:this.value})"></div>
-    </div>
-  </div>`;
-}
-
-window.toggleEditRow=function(propId,tabNum){
-  const ep=document.getElementById('ep-'+propId);const row=document.getElementById('row-'+propId);if(!ep)return;
-  const isOpen=ep.classList.contains('open');
-  if(EDIT_OPEN&&EDIT_OPEN!==propId){const prev=document.getElementById('ep-'+EDIT_OPEN);const prevRow=document.getElementById('row-'+EDIT_OPEN);if(prev)prev.classList.remove('open');if(prevRow)prevRow.classList.remove('open');}
-  ep.classList.toggle('open',!isOpen);if(row)row.classList.toggle('open',!isOpen);
-  EDIT_OPEN=isOpen?null:propId;
-};
-
-window.markOneSel=async function(id,btn){
-  localMod(id,'proposalItems',{status:'선정'});
-  const tr=btn.closest('tr');if(tr)tr.classList.add('grayed');
-  btn.outerHTML='<span class="st s-sel" style="font-size:10px">선정완료</span>';
-  toast('선정 처리 (저장 버튼으로 반영)');
 };
 
 const STATUS_CLASS_MAP={'제안중':'state-proposal','제안완료':'state-done','확인필요':'state-warning','미선정':'state-rejected','선정':'state-selected'};
@@ -3205,7 +3254,7 @@ window.addProdToGroup=function(eName,tabNum,grpId){
   const m=PROPOSALS.find(p=>p.eventName===eName);
   allCodes.forEach(code=>{
     const sku=SKUS.find(s=>s._id===code)||{};
-    const newP={_id:'NEW_'+Date.now()+'_'+code,_isNew:true,eventName:eName,eventType:m?.eventType||detectType({eventName:eName}),startDate:m?.startDate||null,endDate:m?.endDate||null,startTime:m?.startTime||null,endTime:m?.endTime||null,proposalUploadedAt:$('ev-upload-date')?.value||m?.proposalUploadedAt||null,proposalDeadline:$('ev-deadline')?.value||m?.proposalDeadline||null,proposalMyDate:m?.proposalMyDate||null,skuCode:code,skuNick:sku.nick||sku.name||code,productName:sku.name||'',isMain:skuGroup(sku.nick||sku.name)==='main'?'메인':'서브',status:'제안중',priceNormal:sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:sku.priceMax||null,priceMax:sku.priceMax?(sku.priceMax-1000):null,ship:'무료배송'};
+    const newP={_id:'NEW_'+Date.now()+'_'+code,_isNew:true,eventName:eName,eventType:m?.eventType||detectType({eventName:eName}),startDate:m?.startDate||null,endDate:m?.endDate||null,startTime:m?.startTime||null,endTime:m?.endTime||null,proposalUploadedAt:$('ev-upload-date')?.value||m?.proposalUploadedAt||null,proposalDeadline:$('ev-deadline')?.value||m?.proposalDeadline||null,proposalMyDate:m?.proposalMyDate||null,skuCode:code,skuNick:sku.nick||sku.name||code,productName:sku.name||'',isMain:skuGroup(sku.nick||sku.name)==='main'?'메인':'서브',status:'제안중',priceNormal:sku.priceNormal||null,priceBase:sku.priceDisc||null,priceEvent:sku.priceMax||null,priceAlim:sku.priceMax||null,priceMax:sku.priceMax?(sku.priceMax-1000):null,ship:sku.ship||'무료',shipType:sku.shipType||'일반'};
     PROPOSALS.unshift(newP);markDirty('proposalItems',newP._id,newP);
   });
   if(codeInp)codeInp.value='';
@@ -3373,10 +3422,17 @@ window.gotoStatusFromLogic=function(statusVal,targetTab,cardEl){
   },30);
 };
 
-/* ── 행사 운영 탭(p9): iframe lazy 로드 — 첫 진입 시만 src 설정 ── */
-window.loadPinnedIframe=function(){
-  const f=document.getElementById('pinned-iframe');
-  if(f && !f.src){f.src='evt_pinned.html';}
+/* ── 행사 로직: 헤더(행사 제안)/행사 종료 카드 클릭 시 필터 없이 탭 전환만 ── */
+window.goLogicTab=function(targetTab){
+  if(!statusFilter[targetTab])statusFilter[targetTab]=new Set();
+  statusFilter[targetTab].clear();
+  const tabEl=document.querySelector('.tab-bar .tab[onclick*="sw('+targetTab+',"]');
+  if(tabEl)sw(targetTab,tabEl);
+  setTimeout(()=>{
+    const pane=document.getElementById('p'+targetTab);
+    if(pane)pane.querySelectorAll('.sfb').forEach(b=>b.classList.remove('on'));
+    renderPropList(targetTab);
+  },30);
 };
 
 /* ── 행사 로직 탭: 각 status 카드의 건수 계산 ── */
@@ -3390,11 +3446,20 @@ window.renderLogicCounts=function(){
     const cs=(typeof computeStatus==='function')?computeStatus(p):(p.status||'제안중');
     if(counts.hasOwnProperty(cs))counts[cs]++;
   });
-  /* DOM 업데이트 */
+  /* 행사 종료(탭5와 동일 기준): isEvEnded=true인 행사의 proposalItems 수 */
+  let endCount=0;
+  PROPOSALS.forEach(p=>{
+    if(p._deleted)return;
+    const ev=EVENTS.find(e=>e._id===p.eventSID)||(p.eventName?EVENTS.find(e=>e.eventName===p.eventName):null);
+    if(ev&&typeof isEvEnded==='function'&&isEvEnded(ev))endCount++;
+  });
+  /* SVG text 업데이트 (id: logic-svg-cnt-XXX) */
   Object.keys(counts).forEach(st=>{
-    const el=document.getElementById('logic-cnt-'+st);
+    const el=document.getElementById('logic-svg-cnt-'+st);
     if(el)el.textContent=counts[st];
   });
+  const endEl=document.getElementById('logic-svg-cnt-행사종료');
+  if(endEl)endEl.textContent=endCount;
 };
 window.dfClick=function(el,field,tab){
   el.classList.toggle('on');
@@ -3403,23 +3468,63 @@ window.dfClick=function(el,field,tab){
   else dateFilter[tab].delete(field);
   renderPropList(tab);
 };
-/* ── 고정 이벤트 ── */
-let PINNED_EVENTS=new Set(JSON.parse(localStorage.getItem('pinnedEvents')||'[]'));
-function savePinned(){localStorage.setItem('pinnedEvents',JSON.stringify([...PINNED_EVENTS]));}
-window.bulkPin=function(tab){
+/* ── 고정 이벤트 (Firebase 저장) ── */
+let PINNED_EVENTS=new Set();  /* loadAll 완료 후 EVENTS.pinned 기반으로 채움 */
+
+/* 개별 핀 상태를 Firebase에 즉시 저장 */
+async function fbSetPin(evId, pinned){
+  try{
+    await updateDoc(doc(db,'events',evId),{pinned:!!pinned,updatedAt:new Date().toISOString()});
+    const ev=EVENTS.find(e=>e._id===evId);
+    if(ev)ev.pinned=!!pinned;
+  }catch(e){toast('고정 저장 실패: '+e.message,'err');throw e;}
+}
+
+window.bulkPin=async function(tab){
   const ids=getCheckedGrpIds(tab);
   if(!ids.length)return;
-  ids.forEach(id=>PINNED_EVENTS.add(id));
-  savePinned();clearBulkSelect(tab);renderPropList(tab);
-  toast('📌 '+ids.length+'건 고정됨');
+  const realIds=ids.filter(id=>EVENTS.find(e=>e._id===id));
+  try{
+    await Promise.all(realIds.map(id=>fbSetPin(id,true)));
+    realIds.forEach(id=>PINNED_EVENTS.add(id));
+    /* ID 매칭 안 되는 구형 데이터(eventName 키)는 메모리에만 추가 */
+    ids.filter(id=>!EVENTS.find(e=>e._id===id)).forEach(id=>PINNED_EVENTS.add(id));
+    clearBulkSelect(tab);renderPropList(tab);
+    toast('📌 '+ids.length+'건 고정됨');
+  }catch(e){/* 에러는 fbSetPin에서 toast */}
 };
-window.bulkUnpin=function(tab){
+
+window.bulkUnpin=async function(tab){
   const ids=getCheckedGrpIds(tab);
   if(!ids.length)return;
-  ids.forEach(id=>PINNED_EVENTS.delete(id));
-  savePinned();clearBulkSelect(tab);renderPropList(tab);
-  toast('📌 '+ids.length+'건 고정 해제');
+  const realIds=ids.filter(id=>EVENTS.find(e=>e._id===id));
+  try{
+    await Promise.all(realIds.map(id=>fbSetPin(id,false)));
+    ids.forEach(id=>PINNED_EVENTS.delete(id));
+    clearBulkSelect(tab);renderPropList(tab);
+    toast('📌 '+ids.length+'건 고정 해제');
+  }catch(e){}
 };
+
+/* localStorage → Firebase 마이그레이션 (최초 1회) */
+async function migratePinnedToFirebase(){
+  const raw=localStorage.getItem('pinnedEvents');
+  if(!raw)return;
+  if(localStorage.getItem('pinnedMigrated')==='1')return;
+  try{
+    const localPins=JSON.parse(raw)||[];
+    let migrated=0;
+    for(const id of localPins){
+      const ev=EVENTS.find(e=>e._id===id);
+      if(ev&&!ev.pinned){
+        await updateDoc(doc(db,'events',id),{pinned:true,updatedAt:new Date().toISOString()});
+        ev.pinned=true;migrated++;
+      }
+    }
+    localStorage.setItem('pinnedMigrated','1');
+    if(migrated)toast('📌 기존 핀 '+migrated+'건을 Firebase로 옮김');
+  }catch(e){console.warn('pin migration skipped',e);}
+}
 /* ── 일괄 처리 ── */
 function getCheckedGrpIds(tab){
   return [...document.querySelectorAll(`.grp-cb-${tab}:checked`)].map(cb=>cb.dataset.grp);
@@ -3449,6 +3554,16 @@ function updateBulkBar(tab){
   }
 }
 window.onGrpCbChange=function(tab){updateBulkBar(tab);};
+/* 헤더 빈 영역 클릭 → 체크박스 토글 (인터랙티브 자식 클릭은 무시) */
+window.onGrpHdClick=function(ev,tab,grpKey){
+  if(![2,3,5].includes(tab))return;
+  /* 자식 인터랙티브 요소 클릭이면 토글하지 않음 (input/button/a, onclick 가진 span 등) */
+  const interactive=ev.target.closest('input,button,a,select,textarea,[onclick]');
+  /* closest가 헤더 자체(currentTarget)면 = 빈 영역 클릭이라 토글 진행 */
+  if(interactive&&interactive!==ev.currentTarget)return;
+  const cb=ev.currentTarget.querySelector(`.grp-cb-${tab}[data-grp="${grpKey}"]`);
+  if(cb){cb.checked=!cb.checked;onGrpCbChange(tab);}
+};
 window.toggleAllBulk=function(tab,el){
   document.querySelectorAll(`.grp-cb-${tab}[data-grp]`).forEach(cb=>{cb.checked=el.checked;});
   updateBulkBar(tab);

@@ -445,8 +445,7 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
                 <input id="ev-talk-date" placeholder="2026-05-10 11:40 또는 없음" oninput="if(typeof renderRegProds==='function')renderRegProds()" style="flex:1;height:24px;padding:0 7px;font-size:11px;border:0.5px solid rgba(16,185,129,.35);border-radius:6px;background:rgba(16,185,129,.05);color:var(--t1);font-family:'IBM Plex Mono',monospace">
                 <button title="발송 안 함 (없음)" onclick="(function(){const e=document.getElementById('ev-talk-date');if(e){e.value='없음';if(typeof renderRegProds==='function')renderRegProds();}})()" style="height:24px;padding:0 8px;font-size:10.5px;border:0.5px solid rgba(0,0,0,.15);border-radius:5px;background:rgba(0,0,0,.04);color:#666;cursor:pointer;font-weight:500;flex-shrink:0">없음</button>
               </div>
-              <!-- 추가된 랜딩 링크 태그 -->
-              <div id="ev-landing-tags" style="display:flex;gap:3px;flex-wrap:wrap"></div>
+              <!-- 랜딩 결과 태그 영역 제거됨 — 카드 헤더 우측의 link-chip-card로 대체 표시 -->
               <input type="hidden" id="ev-pagetype" value="상품바로랜딩">
             </div>
           </div>
@@ -2064,7 +2063,7 @@ function renderRegProds(){
         <span class="egrpname">${evName}</span>
         <span class="egrpmeta">${regProducts.length}개 상품</span>
         <span style="margin-left:auto;display:flex;align-items:center;gap:6px">
-          ${REG_PAGE_LINKS.filter(l=>l.url).map(l=>`<span class="link-chip-card" onclick="copyToClip('${l.url}',this);event.stopPropagation()" title="${l.url}">🔗 ${l.type}<span class="lc-copied" style="font-size:9px;opacity:0;margin-left:2px;color:#0F6E56;transition:opacity .2s">✓</span></span>`).join('')}
+          ${REG_PAGE_LINKS.filter(l=>l.url).map(l=>`<span class="link-chip-card" onclick="copyToClip('${l.url}',this);event.stopPropagation()" title="${l.url}">${l.type}<span class="lc-copied" style="font-size:9px;opacity:0;margin-left:2px;color:#0F6E56;transition:opacity .2s">✓</span></span>`).join('')}
         </span>
       </div>
       <!-- 2행: 기간 칩 + 일정 칩 + 메모 우측 -->
@@ -2228,17 +2227,15 @@ window.addLandingLink=function(scope){
   updatePageTypeHidden();
 };
 function renderLandingTags(scope){
-  const el=document.getElementById('ev-landing-tags');
-  if(!el)return;
-  el.innerHTML=REG_PAGE_LINKS.filter(l=>l.url).map((l,i)=>
-    `<span class="lchip-tag" onclick="copyToClip('${l.url}',this)" title="${l.url}">${l.type}<span class="lx" onclick="event.stopPropagation();REG_PAGE_LINKS.splice(${i},1);renderLandingTags('${scope}');updatePageTypeHidden()">×</span></span>`
-  ).join('');
-  /* 칩 has-url 클래스 동기화 */
+  /* ev-landing-tags 영역은 제거됨 (카드 헤더 우측의 link-chip-card로 표시) */
+  /* lchip 알약의 has-url 클래스만 동기화 (URL 등록된 타입은 알약 색상이 변함) */
   document.querySelectorAll('#landing-chips-reg .lchip').forEach(btn=>{
     const type=btn.dataset.type;
     const hasUrl=REG_PAGE_LINKS.some(l=>l.type===type&&l.url);
     btn.classList.toggle('has-url',hasUrl);
   });
+  /* 카드 헤더 미리보기 갱신 (link-chip-card 표시 갱신) */
+  if(typeof renderRegProds==='function')renderRegProds();
 }
 function updatePageTypeHidden(){
   const el=document.getElementById('ev-pagetype');

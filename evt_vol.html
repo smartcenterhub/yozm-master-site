@@ -184,6 +184,54 @@ body{
   cursor:pointer;color:var(--t3);font-size:15px;line-height:1;flex-shrink:0;
 }
 .ev-card-remove:hover{background:rgba(212,32,32,0.08);color:var(--red)}
+.ev-card-toggle{
+  width:auto;height:22px;padding:0 8px;border-radius:5px;
+  border:1px solid var(--glass-border-s);background:#fff;
+  cursor:pointer;font-family:inherit;font-size:10.5px;font-weight:600;color:var(--t2);
+  flex-shrink:0;display:flex;align-items:center;gap:3px;
+  transition:all .12s;
+}
+.ev-card-toggle:hover{border-color:var(--accent);color:var(--accent)}
+.ev-card-toggle.on{background:rgba(212,32,32,0.08);border-color:var(--red);color:var(--red)}
+
+/* 요일 분배표 */
+.dow-dist{
+  margin-top:9px;padding:9px 10px;border-radius:7px;
+  background:rgba(58,58,240,0.04);
+  border:1px solid rgba(58,58,240,0.12);
+  font-size:10.5px;
+}
+.dow-dist-title{
+  font-size:9.5px;font-weight:700;color:var(--t2);
+  letter-spacing:.3px;margin-bottom:6px;
+  display:flex;align-items:center;gap:6px;
+}
+.dow-dist-title .meta{
+  font-weight:500;color:var(--t3);font-family:'IBM Plex Mono',monospace;
+}
+.dow-dist-table{
+  width:100%;border-collapse:collapse;
+  font-family:'IBM Plex Mono',monospace;
+}
+.dow-dist-table th, .dow-dist-table td{
+  padding:3px 5px;text-align:right;
+  border-bottom:1px dashed rgba(0,0,0,0.05);
+}
+.dow-dist-table th{
+  font-size:9.5px;font-weight:700;color:var(--t3);
+  border-bottom:1px solid rgba(0,0,0,0.1);
+}
+.dow-dist-table th:first-child, .dow-dist-table td:first-child{
+  text-align:left;color:var(--tx);font-weight:600;
+}
+.dow-dist-table th.off, .dow-dist-table td.off{
+  color:var(--t4);background:rgba(0,0,0,0.02);
+}
+.dow-dist-table td.zero{color:var(--t4)}
+.dow-dist-note{
+  font-size:9.5px;color:var(--t3);margin-top:5px;
+  font-style:italic;
+}
 
 /* SKU row — 두 줄 구조 (이름+입력 / 품목 pills) */
 .sku-row{
@@ -407,10 +455,68 @@ body{
 }
 .cal-cell-day.sun{color:var(--red)}
 .cal-cell-day.sat{color:var(--blue)}
-.cal-cell-day .ev-count{
-  font-size:8.5px;font-weight:700;color:var(--accent);
+.cal-cell-info{
+  font-size:9px;font-weight:700;color:var(--accent);
   background:rgba(58,58,240,0.1);
-  padding:0 4px;border-radius:3px;line-height:1.5;
+  padding:1px 5px;border-radius:3px;line-height:1.5;
+  cursor:help;display:inline-flex;align-items:center;gap:2px;
+  position:relative;
+}
+.cal-cell-info::before{content:'ⓘ';font-size:8px;opacity:.7}
+.cal-cell-info:hover{background:rgba(58,58,240,0.2)}
+
+/* 호버 툴팁 */
+.cal-tooltip{
+  position:fixed;z-index:200;
+  background:#1a1a2e;color:#fff;
+  border-radius:8px;padding:9px 11px;
+  font-size:10.5px;line-height:1.55;
+  box-shadow:0 8px 24px rgba(0,0,0,0.25);
+  max-width:300px;
+  pointer-events:none;
+  opacity:0;transition:opacity .12s;
+  font-family:'Inter',sans-serif;
+}
+.cal-tooltip.show{opacity:1}
+.cal-tooltip .tt-title{
+  font-size:10px;font-weight:700;color:#9ca3af;
+  text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px;
+}
+.cal-tooltip .tt-ev{
+  margin-bottom:6px;padding-bottom:6px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+.cal-tooltip .tt-ev:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.cal-tooltip .tt-ev-name{
+  font-size:11px;font-weight:600;color:#fff;
+  display:flex;align-items:center;gap:5px;margin-bottom:3px;
+}
+.cal-tooltip .tt-ev-tag{
+  font-size:8.5px;padding:1px 5px;border-radius:3px;font-weight:700;
+  background:rgba(255,255,255,0.15);color:#e5e7eb;
+}
+.cal-tooltip .tt-ev-pills{
+  display:flex;flex-wrap:wrap;gap:3px;
+  font-family:'IBM Plex Mono',monospace;
+}
+.cal-tooltip .tt-pill{
+  font-size:10px;padding:1px 6px;border-radius:8px;
+  background:rgba(255,255,255,0.1);color:#fff;font-weight:600;
+}
+.cal-tooltip .tt-pill .n{color:#fbbf24;margin-left:1px}
+
+/* 휴무 셀 */
+.cal-cell.off-day{
+  background:rgba(220,38,38,0.05);
+  border-color:rgba(220,38,38,0.18);
+}
+.cal-cell.off-day:hover{background:rgba(220,38,38,0.07)}
+.cal-cell-offlabel{
+  font-size:9px;font-weight:700;color:var(--red);
+  font-family:inherit;letter-spacing:.2px;
+  background:rgba(220,38,38,0.1);
+  padding:1px 5px;border-radius:3px;line-height:1.4;
+  align-self:flex-start;
 }
 
 .cal-cell-pills{
@@ -581,6 +687,7 @@ function fbStatus(state, msg){
 let ITEMS = [];           // 품목 마스터 (items 컬렉션)
 let SKUS = [];            // SKU 마스터 (skus 컬렉션, 운영중만)
 let EVENTS = [];          // 행사 (events 컬렉션, skus[] 채워서 들어감)
+let CALENDAR_MARKS = {};  // { 'YYYY-MM-DD': {holiday:{label}, noShip:{label}} }
 
 const SKU_BY_CODE = {};
 const ITEM_BY_NICK = {};
@@ -589,7 +696,7 @@ const ITEM_BY_NICK = {};
 // 상태
 // ════════════════════════════════════════════
 let filterType = 'all';
-let filterMonth = '2026-04';
+let filterMonth = 'all';
 let sortOrder = 'newest';
 let searchQuery = '';
 let skuSearch = '';
@@ -605,7 +712,11 @@ function escapeHtml(s){
 // ════════════════════════════════════════════
 function applyFilter(){
   let list = [...EVENTS];
-  if(filterType !== 'all')   list = list.filter(e => e.type === filterType);
+  if(filterType === 'all'){
+    list = list.filter(e => e.type !== 'SP');     // 전체 보기에서는 SP(슈퍼적립) 미포함
+  } else {
+    list = list.filter(e => e.type === filterType);
+  }
   if(filterMonth !== 'all')  list = list.filter(e => e.startDate.startsWith(filterMonth) || e.endDate.startsWith(filterMonth));
   if(searchQuery){
     const q = searchQuery.toLowerCase();
@@ -737,6 +848,7 @@ function renderSelected(){
   
   container.innerHTML = evList.map(ev => {
     const evTotal = calcEventTotal(ev);
+    const isDistOpen = dowDistOpen.has(ev._id);
     return `<div class="ev-card" data-evcard="${ev._id}">
       <div class="ev-card-hdr">
         <div class="ev-card-title">
@@ -744,6 +856,9 @@ function renderSelected(){
           <span class="ev-card-name">${escapeHtml(ev.name)}</span>
           <span class="ev-card-meta">${ev.startDate} ~ ${ev.endDate}</span>
         </div>
+        <button class="ev-card-toggle ${isDistOpen?'on':''}" onclick="toggleDowDist('${ev._id}')" title="요일별 분배 보기">
+          📊 요일분배
+        </button>
         <button class="ev-card-remove" onclick="removeEvent('${ev._id}')" title="제거">×</button>
       </div>
       ${ev.skus.map(skuCode => {
@@ -762,10 +877,115 @@ function renderSelected(){
         <span class="ev-card-total-label">행사 합계</span>
         <div class="item-pills" data-evtotal="${ev._id}">${renderEvTotalPills(evTotal)}</div>
       </div>
+      ${isDistOpen ? renderDowDistTable(ev) : ''}
     </div>`;
   }).join('');
   
   renderGrandTotal();
+}
+
+// ─ 요일분배 토글 상태 ─
+const dowDistOpen = new Set();
+function toggleDowDist(evId){
+  if(dowDistOpen.has(evId)) dowDistOpen.delete(evId);
+  else dowDistOpen.add(evId);
+  renderSelected();
+}
+window.toggleDowDist = toggleDowDist;
+
+// ─ 요일분배 표 렌더 (출고 요일 기준) ─
+function renderDowDistTable(ev){
+  // 컬럼: 월 화 수 목 금 토 일 + 합계 (출고 요일 기준)
+  // 행: SKU별 / 마지막 행: 비중 (실제 누적 비중)
+  const shipMap = buildShipmentMap(ev);
+  const sumW = calcEventShipSum(ev);
+  
+  // 출고일별 정보 정리
+  const shipDates = Object.keys(shipMap).sort();
+  let offDayCount = 0;
+  shipDates.forEach(ds => { if(isOffDay(ds) || shipMap[ds] === 0) {} });
+  // 행사 기간 (행사일 기준)
+  const start = parseDate(ev.startDate);
+  const end = parseDate(ev.endDate);
+  const totalDays = Math.round((end - start) / 86400000) + 1;
+  // 출고일 휴무 수
+  shipDates.forEach(ds => { if(isOffDay(ds)) offDayCount++; });
+  
+  // 출고 요일별 누적 비중 + SKU별 분배 누적
+  const dowWeightAccum = [0,0,0,0,0,0,0];  // [일~토] 출고일 요일별 실제 비중 합 (보너스 포함)
+  const skuDowMap = {};
+  ev.skus.forEach(skuCode => { skuDowMap[skuCode] = [0,0,0,0,0,0,0]; });
+  
+  shipDates.forEach(ds => {
+    const w = shipMap[ds] || 0;
+    if(w === 0) return;
+    const date = parseDate(ds);
+    const dow = date.getDay();
+    dowWeightAccum[dow] += w;
+    const skuMap = getDaySkuQtyForEvent(ev, ds);
+    Object.entries(skuMap).forEach(([skuCode, qty]) => {
+      if(skuDowMap[skuCode]) skuDowMap[skuCode][dow] += qty;
+    });
+  });
+  
+  // 표 헤더 (월~일)
+  const dowOrder = [1,2,3,4,5,6,0];  // 월~일에 해당하는 getDay 값
+  const dowLabel = ['월','화','수','목','금','토','일'];
+  
+  let theadHtml = '<tr><th>SKU</th>';
+  dowOrder.forEach((d,i) => {
+    const w = DOW_WEIGHTS[d];
+    const offCls = w === 0 ? 'off' : '';
+    theadHtml += `<th class="${offCls}" title="기본 비중 ${w}">${dowLabel[i]}</th>`;
+  });
+  theadHtml += '<th>합계</th></tr>';
+  
+  // SKU 행
+  let bodyHtml = '';
+  ev.skus.forEach(skuCode => {
+    const sk = SKU_BY_CODE[skuCode];
+    if(!sk) return;
+    const dowArr = skuDowMap[skuCode] || [0,0,0,0,0,0,0];
+    let row = `<tr><td title="${escapeHtml(sk.name)}">${escapeHtml(sk.nick)}</td>`;
+    let rowSum = 0;
+    dowOrder.forEach((d) => {
+      const v = dowArr[d];
+      const baseW = DOW_WEIGHTS[d];
+      const accumW = dowWeightAccum[d];
+      const cls = (baseW === 0 && accumW === 0) ? 'off' : (v === 0 ? 'zero' : '');
+      row += `<td class="${cls}">${v ? v.toLocaleString() : '·'}</td>`;
+      rowSum += v;
+    });
+    row += `<td><strong>${rowSum ? rowSum.toLocaleString() : '·'}</strong></td></tr>`;
+    bodyHtml += row;
+  });
+  
+  // 비중 표시 행 (실제 누적 비중 = 보너스 반영)
+  let weightRow = '<tr style="border-top:1px solid rgba(0,0,0,0.08)"><td style="color:var(--t3);font-weight:500">비중</td>';
+  let weightSum = 0;
+  dowOrder.forEach((d) => {
+    const w = dowWeightAccum[d];
+    const cls = w === 0 ? 'off' : '';
+    weightRow += `<td class="${cls}" style="color:var(--t3)">${w||'·'}</td>`;
+    weightSum += w;
+  });
+  weightRow += `<td style="color:var(--t3)">${weightSum||'·'}</td></tr>`;
+  
+  const note = offDayCount > 0
+    ? `※ 출고일 기준 (행사일+1) · 휴무는 다음 영업일로 이월 · 첫날 가중치 +2 반영`
+    : `※ 출고일 기준 (행사일+1) · 첫날 가중치 +2 반영`;
+  
+  return `<div class="dow-dist">
+    <div class="dow-dist-title">
+      📊 출고 요일별 SKU 분배
+      <span class="meta">출고 비중합 ${sumW}</span>
+    </div>
+    <table class="dow-dist-table">
+      <thead>${theadHtml}</thead>
+      <tbody>${bodyHtml}${weightRow}</tbody>
+    </table>
+    <div class="dow-dist-note">${note}</div>
+  </div>`;
 }
 
 // 통합 합계 (선택/미선택 상태 모두 placeholder 카드 유지)
@@ -823,6 +1043,20 @@ function updateSkuQty(evId, skuCode, value){
   }
   // 3) 통합 합계 갱신
   renderGrandTotal();
+  // 4) 요일분배 표가 열려있으면 그 행사만 새로 렌더 (focus 유지를 위해 카드 통째로 다시 그리진 않음)
+  if(dowDistOpen.has(evId)){
+    const ev = EVENTS.find(e => e._id === evId);
+    const card = document.querySelector(`[data-evcard="${evId}"]`);
+    if(ev && card){
+      // 기존 dow-dist 노드만 교체
+      const oldDist = card.querySelector('.dow-dist');
+      const tmp = document.createElement('div');
+      tmp.innerHTML = renderDowDistTable(ev);
+      const newDist = tmp.firstElementChild;
+      if(oldDist && newDist) oldDist.replaceWith(newDist);
+      else if(newDist) card.appendChild(newDist);
+    }
+  }
 }
 
 window.toggleEvent = toggleEvent;
@@ -928,45 +1162,143 @@ function parseDate(s){
   return new Date(y, m-1, d);
 }
 
-// ─ 행사 기간 내 요일 비중 합 ─
-function calcEventDowSum(ev){
-  const start = parseDate(ev.startDate);
-  const end = parseDate(ev.endDate);
-  let sum = 0;
-  const cur = new Date(start);
-  while(cur <= end){
-    sum += DOW_WEIGHTS[cur.getDay()];
-    cur.setDate(cur.getDate()+1);
-  }
-  return sum;
+// ─ 휴무일 여부 체크 (holiday 또는 noShip 둘 다) ─
+function isOffDay(dateStr){
+  const m = CALENDAR_MARKS[dateStr];
+  return !!(m && (m.holiday || m.noShip));
 }
 
-// ─ 특정 날짜에 행사 SKU 수량을 분배한 후 품목 분해 ─
-//   { nick: qty, ... } 누적
+// ─ 휴무 라벨 가져오기 ─
+function getOffDayLabel(dateStr){
+  const m = CALENDAR_MARKS[dateStr];
+  if(!m) return '';
+  if(m.holiday && m.noShip) return (m.holiday.label||'공휴일') + ' / ' + (m.noShip.label||'배송휴무');
+  if(m.holiday) return m.holiday.label || '공휴일';
+  if(m.noShip)  return m.noShip.label || '배송휴무';
+  return '';
+}
+
+// ─ 그 날의 요일 비중 (출고일 요일 기준 픽스값) ─
+//   휴무일이면 0
+function getDayWeight(dateStr, date){
+  if(isOffDay(dateStr)) return 0;
+  return DOW_WEIGHTS[date.getDay()];
+}
+
+// ─ 행사의 "출고일 비중표" 빌드 (캐싱) ─
+//   반환: { 'YYYY-MM-DD': weight, ... } — 출고일 → 비중
+//   규칙 (가중치코드1 = 첫날 가중치):
+//    1. 행사일 D ~ D+N → 출고일 D+1 ~ D+N+1
+//    2. 각 출고일이 영업일이면(휴무X, 토일X) 그날 비중 = 출고일 요일 픽스값
+//    3. 출고일이 휴무/주말이면 → 다음 영업 출고일까지 재귀 이월
+//       (이월된 비중은 도착한 영업일에 누적)
+//    4. 첫날 가중치(가중치코드1): 행사 시작일(=D)분이 도착한 영업 출고일에 +2
+//       시작일 출고일이 휴무/주말이면 자동으로 미뤄진 영업일에 적용됨
+let _shipMapCache = new WeakMap();
+function clearShipmentCache(){ _shipMapCache = new WeakMap(); }
+
+function buildShipmentMap(ev){
+  if(_shipMapCache.has(ev)) return _shipMapCache.get(ev);
+  
+  const start = parseDate(ev.startDate);
+  const end = parseDate(ev.endDate);
+  const map = {};       // 출고일 → 비중
+  
+  // 행사 마감일 기준 미래로 충분히 탐색할 한계 (60일)
+  const SEARCH_LIMIT_DAYS = 60;
+  
+  // 영업일(=비중 > 0인 날) 찾기 — 시작일에서 forward 탐색
+  function findBusinessDay(fromDate){
+    const cur = new Date(fromDate);
+    for(let i=0; i<SEARCH_LIMIT_DAYS; i++){
+      const ds = fmtDate(cur);
+      const w = getDayWeight(ds, cur);
+      if(w > 0) return { date: new Date(cur), ds };
+      cur.setDate(cur.getDate()+1);
+    }
+    return null; // 못 찾으면 null
+  }
+  
+  // 1) 각 행사일 D를 순회하며 출고일 처리
+  const cur = new Date(start);
+  while(cur <= end){
+    const ship = new Date(cur);
+    ship.setDate(cur.getDate() + 1);    // 원래 출고일 = 행사일 + 1
+    const ds = fmtDate(ship);
+    const w = getDayWeight(ds, ship);
+    
+    if(w > 0){
+      // 영업일이면 그 날에 비중 적용
+      map[ds] = (map[ds]||0) + DOW_WEIGHTS[ship.getDay()];
+    } else {
+      // 휴무/주말이면 다음 영업일 찾아서 그날 비중을 거기에 누적
+      const biz = findBusinessDay(ship);
+      if(biz){
+        // 이월할 비중 = 원래 출고일 요일의 픽스 비중 (휴무여도 그날의 요일 비중 사용)
+        // 단, 원래 출고일이 토/일이면 0이라 의미 없음 → 그래도 일관성을 위해 그대로 더함
+        map[biz.ds] = (map[biz.ds]||0) + DOW_WEIGHTS[ship.getDay()];
+      }
+    }
+    cur.setDate(cur.getDate()+1);
+  }
+  
+  // 2) 첫날 가중치(가중치코드1) +2
+  //    시작 행사일(=start)의 출고일을 찾고, 영업일이면 그곳, 아니면 다음 영업일에 +2
+  const firstShip = new Date(start);
+  firstShip.setDate(start.getDate() + 1);
+  const firstShipDs = fmtDate(firstShip);
+  const firstShipW = getDayWeight(firstShipDs, firstShip);
+  let bonusDs = null;
+  if(firstShipW > 0){
+    bonusDs = firstShipDs;
+  } else {
+    const biz = findBusinessDay(firstShip);
+    if(biz) bonusDs = biz.ds;
+  }
+  if(bonusDs){
+    map[bonusDs] = (map[bonusDs]||0) + 2;
+  }
+  
+  _shipMapCache.set(ev, map);
+  return map;
+}
+
+// ─ 행사 전체 출고일 비중 합 ─
+function calcEventShipSum(ev){
+  const map = buildShipmentMap(ev);
+  return Object.values(map).reduce((s,w)=>s+w, 0);
+}
+
+// ─ 특정 출고일에 행사의 SKU별 분배 수량 ─
+//   반환: { skuCode → 그 출고일 분배 수량 } (0이면 제외)
+function getDaySkuQtyForEvent(ev, dateStr){
+  const out = {};
+  const map = buildShipmentMap(ev);
+  const w = map[dateStr] || 0;
+  if(w === 0) return out;
+  
+  const sumW = calcEventShipSum(ev);
+  if(sumW === 0) return out;
+  const ratio = w / sumW;
+  
+  ev.skus.forEach(skuCode => {
+    const qty = skuQty[ev._id+':'+skuCode] || 0;
+    if(qty <= 0) return;
+    out[skuCode] = Math.round(qty * ratio);
+  });
+  return out;
+}
+
+// ─ 특정 출고일의 모든 선택 행사 품목 합산 ─
 function getDayItemsForDate(dateStr){
-  const merged = {};   // nick → qty
-  const date = parseDate(dateStr);
-  const dow = date.getDay();
-  const dowWeight = DOW_WEIGHTS[dow];
-  if(dowWeight === 0) return merged;        // 토/일 비중 0 → 분배 없음
+  const merged = {};
   
   selectedEventIds.forEach(evId => {
     const ev = EVENTS.find(e => e._id === evId);
     if(!ev) return;
-    const start = parseDate(ev.startDate);
-    const end = parseDate(ev.endDate);
-    if(date < start || date > end) return;  // 행사 기간 밖
-    
-    const dowSum = calcEventDowSum(ev);
-    if(dowSum === 0) return;
-    const ratio = dowWeight / dowSum;
-    
-    ev.skus.forEach(skuCode => {
-      const qty = skuQty[evId+':'+skuCode] || 0;
-      if(qty <= 0) return;
-      const dayQty = Math.round(qty * ratio);  // 반올림
-      
-      // SKU → 품목 분해
+    const skuQtyMap = getDaySkuQtyForEvent(ev, dateStr);
+    Object.entries(skuQtyMap).forEach(([skuCode, dayQty]) => {
+      if(dayQty <= 0) return;
       const sk = SKU_BY_CODE[skuCode];
       if(!sk) return;
       const firstOpt = (sk.options||[])[0];
@@ -984,14 +1316,45 @@ function getDayItemsForDate(dateStr){
   return merged;
 }
 
-// ─ 그 날에 진행 중인 행사 개수 ─
+// ─ 출고일에 행사별 분리 (호버 툴팁용) ─
+function getDayItemsByEvent(dateStr){
+  const out = [];
+  
+  selectedEventIds.forEach(evId => {
+    const ev = EVENTS.find(e => e._id === evId);
+    if(!ev) return;
+    const skuQtyMap = getDaySkuQtyForEvent(ev, dateStr);
+    if(Object.keys(skuQtyMap).length === 0) return;
+    
+    const items = {};
+    Object.entries(skuQtyMap).forEach(([skuCode, dayQty]) => {
+      if(dayQty <= 0) return;
+      const sk = SKU_BY_CODE[skuCode];
+      if(!sk) return;
+      const firstOpt = (sk.options||[])[0];
+      const skuMerged = {};
+      (firstOpt?.items || []).forEach(it => {
+        const nick = it.nick;
+        if(!nick || skuMerged[nick]) return;
+        skuMerged[nick] = true;
+        items[nick] = (items[nick]||0) + (it.qty||1) * dayQty;
+      });
+    });
+    
+    if(Object.keys(items).length > 0) out.push({ev, items});
+  });
+  
+  return out;
+}
+
+// ─ 그 출고일에 출고분이 있는 행사 개수 (출고일 기준) ─
 function countEventsOnDate(dateStr){
-  const date = parseDate(dateStr);
   let cnt = 0;
   selectedEventIds.forEach(evId => {
     const ev = EVENTS.find(e => e._id === evId);
     if(!ev) return;
-    if(date >= parseDate(ev.startDate) && date <= parseDate(ev.endDate)) cnt++;
+    const map = buildShipmentMap(ev);
+    if((map[dateStr]||0) > 0) cnt++;
   });
   return cnt;
 }
@@ -1076,6 +1439,8 @@ function renderCalendar(){
     const isToday = ds === today;
     const isCursor = (calView === 'week') && ds === cursorStr;
     const hasEvent = evCount > 0;
+    const isOff = isOffDay(ds);
+    const offLabel = isOff ? getOffDayLabel(ds) : '';
     
     const cls = [
       'cal-cell',
@@ -1083,24 +1448,94 @@ function renderCalendar(){
       isToday ? 'today' : '',
       isCursor ? 'cursor' : '',
       isSelected ? 'selected' : '',
+      isOff ? 'off-day' : '',
       !hasEvent ? 'no-event' : '',
     ].filter(Boolean).join(' ');
     
     const dayCls = `cal-cell-day ${dow===0?'sun':dow===6?'sat':''}`;
-    const evBadge = evCount > 0 ? `<span class="ev-count">${evCount}</span>` : '';
+    // 행사 있는 날만 ℹ️ 아이콘 (호버 시 행사별 분리 표시)
+    const infoChip = evCount > 0
+      ? `<span class="cal-cell-info" data-tt-date="${ds}">${evCount}</span>`
+      : '';
+    const offChip = isOff
+      ? `<div class="cal-cell-offlabel" title="${escapeHtml(offLabel)}">휴무</div>`
+      : '';
     
-    return `<div class="${cls}" ${hasEvent?`onclick="toggleDate('${ds}')"`:''}>
+    return `<div class="${cls}" ${hasEvent && !isOff?`onclick="toggleDate('${ds}')"`:''}>
       <div class="${dayCls}">
         <span>${date.getDate()}</span>
-        ${evBadge}
+        ${infoChip}
       </div>
+      ${offChip}
       ${renderCellPills(items)}
     </div>`;
   }).join('');
   
   body.innerHTML = `<div class="cal-grid">${dowHead}${cellsHtml}</div>`;
   
+  // 호버 툴팁 바인딩
+  bindTooltips();
+  
   renderCalFoot();
+}
+
+// ─ 툴팁 (행사별 분리 호버) ─
+function ensureTooltipEl(){
+  let tt = document.getElementById('cal-tooltip');
+  if(!tt){
+    tt = document.createElement('div');
+    tt.id = 'cal-tooltip';
+    tt.className = 'cal-tooltip';
+    document.body.appendChild(tt);
+  }
+  return tt;
+}
+function buildTooltipHtml(dateStr){
+  const byEv = getDayItemsByEvent(dateStr);
+  if(byEv.length === 0) return '';
+  const dateLabel = dateStr.replace(/-/g,'/');
+  const evHtml = byEv.map(({ev, items}) => {
+    const arr = Object.entries(items)
+      .map(([nick,qty]) => ({nick,qty,no: ITEM_BY_NICK[nick]?.no || 999}))
+      .sort((a,b) => a.no - b.no);
+    return `<div class="tt-ev">
+      <div class="tt-ev-name">
+        <span class="tt-ev-tag">${escapeHtml(ev.type)}</span>
+        ${escapeHtml(ev.name)}
+      </div>
+      <div class="tt-ev-pills">
+        ${arr.map(it => `<span class="tt-pill">${it.nick}<span class="n">${it.qty}</span></span>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="tt-title">${dateLabel} · ${byEv.length}개 행사</div>${evHtml}`;
+}
+function bindTooltips(){
+  const tt = ensureTooltipEl();
+  document.querySelectorAll('.cal-cell-info').forEach(el => {
+    el.addEventListener('mouseenter', e => {
+      const ds = el.dataset.ttDate;
+      const html = buildTooltipHtml(ds);
+      if(!html) return;
+      tt.innerHTML = html;
+      tt.classList.add('show');
+      const r = el.getBoundingClientRect();
+      // 셀 위쪽에 띄우기 (공간 없으면 아래)
+      let top = r.top - tt.offsetHeight - 8;
+      if(top < 8) top = r.bottom + 8;
+      let left = r.left + r.width/2 - tt.offsetWidth/2;
+      if(left < 8) left = 8;
+      const maxLeft = window.innerWidth - tt.offsetWidth - 8;
+      if(left > maxLeft) left = maxLeft;
+      tt.style.top = top + 'px';
+      tt.style.left = left + 'px';
+    });
+    el.addEventListener('mouseleave', () => {
+      tt.classList.remove('show');
+    });
+    // 클릭 시 셀 토글이 안 되도록 stopPropagation
+    el.addEventListener('click', e => e.stopPropagation());
+  });
 }
 
 function toggleDate(ds){
@@ -1179,11 +1614,12 @@ window.removeEvent = function(evId){
 async function loadAll(){
   fbStatus('loading','로드 중...');
   try {
-    const [iSnap, sSnap, eSnap, pSnap] = await Promise.all([
+    const [iSnap, sSnap, eSnap, pSnap, mSnap] = await Promise.all([
       getDocs(collection(db, 'items')),
       getDocs(collection(db, 'skus')),
       getDocs(collection(db, 'events')),
       getDocs(collection(db, 'proposalItems')),
+      getDocs(collection(db, 'calendarMarks')),
     ]);
 
     // 1) ITEMS — 품목 마스터 (전체)
@@ -1235,21 +1671,31 @@ async function loadAll(){
       };
     })
     .filter(e => e.skus.length > 0)               // 선정된 SKU가 있는 행사만
+    .filter(e => e.type !== 'AL')                  // AL(상시 소재) 제외 — 화면에 아예 안 보임
     .sort((a,b) => (b.startDate||'').localeCompare(a.startDate||''));
 
-    // 5) Lookup 인덱스
+    // 5) calendarMarks — 휴무일 마크
+    CALENDAR_MARKS = {};
+    mSnap.docs.forEach(d => {
+      const m = d.data();
+      if(!m.date || !m.type) return;
+      if(!CALENDAR_MARKS[m.date]) CALENDAR_MARKS[m.date] = {};
+      CALENDAR_MARKS[m.date][m.type] = { _id: d.id, label: m.label || '' };
+    });
+
+    // 6) Lookup 인덱스
     Object.keys(SKU_BY_CODE).forEach(k => delete SKU_BY_CODE[k]);
     SKUS.forEach(s => { SKU_BY_CODE[s.code] = s; });
     Object.keys(ITEM_BY_NICK).forEach(k => delete ITEM_BY_NICK[k]);
     ITEMS.forEach(i => { if(i.nick) ITEM_BY_NICK[i.nick] = i; });
 
-    // 6) UI 보강 — 유형 칩 동적 생성, 월 옵션 동적 생성
+    // 7) UI 보강 — 유형 칩 동적 생성, 월 옵션 동적 생성
     rebuildTypeChips();
     rebuildMonthOptions();
 
     fbStatus('connected', `연결됨 · 행사 ${EVENTS.length} · SKU ${SKUS.length} · 품목 ${ITEMS.length}`);
 
-    // 7) 초기 렌더
+    // 8) 초기 렌더
     renderResults();
     renderSelected();
   } catch(e){
@@ -1285,12 +1731,10 @@ function rebuildMonthOptions(){
     if(e.endDate)   monthSet.add(e.endDate.slice(0,7));
   });
   const monthsArr = Array.from(monthSet).sort();
-  // 현재 월을 기본 선택, 없으면 'all'
-  const todayMonth = new Date().toISOString().slice(0,7);
-  const defaultMonth = monthsArr.includes(todayMonth) ? todayMonth : 'all';
-  filterMonth = defaultMonth;
-  sel.innerHTML = `<option value="all">전체</option>` +
-    monthsArr.map(m => `<option value="${m}" ${m===defaultMonth?'selected':''}>${m.replace('-','.')}</option>`).join('');
+  // 기본은 항상 '전체'
+  filterMonth = 'all';
+  sel.innerHTML = `<option value="all" selected>전체</option>` +
+    monthsArr.map(m => `<option value="${m}">${m.replace('-','.')}</option>`).join('');
 }
 
 // 시작

@@ -2,213 +2,137 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=1440">
-<title>운영 관리 - 핀된 행사</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=1440, initial-scale=1.0">
+<title>운영 관리 — 요즘</title>
 <style>
-:root{
-  --bg-grad: linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#eef0f8 100%);
-  --glass-bg: rgba(255,255,255,0.74);
-  --glass-bg-strong: rgba(255,255,255,0.92);
-  --glass-border-s: rgba(0,0,0,0.07);
-  --bd: rgba(0,0,0,0.07);
-  --gs: rgba(255,255,255,0.55);
-  --tx: #0a0a0f;
-  --t2: #4a4a5a;
-  --t3: #9898a8;
-  --t4: #c4c4d0;
-  --ac: #3a3af0;
-  --gr: #1a8a4a;
-  --rd: #d42020;
-  --or: #c45a10;
-  --bl: #1a56c8;
-  --pu: #6c35cc;
-  --pk: #c42878;
-  --tl: #0d7a6b;
-  --pin: #D4A017;
-}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{min-width:1440px;background:var(--bg-grad) fixed}
-body{
-  font-family:'Plus Jakarta Sans',-apple-system,'SF Pro Text',sans-serif;
-  font-size:13px;line-height:1.5;color:var(--tx);
+:root{
+  --gb:rgba(255,255,255,0.74);--gs:rgba(255,255,255,0.92);
+  --bd:rgba(0,0,0,0.07);
+  --tx:#0a0a0f;--t2:#4a4a5a;--t3:#9898a8;--t4:#c4c4d0;
+  --ac:#3a3af0;--gr:#1a8a4a;--rd:#d42020;--or:#c45a10;
+  --bl:#1a56c8;--pu:#6c35cc;--pk:#c42878;--tl:#0d7a6b;
+  --pin:#D4A017;
+  --r:9px;--rl:12px;
 }
-.mono{font-family:'IBM Plex Mono',monospace}
+html{min-width:1188px;background:linear-gradient(145deg,#f0f2f7 0%,#e8eaf2 40%,#eef0f8 100%) fixed}
+body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx);width:1188px;padding:0 24px 80px}
 
-/* 헤더 */
-.header{
-  background:var(--glass-bg);
-  border-bottom:1px solid var(--glass-border-s);
-  padding:16px 24px;
-  position:sticky;top:0;z-index:90;
-  backdrop-filter:blur(8px);
-}
-.hd-row{display:flex;align-items:center;gap:12px}
-.hd-title{font-size:18px;font-weight:700;color:var(--tx);display:flex;align-items:center;gap:8px}
-.hd-title .pin{color:var(--pin);font-size:20px}
-.hd-count{font-size:12px;color:var(--t3);font-weight:500;margin-left:6px}
-.hd-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+/* ── 페이지 헤더 ── */
+.page-hd{display:flex;justify-content:space-between;align-items:flex-end;padding:16px 0 12px;position:sticky;top:0;z-index:90;background:linear-gradient(180deg,#eef0f8 0%,#eef0f8 70%,rgba(238,240,248,0));backdrop-filter:blur(4px)}
+.pg-title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:7px}
+.pg-title .pin{color:var(--pin);font-size:18px}
+.pg-desc{font-size:11.5px;color:var(--t3);margin-top:3px}
+.pg-count{font-size:11.5px;color:var(--t3);font-weight:500;margin-left:6px}
 
-/* 버튼 */
-.btn{
-  height:30px;padding:0 14px;border-radius:7px;border:1px solid var(--bd);
-  background:var(--glass-bg-strong);color:var(--t2);
-  font-size:12px;font-weight:500;cursor:pointer;
-  font-family:inherit;display:inline-flex;align-items:center;gap:5px;
-  transition:all .12s;
-}
-.btn:hover{border-color:var(--ac);color:var(--ac)}
-.btn-p{background:var(--ac);color:#fff;border-color:var(--ac)}
-.btn-p:hover{background:#2929d0;color:#fff}
-.btn-sm{height:24px;padding:0 9px;font-size:11px}
+/* ── 버튼 ── */
+.btn{height:28px;padding:0 12px;border:1px solid var(--bd);border-radius:7px;background:var(--gs);color:var(--t2);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px;transition:all .12s}
+.btn:hover{transform:translateY(-1px);border-color:var(--ac);color:var(--ac)}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.4;cursor:default;transform:none}
+.btn-p{background:linear-gradient(135deg,var(--ac),#5a3af0);color:#fff;border-color:transparent}
+.btn-p:hover{color:#fff;border-color:transparent;opacity:.92}
+.btn-gh{background:rgba(255,255,255,.5);color:var(--t2)}
+.btn-sm{height:26px;padding:0 10px;font-size:11.5px}
+.btn-xs{height:22px;padding:1px 7px;font-size:10.5px}
 
-/* 필터 바 */
-.fbar{
-  background:var(--glass-bg);
-  border-bottom:1px solid var(--glass-border-s);
-  padding:8px 24px;
-  display:flex;gap:8px;align-items:center;flex-wrap:wrap;
-}
-.fbar select,.fbar input{
-  height:28px;padding:0 10px;font-size:12px;
-  border:1px solid var(--bd);border-radius:7px;
-  background:var(--gs);color:var(--t2);
-  font-family:inherit;
-}
+/* ── 필터 바 ── */
+.fbar{display:flex;gap:7px;align-items:center;padding:8px 12px;background:rgba(255,255,255,.55);border:1px solid var(--bd);border-radius:var(--r);margin-bottom:11px;flex-wrap:wrap}
+.fbar select,.fbar input{height:26px;padding:0 9px;font-size:11.5px;border:1px solid var(--bd);border-radius:7px;background:var(--gs);color:var(--t2);font-family:inherit}
 .fbar input{width:200px}
-.sfb{
-  height:26px;padding:0 12px;font-size:11.5px;
-  border:1px solid var(--bd);border-radius:14px;
-  background:var(--gs);color:var(--t2);cursor:pointer;
-  font-family:inherit;
-}
+.sfb{height:24px;padding:0 11px;font-size:11px;border:1px solid var(--bd);border-radius:14px;background:var(--gs);color:var(--t2);cursor:pointer;font-family:inherit;transition:all .12s}
+.sfb:hover{transform:translateY(-1px)}
 .sfb.on{background:rgba(58,58,240,.08);border-color:var(--ac);color:var(--ac);font-weight:600}
+.tfsep{width:1px;height:18px;background:var(--bd);margin:0 4px}
 
-/* 콘텐츠 */
-.main{padding:16px 24px 32px}
-.month-hd{
-  font-size:13px;font-weight:700;color:var(--t2);
-  margin:18px 0 10px;padding:6px 12px;
-  background:rgba(255,255,255,.6);border-radius:7px;
-  border-left:3px solid var(--pin);
-  display:flex;align-items:center;gap:8px;
-}
-.month-hd .cnt{font-weight:400;color:var(--t3);font-size:11.5px}
-.tag-thismo{
-  display:inline-block;font-size:10px;font-weight:600;
-  padding:1px 7px;border-radius:5px;
-  background:rgba(58,58,240,.1);color:var(--ac);
-}
-
-/* 카드 */
-.egrp{
-  background:var(--glass-bg-strong);
-  border:1px solid var(--glass-border-s);
-  border-radius:10px;
-  margin-bottom:10px;
-  overflow:hidden;
-  box-shadow:0 1px 3px rgba(0,0,0,.04);
-  border-left:3px solid var(--pin);
-}
-.egrphd{
-  padding:9px 12px;
-  display:flex;flex-direction:column;gap:5px;
-  border-bottom:1px solid var(--bd);
-  cursor:pointer;
-  user-select:none;
-  transition:background .12s;
-}
-.egrphd:hover{background:rgba(58,58,240,.025)}
-.egrp .egrpbody{display:none}
-.egrp.open .egrpbody{display:block}
-.egrp.open .egrphd{border-bottom:1px solid var(--bd)}
-.egrp:not(.open) .egrphd{border-bottom:none}
-.toggle-arrow{
-  display:inline-flex;align-items:center;justify-content:center;
-  width:18px;height:18px;font-size:10px;color:var(--t3);
-  transition:transform .15s;flex-shrink:0;
-}
-.egrp.open .toggle-arrow{transform:rotate(90deg);color:var(--ac)}
-.prod-count{
-  display:inline-block;font-size:10.5px;font-weight:600;
-  padding:1px 7px;border-radius:5px;
-  background:rgba(58,58,240,.08);color:var(--ac);
-}
-.egrpname{font-size:13px;font-weight:600;color:var(--tx)}
-.st{
-  display:inline-block;padding:2px 8px;border-radius:5px;
-  font-size:10.5px;font-weight:600;
-}
+/* ── 상태 칩 ── */
+.st{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600;white-space:nowrap}
+.s-end{background:rgba(152,152,168,.1);color:var(--t3)}
 .s-mid{background:rgba(196,90,16,.1);color:var(--or)}
+.s-gray{background:rgba(152,152,168,.1);color:var(--t3)}
+.s-warn{background:rgba(202,138,4,.12);color:#854d0e}
+.s-done{background:rgba(58,58,240,.1);color:var(--ac)}
+.s-sel{background:rgba(26,138,74,.12);color:var(--gr)}
+.s-rej{background:rgba(212,32,32,.08);color:var(--rd)}
 .s-run{background:rgba(196,40,120,.1);color:var(--pk)}
-.s-end{background:rgba(152,152,168,.15);color:var(--t3)}
 
-.tbl{width:100%;border-collapse:collapse;font-size:11.5px}
-.tbl th{
-  text-align:left;padding:7px 8px;color:var(--t3);font-weight:600;
-  border-bottom:1px solid var(--bd);
-  font-size:10.5px;background:rgba(255,255,255,.4);
-}
-.tbl td{padding:6px 8px;border-bottom:1px solid rgba(0,0,0,.04)}
+/* ── 월별 헤더 ── */
+.month-hd{font-size:12.5px;font-weight:700;color:var(--t2);margin:14px 0 8px;padding:5px 11px;background:rgba(255,255,255,.6);border-radius:7px;border-left:3px solid var(--pin);display:flex;align-items:center;gap:7px}
+.month-hd .cnt{font-weight:400;color:var(--t3);font-size:11px}
+.tag-thismo{display:inline-block;font-size:10px;font-weight:600;padding:1px 7px;border-radius:5px;background:rgba(58,58,240,.1);color:var(--ac)}
+
+/* ── 테이블 ── */
+.tbl{width:100%;border-collapse:collapse;font-size:11.5px;table-layout:fixed}
+.tbl th{text-align:left;padding:6px 7px;color:var(--t3);font-weight:600;border-bottom:1px solid var(--bd);white-space:nowrap;font-size:10.5px}
+.tbl td{padding:6px 7px;border-bottom:1px solid rgba(0,0,0,.07);vertical-align:middle}
 .tbl tr:last-child td{border-bottom:none}
 
+/* ── 행사 그룹 ── */
+.egrp{margin-bottom:13px}
+.egrphd{display:flex;align-items:center;gap:7px;padding:8px 12px;background:rgba(255,255,255,.65);border:1px solid var(--bd);border-radius:var(--rl);flex-wrap:wrap;transition:all .2s;cursor:pointer;user-select:none}
+.egrphd:hover{background:rgba(255,255,255,.85)}
+.egrp.open .egrphd{border-radius:var(--rl) var(--rl) 0 0;border-bottom:none}
+.egrp:not(.open) .egrpbody{display:none}
+
+/* 상태별 헤더 색상 (evt_manage 그대로) */
+.state-proposal .egrphd{background:rgba(152,152,168,.07);border-color:rgba(152,152,168,.28)}
+.state-proposal .egrpbody{border-color:rgba(152,152,168,.18)}
+.state-done .egrphd{background:rgba(26,138,74,.07);border-color:rgba(26,138,74,.28)}
+.state-done .egrpbody{border-color:rgba(26,138,74,.18)}
+.state-rejected .egrphd{background:rgba(212,32,32,.06);border-color:rgba(212,32,32,.25)}
+.state-rejected .egrpbody{border-color:rgba(212,32,32,.15)}
+.state-selected .egrphd{background:rgba(58,58,240,.06);border-color:rgba(58,58,240,.25)}
+.state-selected .egrpbody{border-color:rgba(58,58,240,.18)}
+.state-warning .egrphd{background:rgba(202,138,4,.08);border-color:rgba(202,138,4,.35)}
+.state-warning .egrpbody{border-color:rgba(202,138,4,.2)}
+
+.egrpname{font-size:13px;font-weight:700}
+.egrpbody{border:1px solid var(--bd);border-top:none;border-radius:0 0 var(--rl) var(--rl);overflow:hidden;background:var(--gb);transition:border-color .3s}
+
+/* 토글 화살표 */
+.toggle-arrow{display:inline-flex;width:14px;height:14px;align-items:center;justify-content:center;font-size:9px;color:var(--t3);transition:transform .15s;flex-shrink:0}
+.egrp.open .toggle-arrow{transform:rotate(90deg);color:var(--ac)}
+
+/* 핀 아이콘 */
+.pin-icon{font-size:11px;margin-left:2px;opacity:.85;flex-shrink:0}
+
+/* 링크 칩 */
+.link-chip-card{font-size:10px;padding:1px 7px;border-radius:20px;border:0.5px solid #9FE1CB;background:#E1F5EE;color:#085041;cursor:pointer;display:inline-flex;align-items:center;gap:2px;white-space:nowrap}
+.link-chip-card:hover{background:#9FE1CB}
+
 /* 토스트 */
-#toast{
-  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
-  padding:8px 16px;background:var(--tx);color:#fff;
-  border-radius:8px;font-size:12px;font-weight:500;
-  opacity:0;pointer-events:none;transition:opacity .2s;z-index:1000;
-}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:8px 16px;background:var(--tx);color:#fff;border-radius:8px;font-size:12px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s;z-index:1000}
 #toast.on{opacity:.95}
 #toast.err{background:var(--rd)}
 
 /* 빈 상태 */
-.empty{text-align:center;padding:64px 20px;color:var(--t3)}
+.empty{text-align:center;padding:64px 20px;color:var(--t3);background:var(--gb);border:1px solid var(--bd);border-radius:var(--rl);margin-top:14px}
 .empty .ico{font-size:42px;opacity:.4;margin-bottom:12px}
-.empty .ttl{font-size:14px;margin-bottom:4px;color:var(--t2)}
+.empty .ttl{font-size:13.5px;margin-bottom:4px;color:var(--t2);font-weight:600}
 .empty .desc{font-size:11.5px;color:var(--t4)}
 
-/* 로딩 */
 .loading{padding:40px;text-align:center;color:var(--t3);font-size:12px}
 .loading .spin{display:inline-block;animation:spin 1s linear infinite;margin-right:6px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* chip */
-.link-chip,.memo-chip{
-  display:inline-flex;align-items:center;gap:3px;
-  padding:2px 8px;font-size:10.5px;border-radius:11px;
-  background:rgba(58,58,240,.07);color:var(--ac);
-  cursor:pointer;border:1px solid rgba(58,58,240,.2);
-}
-.memo-chip{background:rgba(196,90,16,.07);color:var(--or);border-color:rgba(196,90,16,.2);position:relative}
-.memo-chip:hover .memo-tip{display:block}
-.memo-tip{
-  display:none;position:absolute;top:calc(100% + 4px);right:0;
-  z-index:100;padding:8px 12px;
-  background:var(--tx);color:#fff;font-size:11px;font-weight:400;
-  border-radius:6px;white-space:pre-wrap;max-width:280px;line-height:1.5;
-}
-.date-chip{
-  display:inline-flex;align-items:center;gap:3px;
-  padding:2px 8px;font-size:10.5px;border-radius:11px;
-  background:rgba(0,0,0,.04);color:var(--t2);border:1px solid var(--bd);
-}
+/* SVG 복사 버튼 */
+.copy-svg-btn{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border:0.5px solid var(--bd);border-radius:4px;background:var(--gs);cursor:pointer;flex-shrink:0;opacity:.55;padding:0;color:var(--t3)}
+.copy-svg-btn:hover{opacity:1;color:var(--ac);border-color:var(--ac)}
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="hd-row">
-    <h1 class="hd-title"><span class="pin">📌</span> 운영 관리 <span class="hd-count" id="pin-count"></span></h1>
-    <div class="hd-actions">
-      <button class="btn btn-sm" onclick="toggleAll(true)" title="모든 카드 펼치기">⬇ 모두 펼치기</button>
-      <button class="btn btn-sm" onclick="toggleAll(false)" title="모든 카드 접기">⬆ 모두 접기</button>
-      <button class="btn btn-sm" onclick="loadAll()">↻ 새로고침</button>
-      <button class="btn btn-sm" onclick="copyAllText()">📋 복붙용 텍스트</button>
-      <button class="btn btn-sm btn-p" onclick="exportXlsx()">📊 엑셀 다운로드</button>
-    </div>
+<div class="page-hd">
+  <div>
+    <div class="pg-title"><span class="pin">📌</span> 운영 관리 <span class="pg-count" id="pg-count"></span></div>
+    <div class="pg-desc">고정된 행사를 모아보고 엑셀/텍스트로 내보내기</div>
+  </div>
+  <div style="display:flex;gap:6px">
+    <button class="btn btn-sm btn-gh" onclick="toggleAll(true)" title="모든 카드 펼치기">⬇ 모두 펼치기</button>
+    <button class="btn btn-sm btn-gh" onclick="toggleAll(false)" title="모든 카드 접기">⬆ 모두 접기</button>
+    <button class="btn btn-sm btn-gh" onclick="loadAll()">↻ 새로고침</button>
+    <button class="btn btn-sm btn-gh" onclick="copyAllText()">📋 복붙용 텍스트</button>
+    <button class="btn btn-sm btn-p" onclick="exportXlsx()">📊 엑셀 다운로드</button>
   </div>
 </div>
 
@@ -227,13 +151,14 @@ body{
     <option value="AL">📡 상시 (AL)</option>
   </select>
   <input id="f-search" placeholder="행사명 / 닉네임 검색" oninput="renderList()">
+  <span class="tfsep"></span>
   <button class="sfb" onclick="toggleStatus(this,'진행전')">진행전</button>
   <button class="sfb" onclick="toggleStatus(this,'진행중')">진행중</button>
   <button class="sfb" onclick="toggleStatus(this,'진행종료')">진행종료</button>
-  <button class="btn btn-sm" onclick="resetFilters()" style="margin-left:auto">↺ 초기화</button>
+  <button class="btn btn-sm btn-gh" onclick="resetFilters()" style="margin-left:auto">↺ 초기화</button>
 </div>
 
-<div class="main" id="main"><div class="loading"><span class="spin">⟳</span> 불러오는 중...</div></div>
+<div id="main"><div class="loading"><span class="spin">⟳</span> 불러오는 중...</div></div>
 
 <div id="toast"></div>
 
@@ -253,15 +178,16 @@ let SKUS=[], EVENTS=[], PROPOSALS=[];
 let statusFilter=new Set();
 
 const TYPE_COLOR={FF:'--bl',TD:'--rd',SP:'--gr',HB:'--pu',CB:'--pu',SA:'--pk',OD:'--or',YL:'--or',YE:'--tl',AL:'--tl'};
+const STATUS_ST={'제안중':'s-gray','제안완료':'s-sel','확인필요':'s-warn','선정':'s-done','미선정':'s-rej','진행전':'s-mid','진행중':'s-run','진행종료':'s-end','종료':'s-end'};
+const DOW=['일','월','화','수','목','금','토'];
 
-const comma=n=>n==null?'—':Number(n).toLocaleString();
+const comma=n=>n==null||n===''?'—':Number(n).toLocaleString();
+const pct=(a,b)=>(a&&b)?Math.floor(((a-b)/a)*100)+'%':'—';
 const $=id=>document.getElementById(id);
 
 window.toast=function(msg,type){
-  const t=$('toast');
-  if(!t)return;
-  t.textContent=msg;
-  t.className=type==='err'?'on err':'on';
+  const t=$('toast');if(!t)return;
+  t.textContent=msg;t.className=type==='err'?'on err':'on';
   setTimeout(()=>t.classList.remove('on'),2400);
 };
 
@@ -292,8 +218,9 @@ function detectType(e){
 
 function shipLabel(p){
   if(!p)return '—';
-  if(p.shipFee==null||p.shipFee===0)return '무료';
-  return comma(p.shipFee)+'원';
+  const s=(p.ship||'무료').replace('조건부무료','조건부').trim();
+  const t=p.shipType||'일반';
+  return s+' / '+t;
 }
 
 function calcStatus(ev){
@@ -304,10 +231,56 @@ function calcStatus(ev){
   return '진행중';
 }
 
-function buildDateChips(ev){
-  const sd=ev.startDate||'?', st=ev.startTime||'';
-  const ed=ev.endDate||'?', et=ev.endTime||'';
-  return `<span class="date-chip">📅 ${sd}${st?' '+st:''} ~ ${ed}${et?' '+et:''}</span>`;
+function calDur(a,b){
+  if(!a||!b)return null;
+  return Math.round((new Date(b)-new Date(a))/86400000)+1;
+}
+
+function getWeekLabel(dateStr){
+  if(!dateStr)return'';
+  const d=new Date(dateStr+'T00:00:00');
+  const mon=d.getMonth()+1;
+  const yr=d.getFullYear();
+  const first=new Date(yr,d.getMonth(),1);
+  const firstDow=first.getDay();
+  const offsetToMon=firstDow===0?6:firstDow-1;
+  const week1Mon=new Date(first); week1Mon.setDate(1-offsetToMon);
+  const diffMs=d-week1Mon;
+  if(diffMs<0)return mon+'월 0주차';
+  const week=Math.floor(diffMs/604800000)+1;
+  return mon+'월 '+week+'주차';
+}
+
+function fmtChip(s,t){
+  if(!s)return'';
+  const d=new Date(s+'T00:00:00');
+  const mm=String(d.getMonth()+1).padStart(2,'0');
+  const dd=String(d.getDate()).padStart(2,'0');
+  const dow=DOW[d.getDay()];
+  return mm+'/'+dd+' ('+dow+')'+(t?' '+t:'');
+}
+
+/* evt_manage.html buildDateChips 그대로 */
+function buildDateChips(startDate,startTime,endDate,endTime,uploadDate,deadline){
+  const dur=calDur(startDate,endDate);
+  const weekLabel=startDate?getWeekLabel(startDate):'';
+  const wChip=weekLabel?`<span style="display:inline-flex;align-items:center;padding:2px 9px;font-size:10.5px;border:0.5px solid rgba(152,152,168,.35);border-radius:20px;background:rgba(152,152,168,.1);color:var(--t2);font-weight:600;white-space:nowrap">${weekLabel}</span>`:'';
+  const sChip=startDate?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(26,86,200,.3);border-radius:20px;background:rgba(26,86,200,.07);color:var(--bl);font-weight:500;white-space:nowrap">${fmtChip(startDate,startTime)}</span>`:'';
+  const arrow=startDate&&endDate?`<span style="font-size:10px;color:var(--t3)">→</span>`:'';
+  const eChip=endDate?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(196,90,16,.3);border-radius:20px;background:rgba(196,90,16,.07);color:var(--or);font-weight:500;white-space:nowrap">${fmtChip(endDate,endTime)}</span>`:'';
+  const dChip=dur?`<span style="display:inline-flex;align-items:center;padding:2px 8px;font-size:10.5px;border:1px solid rgba(152,152,168,.3);border-radius:20px;background:rgba(152,152,168,.08);color:var(--t2);font-weight:500;cursor:pointer" onclick="copyToClip('${startDate} ${startTime||'00:00'}\\t${endDate} ${endTime||'23:59'}',this);event.stopPropagation()" title="클릭 시 기간 복사">[${dur}일 간]</span>`:'';
+  const sep=(startDate&&(uploadDate||deadline))?`<span style="width:0.5px;height:11px;background:rgba(0,0,0,.12);flex-shrink:0"></span>`:'';
+  const lbl=(uploadDate||deadline)?`<span style="font-size:10px;color:var(--t3)">일정</span>`:'';
+  const uChip=uploadDate?`<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;font-size:10px;border:1px solid rgba(58,58,240,.25);border-radius:20px;background:rgba(58,58,240,.05);color:var(--ac);font-weight:500;white-space:nowrap">📅 업로드 ${fmtChip(uploadDate,'')}</span>`:'';
+  const dline=deadline?`<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;font-size:10px;border:1px solid rgba(26,138,74,.25);border-radius:20px;background:rgba(26,138,74,.05);color:var(--gr);font-weight:500;white-space:nowrap">📅 마감 ${fmtChip(deadline,'')}</span>`:'';
+  if(!startDate)return`<span style="font-size:10.5px;color:var(--t3)">기간 미설정</span>`;
+  return[wChip,sChip,arrow,eChip,dChip,sep,lbl,uChip,dline].filter(Boolean).join('');
+}
+
+function memoChipHTML(memo){
+  if(!memo||memo==='네이버 쿠폰'||memo==='선택하기')return'';
+  const trunc=memo.length>12?memo.substring(0,12)+'…':memo;
+  return`<span title="${memo}" style="display:inline-flex;align-items:center;padding:2px 9px;font-size:10.5px;border:0.5px solid rgba(186,117,23,.4);border-radius:20px;background:rgba(186,117,23,.1);color:var(--or);font-weight:600;white-space:nowrap;flex-shrink:0;cursor:help">📝 ${trunc}</span>`;
 }
 
 function getFiltered(){
@@ -320,7 +293,7 @@ function getFiltered(){
     if(statusFilter.size>0&&!statusFilter.has(calcStatus(ev)))return false;
     if(search){
       const nameMatch=(ev.eventName||'').toLowerCase().includes(search);
-      const props=PROPOSALS.filter(p=>p.eventSID===ev._id&&p.status==='선정');
+      const props=PROPOSALS.filter(p=>p.eventSID===ev._id&&(p.status==='선정'||p.status==='제안완료'));
       const nickMatch=props.some(p=>(p.skuNick||'').toLowerCase().includes(search));
       if(!nameMatch&&!nickMatch)return false;
     }
@@ -328,87 +301,132 @@ function getFiltered(){
   }).sort((a,b)=>(b.startDate||'').localeCompare(a.startDate||''));
 }
 
+/* 열 헤더 (evt_manage colHd 그대로) */
+const COL_HEADER=`
+  <th style="width:46px">상태</th>
+  <th style="width:90px">닉네임 <button onclick="copyColAll('nick',this);event.stopPropagation()" title="이 행사 닉네임 전체 복사" class="copy-svg-btn" style="margin-left:3px"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><rect x="4" y="0" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="0" y="4" width="8" height="8" rx="1.5" fill="var(--gs)" stroke="currentColor" stroke-width="1.5"/></svg></button></th>
+  <th style="width:78px">상품코드 <button onclick="copyColAll('code',this);event.stopPropagation()" title="이 행사 상품코드 전체 복사" class="copy-svg-btn" style="margin-left:3px"><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><rect x="4" y="0" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="0" y="4" width="8" height="8" rx="1.5" fill="var(--gs)" stroke="currentColor" stroke-width="1.5"/></svg></button></th>
+  <th style="text-align:right;width:62px">정상가</th>
+  <th style="text-align:right;width:80px;color:var(--rd)">최대할인가<br>=기본행사가</th>
+  <th style="text-align:right;width:76px;color:var(--or)">제안행사가</th>
+  <th style="text-align:right;width:70px;color:var(--bl)">최종혜택가</th>
+  <th style="text-align:right;width:82px;color:var(--rd)">최대할인금액<br>=기본행사금액</th>
+  <th style="text-align:right;width:70px;color:var(--or)">제안행사금액</th>
+  <th style="text-align:right;width:70px;color:var(--bl)">최종혜택금액</th>
+  <th style="text-align:right;width:80px;color:var(--rd)">최대할인율<br>=기본행사율</th>
+  <th style="text-align:right;width:58px;color:var(--or)">제안행사율</th>
+  <th style="text-align:right;width:58px;color:var(--bl)">최종혜택율</th>
+  <th style="width:56px">배송</th>
+  <th style="width:52px">소구문구</th>`;
+
+const COL_GROUP=`<colgroup>
+  <col style="width:46px"><col style="width:90px"><col style="width:78px">
+  <col style="width:62px"><col style="width:80px"><col style="width:76px"><col style="width:70px">
+  <col style="width:82px"><col style="width:70px"><col style="width:70px">
+  <col style="width:80px"><col style="width:58px"><col style="width:58px">
+  <col style="width:56px"><col style="width:52px">
+</colgroup>`;
+
+/* 상품 1행 (buildProdRow 동일) */
+function buildProdRow(p){
+  const cStatus=p.status==='선정'?calcStatus(EVENTS.find(e=>e._id===p.eventSID)):(p.status||'제안중');
+  const stCls=STATUS_ST[cStatus]||'s-gray';
+  const evPrice=p.priceEvent||null;
+  const alimPrice=p.priceAlim||p.priceEvent;
+  const bDA2=(p.priceNormal&&evPrice)?comma(p.priceNormal-evPrice):'—';
+  const bRate2=pct(p.priceNormal,evPrice);
+  const eDA=(p.priceNormal&&alimPrice)?comma(p.priceNormal-alimPrice):'—';
+  const eRate=pct(p.priceNormal,alimPrice);
+  const mDA=(p.priceNormal&&p.priceMax)?comma(p.priceNormal-p.priceMax):'—';
+  const mRate=pct(p.priceNormal,p.priceMax);
+  const nick=p.skuNick||p.productName||'—';
+  const code=p.skuCode||'';
+  return `<tr>
+    <td><span class="st ${stCls}" style="font-size:10px">${cStatus}</span></td>
+    <td data-col="nick" data-val="${nick}" style="font-weight:600">
+      <span style="display:inline-flex;align-items:center;gap:4px">
+        <span onclick="copyToClip('${nick.replace(/'/g,"\\'")}',this);event.stopPropagation()" style="cursor:pointer">${nick}</span>
+        <button onclick="copyToClip('${(p.productName||nick).replace(/'/g,"\\'")}',this);event.stopPropagation()" title="${p.productName||nick}" class="copy-svg-btn"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 2h6a1 1 0 011 1v7a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M4 0h5a1 1 0 011 1v7"/></svg></button>
+      </span>
+    </td>
+    <td data-col="code" data-val="${code}" style="font-size:10px;color:var(--t3);cursor:pointer;text-align:center" onclick="copyToClip('${code}',this);event.stopPropagation()">${code||'—'}</td>
+    <td style="text-align:right">${comma(p.priceNormal)}</td>
+    <td style="text-align:right;color:var(--rd);font-size:11.5px;font-weight:600">${comma(evPrice)}</td>
+    <td style="text-align:right;color:var(--or);font-weight:600">${comma(alimPrice)}</td>
+    <td style="text-align:right;color:var(--bl);font-weight:600">${comma(p.priceMax)}</td>
+    <td style="text-align:right;color:var(--rd)">${bDA2!=='—'?'▼'+bDA2:'—'}</td>
+    <td style="text-align:right;color:var(--or)">${eDA!=='—'?'▼'+eDA:'—'}</td>
+    <td style="text-align:right;color:var(--bl)">${mDA!=='—'?'▼'+mDA:'—'}</td>
+    <td style="text-align:right;color:var(--rd);font-size:10px">${bRate2}</td>
+    <td style="text-align:right;color:var(--or)">${eRate}</td>
+    <td style="text-align:right;color:var(--bl)">${mRate}</td>
+    <td style="text-align:center;font-size:11px;color:var(--t2)">${shipLabel(p)}</td>
+    <td style="text-align:center"><button class="btn btn-xs" style="color:var(--pu);border-color:rgba(108,53,204,.3)" onclick="event.stopPropagation()">소구</button></td>
+  </tr>`;
+}
+
+/* 카드 1개 빌드 - evt_manage buildGroupHtml 구조 그대로 */
 function buildCard(ev){
+  const evId=ev._id;
   const eName=ev.eventName||'—';
   const eType=detectType(ev);
-  const tColor=TYPE_COLOR[eType]||'--t2';
+  const tColor=TYPE_COLOR[eType]||'--t3';
   const st=calcStatus(ev);
-  const stCls={'진행전':'s-mid','진행중':'s-run','진행종료':'s-end'}[st]||'s-end';
-  const props=PROPOSALS.filter(p=>p.eventSID===ev._id&&p.status==='선정'&&!p._deleted);
-  const memoChip=(ev.additionalDiscount&&ev.additionalDiscount!=='네이버 쿠폰'&&!['선택하기',''].includes(ev.additionalDiscount))
-    ?`<span class="memo-chip">📝 메모<span class="memo-tip">${ev.additionalDiscount}</span></span>`:'';
+  const stCls=STATUS_ST[st]||'s-end';
+  const props=PROPOSALS.filter(p=>p.eventSID===evId&&(p.status==='선정'||p.status==='제안완료')&&!p._deleted);
+  const m=props[0]||{};
+  const grpId='pin-'+evId;
+  /* 상태 클래스 (헤더 색상) */
+  const allStatuses=props.map(p=>p.status);
+  let stateClass='state-selected';
+  if(props.length){
+    if(allStatuses.every(s=>s==='제안완료'))stateClass='state-done';
+    else if(allStatuses.some(s=>s==='확인필요'))stateClass='state-warning';
+    else if(allStatuses.every(s=>s==='미선정'))stateClass='state-rejected';
+    else if(allStatuses.every(s=>s==='선정'))stateClass='state-selected';
+    else stateClass='state-proposal';
+  }
   const linkChips=(ev.pageLinks||[]).filter(l=>l.url).map(l=>
-    `<span class="link-chip" onclick="copyToClip('${l.url.replace(/'/g,"\\'")}',this)" title="${l.url}">${l.type}</span>`
+    `<span class="link-chip-card" onclick="copyToClip('${l.url.replace(/'/g,"\\'")}',this);event.stopPropagation()" title="${l.url}">${l.type}</span>`
   ).join('');
-  const rows=props.map(p=>{
-    const evP=p.priceBase??p.priceEvent;
-    const aP=p.priceAlim||p.priceEvent;
-    const mP=p.priceMax;
-    const baseDisc=(p.priceNormal&&evP)?(p.priceNormal-evP):null;
-    const evDisc=(p.priceNormal&&aP)?(p.priceNormal-aP):null;
-    const mxDisc=(p.priceNormal&&mP)?(p.priceNormal-mP):null;
-    const baseRate=(p.priceNormal&&evP)?Math.round((1-evP/p.priceNormal)*100)+'%':'—';
-    const evRate=(p.priceNormal&&aP)?Math.round((1-aP/p.priceNormal)*100)+'%':'—';
-    const mxRate=(p.priceNormal&&mP)?Math.round((1-mP/p.priceNormal)*100)+'%':'—';
-    return `<tr>
-      <td style="font-weight:600">${p.skuNick||p.productName||'—'}</td>
-      <td class="mono" style="font-size:10px;color:var(--t3);text-align:center">${p.skuCode||'—'}</td>
-      <td class="mono" style="text-align:right">${comma(p.priceNormal)}</td>
-      <td class="mono" style="text-align:right;color:var(--rd);font-weight:600">${comma(evP)}</td>
-      <td class="mono" style="text-align:right;color:var(--or);font-weight:600">${comma(aP)}</td>
-      <td class="mono" style="text-align:right;color:var(--bl);font-weight:600">${comma(mP)}</td>
-      <td class="mono" style="text-align:right;color:var(--rd);font-size:10.5px">${baseDisc?'▼'+comma(baseDisc):'—'}</td>
-      <td class="mono" style="text-align:right;color:var(--or);font-size:10.5px">${evDisc?'▼'+comma(evDisc):'—'}</td>
-      <td class="mono" style="text-align:right;color:var(--bl);font-size:10.5px">${mxDisc?'▼'+comma(mxDisc):'—'}</td>
-      <td class="mono" style="text-align:right;color:var(--rd);font-size:10.5px">${baseRate}</td>
-      <td class="mono" style="text-align:right;color:var(--or);font-size:10.5px">${evRate}</td>
-      <td class="mono" style="text-align:right;color:var(--bl);font-size:10.5px">${mxRate}</td>
-      <td style="text-align:center;font-size:11px">${shipLabel(p)}</td>
-    </tr>`;
-  }).join('');
+  const rows=props.map(buildProdRow).join('');
+  const emptyMsg='<div style="padding:14px;text-align:center;color:var(--t3);font-size:11.5px">선정된 상품이 없습니다</div>';
   
-  return `<div class="egrp">
-    <div class="egrphd" onclick="toggleCard(this.parentElement,event)">
-      <div style="display:flex;align-items:center;gap:6px">
+  return `<div class="egrp ${stateClass}" id="${grpId}">
+    <div class="egrphd" onclick="toggleCard(this.parentElement)" style="flex-direction:column;gap:0">
+      <div style="display:flex;align-items:center;gap:6px;width:100%">
         <span class="toggle-arrow">▶</span>
+        <span class="pin-icon">📌</span>
         <span class="st" style="background:rgba(0,0,0,.05);color:var(${tColor});font-size:10px">${eType}</span>
         <span class="egrpname">${eName}</span>
         <span class="st ${stCls}">${st}</span>
-        ${props.length?`<span class="prod-count">선정 ${props.length}건</span>`:'<span class="prod-count" style="background:rgba(152,152,168,.12);color:var(--t3)">선정 0건</span>'}
-        <span style="margin-left:auto;display:flex;gap:6px" onclick="event.stopPropagation()">
-          <button class="btn btn-sm" onclick="copyOne('${ev._id}');event.stopPropagation()">📋 복사</button>
-          <button class="btn btn-sm" onclick="unpinOne('${ev._id}');event.stopPropagation()" style="color:var(--t3)">📌 해제</button>
+        ${props.length?`<span class="st" style="background:rgba(58,58,240,.06);color:var(--t2);font-weight:500">선정 ${props.length}건</span>`:''}
+        <span style="margin-left:auto;display:flex;align-items:center;gap:6px" onclick="event.stopPropagation()">
+          ${linkChips}
+          <button class="btn btn-xs btn-gh" onclick="copyOne('${evId}');event.stopPropagation()" title="이 행사만 복사">📋 복사</button>
+          <button class="btn btn-xs btn-gh" onclick="unpinOne('${evId}');event.stopPropagation()" style="color:var(--t3)" title="고정 해제">📌 해제</button>
         </span>
       </div>
-      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding-left:24px">
-        ${buildDateChips(ev)}
-        ${linkChips}
-        ${memoChip}
+      <div style="display:flex;align-items:center;gap:5px;margin-top:5px;width:100%;flex-wrap:nowrap">
+        <div style="display:flex;align-items:center;gap:4px;flex:1;flex-wrap:wrap">
+          ${buildDateChips(ev.startDate,ev.startTime,ev.endDate,ev.endTime,m.proposalUploadedAt,m.proposalDeadline)}
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;margin-left:auto">
+          ${memoChipHTML(ev.additionalDiscount)}
+        </div>
       </div>
     </div>
     <div class="egrpbody">
-      ${props.length?`<div style="overflow-x:auto"><table class="tbl">
-        <thead><tr>
-          <th style="width:90px">닉네임</th><th style="width:78px">상품코드</th>
-          <th style="text-align:right;width:62px">정상가</th>
-          <th style="text-align:right;width:80px;color:var(--rd)">기본행사가</th>
-          <th style="text-align:right;width:76px;color:var(--or)">제안행사가</th>
-          <th style="text-align:right;width:70px;color:var(--bl)">최종혜택가</th>
-          <th style="text-align:right;width:70px;color:var(--rd)">기본할인</th>
-          <th style="text-align:right;width:70px;color:var(--or)">제안할인</th>
-          <th style="text-align:right;width:70px;color:var(--bl)">최종할인</th>
-          <th style="text-align:right;width:50px;color:var(--rd)">기본%</th>
-          <th style="text-align:right;width:50px;color:var(--or)">제안%</th>
-          <th style="text-align:right;width:50px;color:var(--bl)">최종%</th>
-          <th style="width:56px">배송</th>
-        </tr></thead>
+      ${props.length?`<table class="tbl" data-grp="${grpId}">
+        ${COL_GROUP}
+        <thead><tr>${COL_HEADER}</tr></thead>
         <tbody>${rows}</tbody>
-      </table></div>`:'<div style="padding:14px;text-align:center;color:var(--t3);font-size:11.5px">선정된 상품이 없습니다</div>'}
+      </table>`:emptyMsg}
     </div>
   </div>`;
 }
 
-window.toggleCard=function(card,ev){
+window.toggleCard=function(card){
   card.classList.toggle('open');
 };
 window.toggleAll=function(open){
@@ -418,9 +436,17 @@ window.toggleAll=function(open){
   });
 };
 
+window.copyColAll=function(col,btn){
+  const tbl=btn.closest('table');
+  if(!tbl)return;
+  const cells=tbl.querySelectorAll(`td[data-col="${col}"]`);
+  const vals=[...cells].map(c=>c.dataset.val||c.textContent.trim()).filter(Boolean);
+  navigator.clipboard.writeText(vals.join('\n')).then(()=>toast(`📋 ${col==='nick'?'닉네임':'상품코드'} ${vals.length}개 복사됨`)).catch(()=>toast('복사 실패','err'));
+};
+
 window.renderList=function(){
   const evs=getFiltered();
-  $('pin-count').textContent=evs.length?`· ${evs.length}건`:'';
+  $('pg-count').textContent=evs.length?`· ${evs.length}건`:'';
   if(!evs.length){
     const totalPinned=EVENTS.filter(e=>e.pinned).length;
     $('main').innerHTML=`<div class="empty">
@@ -475,12 +501,12 @@ function buildText(ev){
   const eName=ev.eventName||'—';
   const eType=detectType(ev);
   const period=`${ev.startDate||'?'}${ev.startTime?' '+ev.startTime:''} ~ ${ev.endDate||'?'}${ev.endTime?' '+ev.endTime:''}`;
-  const props=PROPOSALS.filter(p=>p.eventSID===ev._id&&p.status==='선정'&&!p._deleted);
+  const props=PROPOSALS.filter(p=>p.eventSID===ev._id&&(p.status==='선정'||p.status==='제안완료')&&!p._deleted);
   let txt=`▣ [${eType}] ${eName}\n기간: ${period}\n`;
   if(ev.additionalDiscount&&ev.additionalDiscount!=='선택하기')txt+=`비고: ${ev.additionalDiscount}\n`;
   if(!props.length){txt+='  (선정 상품 없음)\n';return txt;}
   props.forEach(p=>{
-    const evP=p.priceBase??p.priceEvent;
+    const evP=p.priceEvent;
     const aP=p.priceAlim||p.priceEvent;
     const mP=p.priceMax;
     const rate=(p.priceNormal&&mP)?Math.round((1-mP/p.priceNormal)*100)+'%':'—';
@@ -521,13 +547,13 @@ window.exportXlsx=function(){
       const eType=detectType(ev);
       const period=`${ev.startDate||''} ${ev.startTime||''} ~ ${ev.endDate||''} ${ev.endTime||''}`.trim();
       const st=calcStatus(ev);
-      const props=PROPOSALS.filter(p=>p.eventSID===ev._id&&p.status==='선정'&&!p._deleted);
+      const props=PROPOSALS.filter(p=>p.eventSID===ev._id&&(p.status==='선정'||p.status==='제안완료')&&!p._deleted);
       if(!props.length){
         rows.push({'유형':eType,'행사명':eName,'기간':period,'상태':st,'닉네임':'','상품코드':'','정상가':'','기본행사가':'','제안행사가':'','최종혜택가':'','기본할인금액':'','제안할인금액':'','최종할인금액':'','기본할인율':'','제안할인율':'','최종할인율':'','배송':'','비고':ev.additionalDiscount||''});
         return;
       }
       props.forEach(p=>{
-        const evP=p.priceBase??p.priceEvent;
+        const evP=p.priceEvent;
         const aP=p.priceAlim||p.priceEvent;
         const mP=p.priceMax;
         const baseDisc=(p.priceNormal&&evP)?(p.priceNormal-evP):'';
@@ -577,6 +603,12 @@ window.loadAll=async function(){
     toast('로드 실패: '+e.message,'err');
   }
 };
+
+window.addEventListener('message',e=>{
+  if(e.data&&(e.data.type==='pin-changed'||e.data.type==='refresh')){
+    loadAll();
+  }
+});
 
 loadAll();
 </script>

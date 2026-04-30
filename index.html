@@ -64,8 +64,13 @@ body{
 .sync-time{font-size:10px;color:var(--t4);margin-left:2px}
 
 /* ══ IFRAME ══ */
-.main{flex:1;overflow:hidden}
-#content-frame{width:100%;height:100%;border:none;display:block}
+.main{flex:1;overflow:hidden;position:relative}
+.content-frame{
+  width:100%;height:100%;border:none;
+  position:absolute;top:0;left:0;
+  display:none;
+}
+.content-frame.active{display:block}
 </style>
 </head>
 <body>
@@ -87,6 +92,7 @@ body{
     <div class="tb-nav-btn" style="color:var(--green)" onclick="navTo('prod_manage.html',this)">상품 관리</div>
     <div class="tb-nav-btn" style="color:#d946ef" onclick="navTo('creative_manage.html',this)">소재 관리</div>
     <div class="tb-nav-btn" style="color:var(--orange)" onclick="navTo('evt_manage.html',this)">행사 관리</div>
+    <div class="tb-nav-btn" style="color:#D4A017" onclick="navTo('evt_pinned.html',this)">운영 관리</div>
     <div class="tb-nav-btn" style="color:var(--purple)" onclick="navTo('shipment_tool.html',this)">출고 배분기</div>
     <div class="tb-nav-btn" style="color:var(--accent)" onclick="navTo('vol_upload.html',this)">물량 관리</div>
   </div>
@@ -100,15 +106,23 @@ body{
   </div>
 </div>
 
-<!-- ══ IFRAME ══ -->
+<!-- ══ IFRAME (탭별 1개씩, lazy load) ══ -->
 <div class="main">
-  <iframe id="content-frame" src="evt_calendar.html"></iframe>
+  <iframe class="content-frame" data-page="evt_calendar.html"></iframe>
+  <iframe class="content-frame" data-page="evt_vol.html"></iframe>
+  <iframe class="content-frame" data-page="ads_report.html"></iframe>
+  <iframe class="content-frame" data-page="prod_manage.html"></iframe>
+  <iframe class="content-frame" data-page="creative_manage.html"></iframe>
+  <iframe class="content-frame" data-page="evt_manage.html"></iframe>
+  <iframe class="content-frame" data-page="evt_pinned.html"></iframe>
+  <iframe class="content-frame" data-page="shipment_tool.html"></iframe>
+  <iframe class="content-frame" data-page="vol_upload.html"></iframe>
 </div>
 
 <script>
 const VALID_PAGES = [
   'evt_calendar.html','evt_vol.html','ads_report.html','prod_manage.html',
-  'creative_manage.html','evt_manage.html','shipment_tool.html','vol_upload.html'
+  'creative_manage.html','evt_manage.html','evt_pinned.html','shipment_tool.html','vol_upload.html'
 ];
 
 function setActiveTab(src) {
@@ -119,8 +133,21 @@ function setActiveTab(src) {
   });
 }
 
+// 핵심: lazy load + 보이기/숨기기 (탭 이동 시 새로고침 안 됨)
+function showPage(src) {
+  document.querySelectorAll('.content-frame').forEach(f => {
+    if (f.dataset.page === src) {
+      // 처음 진입한 탭이면 src 세팅 (lazy load)
+      if (!f.getAttribute('src')) f.setAttribute('src', src);
+      f.classList.add('active');
+    } else {
+      f.classList.remove('active');
+    }
+  });
+}
+
 function navTo(src, el) {
-  document.getElementById('content-frame').src = src;
+  showPage(src);
   if (location.hash.slice(1) !== src) location.hash = src;
   if (el) {
     document.querySelectorAll('.tb-nav-btn.active').forEach(e => e.classList.remove('active'));
@@ -130,21 +157,19 @@ function navTo(src, el) {
   }
 }
 
-// 페이지 로드 시 URL hash로 초기 탭 복원
-(function initFromHash(){
+// 페이지 로드 시 URL hash로 초기 탭 결정 (없으면 evt_calendar.html)
+(function init(){
   const h = location.hash.slice(1);
-  if (h && VALID_PAGES.includes(h)) {
-    document.getElementById('content-frame').src = h;
-    setActiveTab(h);
-  }
-  // hash 없으면 기본 evt_calendar.html 그대로 (HTML에 박혀있음)
+  const initialPage = (h && VALID_PAGES.includes(h)) ? h : 'evt_calendar.html';
+  showPage(initialPage);
+  setActiveTab(initialPage);
 })();
 
 // 뒤로가기/앞으로가기 대응
 window.addEventListener('hashchange', () => {
   const h = location.hash.slice(1);
   if (h && VALID_PAGES.includes(h)) {
-    document.getElementById('content-frame').src = h;
+    showPage(h);
     setActiveTab(h);
   }
 });

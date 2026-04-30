@@ -66,6 +66,9 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
 .tbl th{text-align:left;padding:6px 7px;color:var(--t3);font-weight:600;border-bottom:1px solid var(--bd);white-space:nowrap;font-size:10.5px}
 .tbl td{padding:6px 7px;border-bottom:1px solid rgba(0,0,0,.07);vertical-align:middle}
 .tbl tr:last-child td{border-bottom:none}
+.tbl .opt-row{background:rgba(58,58,240,.025)}
+.tbl .opt-row.hidden{display:none}
+.tbl .opt-nick{font-size:10.5px;color:var(--t2);font-weight:500;padding-left:8px}
 
 /* ── 행사 그룹 ── */
 .egrp{margin-bottom:13px}
@@ -100,8 +103,12 @@ body{font-family:'Inter',-apple-system,sans-serif;font-size:13px;color:var(--tx)
 .pin-icon:hover{opacity:1;background:rgba(212,32,32,.1);transform:scale(1.1)}
 
 /* 링크 칩 */
-.link-chip-card{font-size:10px;padding:1px 7px;border-radius:20px;border:0.5px solid #9FE1CB;background:#E1F5EE;color:#085041;cursor:pointer;display:inline-flex;align-items:center;gap:2px;white-space:nowrap}
-.link-chip-card:hover{background:#9FE1CB}
+.link-chip-card{font-size:10px;padding:1px 7px;border-radius:20px;border:0.5px solid #B4B2A9;background:#F1EFE8;color:#444441;cursor:pointer;display:inline-flex;align-items:center;gap:2px;white-space:nowrap}
+.link-chip-card:hover{filter:brightness(0.95)}
+.link-chip-card.lc-direct{background:#EEEDFE;color:#3C3489;border-color:#AFA9EC}
+.link-chip-card.lc-store{background:#E6F1FB;color:#0C447C;border-color:#85B7EB}
+.link-chip-card.lc-cat{background:#E1F5EE;color:#085041;border-color:#5DCAA5}
+.link-chip-card.lc-etc{background:#F1EFE8;color:#444441;border-color:#B4B2A9}
 
 /* 토스트 */
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:8px 16px;background:var(--tx);color:#fff;border-radius:8px;font-size:12px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s;z-index:1000}
@@ -195,6 +202,11 @@ textarea.ef-input{height:auto;padding:8px 10px;resize:vertical;line-height:1.5}
 .step-group-body{display:flex;flex-direction:column}
 
 /* 하위 단계 — 두 행 구조: 헤더(번호+이름+상태) + 도구 행 (들여쓰기). 깊이별 +20px */
+/* 깊이별 들여쓰기 통일 (모든 ① 동그라미가 깊이별로 정확한 세로선에 정렬)
+   깊이 0 (큰 단계 1):       step-group-hd padding 10px
+   깊이 1 (하위 단계 1-1):   step-card padding-left 52px
+   깊이 2 (섹션 1-1-1):      step-card-tools padding-left 0 + section-row padding-left 0
+   깊이 3 (도구 1-1-1-1):    section-tools padding-left (라벨 끝 정도) */
 .step-card{display:flex;flex-direction:column;gap:5px;padding:8px 12px 8px 52px;border:none;border-top:1px solid var(--bd);background:transparent;border-radius:0;min-width:0;transition:all .2s}
 .step-group-body .step-card:first-child{border-top:none}
 .step-card:hover{background:rgba(255,255,255,.4)}
@@ -205,7 +217,12 @@ textarea.ef-input{height:auto;padding:8px 10px;resize:vertical;line-height:1.5}
 .step-card-header{display:flex;align-items:center;gap:10px;width:100%;min-width:0}
 /* 도구 행: 헤더보다 정확히 +40px 추가 들여쓰기 */
 .step-card-tools{display:flex;flex-wrap:wrap;gap:5px;align-items:center;padding-left:40px;min-width:0}
-.step-card-tools .step-tools,.step-card-tools .step-tools-empty{display:contents}
+.step-card-tools > .step-tools{flex:1;min-width:0}
+.step-card-tools > .step-tools-empty{flex:1;min-width:0}
+
+/* 섹션 없이 바로 도구가 오는 경우 (1-2-1 등) — 섹션 동그라미와 같은 X로 정렬
+   섹션이 있을 때 section-row가 갖는 padding-left(20)와 동일 */
+.step-card-tools > .step-tools.section-tools-rows{padding-left:20px}
 .step-card .step-num{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:rgba(58,58,240,.12);color:var(--ac);font-size:10px;font-weight:700;flex-shrink:0;cursor:pointer;transition:all .12s;user-select:none}
 .step-card .step-num:hover{background:var(--ac);color:#fff;transform:scale(1.15)}
 .step-card.done .step-num{background:rgba(152,152,168,.2);color:var(--t3)}
@@ -226,8 +243,9 @@ textarea.ef-input{height:auto;padding:8px 10px;resize:vertical;line-height:1.5}
 .tool-cb input{margin:0;cursor:pointer;width:12px;height:12px;accent-color:var(--t3)}
 .tool-cb.checked{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.15);color:var(--t2);font-weight:500}
 
-/* 도구 영역 안의 섹션 헤더 — 동그라미 넘버 + 제목 텍스트 분리 (step-card의 ① 증빙서류 준비와 동일 패턴) */
-.section-label-wrap{display:inline-flex;align-items:center;gap:6px;flex-shrink:0;align-self:flex-start;margin-top:1px}
+/* 도구 영역 안의 섹션 헤더 — 동그라미 넘버 + 제목 텍스트 분리 (step-card의 ① 증빙서류 준비와 동일 패턴)
+   width:140px 고정으로 모든 도구 동그라미가 같은 세로선에 정렬됨 */
+.section-label-wrap{display:inline-flex;align-items:center;gap:6px;flex-shrink:0;align-self:flex-start;margin-top:1px;width:140px}
 .section-num{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.06);color:var(--t2);font-size:10px;font-weight:700;flex-shrink:0;cursor:pointer;transition:all .12s;user-select:none}
 .section-num:hover{background:var(--t2);color:#fff;transform:scale(1.15)}
 .section-row.done .section-num{background:rgba(152,152,168,.2);color:var(--t3)}
@@ -242,11 +260,18 @@ textarea.ef-input{height:auto;padding:8px 10px;resize:vertical;line-height:1.5}
 .section-row.done:hover{opacity:.95}
 .section-tools{display:flex;gap:5px;flex-wrap:wrap;align-items:center;flex:1;min-width:0}
 
-/* 섹션 안에서 도구를 3행으로 명시적 분리 (브검 세팅의 1·2·3 행 같은) */
+/* 섹션 안에서 도구를 행으로 명시적 분리 (브검 세팅의 1·2·3 행 같은) - .step-tools.section-tools-rows로 우선순위 강화 */
+.step-tools.section-tools-rows,.section-tools.section-tools-rows{flex-direction:column;flex-wrap:nowrap;gap:5px;align-items:stretch}
 .section-tools-rows{flex-direction:column;gap:5px;align-items:stretch}
-.sub-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}
-.sub-num{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:rgba(0,0,0,.05);color:var(--t3);font-size:9px;font-weight:700;flex-shrink:0;font-family:ui-monospace,monospace}
+.sub-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0;width:100%;transition:opacity .12s}
+.sub-row.done{opacity:.55}
+.sub-row.done:hover{opacity:.95}
+.sub-num{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.06);color:var(--t2);font-size:10px;font-weight:700;flex-shrink:0;cursor:pointer;transition:all .12s;user-select:none}
+.sub-num:hover{background:var(--t2);color:#fff;transform:scale(1.15)}
+.sub-row.done .sub-num{background:rgba(152,152,168,.2);color:var(--t3)}
+.sub-row.done .sub-num:hover{background:var(--gr);color:#fff;transform:scale(1.15)}
 .sub-tools{display:flex;gap:5px;flex-wrap:wrap;align-items:center;flex:1;min-width:0}
+.sub-row.done .sub-tools{text-decoration:line-through;text-decoration-color:rgba(0,0,0,.3)}
 
 /* 미리보기 텍스트 */
 .tool-preview{font-size:10px;color:var(--t3);font-style:italic;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:help;padding:2px 6px;background:rgba(0,0,0,.025);border-radius:4px}
@@ -370,7 +395,7 @@ textarea.ef-input{height:auto;padding:8px 10px;resize:vertical;line-height:1.5}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, updateDoc }
+import { getFirestore, collection, getDocs, doc, updateDoc, deleteField }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const db = getFirestore(initializeApp({
@@ -560,6 +585,14 @@ function memoChipHTML(memo){
   return`<span title="${memo}" style="display:inline-flex;align-items:center;padding:2px 9px;font-size:10.5px;border:0.5px solid rgba(186,117,23,.4);border-radius:20px;background:rgba(186,117,23,.1);color:var(--or);font-weight:600;white-space:nowrap;flex-shrink:0;cursor:help">${truncStr(memo,12)}</span>`;
 }
 
+/* 카드 헤더 link-chip-card 색상 분류 (랜딩 타입별, evt_manage 동일) */
+function linkChipCls(type){
+  if(type==='상품바로랜딩')return'lc-direct';
+  if(type==='쇼핑스토리')return'lc-store';
+  if(type==='카테고리')return'lc-cat';
+  return'lc-etc';
+}
+
 function calcStatus(ev){
   if(!ev?.startDate)return '진행전';
   const today=new Date().toISOString().substring(0,10);
@@ -632,7 +665,7 @@ const PROCESS_STEPS=[
       },
       {
         id:'step1_sub2',
-        name:'링크 사전세팅',
+        name:'랜딩 사전세팅',
         tools:[
           {id:'link-register',render:buildToolLinkRegister}
         ]
@@ -661,31 +694,99 @@ function buildStepTools(ev,step){
   if(step.id==='step1_sub1'){
     return buildSub1SectionedTools(ev);
   }
-  if(!step.tools||!step.tools.length){
-    return `<div class="step-tools-empty">도구 추가 예정</div>`;
+  /* ② 랜딩 사전세팅 — 1) 링크 등록 섹션 (sub1, sub3와 동일 구조) */
+  if(step.id==='step1_sub2'){
+    return buildSub2SectionedTools(ev);
   }
-  /* 일반 단계 — 도구들을 한 행으로, 앞에 ① 넘버링 (1-3-1과 동일 sub-row 구조) */
+  if(!step.tools||!step.tools.length){
+    return `<div class="step-tools step-tools-sectioned">
+      <div class="section-row">
+        <span class="section-label-wrap" style="visibility:hidden">
+          <span class="section-num">·</span>
+          <span class="section-name">.</span>
+        </span>
+        <div class="section-tools"><span class="step-tools-empty">도구 추가 예정</span></div>
+      </div>
+    </div>`;
+  }
+  /* 일반 단계 — 1-1, 1-3과 동일하게 섹션 컨테이너 구조 (라벨 자리는 비워서 정렬만 맞춤) */
   const tools=step.tools.map(t=>t.render(ev)).join('');
-  return `<div class="step-tools section-tools-rows"><div class="sub-row"><span class="sub-num">1</span><div class="sub-tools">${tools}</div></div></div>`;
+  const ps=ev.processStatus||{};
+  const toolKey=`${step.id}_t1`;
+  const tDone=!!ps[toolKey];
+  return `<div class="step-tools step-tools-sectioned">
+    <div class="section-row">
+      <span class="section-label-wrap" style="visibility:hidden">
+        <span class="section-num">·</span>
+        <span class="section-name">.</span>
+      </span>
+      <div class="section-tools section-tools-rows">
+        <div class="sub-row${tDone?' done':''}"><span class="sub-num" onclick="toggleSectionDone('${ev._id}','${toolKey}',${!tDone});event.stopPropagation()" title="클릭 시 완료/미완료 토글">1</span><div class="sub-tools">${tools}</div></div>
+      </div>
+    </div>
+  </div>`;
 }
 
-/* ① 증빙서류 준비 전용 — 2행 분리
-   ⓵ [증빙서류 파일명 복사] [미리보기 텍스트]
-   ⓶ [(준비중) 📊 [행사명] 예약가 일괄 수정 양식]  */
+/* ① 증빙서류 준비 전용 — 2섹션 구조 (1-3과 동일 패턴)
+   1. 파일 만들기
+       ① [📋 자동완성된 풀텍스트 버튼] 클릭 시 복사
+   2. 스토어 세팅
+       ① [준비하기] 클릭 시 카드의 📦 상품 섹션 펼침
+       ② [기간] 클릭 시 카드 헤더의 기간 칩과 동일하게 복사 */
 function buildSub1SectionedTools(ev){
   const evId=ev._id;
   const eName=(ev.eventName||'').replace(/"/g,'&quot;');
+  const ps=ev.processStatus||{};
+  const s1Done=!!ps.step1_sub1_s1;
+  const s2Done=!!ps.step1_sub1_s2;
+  /* 1) 파일 만들기 — 자동완성 풀네임 버튼 */
   const defaultText=`[증빙] ${eName} 선정 메일, 스토어 세팅 _요즘 그릭요거트`;
-  /* 1행: 복사 버튼 + 미리보기 (체크박스는 헤더로 이미 이동됨) */
-  const row1=`<button class="tool-btn" id="te-copy-${evId}" onclick="copyEvidenceText('${evId}');event.stopPropagation()" title="클릭 시 복사">증빙서류 파일명 복사</button>
-    <span class="tool-preview" id="te-preview-${evId}" title="${defaultText}">${defaultText}</span>`;
-  /* 2행: 양식 다운로드 */
-  const row2=buildToolReservePriceXlsx(ev);
-  return `<div class="step-tools section-tools-rows">
-    <div class="sub-row"><span class="sub-num">1</span><div class="sub-tools">${row1}</div></div>
-    <div class="sub-row"><span class="sub-num">2</span><div class="sub-tools">${row2}</div></div>
+  const s1Inner=`<button class="tool-btn" id="te-copy-${evId}" onclick="copyEvidenceText('${evId}');event.stopPropagation()" title="클릭 시 복사">📋 <span id="te-preview-${evId}">${defaultText}</span></button>`;
+  /* 2) 스토어 세팅 — [준비하기] + [기간] */
+  const sd=ev.startDate||'';
+  const stm=ev.startTime||'00:00';
+  const ed=ev.endDate||'';
+  const etm=ev.endTime||'23:59';
+  const periodText=`${sd} ${stm}\n${ed} ${etm}`;
+  const escPeriod=periodText.replace(/'/g,"\\'").replace(/\n/g,'\\n');
+  const s2Row1=`<button class="tool-btn" onclick="openProdsSection('${evId}');event.stopPropagation()" title="클릭 시 카드의 📦 상품 섹션 펼침">준비하기</button><span style="font-size:10.5px;color:var(--t3);font-style:italic;line-height:1.6;margin-left:4px">행사상품 수정양식 다운 → [예약 할인 값], [예약 할인 단위], [예약 할인 기간] 입력 → 스토어 내 일괄등록</span>`;
+  const s2Row2=`<button class="tool-btn" onclick="copyToClip('${escPeriod}',this);event.stopPropagation()" title="클릭 시 기간 복사 (시작\\n종료)">기간</button>`;
+  return `<div class="step-tools step-tools-sectioned">
+    <div class="section-row${s1Done?' done':''}">
+      <span class="section-label-wrap">
+        <span class="section-num" onclick="toggleSectionDone('${ev._id}','step1_sub1_s1',${!s1Done});event.stopPropagation()" title="클릭 시 1) 파일 만들기 완료/미완료 토글">1</span>
+        <span class="section-name">파일 만들기</span>
+      </span>
+      <div class="section-tools section-tools-rows">
+        <div class="sub-row${!!ps.step1_sub1_s1_t1?' done':''}"><span class="sub-num" onclick="toggleSectionDone('${ev._id}','step1_sub1_s1_t1',${!ps.step1_sub1_s1_t1});event.stopPropagation()" title="클릭 시 완료/미완료">1</span><div class="sub-tools">${s1Inner}</div></div>
+      </div>
+    </div>
+    <div class="section-row${s2Done?' done':''}">
+      <span class="section-label-wrap">
+        <span class="section-num" onclick="toggleSectionDone('${ev._id}','step1_sub1_s2',${!s2Done});event.stopPropagation()" title="클릭 시 2) 스토어 세팅 완료/미완료 토글">2</span>
+        <span class="section-name">스토어 세팅</span>
+      </span>
+      <div class="section-tools section-tools-rows">
+        <div class="sub-row${!!ps.step1_sub1_s2_t1?' done':''}"><span class="sub-num" onclick="toggleSectionDone('${ev._id}','step1_sub1_s2_t1',${!ps.step1_sub1_s2_t1});event.stopPropagation()" title="클릭 시 완료/미완료">1</span><div class="sub-tools">${s2Row1}</div></div>
+        <div class="sub-row${!!ps.step1_sub1_s2_t2?' done':''}"><span class="sub-num" onclick="toggleSectionDone('${ev._id}','step1_sub1_s2_t2',${!ps.step1_sub1_s2_t2});event.stopPropagation()" title="클릭 시 완료/미완료">2</span><div class="sub-tools">${s2Row2}</div></div>
+      </div>
+    </div>
   </div>`;
 }
+
+/* [준비하기] 클릭 - 해당 카드의 📦 상품 섹션 펼치기 */
+window.openProdsSection=function(evId){
+  const grpId='pin-'+evId;
+  const card=document.querySelector(`[data-grp="${grpId}"]`);
+  if(!card){toast('카드를 찾을 수 없습니다','err');return;}
+  const prodsSection=card.closest('.egrp')?.querySelector('.prods-section');
+  if(!prodsSection){toast('상품 섹션을 찾을 수 없습니다','err');return;}
+  prodsSection.classList.add('open');
+  /* 행사 카드 그룹도 펼쳐져 있는지 확인 */
+  const egrp=prodsSection.closest('.egrp');
+  if(egrp&&!egrp.classList.contains('open'))egrp.classList.add('open');
+  toast('📦 상품 섹션이 열렸습니다');
+};
 
 /* ③ 검색광고 사전세팅 전용 — 섹션 라벨 + 도구 영역을 그리드로 분리
    1) 브검 세팅 (라벨) | (브검 도구들 wrap) ← 같은 그룹, 안에서 3행 분리
@@ -694,11 +795,12 @@ function buildSub3SectionedTools(ev){
   const ps=ev.processStatus||{};
   const s1Done=!!ps.step1_sub3_s1;
   const s2Done=!!ps.step1_sub3_s2;
-  /* 1) 브검 세팅 — 3행으로 명시적 분리 (각 행에 작은 넘버링) */
+  /* 1) 브검 세팅 — 3행으로 명시적 분리 (각 행에 작은 넘버링, 클릭 토글) */
+  const t1=!!ps.step1_sub3_s1_t1, t2=!!ps.step1_sub3_s1_t2, t3=!!ps.step1_sub3_s1_t3;
   const s1Rows=`
-    <div class="sub-row"><span class="sub-num">1</span><div class="sub-tools">${buildToolBrandAdMemo(ev)}</div></div>
-    <div class="sub-row"><span class="sub-num">2</span><div class="sub-tools">${buildToolStoreEvidenceMsg(ev)}</div></div>
-    <div class="sub-row"><span class="sub-num">3</span><div class="sub-tools">${buildToolDateButtons(ev)}</div></div>`;
+    <div class="sub-row${t1?' done':''}"><span class="sub-num" onclick="toggleSectionDone('${ev._id}','step1_sub3_s1_t1',${!t1});event.stopPropagation()" title="클릭 시 완료/미완료">1</span><div class="sub-tools">${buildToolBrandAdMemo(ev)}</div></div>
+    <div class="sub-row${t2?' done':''}"><span class="sub-num" onclick="toggleSectionDone('${ev._id}','step1_sub3_s1_t2',${!t2});event.stopPropagation()" title="클릭 시 완료/미완료">2</span><div class="sub-tools">${buildToolStoreEvidenceMsg(ev)}</div></div>
+    <div class="sub-row${t3?' done':''}"><span class="sub-num" onclick="toggleSectionDone('${ev._id}','step1_sub3_s1_t3',${!t3});event.stopPropagation()" title="클릭 시 완료/미완료">3</span><div class="sub-tools">${buildToolDateButtons(ev)}</div></div>`;
   /* 2) GFA 세팅 도구들 (지금은 비어있음) */
   const s2Tools=`<span style="font-size:10.5px;color:var(--t4);font-style:italic">(도구 추가 예정)</span>`;
   return `<div class="step-tools step-tools-sectioned">
@@ -715,6 +817,27 @@ function buildSub3SectionedTools(ev){
         <span class="section-name">GFA 세팅</span>
       </span>
       <div class="section-tools">${s2Tools}</div>
+    </div>
+  </div>`;
+}
+
+/* ② 랜딩 사전세팅 전용 — 섹션 형태 (1-1, 1-3과 동일 구조)
+   1) 링크 등록 (라벨 + 클릭 토글) | [🔗] [상품바로랜딩] [쇼핑스토리] */
+function buildSub2SectionedTools(ev){
+  const evId=ev._id;
+  const ps=ev.processStatus||{};
+  const sDone=!!ps.step1_sub2_t1;
+  const linkChips=(ev.pageLinks||[]).filter(l=>l.url).map(l=>
+    `<span class="link-chip-card ${linkChipCls(l.type)}" onclick="copyToClip('${l.url.replace(/'/g,"\\'")}',this);event.stopPropagation()" title="${l.url}">${l.type}<span class="lc-copied" style="font-size:9px;opacity:0;margin-left:2px;color:inherit;transition:opacity .2s">✓</span></span>`
+  ).join('');
+  const sectionTools=`<button class="tool-btn" onclick="openEditModal('${evId}');event.stopPropagation()" title="행사 정보 수정 (링크/톡톡/메모)" style="padding:2px 6px">🔗</button>${linkChips}`;
+  return `<div class="step-tools step-tools-sectioned">
+    <div class="section-row${sDone?' done':''}">
+      <span class="section-label-wrap">
+        <span class="section-num" onclick="toggleSectionDone('${ev._id}','step1_sub2_t1',${!sDone});event.stopPropagation()" title="클릭 시 1) 링크 등록 완료/미완료 토글">1</span>
+        <span class="section-name">링크 등록</span>
+      </span>
+      <div class="section-tools">${sectionTools}</div>
     </div>
   </div>`;
 }
@@ -778,9 +901,9 @@ function buildToolLinkRegister(ev){
   const evId=ev._id;
   /* 카드 헤더와 동일한 link-chip-card 스타일 */
   const linkChips=(ev.pageLinks||[]).filter(l=>l.url).map(l=>
-    `<span class="link-chip-card" onclick="copyToClip('${l.url.replace(/'/g,"\\'")}',this);event.stopPropagation()" title="${l.url}">${l.type}</span>`
+    `<span class="link-chip-card ${linkChipCls(l.type)}" onclick="copyToClip('${l.url.replace(/'/g,"\\'")}',this);event.stopPropagation()" title="${l.url}">${l.type}<span class="lc-copied" style="font-size:9px;opacity:0;margin-left:2px;color:inherit;transition:opacity .2s">✓</span></span>`
   ).join('');
-  return `<button class="tool-btn" onclick="openEditModal('${evId}');event.stopPropagation()" title="행사 정보 수정 (링크/톡톡/메모)">🔗 링크 등록</button>${linkChips}`;
+  return `<span style="font-size:11.5px;font-weight:600;color:var(--tx)">링크 등록</span><button class="tool-btn" onclick="openEditModal('${evId}');event.stopPropagation()" title="행사 정보 수정 (링크/톡톡/메모)" style="padding:2px 6px">🔗</button>${linkChips}`;
 }
 
 /* ── 도구: 검색광고 사전세팅 1행 — 브검PC/브검MO 복사 버튼 + 절차 안내 메모 ──
@@ -886,21 +1009,139 @@ function buildToolGfaSectionLabel(ev){
 
 /* 섹션별 완료 토글 (Firebase processStatus에 직접 저장, step1_sub3과 별개) */
 window.toggleSectionDone=async function(evId,sectionKey,done){
+  await cascadeToggle(evId,sectionKey,done);
+};
+
+/* ── 캐스케이드 토글 시스템 ──
+   부모 → 자식 cascade + 자식 → 부모 자동 동기화
+   원복(미완료 클릭)을 위해 스냅샷 저장 (processSnapshot 필드) */
+
+/* 단계 트리 정의 (부모 키: [자식 키들]) */
+const STEP_TREE={
+  /* 큰 단계 1번의 자식 = 모든 하위 단계 */
+  'step1':['step1_sub1','step1_sub2','step1_sub3','step1_sub4'],
+  /* 1-1 ① 증빙서류 준비 → 섹션들 */
+  'step1_sub1':['step1_sub1_s1','step1_sub1_s2'],
+  'step1_sub1_s1':['step1_sub1_s1_t1'],
+  'step1_sub1_s2':['step1_sub1_s2_t1','step1_sub1_s2_t2'],
+  /* 1-2 ② 랜딩 사전세팅 → 도구 (1-2-1 링크 등록) */
+  'step1_sub2':['step1_sub2_t1'],
+  /* 1-3 ③ 검색광고 사전세팅 → 섹션들 */
+  'step1_sub3':['step1_sub3_s1','step1_sub3_s2'],
+  'step1_sub3_s1':['step1_sub3_s1_t1','step1_sub3_s1_t2','step1_sub3_s1_t3'],
+  /* step1_sub3_s2 (GFA) — 자식 없음 */
+  /* step1_sub4 — 자식 없음 (도구 추가 예정) */
+};
+
+/* 자식 → 부모 역매핑 (런타임 생성) */
+const STEP_PARENT={};
+Object.keys(STEP_TREE).forEach(parent=>{
+  STEP_TREE[parent].forEach(child=>{
+    STEP_PARENT[child]=parent;
+  });
+});
+
+/* 모든 후손 키 재귀 수집 */
+function getAllDescendants(key){
+  const result=[];
+  const children=STEP_TREE[key]||[];
+  children.forEach(c=>{
+    result.push(c);
+    result.push(...getAllDescendants(c));
+  });
+  return result;
+}
+
+/* 모든 조상 키 수집 (자기 제외) */
+function getAllAncestors(key){
+  const result=[];
+  let p=STEP_PARENT[key];
+  while(p){
+    result.push(p);
+    p=STEP_PARENT[p];
+  }
+  return result;
+}
+
+/* 부모의 모든 직속 자식이 완료인지 체크 */
+function areAllChildrenDone(ps,parentKey){
+  const children=STEP_TREE[parentKey]||[];
+  if(!children.length)return false;
+  return children.every(c=>!!ps[c]);
+}
+
+/* 핵심: 캐스케이드 토글
+   - 부모 클릭 → 모든 후손 동시 변경 + 스냅샷 저장/복원
+   - 자식 클릭 → 부모 자동 갱신 (모두 완료면 ✓, 아니면 ✗) */
+async function cascadeToggle(evId,key,done){
   const ev=EVENTS.find(e=>e._id===evId);
   if(!ev)return;
   ev.processStatus=ev.processStatus||{};
-  ev.processStatus[sectionKey]=done;
+  ev.processSnapshot=ev.processSnapshot||{};
+  const ps=ev.processStatus;
+  const snap=ev.processSnapshot;
+  const update={updatedAt:new Date().toISOString()};
+  const descendants=getAllDescendants(key);
+  if(descendants.length>0){
+    /* 부모 노드: cascade */
+    if(done){
+      /* 미완료 → 완료: 현재 자식 상태 스냅샷 + 모두 ✓ */
+      const snapshot={};
+      descendants.forEach(d=>{snapshot[d]=!!ps[d];});
+      snap[key]=snapshot;
+      update[`processSnapshot.${key}`]=snapshot;
+      ps[key]=true;
+      update[`processStatus.${key}`]=true;
+      descendants.forEach(d=>{
+        ps[d]=true;
+        update[`processStatus.${d}`]=true;
+      });
+    }else{
+      /* 완료 → 미완료: 스냅샷 복원 */
+      const snapshot=snap[key]||{};
+      ps[key]=false;
+      update[`processStatus.${key}`]=false;
+      descendants.forEach(d=>{
+        const restored=!!snapshot[d];
+        ps[d]=restored;
+        update[`processStatus.${d}`]=restored;
+      });
+      /* 스냅샷 삭제 */
+      delete snap[key];
+      update[`processSnapshot.${key}`]=deleteField();
+    }
+  }else{
+    /* 리프 노드 (도구): 단순 토글 */
+    ps[key]=done;
+    update[`processStatus.${key}`]=done;
+  }
+  /* 조상 자동 갱신 (자식 → 부모) */
+  const ancestors=getAllAncestors(key);
+  ancestors.forEach(anc=>{
+    const allDone=areAllChildrenDone(ps,anc);
+    /* 단, 이 부모가 cascade로 명시적으로 완료 처리되지 않은 경우만 자동 갱신 */
+    if(allDone&&!ps[anc]){
+      ps[anc]=true;
+      update[`processStatus.${anc}`]=true;
+    }else if(!allDone&&ps[anc]){
+      /* 자식 중 하나라도 미완료면 부모도 미완료 (스냅샷 없이) */
+      ps[anc]=false;
+      update[`processStatus.${anc}`]=false;
+    }
+  });
   try{
-    await updateDoc(doc(db,'events',evId),{
-      [`processStatus.${sectionKey}`]:done,
-      updatedAt:new Date().toISOString()
-    });
+    await updateDoc(doc(db,'events',evId),update);
+    const cardEl=document.getElementById('pin-'+evId);
+    const wasOpen=cardEl?.classList.contains('open');
     renderList();
+    if(wasOpen){
+      const newCard=document.getElementById('pin-'+evId);
+      if(newCard)newCard.classList.add('open');
+    }
   }catch(e){
     toast('저장 실패: '+e.message,'err');
-    ev.processStatus[sectionKey]=!done;
   }
-};
+}
 
 /* 하위 단계 카드 — 두 행 구조
    1행: [번호] [이름] ......................... [상태]
@@ -981,25 +1222,8 @@ function buildProcessSection(ev){
 window.toggleSec=function(sec){sec.classList.toggle('open');};
 
 window.toggleStepDone=async function(evId,stepId,checked){
-  try{
-    const update={};
-    update[`processStatus.${stepId}`]=checked;
-    update.updatedAt=new Date().toISOString();
-    await updateDoc(doc(db,'events',evId),update);
-    const ev=EVENTS.find(e=>e._id===evId);
-    if(ev){
-      ev.processStatus=ev.processStatus||{};
-      ev.processStatus[stepId]=checked;
-    }
-    const cardEl=document.getElementById('pin-'+evId);
-    const wasOpen=cardEl?.classList.contains('open');
-    renderList();
-    if(wasOpen){
-      const newCard=document.getElementById('pin-'+evId);
-      if(newCard)newCard.classList.add('open');
-    }
-    toast(checked?'✓ 완료 처리됨':'미완료로 변경됨');
-  }catch(e){toast('저장 실패: '+e.message,'err');}
+  await cascadeToggle(evId,stepId,checked);
+  toast(checked?'✓ 완료 처리됨':'미완료로 변경됨');
 };
 
 function getFiltered(){
@@ -1037,14 +1261,15 @@ const COL_HEADER=`
   <th style="text-align:right;width:58px;color:var(--or)">제안행사율</th>
   <th style="text-align:right;width:58px;color:var(--bl)">최종혜택율</th>
   <th style="width:56px">배송</th>
-  <th style="width:52px">소구문구</th>`;
+  <th style="width:52px">소구문구</th>
+  <th style="width:28px"></th>`;
 
 const COL_GROUP=`<colgroup>
   <col style="width:46px"><col style="width:48px"><col style="width:90px"><col style="width:78px">
   <col style="width:62px"><col style="width:80px"><col style="width:76px"><col style="width:70px">
   <col style="width:82px"><col style="width:70px"><col style="width:70px">
   <col style="width:80px"><col style="width:58px"><col style="width:58px">
-  <col style="width:56px"><col style="width:52px">
+  <col style="width:56px"><col style="width:52px"><col style="width:28px">
 </colgroup>`;
 
 /* 상품 1행 (buildProdRow 동일) */
@@ -1061,7 +1286,40 @@ function buildProdRow(p){
   const mRate=pct(p.priceNormal,p.priceMax);
   const nick=p.skuNick||p.productName||'—';
   const code=p.skuCode||'';
-  return `<tr>
+  /* 옵션 데이터 (evt_manage 패턴) */
+  const sku=SKUS.find(s=>s._id===p.skuCode);
+  const opts=(sku?.options||[]).filter(o=>o.nick||o.name);
+  const hasOpts=opts.length>0;
+  /* 옵션 행 HTML */
+  const optRows=opts.map(o=>{
+    const oDisc=o.priceDisc||alimPrice||null;
+    const oMax=o.priceMax||p.priceMax||null;
+    const oNormal=o.priceNormal||p.priceNormal||null;
+    const oEDA=(oNormal&&oDisc)?'▼'+comma(oNormal-oDisc):'—';
+    const oERate=pct(oNormal,oDisc);
+    const oMDA=(oNormal&&oMax)?'▼'+comma(oNormal-oMax):'—';
+    const oMRate=pct(oNormal,oMax);
+    return`<tr class="opt-row hidden" data-opt-parent="${p._id}">
+      <td></td>
+      <td></td>
+      <td class="opt-nick">└ ${o.nick||o.name}</td>
+      <td></td>
+      <td style="text-align:right">${comma(oNormal)}</td>
+      <td style="text-align:right;color:var(--rd);font-weight:600">${comma(oMax)}</td>
+      <td style="text-align:right;color:var(--or);font-weight:600">${comma(oDisc)}</td>
+      <td style="text-align:right;color:var(--bl);font-weight:600">${oMax&&oDisc?comma(oDisc-1000):'—'}</td>
+      <td style="text-align:right;color:var(--rd)">${oNormal&&oMax?'▼'+comma(oNormal-oMax):'—'}</td>
+      <td style="text-align:right;color:var(--or)">${oEDA}</td>
+      <td style="text-align:right;color:var(--bl)">${oMDA}</td>
+      <td style="text-align:right;color:var(--rd)">${oNormal&&oMax?pct(oNormal,oMax):'—'}</td>
+      <td style="text-align:right;color:var(--or)">${oERate}</td>
+      <td style="text-align:right;color:var(--bl)">${oMRate}</td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>`;
+  }).join('');
+  return `<tr id="row-${p._id}"${hasOpts?` style="cursor:pointer" onclick="toggleOptRows('${p._id}')"`:''}>
     <td><span class="st ${stCls}" style="font-size:10px">${cStatus}</span></td>
     <td style="padding:3px;text-align:center;cursor:pointer" onclick="copyThumb(this,'https://smartcenterhub.github.io/yozm-master-site/images/skus/${code}.jpg');event.stopPropagation()" title="클릭 시 이미지 복사"><img src="https://smartcenterhub.github.io/yozm-master-site/images/skus/${code}.jpg" style="width:40px;height:40px;object-fit:cover;border-radius:4px;display:block;margin:0 auto" referrerpolicy="no-referrer" onerror="if(!this.dataset.pngTried){this.dataset.pngTried='1';this.src='https://smartcenterhub.github.io/yozm-master-site/images/skus/${code}.png';}else{this.style.opacity=.15;this.style.filter='grayscale(1)';}"></td>
     <td data-col="nick" data-val="${nick}" style="font-weight:600">
@@ -1083,8 +1341,19 @@ function buildProdRow(p){
     <td style="text-align:right;color:var(--bl)">${mRate}</td>
     <td style="text-align:center">${shipLabel(p)}</td>
     <td style="text-align:center"><button class="btn btn-xs" style="color:var(--pu);border-color:rgba(108,53,204,.3)" onclick="event.stopPropagation()">소구</button></td>
-  </tr>`;
+    <td style="text-align:center">${hasOpts?`<span id="opt-tog-${p._id}" style="font-size:10px;color:var(--t3);cursor:pointer">▶</span>`:''}</td>
+  </tr>${optRows}`;
 }
+
+/* 옵션 행 토글 (evt_manage 패턴) */
+window.toggleOptRows=function(pId){
+  const optRows=document.querySelectorAll(`tr.opt-row[data-opt-parent="${pId}"]`);
+  const tog=document.getElementById('opt-tog-'+pId);
+  if(!optRows.length)return;
+  const isHidden=optRows[0].classList.contains('hidden');
+  optRows.forEach(r=>r.classList.toggle('hidden',!isHidden));
+  if(tog)tog.textContent=isHidden?'▼':'▶';
+};
 
 /* 카드 1개 빌드 - evt_manage buildGroupHtml 구조 그대로 */
 function buildCard(ev){
@@ -1108,7 +1377,7 @@ function buildCard(ev){
     else stateClass='state-proposal';
   }
   const linkChips=(ev.pageLinks||[]).filter(l=>l.url).map(l=>
-    `<span class="link-chip-card" onclick="copyToClip('${l.url.replace(/'/g,"\\'")}',this);event.stopPropagation()" title="${l.url}">${l.type}</span>`
+    `<span class="link-chip-card ${linkChipCls(l.type)}" onclick="copyToClip('${l.url.replace(/'/g,"\\'")}',this);event.stopPropagation()" title="${l.url}">${l.type}<span class="lc-copied" style="font-size:9px;opacity:0;margin-left:2px;color:inherit;transition:opacity .2s">✓</span></span>`
   ).join('');
   const rows=props.map(buildProdRow).join('');
   const emptyMsg='<div style="padding:14px;text-align:center;color:var(--t3);font-size:11.5px">선정된 상품이 없습니다</div>';

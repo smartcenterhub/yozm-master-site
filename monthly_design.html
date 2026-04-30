@@ -728,18 +728,29 @@ function mev(folder,ev){const f=folder.trim().toLowerCase();const en=ev.name.tri
 async function procZip(file){
   try{const z=await JSZip.loadAsync(file);const bf={};
     z.forEach((p,e)=>{if(e.dir)return;const pts=p.replace(/\\/g,'/').split('/');if(pts.length<2)return;const f=pts[0];if(!bf[f])bf[f]=[];bf[f].push({n:pts[pts.length-1],e});});
-    const md={};const um=[];
+    const md={};const um=[];let skipCnt=0;
     for(const[f,files]of Object.entries(bf)){const ev=evs.find(e=>mev(f,e));if(!ev){um.push(f);continue;}if(!md[ev.id])md[ev.id]={};
+      // matNames 초기화 (기존 행사 호환)
+      if(!ev.matNames)ev.matNames={};
       for(const{n,e}of files){if(!/\.(jpe?g|png|gif|webp)$/i.test(n))continue;const mk=rmk(n);if(!mk||!(mk in(ev.mats||{})))continue;
+        // 이름 기반 중복 체크: 이미 같은 파일명이 등록돼 있으면 스킵
+        if(!ev.matNames[mk])ev.matNames[mk]=[];
+        if(ev.matNames[mk].includes(n)){skipCnt++;continue;}
         const blob=await e.async('blob');const du=await new Promise(r=>{const fr=new FileReader();fr.onload=e=>r(e.target.result);fr.readAsDataURL(blob);});
-        if(!md[ev.id][mk])md[ev.id][mk]=[];md[ev.id][mk].push(du);}}
-    let tot=0;for(const[eid,tm]of Object.entries(md)){const ev=ge(eid);if(!ev)continue;for(const[k,imgs]of Object.entries(tm)){ev.mats[k]=[...(ev.mats[k]||[]),...imgs];tot+=imgs.length;}}
-    showZipRes(md,um,tot);}catch(e){toast('ZIP 오류: '+e.message);}
+        if(!md[ev.id][mk])md[ev.id][mk]=[];md[ev.id][mk].push({n,du});}}
+    let tot=0;for(const[eid,tm]of Object.entries(md)){const ev=ge(eid);if(!ev)continue;if(!ev.matNames)ev.matNames={};
+      for(const[k,items]of Object.entries(tm)){
+        if(!ev.mats[k])ev.mats[k]=[];if(!ev.matNames[k])ev.matNames[k]=[];
+        for(const{n,du}of items){ev.mats[k].push(du);ev.matNames[k].push(n);tot++;}
+      }
+    }
+    showZipRes(md,um,tot,skipCnt);}catch(e){toast('ZIP 오류: '+e.message);}
 }
-function showZipRes(md,um,tot){
+function showZipRes(md,um,tot,skipCnt){
   const rows=evs.filter(ev=>md[ev.id]).map(ev=>{const cnt=Object.values(md[ev.id]).reduce((s,a)=>s+a.length,0);return`<div class="sm-evrow"><div class="sb-dot" style="background:${ev.col}"></div><span style="font-size:11.5px;font-weight:600;color:var(--t);flex:1">${ev.name}</span><span style="font-size:11px;color:var(--ad);font-weight:600">+${cnt}개</span></div>`;}).join('');
   const w=um.length?`<div class="sm-warn">⚠️ 매칭 안 된 폴더: ${um.map(f=>`<b>${f}</b>`).join(', ')}</div>`:'';
-  gModal(`<div class="modal" style="min-width:380px"><div class="mtitle">📦 ZIP 로드 완료 <button class="mclose" onclick="cModal();render()">✕</button></div>${w}<p style="font-size:12px;color:var(--t3);margin-bottom:8px">총 ${tot}개 이미지 (메모리)</p><div style="max-height:280px;overflow-y:auto">${rows||'<p style="font-size:11.5px;color:var(--t3)">매칭 없음</p>'}</div><div class="mact"><button class="btn-p" onclick="cModal();render()">확인</button></div></div>`);
+  const skipMsg=skipCnt?`<p style="font-size:11.5px;color:#c08020;margin-bottom:8px">⏭️ ${skipCnt}개 중복 파일 스킵 (이미 등록된 이름)</p>`:'';
+  gModal(`<div class="modal" style="min-width:380px"><div class="mtitle">📦 ZIP 로드 완료 <button class="mclose" onclick="cModal();render()">✕</button></div>${w}<p style="font-size:12px;color:var(--t3);margin-bottom:8px">총 ${tot}개 이미지 (메모리)</p>${skipMsg}<div style="max-height:280px;overflow-y:auto">${rows||'<p style="font-size:11.5px;color:var(--t3)">매칭 없음</p>'}</div><div class="mact"><button class="btn-p" onclick="cModal();render()">확인</button></div></div>`);
 }
 document.getElementById('zInput').addEventListener('change',async function(){if(this.files[0]){await procZip(this.files[0]);if(S.view==='detail')reDet();}});
 
@@ -753,7 +764,7 @@ document.addEventListener('drop',async e=>{
   const zm=document.getElementById('zipGuideBd');
   if(zm)return; // ZIP 모달 열려있으면 전체 drop 무시
   const files=[...e.dataTransfer.files];
-  if(ft&&files.some(f=>f.type.startsWith('image/'))){e.preventDefault();const ev=ge(ft.ei);if(!ev)return;for(const f of files){if(!f.type.startsWith('image/'))continue;const d=await b64(f);(ev.mats[ft.tk]=ev.mats[ft.tk]||[]).push(d);}if(S.view==='detail')reDet();const sm=document.getElementById('slMod');if(sm)rSlC();}
+  if(ft&&files.some(f=>f.type.startsWith('image/'))){e.preventDefault();const ev=ge(ft.ei);if(!ev)return;if(!ev.matNames)ev.matNames={};if(!ev.matNames[ft.tk])ev.matNames[ft.tk]=[];for(const f of files){if(!f.type.startsWith('image/'))continue;const d=await b64(f);(ev.mats[ft.tk]=ev.mats[ft.tk]||[]).push(d);ev.matNames[ft.tk].push('');}if(S.view==='detail')reDet();const sm=document.getElementById('slMod');if(sm)rSlC();}
 });
 
 // ZIP 모달 내 드롭존 이벤트 (모달 열릴 때 attach)
@@ -923,11 +934,11 @@ function tHide(id,tk){const ev=ge(id);if(!ev)return;const i=ev.hp.indexOf(tk);if
 // ── IMAGE ──
 let ft=null;
 function tF(ei,tk){ft={ei,tk};document.getElementById('fInput').value='';document.getElementById('fInput').click();}
-document.getElementById('fInput').addEventListener('change',async function(){if(!ft)return;const{ei,tk}=ft;const ev=ge(ei);if(!ev)return;snapshot('이미지 추가');for(const f of this.files){if(!f.type.startsWith('image/'))continue;const d=await b64(f);(ev.mats[tk]=ev.mats[tk]||[]).push(d);}ft=null;if(S.view==='detail')reDet();const sm=document.getElementById('slMod');if(sm)rSlC();});
-function dImg(ei,tk,idx){const ev=ge(ei);if(!ev)return;snapshot('이미지 삭제');ev.mats[tk].splice(idx,1);if(S.view==='detail')reDet();const sm=document.getElementById('slMod');if(sm)rSlC();}
+document.getElementById('fInput').addEventListener('change',async function(){if(!ft)return;const{ei,tk}=ft;const ev=ge(ei);if(!ev)return;snapshot('이미지 추가');if(!ev.matNames)ev.matNames={};if(!ev.matNames[tk])ev.matNames[tk]=[];for(const f of this.files){if(!f.type.startsWith('image/'))continue;const d=await b64(f);(ev.mats[tk]=ev.mats[tk]||[]).push(d);ev.matNames[tk].push('');}ft=null;if(S.view==='detail')reDet();const sm=document.getElementById('slMod');if(sm)rSlC();});
+function dImg(ei,tk,idx){const ev=ge(ei);if(!ev)return;snapshot('이미지 삭제');ev.mats[tk].splice(idx,1);if(ev.matNames&&ev.matNames[tk])ev.matNames[tk].splice(idx,1);if(S.view==='detail')reDet();const sm=document.getElementById('slMod');if(sm)rSlC();}
 let pp=null;
 document.addEventListener('paste',async e=>{let d=null;for(const item of e.clipboardData.items){if(item.type.startsWith('image/')){d=await b64(item.getAsFile());break;}}if(!d)return;pp=d;const ev=S.sid?ge(S.sid):null;const types=ev?(ev.et==='notice'?MAT.filter(t=>t.k==='intro'):MAT):MAT;gModal(`<div class="modal" style="min-width:260px"><div class="mtitle">📋 소재 선택 <button class="mclose" onclick="cModal()">✕</button></div><div class="ptl">${types.map(t=>`<button class="ptb" onclick="apPaste('${ev?ev.id:''}','${t.k}')">${t.n}</button>`).join('')}</div></div>`);});
-function apPaste(ei,tk){if(!pp)return;const ev=ei?ge(ei):evs[0];if(!ev)return;(ev.mats[tk]=ev.mats[tk]||[]).push(pp);pp=null;cModal();toast(tk+' 추가');if(S.view==='detail'&&S.sid===ev.id)reDet();}
+function apPaste(ei,tk){if(!pp)return;const ev=ei?ge(ei):evs[0];if(!ev)return;(ev.mats[tk]=ev.mats[tk]||[]).push(pp);if(!ev.matNames)ev.matNames={};if(!ev.matNames[tk])ev.matNames[tk]=[];ev.matNames[tk].push('');pp=null;cModal();toast(tk+' 추가');if(S.view==='detail'&&S.sid===ev.id)reDet();}
 
 // ── CUSTOM PAGES ──
 let cpImgTarget=null;

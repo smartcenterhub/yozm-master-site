@@ -1176,6 +1176,8 @@ window.doBulkUpload=async function(){
   const txt=document.getElementById('bulk-progress-text');
   let done=0;const total=rows.length;
   for(const r of rows){
+    /* 이중 방어선: 상품 0개 행은 저장 안 함 (이미 ok 필터에서 걸러지지만 안전 차원) */
+    if(!r.products||!r.products.length){done++;continue;}
     txt.textContent=`(${done+1}/${total}) ${r.name} 저장 중...`;
     bar.style.width=Math.round(done/total*100)+'%';
     const docId=r.name.replace(/\s/g,'')+'_'+(r.start||'None').replace(/-/g,'')+'_'+(r.end||'None').replace(/-/g,'');
@@ -2652,6 +2654,8 @@ async function doSaveEvent(){
   const {startTime,endTime}=getCalTime('reg');
   const type=$('ev-type').value;
   if(!name)throw new Error('행사명 필요');
+  /* 상품 0개 차단 — 빈 행사 생성 방지 */
+  if(!regProducts||regProducts.length===0)throw new Error('상품을 1개 이상 추가해주세요 (빈 행사 등록 불가)');
   const docId=name.replace(/\s/g,'')+'_'+(start||'None').replace(/-/g,'')+'_'+(end||'None').replace(/-/g,'');
   const data={eventName:name,eventType:type||null,startDate:start||null,startTime:startTime,endDate:end||null,endTime:endTime,pageType:$('ev-pagetype').value||null,pageLinks:JSON.parse(JSON.stringify(REG_PAGE_LINKS)),isNotice:false,isClosed:false,additionalDiscount:$('ev-adddisc').value||null,proposalUploadedAt:$('ev-upload-date')?.value||null,proposalDeadline:$('ev-deadline')?.value||null,talkSendDate:$('ev-talk-date')?.value||null,
     products:regProducts.map((p,i)=>({no:i+1,subNo:null,isMain:p.isMain,isCancelled:false,skuCode:p.skuCode,productName:p.productName,link:'https://brand.naver.com/yozmkorea/products/'+p.skuCode,priceNormal:p.priceNormal||null,priceBase:p.priceBase||null,priceEvent:p.priceEvent||null,priceAlim:p.priceAlim||null,priceMax:p.priceMax||null,ship:p.ship||null,shipType:p.shipType||'일반',options:[]})),
@@ -3392,7 +3396,23 @@ window.tfClick=function(el,cls,tab){
   }
   renderPropList(tab);
 };
-window.sfClick=function(el,statusVal,tab){el.classList.toggle('on');if(!statusFilter[tab])statusFilter[tab]=new Set();if(el.classList.contains('on'))statusFilter[tab].add(statusVal);else statusFilter[tab].delete(statusVal);renderPropList(tab);};
+window.sfClick=function(el,statusVal,tab){
+  if(!statusFilter[tab])statusFilter[tab]=new Set();
+  const wasOn=el.classList.contains('on');
+  /* 같은 탭의 다른 status 필터 sfb 버튼들 모두 OFF — 단일 선택 모드
+     단, 📌 고정 필터(id="pin-filter-N")는 별도 pinFilter 상태이므로 제외 */
+  el.parentElement.querySelectorAll('.sfb.on').forEach(b=>{
+    if(b.id&&b.id.startsWith('pin-filter-'))return;
+    b.classList.remove('on');
+  });
+  statusFilter[tab].clear();
+  /* 이미 켜진 버튼을 다시 누른 경우 → 전체 해제 (필터 없음) */
+  if(!wasOn){
+    el.classList.add('on');
+    statusFilter[tab].add(statusVal);
+  }
+  renderPropList(tab);
+};
 
 /* ── 행사 로직 탭(p8): 카드 클릭 시 해당 탭으로 이동 + 그 status만 필터 활성 (옵션 A) ── */
 window.gotoStatusFromLogic=function(statusVal,targetTab,cardEl){

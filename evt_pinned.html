@@ -233,15 +233,27 @@ textarea.ef-input{height:auto;padding:8px 10px;resize:vertical;line-height:1.5}
 .step-tools-empty{font-size:10.5px;color:var(--t4);font-style:italic;padding:2px 0}
 .step-status{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:rgba(152,152,168,.12);color:var(--t3);flex-shrink:0;white-space:nowrap;margin-left:auto}
 .step-card.done .step-status{background:rgba(152,152,168,.15);color:var(--t3)}
-.tool-btn{height:24px;padding:0 9px;font-size:10.5px;border:1px solid rgba(58,58,240,.25);border-radius:5px;background:rgba(58,58,240,.04);color:var(--ac);cursor:pointer;font-weight:500;font-family:inherit;display:inline-flex;align-items:center;gap:4px;transition:all .12s;white-space:nowrap}
-.tool-btn:hover:not(:disabled){background:rgba(58,58,240,.1);border-color:var(--ac)}
+/* ── 도구 버튼 4가지 스타일 ──
+   .tool-btn (기본) = 보라 알약 (텍스트 복사용: 준비하기/기간/브검PC 등)
+   .tool-btn.has-icon = 보라 채움 (아이콘+텍스트 복사용: 📋 자동완성, 📋 풀네임 등)
+   .tool-btn.icon-only = 보라 채움 정사각 (🔗 단독 아이콘) */
+.tool-btn{height:24px;padding:3px 12px;font-size:10.5px;border-radius:14px;border:0.5px solid #AFA9EC;background:#EEEDFE;color:#3C3489;cursor:pointer;font-weight:500;font-family:inherit;display:inline-flex;align-items:center;gap:4px;transition:all .12s;white-space:nowrap;line-height:1.4}
+.tool-btn:hover:not(:disabled){background:#DDDAFA}
 .tool-btn:disabled{opacity:.4;cursor:not-allowed}
+.tool-btn.has-icon{padding:4px 11px;border-radius:6px;border:none;background:#7F77DD;color:#FFF}
+.tool-btn.has-icon:hover:not(:disabled){background:#6960c8}
+.tool-btn.icon-only{width:26px;height:26px;padding:0;border-radius:6px;border:none;background:#7F77DD;color:#FFF;justify-content:center;font-size:12px}
+.tool-btn.icon-only:hover:not(:disabled){background:#6960c8}
 
-/* 도구용 체크박스 */
-.tool-cb{display:inline-flex;align-items:center;gap:4px;cursor:pointer;user-select:none;font-size:10.5px;color:var(--t3);padding:2px 7px;border-radius:5px;border:0.5px solid var(--bd);background:var(--gs);transition:all .12s;white-space:nowrap}
-.tool-cb:hover{border-color:rgba(0,0,0,.18);color:var(--t2);background:rgba(0,0,0,.03)}
-.tool-cb input{margin:0;cursor:pointer;width:12px;height:12px;accent-color:var(--t3)}
-.tool-cb.checked{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.15);color:var(--t2);font-weight:500}
+/* 도구용 체크박스 → 토글 스위치 */
+.tool-cb{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;font-size:11px;color:#444;padding:2px 6px;border-radius:5px;background:transparent;border:none;transition:background .12s;white-space:nowrap;font-weight:500}
+.tool-cb:hover{background:rgba(0,0,0,.04)}
+.tool-cb input{display:none}
+.tool-cb .toggle-sw{position:relative;display:inline-block;width:26px;height:14px;background:#1D9E75;border-radius:8px;transition:.2s;flex-shrink:0;order:2}
+.tool-cb .toggle-sw::after{content:"";position:absolute;top:2px;right:2px;width:10px;height:10px;background:#FFF;border-radius:50%;transition:.2s}
+.tool-cb:not(.checked) .toggle-sw{background:#D3D1C7}
+.tool-cb:not(.checked) .toggle-sw::after{right:14px}
+.tool-cb:not(.checked){color:#888}
 
 /* 도구 영역 안의 섹션 헤더 — 동그라미 넘버 + 제목 텍스트 분리 (step-card의 ① 증빙서류 준비와 동일 패턴)
    width:140px 고정으로 모든 도구 동그라미가 같은 세로선에 정렬됨 */
@@ -741,7 +753,7 @@ function buildSub1SectionedTools(ev){
   const s2Done=!!ps.step1_sub1_s2;
   /* 1) 파일 만들기 — 자동완성 풀네임 버튼 */
   const defaultText=`[증빙] ${eName} 선정 메일, 스토어 세팅 _요즘 그릭요거트`;
-  const s1Inner=`<button class="tool-btn" id="te-copy-${evId}" onclick="copyEvidenceText('${evId}');event.stopPropagation()" title="클릭 시 복사">📋 <span id="te-preview-${evId}">${defaultText}</span></button>`;
+  const s1Inner=`<button class="tool-btn has-icon" id="te-copy-${evId}" onclick="copyEvidenceText('${evId}');event.stopPropagation()" title="클릭 시 복사">📋 <span id="te-preview-${evId}">${defaultText}</span></button>`;
   /* 2) 스토어 세팅 — [준비하기] + [기간] */
   const sd=ev.startDate||'';
   const stm=ev.startTime||'00:00';
@@ -830,10 +842,10 @@ function buildSub2SectionedTools(ev){
   const linkChips=(ev.pageLinks||[]).filter(l=>l.url).map(l=>
     `<span class="link-chip-card ${linkChipCls(l.type)}" onclick="copyToClip('${l.url.replace(/'/g,"\\'")}',this);event.stopPropagation()" title="${l.url}">${l.type}<span class="lc-copied" style="font-size:9px;opacity:0;margin-left:2px;color:inherit;transition:opacity .2s">✓</span></span>`
   ).join('');
-  const sectionTools=`<button class="tool-btn" onclick="openEditModal('${evId}');event.stopPropagation()" title="행사 정보 수정 (링크/톡톡/메모)" style="padding:2px 6px">🔗</button>${linkChips}`;
+  const sectionTools=`<button class="tool-btn icon-only" onclick="openEditModal('${evId}');event.stopPropagation()" title="행사 정보 수정 (링크/톡톡/메모)">🔗</button>${linkChips}`;
   return `<div class="step-tools step-tools-sectioned">
     <div class="section-row${sDone?' done':''}">
-      <span class="section-label-wrap">
+      <span class="section-label-wrap" style="width:auto">
         <span class="section-num" onclick="toggleSectionDone('${ev._id}','step1_sub2_t1',${!sDone});event.stopPropagation()" title="클릭 시 1) 링크 등록 완료/미완료 토글">1</span>
         <span class="section-name">링크 등록</span>
       </span>
@@ -849,13 +861,13 @@ function buildToolEvidenceText(ev){
   const evId=ev._id;
   const eName=(ev.eventName||'').replace(/"/g,'&quot;');
   const defaultText=`[증빙] ${eName} 선정 메일, 스토어 세팅 _요즘 그릭요거트`;
-  return `<button class="tool-btn" id="te-copy-${evId}" onclick="copyEvidenceText('${evId}');event.stopPropagation()" title="클릭 시 복사">증빙서류 파일명 복사</button>
+  return `<button class="tool-btn has-icon" id="te-copy-${evId}" onclick="copyEvidenceText('${evId}');event.stopPropagation()" title="클릭 시 복사">증빙서류 파일명 복사</button>
     <span class="tool-cb checked" onclick="event.stopPropagation()">
-      <input type="checkbox" class="te-cb" data-ev="${evId}" data-key="mail" data-label="선정 메일" checked onchange="updateEvidencePreview('${evId}');this.parentElement.classList.toggle('checked',this.checked)">
+      <input type="checkbox" class="te-cb" data-ev="${evId}" data-key="mail" data-label="선정 메일" checked onchange="updateEvidencePreview('${evId}');this.parentElement.classList.toggle('checked',this.checked)"><span class="toggle-sw"></span>
       (1) 선정 메일
     </span>
     <span class="tool-cb checked" onclick="event.stopPropagation()">
-      <input type="checkbox" class="te-cb" data-ev="${evId}" data-key="store" data-label="스토어 세팅" checked onchange="updateEvidencePreview('${evId}');this.parentElement.classList.toggle('checked',this.checked)">
+      <input type="checkbox" class="te-cb" data-ev="${evId}" data-key="store" data-label="스토어 세팅" checked onchange="updateEvidencePreview('${evId}');this.parentElement.classList.toggle('checked',this.checked)"><span class="toggle-sw"></span>
       (2) 스토어 세팅
     </span>
     <span class="tool-preview" id="te-preview-${evId}" title="${defaultText}">${defaultText}</span>`;
@@ -903,7 +915,7 @@ function buildToolLinkRegister(ev){
   const linkChips=(ev.pageLinks||[]).filter(l=>l.url).map(l=>
     `<span class="link-chip-card ${linkChipCls(l.type)}" onclick="copyToClip('${l.url.replace(/'/g,"\\'")}',this);event.stopPropagation()" title="${l.url}">${l.type}<span class="lc-copied" style="font-size:9px;opacity:0;margin-left:2px;color:inherit;transition:opacity .2s">✓</span></span>`
   ).join('');
-  return `<span style="font-size:11.5px;font-weight:600;color:var(--tx)">링크 등록</span><button class="tool-btn" onclick="openEditModal('${evId}');event.stopPropagation()" title="행사 정보 수정 (링크/톡톡/메모)" style="padding:2px 6px">🔗</button>${linkChips}`;
+  return `<span style="font-size:11.5px;font-weight:600;color:var(--tx)">링크 등록</span><button class="tool-btn icon-only" onclick="openEditModal('${evId}');event.stopPropagation()" title="행사 정보 수정 (링크/톡톡/메모)">🔗</button>${linkChips}`;
 }
 
 /* ── 도구: 검색광고 사전세팅 1행 — 브검PC/브검MO 복사 버튼 + 절차 안내 메모 ──
@@ -922,13 +934,13 @@ function buildToolStoreEvidenceMsg(ev){
   const eName=(ev.eventName||'').replace(/"/g,'&quot;');
   const defaultText=buildStoreEvidenceText(eName,true,true);
   /* flex-basis:100% div가 도구 영역 안에서 줄바꿈 트릭 — 첫 행과 분리 */
-  return `<button class="tool-btn" id="sem-copy-${evId}" onclick="copyStoreEvidenceMsg('${evId}');event.stopPropagation()" title="클릭 시 복사">📋 증빙문구 복사하기</button>
+  return `<button class="tool-btn has-icon" id="sem-copy-${evId}" onclick="copyStoreEvidenceMsg('${evId}');event.stopPropagation()" title="클릭 시 복사">📋 증빙문구 복사하기</button>
     <span class="tool-cb checked" onclick="event.stopPropagation()">
-      <input type="checkbox" class="sem-cb" data-ev="${evId}" data-key="evidence" checked onchange="updateStoreEvidencePreview('${evId}');this.parentElement.classList.toggle('checked',this.checked)">
+      <input type="checkbox" class="sem-cb" data-ev="${evId}" data-key="evidence" checked onchange="updateStoreEvidencePreview('${evId}');this.parentElement.classList.toggle('checked',this.checked)"><span class="toggle-sw"></span>
       ① 증빙자료 전달
     </span>
     <span class="tool-cb checked" onclick="event.stopPropagation()">
-      <input type="checkbox" class="sem-cb" data-ev="${evId}" data-key="landing" checked onchange="updateStoreEvidencePreview('${evId}');this.parentElement.classList.toggle('checked',this.checked)">
+      <input type="checkbox" class="sem-cb" data-ev="${evId}" data-key="landing" checked onchange="updateStoreEvidencePreview('${evId}');this.parentElement.classList.toggle('checked',this.checked)"><span class="toggle-sw"></span>
       ② 랜딩페이지 안내
     </span>
     <span class="tool-preview" id="sem-preview-${evId}" title="${defaultText.replace(/"/g,'&quot;')}" style="white-space:pre-line;line-height:1.5">${defaultText}</span>`;
@@ -1153,17 +1165,17 @@ function buildStepCard(ev,subStep,idx){
   let headerExtra='';
   if(subStep.id==='step1_sub3'){
     const calName=makeCalendarName(ev).replace(/"/g,'&quot;');
-    headerExtra=`<button class="tool-btn" onclick="copyCalendarName('${ev._id}',this);event.stopPropagation()" title="클릭 시 달력 행사명 복사" style="margin-left:6px">📋 ${calName}</button>`;
+    headerExtra=`<button class="tool-btn has-icon" onclick="copyCalendarName('${ev._id}',this);event.stopPropagation()" title="클릭 시 달력 행사명 복사" style="margin-left:6px">📋 ${calName}</button>`;
   }
   /* sub1 (증빙서류 준비)만 헤더에 체크박스 (1) 선정 메일, (2) 스토어 세팅 추가 */
   if(subStep.id==='step1_sub1'){
     const evId=ev._id;
     headerExtra=`<span class="tool-cb checked" onclick="event.stopPropagation()" style="margin-left:6px">
-        <input type="checkbox" class="te-cb" data-ev="${evId}" data-key="mail" data-label="선정 메일" checked onchange="updateEvidencePreview('${evId}');this.parentElement.classList.toggle('checked',this.checked)">
+        <input type="checkbox" class="te-cb" data-ev="${evId}" data-key="mail" data-label="선정 메일" checked onchange="updateEvidencePreview('${evId}');this.parentElement.classList.toggle('checked',this.checked)"><span class="toggle-sw"></span>
         (1) 선정 메일
       </span>
       <span class="tool-cb checked" onclick="event.stopPropagation()">
-        <input type="checkbox" class="te-cb" data-ev="${evId}" data-key="store" data-label="스토어 세팅" checked onchange="updateEvidencePreview('${evId}');this.parentElement.classList.toggle('checked',this.checked)">
+        <input type="checkbox" class="te-cb" data-ev="${evId}" data-key="store" data-label="스토어 세팅" checked onchange="updateEvidencePreview('${evId}');this.parentElement.classList.toggle('checked',this.checked)"><span class="toggle-sw"></span>
         (2) 스토어 세팅
       </span>`;
   }
